@@ -123,26 +123,18 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 
 \class CvOp1 : GridObject {
 	\attr CvMode mode;
-	\decl void initialize ();
+	\constructor () {mode = cv_mode_auto;}
 	/* has no default \grin 0 handler so far. */
 };
-\def void initialize () {
-	SUPER;
-	mode = cv_mode_auto;
-}
 \end class {}
 
 \class CvOp2 : CvOp1 {
 	PtrGrid r;
-	\decl void initialize (Grid *r=0);
+	\constructor (Grid *r=0) {this->r = r?r:new Grid(new Dim(),int32_e,true);}
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
 	\grin 0
 	\grin 1
 };
-\def void initialize (Grid *r=0) {
-	SUPER;
-	this->r = r?r:new Grid(new Dim(),int32_e,true);
-}
 GRID_INLET(CvOp2,0) {
 	SAME_TYPE(in,r);
 	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
@@ -162,53 +154,50 @@ GRID_INLET(CvOp2,0) {
 GRID_INPUT2(CvOp2,1,r) {} GRID_END
 \end class {}
 
-#define FUNC virtual void func(CvArr *l, CvArr *r, CvArr *o)
+#define FUNC(CLASS) CLASS(MESSAGE):CvOp2(MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
 
-\class CvAdd : CvOp2 {FUNC {cvAdd(l,r,o,0);}};
+\class CvAdd : CvOp2 {FUNC(CvAdd) {cvAdd(l,r,o,0);}};
 \end class {install("cv.Add",2,1);}
-\class CvSub : CvOp2 {FUNC {cvSub(l,r,o,0);}};
+\class CvSub : CvOp2 {FUNC(CvSub) {cvSub(l,r,o,0);}};
 \end class {install("cv.Sub",2,1);}
-\class CvMul : CvOp2 {FUNC {cvMul(l,r,o,1);}};
+\class CvMul : CvOp2 {FUNC(CvMul) {cvMul(l,r,o,1);}};
 \end class {install("cv.Mul",2,1);}
-\class CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,1);}};
+\class CvDiv : CvOp2 {FUNC(CvDiv) {cvDiv(l,r,o,1);}};
 \end class {install("cv.Div",2,1);}
 
 \class CvSplit : CvOp1 {
 	int channels;
-	\decl void initialize (int channels);
+	\constructor (int channels) {
+		if (channels<0 || channels>64) RAISE("channels=%d is not in 1..64",channels);
+		this->channels = channels;
+		bself->noutlets_set(channels);
+	}
 };
-\def void initialize (int channels) {
-	SUPER;
-	if (channels<0 || channels>64) RAISE("channels=%d is not in 1..64",channels);
-	this->channels = channels;
-	bself->noutlets_set(channels);
-}
 \end class {}
 
 \class CvHaarDetectObjects : GridObject {
 	\attr double scale_factor; /*=1.1*/
 	\attr int min_neighbors;   /*=3*/
 	\attr int flags;           /*=0*/
-	\decl void initialize ();
+	\constructor () {
+		scale_factor=1.1;
+		min_neighbors=3;
+		flags=0;
+		//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
+		const char *filename = OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml";
+		FILE *f = fopen(filename,"r");
+		if (!f) RAISE("error opening %s: %s",filename,strerror(errno));
+		fclose(f);
+		cascade = (CvHaarClassifierCascade *)cvLoad(filename,0,0,0);
+		int s = cvGetErrStatus();
+		post("cascade=%p, cvGetErrStatus=%d cvErrorStr=%s",cascade,s,cvErrorStr(s));
+		//cascade = cvLoadHaarClassifierCascade(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml",cvSize(24,24));
+		storage = cvCreateMemStorage(0);
+	}
 	CvHaarClassifierCascade *cascade;
 	CvMemStorage *storage;
 	\grin 0
 };
-\def void initialize () {
-	scale_factor=1.1;
-	min_neighbors=3;
-	flags=0;
-	//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
-	const char *filename = OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml";
-	FILE *f = fopen(filename,"r");
-	if (!f) RAISE("error opening %s: %s",filename,strerror(errno));
-	fclose(f);
-	cascade = (CvHaarClassifierCascade *)cvLoad(filename,0,0,0);
-	int s = cvGetErrStatus();
-	post("cascade=%p, cvGetErrStatus=%d cvErrorStr=%s",cascade,s,cvErrorStr(s));
-	//cascade = cvLoadHaarClassifierCascade(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml",cvSize(24,24));
-	storage = cvCreateMemStorage(0);
-}
 GRID_INLET(CvHaarDetectObjects,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -227,17 +216,14 @@ GRID_INLET(CvHaarDetectObjects,0) {
 
 \class CvKalmanWrapper : CvOp1 {
 	CvKalman *kal;
-	\decl void initialize (int dynam_params, int measure_params, int control_params=0);
-	 CvKalmanWrapper () : kal(0) {}
+	\constructor (int dynam_params, int measure_params, int control_params=0) {
+		kal = cvCreateKalman(dynam_params,measure_params,control_params);
+	}
 	~CvKalmanWrapper () {if (kal) cvReleaseKalman(&kal);}
 	\decl void _0_bang ();
 	\grin 0
 	\grin 1
 };
-
-\def void initialize (int dynam_params, int measure_params, int control_params=0) {
-	kal = cvCreateKalman(dynam_params,measure_params,control_params);
-}
 
 void cvMatSend(const CvMat *self, GridObject *obj, int outno) {
 	int m = self->rows;
