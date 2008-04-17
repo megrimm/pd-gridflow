@@ -249,7 +249,6 @@ static void gfpost(VideoMmap *self) {
 	void alloc_image ();
 	void dealloc_image ();
 	void frame_ask ();
-	\decl void initialize (string mode, string filename);
 	void initialize2 ();
 	~FormatVideoDev () {if (image) dealloc_image();}
 
