@@ -227,6 +227,27 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
 
+typedef void *(*t_constructor)(MESSAGE);
+static void CObject_mark (void *z) {}
+
+static Ruby FObject_s_new(Ruby argc, Ruby *argv, const char *name) {
+	Ruby qlass = fclasses[string(name)]->rself;
+	t_constructor alloc = (t_constructor)FIX2PTR(void,rb_ivar_get(qlass,SI(@allocator)));
+	//t_constructor alloc2 = fclasses1[string(name)]->allocator;
+	//fprintf(stderr,"allocator is %p or %p\n", alloc,alloc2);
+	FObject *self;
+	// this is a C++ FObject/GridObject
+	t_atom2 argv2[argc];
+	ruby2pd(argc,argv,argv2);
+	self = (FObject *)alloc(0,argc,argv2);
+	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
+	self->bself = 0;
+	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
+	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
+	rb_funcall2(rself,SI(initialize),argc,argv);
+	return rself;
+}
+
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = fm->ac;
 	t_atom at[argc];
@@ -245,8 +266,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	for (j=0; j<argc; j++) if (at[j].a_type==A_COMMA) break;
 	Ruby argv[j];
 	for (int i=0; i<j; i++) argv[i] = Bridge_import_value(at+i);
-	Ruby rself = rb_funcall2(fclasses[fm->selector->s_name]->rself,SI(new),j,argv);
-
+	Ruby rself = FObject_s_new(j,argv,fm->selector->s_name);
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -412,8 +432,6 @@ static void add_to_path(char *dir) {
 
 //----------------------------------------------------------------
 
-static void CObject_mark (void *z) {}
-
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
@@ -431,25 +449,6 @@ void fclass_install(FClass *fc, const char *super) {
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator)));
 	if (fc->startup) fc->startup(rself);
-}
-
-typedef void *(*t_constructor)(MESSAGE);
-
-Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ? rb_ivar_get(qlass,SI(@allocator)) : Qnil;
-	FObject *self;
-	if (allocator==Qnil) RAISE("this shouldn't happen anymore");
-	// this is a C++ FObject/GridObject
-	t_constructor alloc = (t_constructor)FIX2PTR(void,allocator);
-	t_atom2 argv2[argc];
-	ruby2pd(argc,argv,argv2);
-	self = (FObject *)alloc(0,argc,argv2);
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
-	self->bself = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
-	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
-	rb_funcall2(rself,SI(initialize),argc,argv);
-	return rself;
 }
 
 void install2(Ruby rself, const char *name, int inlets, int outlets) {
@@ -566,7 +565,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
-	SDEF(FObject, new, -1);
 	Ruby fo = cFObject;
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
