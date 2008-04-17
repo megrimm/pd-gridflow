@@ -951,7 +951,7 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 \class Pointer : CObject {
 	void *p;
-	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
+	Pointer(MESSAGE) {RAISE("calling Pointer constructor the wrong way"); }
 	Pointer(void *_p) : p(_p) {}
 	\decl Ruby ptr ();
 };

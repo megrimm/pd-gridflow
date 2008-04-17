@@ -443,15 +443,10 @@ void fclass_install(FClass *fc, const char *super) {
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ? rb_ivar_get(qlass,SI(@allocator)) : Qnil;
 	FObject *self;
-	if (allocator==Qnil) {
-		// this is a pure-ruby FObject/GridObject
-		// !@#$ GridObject is in FObject constructor (ugly)
-		self = new GridObject;
-	} else {
-		// this is a C++ FObject/GridObject
-		void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
-		self = (FObject *)alloc();
-	}
+	if (allocator==Qnil) RAISE("this shouldn't happen anymore");
+	// this is a C++ FObject/GridObject
+	void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
+	self = (FObject *)alloc();
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
