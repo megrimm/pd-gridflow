@@ -306,11 +306,6 @@ GRID_INLET(GridExportList,0) {
 		return r.str();
 	}
 };
-/*static t_pd *rp_to_pd (Ruby pointer) {
-       Pointer *foo;
-       Data_Get_Struct(pointer,Pointer,foo);
-       return (t_pd *)foo->p;
-}*/
 \def 0 dest (void *p) {dest = (t_pd *)p;}
 \def void end_hook () {}
 \def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
