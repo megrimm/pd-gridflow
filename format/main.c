@@ -99,18 +99,15 @@ void suffixes_are (const char *name, const char *suffixes) {
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 
 \class Format : GridObject
-\def void initialize (t_symbol *mode, ...) {
-	SUPER;
-	if (mode==gensym("out")) this->mode=2; else
-	if (mode==gensym("in"))  this->mode=4; else
-		RAISE("unknown mode");
-	this->frame = 0;
+//\def void initialize (t_symbol *mode, ...) {
+//	if (mode==gensym("out")) this->mode=2; else
+//	if (mode==gensym("in"))  this->mode=4; else RAISE("unknown mode");
 //	case mode
 //	when  :in; flags[2]==1
 //	when :out; flags[1]==1
 //	else raise "Format opening mode is incorrect"
 //	//end or raise "Format '#{self.class.instance_eval{@symbol_name}}' does not support mode '#{mode}'"
-}
+//}
 
 \def 0 open(t_symbol *mode, string filename) {
 	const char *fmode;
