@@ -147,7 +147,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	T *p = (T *)*this; \
 	if (n==0) CLEAR(p,nn); \
 	else { \
-		for (int i=0; i<n; i++) p[i] = a[i]; \
+		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 	TYPESWITCH(nt,FOO,)
 #undef FOO
