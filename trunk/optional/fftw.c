@@ -36,7 +36,13 @@ typedef unsigned long ulong;
 	long lastchans; /* of last input (for plan cache) */
 	\attr int sign; /* -1 or +1 */
 	\attr int skip; /* 0 (y and x) or 1 (x only) */
-	\decl void initialize ();
+	\constructor () {
+		sign = -1;
+		plan = 0;
+		lastdim = 0;
+		lastchans = 0;
+		skip = 0;
+	}
 	\grin 0 float
 };
 \def void _0_sign (int sign) {
@@ -87,14 +93,6 @@ GRID_INLET(GridFFT,0) {
 	free(buf);
 	lastdim=in->dim; lastchans=chans;
 } GRID_END
-\def void initialize () {
-	SUPER;
-	sign = -1;
-	plan = 0;
-	lastdim = 0;
-	lastchans = 0;
-	skip = 0;
-}
 \end class {install("#fft",1,1);}
 void startup_fftw () {
 	\startall
