@@ -162,13 +162,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 \def 0 to_ascii(...) {
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
-	char buf[MAXPDSTRING];
 	std::ostringstream os;
-	for (int i=0; i<argc; i++) {
-		atom_string(at+i,buf,MAXPDSTRING);
-		os << buf;
-		if (i!=argc-1) os << ' ';
-	}
+	pd_oprint(os,argc,at);
 	long n = os.str().length();
 	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
 	process(n,(uint8 *)os.str().data());
