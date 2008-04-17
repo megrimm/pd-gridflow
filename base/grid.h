@@ -341,7 +341,6 @@ public:
 	P() : p(0) {}
 	P(T *_p)            { p = _p; INCR; }
 	P(const P<T> &_p) {
-//fprintf(stderr,"350: &_p=%08x\n",(long)&_p); fprintf(stderr,"350: _p.p=%08x\n",(long)_p.p);
  p = _p.p; INCR; }
 	P<T> &operator =(T *  _p) { DECR; p=_p;   INCR; return *this; }
 	P<T> &operator =(P<T> _p) { DECR; p=_p.p; INCR; return *this; }
@@ -710,13 +709,9 @@ struct PtrGrid : public P<Grid> {
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
 //	PtrGrid(       P<Grid> _p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
 	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {
-// fprintf(stderr,"&_p=%08x\n",(long)&_p);
-// fprintf(stderr,"_p=%08x\n",(long)_p);
           p=_p;
 INCR;}
 	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim);
-// fprintf(stderr,"741: this=%08x\n",(long)this);
-// fprintf(stderr,"742: dc=%08x &_p=%08x\n",(long)this,&_p); fprintf(stderr,"742: _p=%08x\n",(long)_p);
 DECR; p=_p; INCR;
 return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}

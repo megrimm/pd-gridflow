@@ -84,7 +84,6 @@ void CObject_free (void *victim) {delete (CObject *)victim;}
 Ruby cPointer=0;
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
-	fprintf(stderr,"Pointer_s_new: %p %p\n",ptr,self->p);
 	return Data_Wrap_Struct(cPointer, 0, CObject_free, self);
 }
 void *Pointer_get (Ruby rself) {
@@ -197,7 +196,6 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	DGS(FObject);
 	char buf[256];
 	sprintf(buf,"_n_%s",fm->selector->s_name);
-	rb_funcall(rself,SI(to_s),0); //dummy call as test
 	if (rb_obj_respond_to(rself,rb_intern(buf),0)) {
 		rb_funcall_myrescue2(rself,rb_intern(buf),argc+1,argv);
 	} else {
@@ -298,6 +296,9 @@ static void BFObject_delete (BFObject *bself) {
 
 //****************************************************************
 
+\class Pointer : CObject
+\end class {}
+
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
 
@@ -339,7 +340,6 @@ static void BFObject_redraw (BFObject *bself) {
 
 /* warning: deleting inlets that are connected will cause pd to crash */
 void BFObject::ninlets_set (int n) {
-	//fprintf(stderr,"ninlets_set... nin=%d n=%d\n",nin,n);
 	if (!this) RAISE("there is no bself");
 	if ((Ruby)this==Qnil) RAISE("bself is nil");
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
