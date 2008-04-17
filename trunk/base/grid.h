@@ -150,6 +150,8 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
 
+void *Pointer_get (Ruby rself);
+
 struct Numop;
 struct Pointer;
 extern Ruby cPointer;
@@ -239,7 +241,7 @@ typedef struct R {
 	}
 	operator void * () const {
 		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
-		return (void *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
+		return (void *)Pointer_get(r);
 	}
 	static R value(VALUE r) {R x; x.r=r; return x;}
 #define FOO(As,Op) \
@@ -304,7 +306,6 @@ struct t_atom2 : t_atom {
 		return (int32)f;}
 	operator long () const {
 		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
-
 	operator uint64 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		return (uint64)round(a_float);}
