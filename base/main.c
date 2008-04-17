@@ -149,11 +149,10 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	return NumberTypeE_find(string(rb_str_ptr(sym)));
 }
 
-NumberTypeE NumberTypeE_find (t_atom &x) {
+NumberTypeE NumberTypeE_find (const t_atom &x) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type (as symbol)");
 	return NumberTypeE_find(string(x.a_w.w_symbol->s_name));
 }
-
 
 /* ---------------------------------------------------------------- */
 
