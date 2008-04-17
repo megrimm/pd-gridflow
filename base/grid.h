@@ -280,28 +280,28 @@ struct t_atom2 : t_atom {
 	operator bool () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
-		if (f<0 || f>=2) RAISE("value %d is out of range",f);
+		if (f<0 || f>=2) RAISE("value %f is out of range",f);
 		return (bool)f;}
 	operator uint8 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
-		if (f<0 || f>=0x100) RAISE("value %d is out of range",f);
+		if (f<0 || f>=0x100) RAISE("value %f is out of range",f);
 		return (uint8)f;}
 	operator int16 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
-		if (f<-0x8000 || f>=0x8000) RAISE("value %d is out of range",f);
+		if (f<-0x8000 || f>=0x8000) RAISE("value %f is out of range",f);
 		return (int16)f;}
 	operator uint16 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
-		if (f<0 || f>=0x10000) RAISE("value %d is out of range",f);
-		return (uint16)round(f);}
+		if (f<0 || f>=0x10000) RAISE("value %f is out of range",f);
+		return (uint16)f;}
 	operator int32 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
-		if (f<-0x80000000 || f>=0x80000000) RAISE("value %d is out of range",f);
-		return (int32)round(f);}
+		if (f<-0x80000000LL || f>=0x80000000LL) RAISE("value %f is out of range",f);
+		return (int32)f;}
 	operator long () const {
 		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
 
