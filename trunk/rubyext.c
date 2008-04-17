@@ -189,7 +189,6 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	t_atom at[fm->ac];
 	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
 	int argc = handle_braces(fm->ac,at);
-
 	Ruby argv[argc+1];
 	argv[0] = fm->winlet*2+1; // convert to Ruby Integer
 	for (int i=0; i<argc; i++) argv[1+i] = Bridge_import_value(at+i);
@@ -217,7 +216,9 @@ static Ruby BFObject_rescue (FMessage *fm) {
 static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
 	FMessage fm = { bself, winlet, selector, ac, at, false };
 	if (!bself->rself) {pd_error(bself,"message to a dead object. (supposed to be impossible)"); return;}
-	RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
+	try {
+		RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
+	} catch (Barf *oozy) {post("error: %s",oozy->text);}
 }
 static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self,0,s,argc,argv);
@@ -440,13 +441,17 @@ void fclass_install(FClass *fc, const char *super) {
 	if (fc->startup) fc->startup(rself);
 }
 
+typedef void *(*t_constructor)(MESSAGE);
+
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ? rb_ivar_get(qlass,SI(@allocator)) : Qnil;
 	FObject *self;
 	if (allocator==Qnil) RAISE("this shouldn't happen anymore");
 	// this is a C++ FObject/GridObject
-	void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
-	self = (FObject *)alloc();
+	t_constructor alloc = (t_constructor)FIX2PTR(void,allocator);
+	t_atom2 argv2[argc];
+	ruby2pd(argc,argv,argv2);
+	self = (FObject *)alloc(0,argc,argv2);
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
@@ -509,7 +514,8 @@ int handle_braces(int ac, t_atom *av) {
 			j++;
 		}
 	}
-	if (stackn) RAISE("too many open-paren (%d)",stackn);
+	//if (stackn) RAISE("too many open-paren (%d)",stackn);
+	if (stackn) post("too many open-paren (%d)",stackn);
 	return j;
 }
 
