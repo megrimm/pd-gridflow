@@ -442,8 +442,8 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	if (err) goto err;
 	return;
 err:
-	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err,
-		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
+//	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err, rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
+	RAISE("can't open file `%s': error #%d (0x%08x)", filename.data(), err, err);
 }
 
 \classinfo {
