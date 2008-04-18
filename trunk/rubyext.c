@@ -237,17 +237,6 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 typedef void *(*t_constructor)(MESSAGE);
 static void CObject_mark (void *z) {}
 
-static Ruby FObject_s_new(int argc, t_atom *argv, const char *name) {
-	Ruby qlass = fclasses[string(name)]->rself;
-	t_constructor alloc = fclasses[string(name)]->allocator;
-	FObject *self = (FObject *)alloc(0,argc,(t_atom2 *)argv);
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
-	self->bself = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
-	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
-	return rself;
-}
-
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = fm->ac;
 	t_atom argv[argc];
@@ -264,8 +253,10 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-	Ruby rself = FObject_s_new(j,argv,fm->selector->s_name);
-	DGS(FObject);
+	t_constructor alloc = fclasses[string(fm->selector->s_name)]->allocator;
+	FObject *self = (FObject *)alloc(0,j,(t_atom2 *)argv);
+	self->bself = 0;
+
 	self->bself = bself;
 	bself->self = self;
 	bself->mom = 0;
@@ -290,7 +281,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
 	}
-	return rself;
+	return Qtrue;
 }
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
