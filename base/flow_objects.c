@@ -2575,7 +2575,7 @@ static void display_update(void *x) {
 }
 \end class {
 	install("display",1,0);
-	t_class *qlass = fclasses_ruby[rself]->bfclass;
+	t_class *qlass = fclass->bfclass;
 	t_widgetbehavior *wb = new t_widgetbehavior;
 	wb->w_getrectfn    = display_getrectfn;
 	wb->w_displacefn   = display_displacefn;

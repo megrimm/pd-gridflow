@@ -367,11 +367,6 @@ template <class T> static void memswap (T *a, T *b, long n) {
 }
 
 //****************************************************************
-// CObject is the base class for C++ classes that get exported to Ruby.
-// BTW: It's quite convenient to have virtual-methods in the base class
-// because otherwise the vtable* isn't at the beginning of the object
-// and that's pretty confusing to a lot of people, especially when simple
-// casting causes a pointer to change its value.
 
 struct CObject {
 	int32 refcount;
@@ -824,10 +819,17 @@ private:
 #define MESSAGE2 sel,argc,argv
 struct FClass {
 	void *(*allocator)(MESSAGE); // returns a new C++ object
-	void (*startup)(Ruby rself); // initializer for the Ruby class
-	const char *name; // C++/Ruby name (not PD name)
+	void (*startup)(FClass *);
+	const char *rubyname; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
+
+	int ninlets;
+	int noutlets;
+	t_class *bfclass;
+	string name;
+	Ruby rself;
 };
+
 void fclass_install(FClass *fc, const char *super);
 
 //****************************************************************
@@ -955,10 +957,10 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 void suffixes_are (const char *name, const char *suffixes);
 
-#define install(name,inlets,outlets) install2(rself,name,inlets,outlets)
-void install2(Ruby rself, const char *name, int inlets, int outlets);
-#define add_creator(name) add_creator2(rself,name)
-void add_creator2(Ruby rself, const char *name);
+#define install(name,inlets,outlets) install2(fclass,name,inlets,outlets)
+void install2(FClass *fclass, const char *name, int inlets, int outlets);
+#define add_creator(name) add_creator2(fclass,name)
+void add_creator2(FClass *fclass, const char *name);
 
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
 
@@ -972,7 +974,6 @@ void add_creator2(Ruby rself, const char *name);
 	NumberTypeE cast;
 	long frame;
 	Format(MESSAGE) : GridObject(MESSAGE2), mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
-	\decl void initialize (t_symbol *mode, ...);
 	\decl 0 open (t_symbol *mode, string filename);
 	\decl 0 close ();
 	\decl 0 cast (NumberTypeE nt);
@@ -996,15 +997,8 @@ inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
 
-struct FClass2 {
-	int ninlets;
-	int noutlets;
-	t_class *bfclass;
-	string name;
-	Ruby rself;
-};
-extern std::map<string,FClass2 *> fclasses;
-extern std::map<Ruby,FClass2 *> fclasses_ruby;
+extern std::map<string,FClass *> fclasses;
+extern std::map<Ruby,FClass *> fclasses_ruby;
 int handle_braces(int ac, t_atom *av);
 void ruby2pd (int argc, Ruby *argv, t_atom *at);
 void pd2ruby (int argc, Ruby *argv, t_atom *at);
