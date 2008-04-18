@@ -61,6 +61,7 @@ tries to call a Ruby method of the proper name.
 #define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
 
 std::map<string,FClass *> fclasses;
+std::map<t_class *,FClass *> fclasses_pd;
 
 /* **************************************************************** */
 struct BFObject;
@@ -184,6 +185,21 @@ void pd2ruby (int argc, Ruby *argv, t_atom *at) {
 	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(&at[i]);
 }
 
+static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
+	fprintf(stderr,"funcall %s %d %p\n",sel,argc,argv);
+	FClass *fclass = fclasses_pd[*(t_class **)bself];
+	int n = fclass->methodsn;
+	for (int i=0; i<n; i++) {
+		if (strcmp(fclass->methods[i].selector,sel)==0) {
+			Ruby argv2[argc];
+			pd2ruby(argc,argv2,argv);
+			fclass->methods[i].method(argc,argv2,bself->rself);
+			return;
+		}
+	}
+	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'\n",sel);
+}
+
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	t_atom at[fm->ac];
 	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
@@ -283,7 +299,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->out = new t_outlet*[1];
 	bself->ninlets_set( fclasses[fm->selector->s_name]->ninlets);
 	bself->noutlets_set(fclasses[fm->selector->s_name]->noutlets);
-	rb_funcall(rself,SI(initialize2),0);
+	funcall(bself,"initialize2",0,0,true);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	while (j<argc) {
 		j++;
@@ -455,6 +471,7 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;
+	fclasses_pd[fclass->bfclass] = fclass;
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	RESCUE(BFObject_class_init_1,fclass->bfclass,BFObject_rescue,&fm);
 }
@@ -533,6 +550,7 @@ Ruby FObject_dummy () {return Qnil;}
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
+    post("GridFlow " GF_VERSION ", Copyright © 2001-2008 Mathieu Bouchard");
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
     try {
