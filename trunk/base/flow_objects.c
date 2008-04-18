@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string>
 #include <sstream>
+#include <errno.h>
 #include "grid.h.fcs"
 #ifndef DESIREDATA
 extern "C" {

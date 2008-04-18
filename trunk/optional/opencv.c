@@ -23,6 +23,7 @@
 
 #include "../base/grid.h.fcs"
 #include <opencv/cv.h>
+#include <errno.h>
 
 int ipl_eltype(NumberTypeE e) {
   switch (e) {
