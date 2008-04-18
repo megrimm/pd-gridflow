@@ -12,7 +12,6 @@ LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
-CFLAGS += -DUSE_RUBY
 
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 ifeq ($(HAVE_DEBUG),yes)
@@ -23,7 +22,7 @@ else
 endif
 
 LDSOFLAGS += -lm
-BRIDGE_LDFLAGS += -lm $(LIBRUBYARG) $(LIBS)
+BRIDGE_LDFLAGS += -lm $(LIBS)
 OBJS2 = base/main.o base/grid.o base/flow_objects.o \
 base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')

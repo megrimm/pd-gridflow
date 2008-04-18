@@ -293,15 +293,6 @@ void add_creator2(FClass *fclass, const char *name) {
 
 //****************************************************************
 
-/* revival of the stack end crutch of 2003-2005... just in case */
-static t_clock *hack;
-extern "C" void Init_stack(void*);
-static void ruby_stack_end_hack () {
-	int bogus;
-	Init_stack(&bogus);
-	clock_free(hack);
-}
-
 struct t_namelist;
 extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" void namelist_append_files(t_namelist *, char *);
@@ -421,8 +412,6 @@ BUILTIN_SYMBOLS(FOO)
 	STARTUP_LIST()
 	delete[] dirresult;
 	delete[] dirname;
-	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
-	clock_delay(hack,0);
 	signal(SIGSEGV,SIG_DFL);
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
