@@ -142,11 +142,6 @@ NumberTypeE NumberTypeE_find (string s) {
 	return number_type_dict[s]->index;
 }
 
-NumberTypeE NumberTypeE_find (Ruby sym) {
-	if (TYPE(sym)!=T_STRING) sym=rb_funcall(sym,SI(to_s),0);
-	return NumberTypeE_find(string(rb_str_ptr(sym)));
-}
-
 NumberTypeE NumberTypeE_find (const t_atom &x) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type (as symbol)");
 	return NumberTypeE_find(string(x.a_w.w_symbol->s_name));
