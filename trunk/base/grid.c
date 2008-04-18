@@ -108,32 +108,6 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 #undef FOO
 }
 
-void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
-	Ruby delim = SYM(#);
-	for (int i=0; i<n; i++) {
-		if (a[i] == delim) {
-			int32 v[i];
-			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
-			for (int j=0; j<i; j++) RAISE("MEUH");
-			init(new Dim(i,v),nt);
-			CHECK_ALIGN2(this->data,nt);
-			if (a[i] != delim) i++;
-			i++; a+=i; n-=i;
-			goto fill;
-		}
-	}
-	if (n!=0 && TYPE(a[0])==T_SYMBOL) {
-		nt = NumberTypeE_find(a[0]);
-		a++, n--;
-	}
-	init(new Dim(n),nt);
-	CHECK_ALIGN2(this->data,nt);
-	fill:
-	int nn = dim->prod();
-	n = min(n,nn);
-	RAISE("meuh");
-}
-
 void Grid::init_from_atom(const t_atom &x) {
 	if (x.a_type==A_LIST) {
 		t_binbuf *b = (t_binbuf *)x.a_gpointer;
@@ -142,20 +116,6 @@ void Grid::init_from_atom(const t_atom &x) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
 		((int32 *)*this)[0] = (int32)x.a_float;
-	} else {
-		rb_funcall(
-		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
-		SI(call),1,x);
-	}
-}
-
-void Grid::init_from_ruby(Ruby x) {
-	if (TYPE(x)==T_ARRAY) {
-		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
-	} else if (INTEGER_P(x) || FLOAT_P(x)) {
-		init(new Dim(),int32_e);
-		CHECK_ALIGN2(this->data,nt);
-		RAISE("meuh");
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
