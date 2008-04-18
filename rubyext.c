@@ -417,9 +417,7 @@ static void add_to_path(char *dir) {
 //----------------------------------------------------------------
 
 void fclass_install(FClass *fclass, const char *super) {
-	fclass->rself = super ?
-		rb_define_class_under(mGridFlow, fclass->rubyname, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
-		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fclass->rubyname));
+	//fclass->super = fclasses[super];
 	if (fclass->startup) fclass->startup(fclass);
 }
 
@@ -528,9 +526,8 @@ BUILTIN_SYMBOLS(FOO)
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	\startall
+	cPointer = rb_define_class_under(mGridFlow, "Pointer", cFObject);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (VALUE (*)(...))Pointer_s_new, 1);
-	cPointer = EVAL("GridFlow::Pointer");
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
