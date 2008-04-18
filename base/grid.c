@@ -106,11 +106,7 @@ void Grid::init_from_atom(const t_atom &x) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
 		((int32 *)*this)[0] = (int32)x.a_float;
-	} else {
-		rb_funcall(
-		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
-		SI(call),1,x);
-	}
+	} else RAISE("can't convert to grid");
 }
 
 // **************** GridInlet *************************************

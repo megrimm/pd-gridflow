@@ -45,17 +45,6 @@ ALLOCPREFIX void operator delete[](void*p) throw() {gffree(p);}
 ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffree(p);}
 ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
 
-#ifdef USE_RUBY
-extern "C" {
-#include <ruby.h>
-#include <rubyio.h>
-#include <version.h>
-#ifndef RUBY_H
-#error "Can't do anything without ruby.h"
-#endif
-};
-#endif
-
 #ifdef __WIN32__
 #define INT winINT
 #define random rand
@@ -631,10 +620,9 @@ private:
 struct FClass {
 	void *(*allocator)(MESSAGE); // returns a new C++ object
 	void (*startup)(FClass *);
-	const char *cname; // C++/Ruby name (not PD name)
-	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
+	const char *cname; // C++ name (not PD name)
+	int methodsn; MethodDecl *methods;
 	FClass *super;
-
 	int ninlets;
 	int noutlets;
 	t_class *bfclass;
@@ -726,9 +714,6 @@ struct BFObject : t_object {
 \class GridObject : FObject {
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
-	// Make sure you distinguish #close/#delete, and C++'s delete. The first
-	// two are quite equivalent and should never make an object "crashable".
-	// C++'s delete is called by Ruby's garbage collector or by PureData's delete.
 	GridObject(MESSAGE) : FObject(MESSAGE2) {}
 	~GridObject() {}
 	bool is_busy_except(P<GridInlet> gin) {

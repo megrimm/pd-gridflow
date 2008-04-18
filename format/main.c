@@ -24,6 +24,7 @@
 #include "../base/grid.h.fcs"
 #include <string>
 #include <map>
+#include <errno.h>
 #define L _L_
 
 /* API (version 0.9.1)

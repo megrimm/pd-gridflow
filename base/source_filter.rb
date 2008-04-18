@@ -163,7 +163,6 @@ def handle_def(line)
 	Out.print "void #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
-	Out.print "try {"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
@@ -177,7 +176,7 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}"
+	Out.print ");"
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
 	Out.print ",#{unparse_arglist m.arglist, false}" if m.arglist.length>0
 	Out.print ")#{term} "
@@ -191,7 +190,6 @@ def handle_constructor(line)
 	Out.print "#{frame.name}(MESSAGE) : #{frame.supername}(MESSAGE2) {"
 	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 
-	Out.print "try {"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
@@ -204,7 +202,7 @@ def handle_constructor(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}}"
+	Out.print ");}"
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ") "+line[/\{.*/]

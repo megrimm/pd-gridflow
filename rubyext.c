@@ -398,7 +398,6 @@ extern "C" void gridflow_setup () {
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
     try {
-	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
@@ -408,8 +407,6 @@ extern "C" void gridflow_setup () {
 	if (fd>=0) close(fd); else post("%s was not found via the -path!","gridflow"PDSUF);
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
 	add_to_path(dirresult);
-	ruby_init();
-	ruby_options(COUNT(foo),foo);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	gf_data_path.push_back(string(dirresult)+"/images");
