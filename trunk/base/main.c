@@ -39,8 +39,6 @@
 #include "grid.h.fcs"
 
 BuiltinSymbols bsym;
-Ruby mGridFlow;
-Ruby cFObject;
 
 Barf::Barf(const char *s, ...) {
     char buf[1024];
