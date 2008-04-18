@@ -89,17 +89,6 @@ void *Pointer_get (Ruby rself) {
 	return self->p;
 }
 
-static Ruby make_error_message () {
-	char buf[1000];
-	sprintf(buf,"%s: %s",rb_class2name(rb_obj_class(ruby_errinfo)), rb_str_ptr(rb_funcall(ruby_errinfo,SI(to_s),0)));
-	Ruby ary = rb_ary_new();
-	Ruby backtrace = rb_funcall(ruby_errinfo,SI(backtrace),0);
-	rb_ary_push(ary,rb_str_new2(buf));
-	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++) rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
-//	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
-	return ary;
-}
-
 /* **************************************************************** */
 
 static RMethod funcall_lookup (BFObject *bself, const char *sel) {
@@ -122,8 +111,7 @@ static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, b
 struct RMessage {BFObject *bself; const char *sel; int argc; t_atom *argv;};
 static void funcall_rescue_1(RMessage *rm) {funcall(rm->bself,rm->sel,rm->argc,rm->argv);}
 static Ruby funcall_rescue_2 (RMessage *rm) {
-	Ruby errmsg = rb_funcall(make_error_message(),SI(join),1,rb_str_new2("\n"));
-	pd_error(rm->bself,"%s",rb_str_ptr(errmsg));
+	pd_error(rm->bself,"%s","some ruby error...");
 	return Qnil;
 }
 static void funcall_rescue(BFObject *bself, const char *sel, int argc, t_atom *argv) {
@@ -152,44 +140,6 @@ static t_class *find_bfclass (t_symbol *sym) {
 
 static t_class *BFProxy_class;
 
-static void Bridge_export_value(Ruby arg, t_atom *at) {
-	if      (INTEGER_P(arg)) SETFLOAT(at,NUM2INT(arg));
-	else if ( SYMBOL_P(arg)) SETSYMBOL(at,gensym((char *)rb_sym_name(arg)));
-	else if (  FLOAT_P(arg)) SETFLOAT(at,RFLOAT(arg)->value);
-	else if (rb_obj_class(arg)==cPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
-	else if (TYPE(arg)==T_ARRAY) {
-		t_binbuf *b = binbuf_new();
-		t_atom a;
-		int n=rb_ary_len(arg);
-		Ruby *p=rb_ary_ptr(arg);
-		for (int i=0; i<n; i++) {Bridge_export_value(p[i],&a); binbuf_add(b,1,&a);}
-		SETLIST(at,b);
-	} else RAISE("cannot convert argument of class '%s'",rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
-}
-
-void ruby2pd (int argc, Ruby *argv, t_atom *at) {
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],&at[i]);
-}
-
-static Ruby Bridge_import_value(const t_atom *at) {
-	t_atomtype t = at->a_type;
-	if (t==A_SYMBOL)  return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
-	if (t==A_FLOAT )  return rb_float_new(at->a_w.w_float);
-	if (t==A_POINTER) return Pointer_s_new(at->a_w.w_gpointer);
-	if (t==A_LIST) {
-		Ruby a = rb_ary_new();
-		t_binbuf *b = (t_binbuf *)at->a_w.w_gpointer;
-		int n = binbuf_getnatom(b);
-		for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(binbuf_getvec(b)+i));
-		return a;
-	}
-	return Qnil; /* unknown */
-}
-
-void pd2ruby (int argc, Ruby *argv, t_atom *at) {
-	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(&at[i]);
-}
-
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	t_atom argv[fm->ac+1];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = fm->at[i];
@@ -213,9 +163,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 }
 
 static Ruby BFObject_rescue (FMessage *fm) {
-	Ruby error_array = make_error_message();
-	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
-	fprintf(stderr,"%s\n",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
+	if (fm->self) pd_error(fm->self,"some ruby error");
 	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
