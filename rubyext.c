@@ -104,26 +104,36 @@ static Ruby make_error_message () {
 
 /* **************************************************************** */
 
-struct RMessage {VALUE rself; ID sel; int argc; VALUE *argv;};
-static VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
-static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
-	Ruby error_array = make_error_message();
-//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	post("%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
+static RMethod funcall_exists (BFObject *bself, const char *sel) {
+	FClass *fclass = fclasses_pd[*(t_class **)bself];
+	int n = fclass->methodsn;
+	for (int i=0; i<n; i++) {
+		if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
+	}
+	return 0;
+}
+
+static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
+	RMethod method = funcall_exists(bself,sel);
+	if (method) {
+		Ruby argv2[argc];
+		pd2ruby(argc,argv2,argv);
+		method(argc,argv2,bself->rself);
+		return;
+	}
+	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'\n",sel);
+}
+
+struct RMessage {BFObject *bself; const char *sel; int argc; t_atom *argv;};
+static void funcall_rescue_1(RMessage *rm) {funcall(rm->bself,rm->sel,rm->argc,rm->argv);}
+static Ruby funcall_rescue_2 (RMessage *rm) {
+	Ruby errmsg = rb_funcall(make_error_message(),SI(join),1,rb_str_new2("\n"));
+	pd_error(rm->bself,"%s",rb_str_ptr(errmsg));
 	return Qnil;
 }
-static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
-	va_list foo;
-	va_start(foo,argc);
-	VALUE argv[argc];
-	for (int i=0; i<argc; i++) argv[i] = va_arg(foo,VALUE);
-	RMessage rm = { rself, sel, argc, argv };
-	va_end(foo);
-	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
-}
-static VALUE rb_funcall_myrescue2(VALUE rself, ID sel, int argc, Ruby *argv) {
-	RMessage rm = { rself, sel, argc, argv };
-	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
+static void funcall_rescue(BFObject *bself, const char *sel, int argc, t_atom *argv) {
+	RMessage rm = {bself, sel, argc, argv};
+	RESCUE(funcall_rescue_1,&rm,funcall_rescue_2,&rm);
 }
 
 //****************************************************************
@@ -185,37 +195,24 @@ void pd2ruby (int argc, Ruby *argv, t_atom *at) {
 	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(&at[i]);
 }
 
-static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
-	fprintf(stderr,"funcall %s %d %p\n",sel,argc,argv);
-	FClass *fclass = fclasses_pd[*(t_class **)bself];
-	int n = fclass->methodsn;
-	for (int i=0; i<n; i++) {
-		if (strcmp(fclass->methods[i].selector,sel)==0) {
-			Ruby argv2[argc];
-			pd2ruby(argc,argv2,argv);
-			fclass->methods[i].method(argc,argv2,bself->rself);
-			return;
-		}
-	}
-	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'\n",sel);
-}
-
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
-	t_atom at[fm->ac];
-	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
-	int argc = handle_braces(fm->ac,at);
-	Ruby argv[argc+1];
-	argv[0] = fm->winlet*2+1; // convert to Ruby Integer
-	for (int i=0; i<argc; i++) argv[1+i] = Bridge_import_value(at+i);
-	Ruby rself = fm->self->rself;
-	DGS(FObject);
+	t_atom argv[fm->ac+1];
+	for (int i=0; i<fm->ac; i++) argv[i+1] = fm->at[i];
+	int argc = handle_braces(fm->ac,argv+1);
+	SETFLOAT(argv+0,fm->winlet);
+	BFObject *bself = fm->self;
 	char buf[256];
 	sprintf(buf,"_n_%s",fm->selector->s_name);
-	if (rb_obj_respond_to(rself,rb_intern(buf),0)) {
-		rb_funcall_myrescue2(rself,rb_intern(buf),argc+1,argv);
+	if (funcall_exists(bself,buf)) {
+		funcall_rescue(bself,buf,argc+1,argv);
 	} else {
 		sprintf(buf,"_%d_%s",fm->winlet,fm->selector->s_name);
-		rb_funcall_myrescue2(rself,rb_intern(buf),argc,argv+1);
+		if (funcall_exists(bself,buf)) {
+			funcall_rescue(bself,buf,argc,argv+1);
+		} else {
+			SETSYMBOL(argv+0,gensym(buf));
+			funcall_rescue(bself,"method_missing",argc+1,argv);
+		}
 	}
 	return Qnil;
 }
