@@ -76,7 +76,7 @@ typedef VALUE Ruby;
 typedef long Ruby;
 #endif
 
-#define VA int argc, Ruby *argv
+#define VA int argc, t_atom2 *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
 #define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
@@ -131,7 +131,8 @@ static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 struct FObject;
-typedef Ruby (*RMethod)(FObject *, int, Ruby *);
+struct t_atom2;
+typedef Ruby (*RMethod)(FObject *, int, t_atom2 *);
 typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -714,10 +715,15 @@ static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
 	return new Dim(d->dim->v[0],(int32 *)(d->data));
 }
-
-static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
-	return PtrGrid(convert(x,(Grid **)0));
+static inline P<Dim> convert(const t_atom &x, P<Dim> *foo) {
+	Grid *d = convert(x,(Grid **)0);
+	if (!d) RAISE("urgh");
+	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
+	return new Dim(d->dim->v[0],(int32 *)(d->data));
 }
+
+static inline PtrGrid convert(Ruby          x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
+static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
 
 //****************************************************************
 // GridInlet represents a grid-aware inlet
@@ -786,15 +792,13 @@ public:
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
-	Ruby begin(int argc, Ruby *argv);
+	void begin(int argc, t_atom2 *argv);
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
 	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
 	template <class T> void flow(int mode, long n, T *data);
-	void from_ruby_list(VA, NumberTypeE nt=int32_e) {
-		Grid t(argc,argv,nt); from_grid(&t);
-	}
-	void from_ruby(VA) {Grid t(argv[0]); from_grid(&t);}
+	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
+	void from_atom(VA) {Grid t(argv[0]); from_grid(&t);}
 	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);
 private:
