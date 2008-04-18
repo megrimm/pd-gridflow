@@ -244,11 +244,8 @@ static void CObject_mark (void *z) {}
 
 static Ruby FObject_s_new(int argc, t_atom *argv, const char *name) {
 	Ruby qlass = fclasses[string(name)]->rself;
-	t_constructor alloc = (t_constructor)FIX2PTR(void,rb_ivar_get(qlass,SI(@allocator)));
-	//t_constructor alloc2 = fclasses1[string(name)]->allocator;
-	//fprintf(stderr,"allocator is %p or %p\n", alloc,alloc2);
-	FObject *self;
-	self = (FObject *)alloc(0,argc,(t_atom2 *)argv);
+	t_constructor alloc = fclasses[string(name)]->allocator;
+	FObject *self = (FObject *)alloc(0,argc,(t_atom2 *)argv);
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
@@ -448,7 +445,6 @@ void fclass_install(FClass *fclass, const char *super) {
 		rb_define_class_under(mGridFlow, fclass->rubyname, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fclass->rubyname));
 	define_many_methods(fclass->rself,fclass->methodsn,fclass->methods);
-	rb_ivar_set(fclass->rself,SI(@allocator),PTR2FIX((void*)(fclass->allocator)));
 	if (fclass->startup) fclass->startup(fclass);
 }
 
