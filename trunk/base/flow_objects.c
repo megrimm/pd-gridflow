@@ -2248,10 +2248,9 @@ GRID_INLET(GridUnpack,0) {
 };
 \def 0 list (...) {
 	t_outlet *o = bself->out[0];
-	R *a = (R *)argv;
 	for (int i=0; i<argc; i++) {
-		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,a[i]);
-		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,a[i]);
+		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,argv[i]);
+		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,argv[i]);
 		else RAISE("oops. unsupported.");
 	}
 }

@@ -319,8 +319,13 @@ struct t_atom2 : t_atom {
  		return a_symbol;}
 	operator std::string () const {
 		if (a_type!=A_SYMBOL) RAISE("expected symbol");
-		return std::string(a_symbol->s_name);
-	}
+		return std::string(a_symbol->s_name);}
+	operator void * () const {
+		if (a_type!=A_POINTER) RAISE("expected pointer");
+ 		return a_gpointer;}
+	operator t_binbuf * () const {
+		if (a_type!=A_LIST) RAISE("expected nested list");
+ 		return (t_binbuf *)a_gpointer;}
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
@@ -961,8 +966,8 @@ void add_creator2(FClass *fclass, const char *name);
 
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
 
-
-#define SUPER rb_call_super(argc,argv);
+void call_super(int argc, t_atom *argv);
+#define SUPER call_super(argc,argv);
 
 \class Format : GridObject {
 	int mode;
