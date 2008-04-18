@@ -252,14 +252,6 @@ $CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
 $CFLAGS += " -I/usr/X11R6/include"
 $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
-ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
-"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
-ruby18a = "#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
-for x in [ruby16a,ruby18a] do
-	$LIBRUBY_A = make_expand x
-	break if File.exist? $LIBRUBY_A
-end
-
 #----------------------------------------------------------------#
 Feature.add {
 	tag :gcc3
@@ -314,30 +306,6 @@ Feature.add {
 			return !( sizeof(void*)==8 );
 		}}
 	}
-}
-
-#----------------------------------------------------------------#
-Feature.add {
-	tag :libruby
-	name "Ruby as a dynamic library"
-	#uses_h ["ruby.h"] # is in special directory
-	test proc {|f| c_test "#include <ruby.h>
-		int main () { return rb_rescue==0; }", f.uses_so }
-}
-Feature.add {
-	tag :librubystatic
-	unless_feature [:libruby]
-	name "Ruby as a static library"
-	#uses_h ["ruby.h"] # is in special directory
-	uses_so {
-		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
-			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive" unless OSX
-		[lib]
-	}
-	test proc { c_test "#include <ruby.h>
-		int main () { return rb_rescue==0; }",
-		["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)] }
-	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
 }
 
 #----------------------------------------------------------------#
@@ -621,7 +589,6 @@ Feature.add {
 Feature.add {
 	tag :puredata
 	name "PureData (or DesireData)"
-	uses_feature [Or[:libruby,:librubystatic]]
 	options ["HAVE_PUREDATA"]
 	defines {
 		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
@@ -755,7 +722,6 @@ while ARGV.length>0 do
 	when "--static" # experimental
 		$conf[:STATIC]=true
 		$conf[:LDSOFLAGS] << "-static"
-#		ARGV.unshift "--no-libruby"
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
@@ -778,12 +744,6 @@ while ARGV.length>0 do
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
-
-# the ||= lines are patches for old versions of ruby.
-CONFIG["ruby_version"] ||= "$(MAJOR).$(MINOR)"
-CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
-CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
-$CFLAGS += " -I" + (make_expand CONFIG["archdir"])
 
 #--------------------------------#
 
@@ -879,8 +839,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.9.0 configurator within "+
-	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
+DUAL.puts "This is the GridFlow 0.9.2 configurator"
 
 begin
   $features.each {|feature| try feature }
@@ -966,11 +925,6 @@ File.open("./config.make","w") {|f|
   else
     f.puts "OS = linux"
   end
-
-  for k in %w(LIBRUBY_DLDFLAGS LIBS LIBRUBYARG) do
-    f.puts "#{k} = #{CONFIG[k]}"
-  end
-
 } # end open config.make
 
 #--------------------------------#
