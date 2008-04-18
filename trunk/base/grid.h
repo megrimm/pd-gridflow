@@ -816,12 +816,12 @@ struct FClass {
 	void (*startup)(FClass *);
 	const char *rubyname; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
+	FClass *super;
 
 	int ninlets;
 	int noutlets;
 	t_class *bfclass;
 	string name;
-	Ruby rself;
 };
 
 void fclass_install(FClass *fc, const char *super);
