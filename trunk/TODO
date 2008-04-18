@@ -7,6 +7,8 @@
 [ ] add claude's fixes
 [ ] ...
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
+[ ] conversion from float to int is inconsistent: when to round and when to trunc?
+[ ] reimplement [listflatten] !
 soon:
  * removed reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
@@ -38,21 +40,12 @@ Common Video Framework :
 +-------+-------+-------+-------+-------+-------+-------+-------
 GridFlow 0.9.0 :
 
-[ ] 266678 bytes of Ruby left to delete
-
-[ ] switch from ruby to tcl
 [ ] distinguish between C++ types Grid* and GridFlow*
 
 [ ] replace source_filter.rb by SWIG completely
 [ ] make [#draw_points] [#draw_rect] [#edit_polygon]
 [ ] redo [#rotate] as abstr
 [ ] Salsaman recommends supporting Videojack because of unicap support which means getting DV support for free.
-[ ] sync <tcl.h> detection with -ltcl* detection (still buggy)
-[ ] tcl.pd_linux that does all of the same as gridflow.pd_linux but for
-    tcl instead of ruby.
-[ ] rewrite MétaRuby Type.rb in tcl ?
-[ ] expand poe.tcl system as necessary: C-based objects, AOP, static methods, SELF inheritance, ...
-
 [ ] look at camorama
 
 +-------+-------+-------+-------+-------+-------+-------+-------
@@ -73,7 +66,6 @@ ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](
 
 [ ] pd_examples -> examples
 [ ] update doc
-[ ] replace the unimplemented "r" numtype (Ruby) by an implemented "t" numtype (Tcl)
 [ ] ditch xml (switch to helppatches)
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 
@@ -83,10 +75,6 @@ ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accep
 of floats as coordinates and interpolate using 4-point interpolation, eg, right inlet -> 
 (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5) outputs (0.5 0.5 0.5) 
 (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
-
-<alx1> back to the [display] object, it lingers for a moment after deletion
-<alx1> and returns a 'pd_activate' error after I move it
-<alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
 
 http://oprofile.sourceforge.net/about/
 also: qprofile, amd profiler, opreport -cl --demangle=smart
@@ -350,15 +338,6 @@ d'un GUI qui saurait en tirer avantage.
 
 <alx1> matju: détecter les formes; détecter les couleurs; support mpeg4; hotspots
 
-> http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
-> You might also want to search the web for "malloc debugger".
-
-<ircbridge> <GPS> Tcl_GetObjResult Tcl_GetErrorInfo ...
-<ircbridge> <GPS> Tcl_GetStringResult may also be helpful.  (note I can't
-seem to find Tcl_GetErrorInfo (maybe I dreamed it up)) 
-<ircbridge> <GPS> matju: BTW CatchObjCmd might help too
-<ircbridge> <GPS> I see that the new Tcl_Dict commands have taken over the HEAD's CatchObjCmd
-
 ClaudiusMaximus reports that allocating a 197M grid causes a crash (turns out C++
 throws exception, can't allocate, signal ABRT)
 
@@ -419,8 +398,6 @@ the same will be done for recording later.
 ==6998==    by 0x1CF15353: GridStore::_0_grid_wrap(int, unsigned long*, unsigned long) (flow_objects.c.fcs:404)
 ==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
 
-rational numbers: http://wiki.tcl.tk/13877
-
 very old bookmarks:
 	http://pdl.perl.org/
 	http://www.opendragon.com/Pages/MaxObjects.shtml (not responding)
@@ -428,9 +405,6 @@ very old bookmarks:
 	Arts Builder
 	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
 	http://freej.dyne.org/
-
-
-
 
 FObject.subclass("rubyarray",2,2) {
   def initialize() @a=[]; @i=0; end
@@ -477,7 +451,7 @@ FObject.subclass("memstat",1,1) {
     send_out 0, Float(f.gets.split(" ")[22]) / 1024.0
     f.close
   end
-  #doc:_0_bang,"lookup process stats for the currently running pd+ruby and figure out how much RAM it uses."
+  #doc:_0_bang,"lookup process stats for the currently running pd and figure out how much RAM it uses."
   #doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
 }
 
