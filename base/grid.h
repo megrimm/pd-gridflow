@@ -998,7 +998,6 @@ inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
 
 extern std::map<string,FClass *> fclasses;
-extern std::map<Ruby,FClass *> fclasses_ruby;
 int handle_braces(int ac, t_atom *av);
 void ruby2pd (int argc, Ruby *argv, t_atom *at);
 void pd2ruby (int argc, Ruby *argv, t_atom *at);
