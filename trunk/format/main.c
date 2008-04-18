@@ -237,9 +237,10 @@ TYPESWITCH(nt,FOO,)
 } GRID_END
 
 \def 0 headerless_m (...) {
-	if (argc>=0 && TYPE(argv[0])==T_ARRAY) {argc = rb_ary_len(argv[0]); argv = rb_ary_ptr(argv[0]);}
+	if (argc>=0 && argv[0].a_type==A_LIST) {
+		t_binbuf *b = (t_binbuf *)argv[0]; argc = binbuf_getnatom(b); argv = (t_atom2 *)binbuf_getvec(b);}
 	int v[argc];
-	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
+	for (int i=0; i<argc; i++) v[i] = argv[i];
 	headerless = new Dim(argc,v);
 }
 \def 0 headerful () { headerless = 0; }
