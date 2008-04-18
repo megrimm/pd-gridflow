@@ -76,18 +76,7 @@ struct FMessage {
 #include <signal.h>
 #include <setjmp.h>
 #define rb_sym_name rb_sym_name_r4j
-static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 void CObject_free (void *victim) {delete (CObject *)victim;}
-
-Ruby cPointer=0;
-Ruby Pointer_s_new (void *ptr) {
-	Pointer *self = new Pointer(ptr);
-	return Data_Wrap_Struct(cPointer, 0, CObject_free, self);
-}
-void *Pointer_get (Ruby rself) {
-	DGS(Pointer);
-	return self->p;
-}
 
 /* **************************************************************** */
 
@@ -108,15 +97,8 @@ static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, b
 	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'",sel);
 }
 
-struct RMessage {BFObject *bself; const char *sel; int argc; t_atom *argv;};
-static void funcall_rescue_1(RMessage *rm) {funcall(rm->bself,rm->sel,rm->argc,rm->argv);}
-static Ruby funcall_rescue_2 (RMessage *rm) {
-	pd_error(rm->bself,"%s","some ruby error...");
-	return Qnil;
-}
 static void funcall_rescue(BFObject *bself, const char *sel, int argc, t_atom *argv) {
-	RMessage rm = {bself, sel, argc, argv};
-	RESCUE(funcall_rescue_1,&rm,funcall_rescue_2,&rm);
+	try {funcall(bself,sel,argc,argv);} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
 
 //****************************************************************
@@ -140,18 +122,18 @@ static t_class *find_bfclass (t_symbol *sym) {
 
 static t_class *BFProxy_class;
 
-static Ruby BFObject_method_missing_1 (FMessage *fm) {
-	t_atom argv[fm->ac+1];
-	for (int i=0; i<fm->ac; i++) argv[i+1] = fm->at[i];
-	int argc = handle_braces(fm->ac,argv+1);
-	SETFLOAT(argv+0,fm->winlet);
-	BFObject *bself = fm->self;
+static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
+    try {
+	t_atom argv[ac+1];
+	for (int i=0; i<ac; i++) argv[i+1] = at[i];
+	int argc = handle_braces(ac,argv+1);
+	SETFLOAT(argv+0,winlet);
 	char buf[256];
-	sprintf(buf,"_n_%s",fm->selector->s_name);
+	sprintf(buf,"_n_%s",selector->s_name);
 	if (funcall_lookup(bself,buf)) {
 		funcall_rescue(bself,buf,argc+1,argv);
 	} else {
-		sprintf(buf,"_%d_%s",fm->winlet,fm->selector->s_name);
+		sprintf(buf,"_%d_%s",winlet,selector->s_name);
 		if (funcall_lookup(bself,buf)) {
 			funcall_rescue(bself,buf,argc,argv+1);
 		} else {
@@ -159,18 +141,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 			funcall_rescue(bself,"method_missing",argc+1,argv);
 		}
 	}
-	return Qnil;
-}
-
-static Ruby BFObject_rescue (FMessage *fm) {
-	if (fm->self) pd_error(fm->self,"some ruby error");
-	if (fm->self && fm->is_init) fm->self = 0;
-	return Qnil;
-}
-
-static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
-	FMessage fm = { bself, winlet, selector, ac, at, false };
-	try {RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);} catch (Barf *oozy) {post("error: %s",oozy->text);}
+    } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
 static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self,0,s,argc,argv);
@@ -182,13 +153,16 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 typedef void *(*t_constructor)(MESSAGE);
 static void CObject_mark (void *z) {}
 
-static Ruby BFObject_init_1 (FMessage *fm) {
-	int argc = fm->ac;
+static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
+	t_class *qlass = find_bfclass(classsym);
+	if (!qlass) return 0;
+	BFObject *bself = (BFObject *)pd_new(qlass);
+
+	int argc = ac;
 	t_atom argv[argc];
-	for (int i=0; i<argc; i++) argv[i] = fm->at[i];
+	for (int i=0; i<argc; i++) argv[i] = at[i];
 	argc = handle_braces(argc,argv);
-	pd_post(fm->selector->s_name,argc,argv);
-	BFObject *bself = fm->self;
+	pd_post(classsym->s_name,argc,argv);
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
 #ifdef HAVE_HOLDNAME
@@ -198,7 +172,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-	t_constructor alloc = fclasses[string(fm->selector->s_name)]->allocator;
+	t_constructor alloc = fclasses[string(classsym->s_name)]->allocator;
 	FObject *self = (FObject *)alloc(0,j,(t_atom2 *)argv);
 	self->bself = 0;
 
@@ -216,8 +190,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->nout = 0;
 	bself->in  = new  BFProxy*[1];
 	bself->out = new t_outlet*[1];
-	bself->ninlets_set( fclasses[fm->selector->s_name]->ninlets);
-	bself->noutlets_set(fclasses[fm->selector->s_name]->noutlets);
+	bself->ninlets_set( fclasses[classsym->s_name]->ninlets);
+	bself->noutlets_set(fclasses[classsym->s_name]->noutlets);
 	funcall(bself,"initialize2",0,0,true);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	while (j<argc) {
@@ -226,38 +200,18 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
 	}
-	return Qtrue;
+	return bself;
 }
 
-static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
-	t_class *qlass = find_bfclass(classsym);
-	if (!qlass) return 0;
-	BFObject *bself = (BFObject *)pd_new(qlass);
-	FMessage fm = {self:bself, winlet:-1, selector:classsym, ac:ac, at:at, is_init:true};
-	long r = RESCUE(BFObject_init_1,&fm,BFObject_rescue,&fm);
-	return r==Qnil ? 0 : (void *)bself; // return NULL if broken object
-}
-
-static void BFObject_delete_1 (FMessage *fm) {funcall(fm->self,"delete",0,0,true);}
+static void BFObject_delete_1 (FMessage *fm) {}
 
 static void BFObject_delete (BFObject *bself) {
-	FMessage fm = {self:bself, winlet:-1, selector:gensym("delete"), ac:0, at:0, is_init:false};
-	RESCUE(BFObject_delete_1,&fm,BFObject_rescue,&fm);
+	try {funcall(bself,"delete",0,0,true);} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
 
 //****************************************************************
 
-\class Pointer : CObject
-\end class {}
-
-static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
-
-static t_pd *rp_to_pd (Ruby pointer) {
-       Pointer *foo;
-       Data_Get_Struct(pointer,Pointer,foo);
-       return (t_pd *)foo->p;
-}
 
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
@@ -292,7 +246,6 @@ static void BFObject_redraw (BFObject *bself) {
 /* warning: deleting inlets that are connected will cause pd to crash */
 void BFObject::ninlets_set (int n) {
 	if (!this) RAISE("there is no bself");
-	if ((Ruby)this==Qnil) RAISE("bself is nil");
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
 	BFObject_undrawio(this);
 	if (nin<n) {
@@ -374,8 +327,7 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
-	FMessage fm = {0, -1, 0, 0, 0, false};
-	RESCUE(BFObject_class_init_1,fclass->bfclass,BFObject_rescue,&fm);
+	class_addanything(fclass->bfclass,(t_method)BFObject_method_missing0);
 }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
@@ -437,8 +389,6 @@ void blargh () {
 #define SDEF(_class_,_name_,_argc_)   rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 #define SDEF2(_name1_,_name2_,_argc_) rb_define_singleton_method(mGridFlow,_name1_,(RMethod)GridFlow_s_##_name2_,_argc_)
 
-Ruby FObject_dummy () {return Qnil;}
-
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -467,8 +417,6 @@ extern "C" void gridflow_setup () {
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	cPointer = rb_define_class("Pointer", rb_cObject);
-	rb_define_singleton_method(cPointer,"new", (VALUE (*)(...))Pointer_s_new, 1);
 	startup_number();
 	startup_grid();
 	startup_flow_objects();

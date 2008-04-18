@@ -34,16 +34,6 @@
 #define Pointer_s_new Pointer_s_new_2
 #define Pointer_get   Pointer_get_2
 
-static Ruby Pointer_s_new (void *ptr) {
-	Pointer *self = new Pointer(ptr);
-	Ruby rself = Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, CObject_free, self);
-	return rself;
-}
-static void *Pointer_get (Ruby rself) {
-	DGS(Pointer);
-	return self->p;
-}
-
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",ARGS(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
 #define TRACE
 
@@ -148,16 +138,14 @@ void GridInlet::set_chunk(long whichdim) {
 	if (n) set_factor(n);
 }
 
-static Ruby GridInlet_begin_1(GridInlet *self) {
+static void GridInlet_begin_1(GridInlet *self) {
 #define FOO(T) self->gh->flow(self,-1,(T *)0); break;
 	TYPESWITCH(self->nt,FOO,)
 #undef FOO
-	return Qnil;
 }
 
-static Ruby GridInlet_begin_2(GridInlet *self) {
+static void GridInlet_begin_2(GridInlet *self) {
 	self->dim = 0; // hack
-	return (Ruby) 0;
 }
 
 bool GridInlet::supports_type(NumberTypeE nt) {
