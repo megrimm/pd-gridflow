@@ -70,12 +70,6 @@ extern "C" {
 
 #define RAISE(args...) throw new Barf(__FILE__,__LINE__,__PRETTY_FUNCTION__,args)
 
-#ifdef USE_RUBY
-typedef VALUE Ruby;
-#else
-typedef long Ruby;
-#endif
-
 #define VA int argc, t_atom2 *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -92,25 +86,11 @@ typedef long Ruby;
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
 
-#ifdef USE_RUBY
-static inline Ruby PTR2FIX (const void *ptr) {
-	long p = (long)ptr;
-	if ((p&3)!=0) RAISE("unaligned pointer: %p\n",ptr);
-	return LONG2NUM(p>>2);
-}
-#define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
-#define INT2PTR(T,   v) ((T *)(          (v)<<2))
-#endif
-
 //****************************************************************
-// my own little Ruby <-> C++ layer
 
-static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
-static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
-static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 struct FObject;
 struct t_atom2;
-typedef Ruby (*RMethod)(FObject *, int, t_atom2 *);
+typedef void (*RMethod)(FObject *, int, t_atom2 *);
 typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -124,11 +104,8 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
 
-void *Pointer_get (Ruby rself);
-
 struct Numop;
 struct Pointer;
-extern Ruby cPointer;
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
 
@@ -341,9 +318,6 @@ struct NumberType : CObject {
 
 NumberTypeE NumberTypeE_find (string sym);
 NumberTypeE NumberTypeE_find (const t_atom &sym);
-#ifdef USE_RUBY
-NumberTypeE NumberTypeE_find (Ruby sym);
-#endif
 
 #define TYPESWITCH(T,C,E) switch (T) { \
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
@@ -657,7 +631,7 @@ private:
 struct FClass {
 	void *(*allocator)(MESSAGE); // returns a new C++ object
 	void (*startup)(FClass *);
-	const char *rubyname; // C++/Ruby name (not PD name)
+	const char *cname; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
 	FClass *super;
 
