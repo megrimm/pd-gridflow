@@ -242,16 +242,13 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 typedef void *(*t_constructor)(MESSAGE);
 static void CObject_mark (void *z) {}
 
-static Ruby FObject_s_new(Ruby argc, Ruby *argv, const char *name) {
+static Ruby FObject_s_new(int argc, t_atom *argv, const char *name) {
 	Ruby qlass = fclasses[string(name)]->rself;
 	t_constructor alloc = (t_constructor)FIX2PTR(void,rb_ivar_get(qlass,SI(@allocator)));
 	//t_constructor alloc2 = fclasses1[string(name)]->allocator;
 	//fprintf(stderr,"allocator is %p or %p\n", alloc,alloc2);
 	FObject *self;
-	// this is a C++ FObject/GridObject
-	t_atom2 argv2[argc];
-	ruby2pd(argc,argv,argv2);
-	self = (FObject *)alloc(0,argc,argv2);
+	self = (FObject *)alloc(0,argc,(t_atom2 *)argv);
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
@@ -261,10 +258,10 @@ static Ruby FObject_s_new(Ruby argc, Ruby *argv, const char *name) {
 
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = fm->ac;
-	t_atom at[argc];
-	for (int i=0; i<argc; i++) at[i] = fm->at[i];
-	argc = handle_braces(argc,at);
-	pd_post(fm->selector->s_name,argc,at);
+	t_atom argv[argc];
+	for (int i=0; i<argc; i++) argv[i] = fm->at[i];
+	argc = handle_braces(argc,argv);
+	pd_post(fm->selector->s_name,argc,argv);
 	BFObject *bself = fm->self;
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
@@ -274,9 +271,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 #endif
 
 	int j;
-	for (j=0; j<argc; j++) if (at[j].a_type==A_COMMA) break;
-	Ruby argv[j];
-	for (int i=0; i<j; i++) argv[i] = Bridge_import_value(at+i);
+	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	Ruby rself = FObject_s_new(j,argv,fm->selector->s_name);
 	DGS(FObject);
 	self->bself = bself;
@@ -300,8 +295,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	while (j<argc) {
 		j++;
 		int k=j;
-		for (; j<argc; j++) if (at[j].a_type==A_COMMA) break;
-		if (at[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,at[k].a_w.w_symbol,j-k-1,at+k+1);
+		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
+		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
 	}
 	return rself;
 }
