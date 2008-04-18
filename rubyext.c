@@ -517,17 +517,13 @@ extern "C" void gridflow_setup () {
 	ruby_options(COUNT(foo),foo);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
-	mGridFlow = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; end");
 	gf_data_path.push_back(string(dirresult)+"/images");
         srandom(rdtsc());
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
-	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
-	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	cPointer = rb_define_class_under(mGridFlow, "Pointer", cFObject);
-	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (VALUE (*)(...))Pointer_s_new, 1);
+	cPointer = rb_define_class("Pointer", rb_cObject);
+	rb_define_singleton_method(cPointer,"new", (VALUE (*)(...))Pointer_s_new, 1);
 	startup_number();
 	startup_grid();
 	startup_flow_objects();

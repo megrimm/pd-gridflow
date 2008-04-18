@@ -371,8 +371,7 @@ struct CObject {
 void CObject_free (void *);
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
-struct MethodDecl { const char *selector; RMethod method; };
-extern Ruby mGridFlow, cFObject, cFormat;
+struct MethodDecl {const char *selector; RMethod method;};
 
 #undef check
 
