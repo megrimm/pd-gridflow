@@ -60,8 +60,8 @@ tries to call a Ruby method of the proper name.
 // call f(x) and if fails call g(y)
 #define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
 
-std::map<string,FClass2 *> fclasses;
-std::map<Ruby,FClass2 *> fclasses_ruby;
+std::map<string,FClass *> fclasses;
+std::map<Ruby,FClass *> fclasses_ruby;
 
 /* **************************************************************** */
 struct BFObject;
@@ -402,10 +402,8 @@ void BFObject::noutlets_set (int n) {
 	BFObject_redraw(this);
 }
 
-void add_creator2(Ruby rself, const char *name) {
-	if (fclasses_ruby.find(rself)==fclasses_ruby.end()) RAISE("uh");
-	string fname = fclasses_ruby[rself]->name;
-	fclasses[string(name)] = fclasses[fname];
+void add_creator2(FClass *fclass, const char *name) {
+	fclasses[string(name)] = fclass;
 	class_addcreator((t_newmethod)BFObject_init,gensym((char *)name),A_GIMME,0);
 }
 
@@ -442,21 +440,20 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-void fclass_install(FClass *fc, const char *super) {
-	Ruby rself = super ?
-		rb_define_class_under(mGridFlow, fc->name, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
-		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
-	define_many_methods(rself,fc->methodsn,fc->methods);
-	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator)));
-	if (fc->startup) fc->startup(rself);
+void fclass_install(FClass *fclass, const char *super) {
+	fclass->rself = super ?
+		rb_define_class_under(mGridFlow, fclass->rubyname, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
+		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fclass->rubyname));
+	define_many_methods(fclass->rself,fclass->methodsn,fclass->methods);
+	rb_ivar_set(fclass->rself,SI(@allocator),PTR2FIX((void*)(fclass->allocator)));
+	if (fclass->startup) fclass->startup(fclass);
 }
 
-void install2(Ruby rself, const char *name, int inlets, int outlets) {
-	FClass2 *fclass = fclasses_ruby[rself] = new FClass2;
+void install2(FClass *fclass, const char *name, int inlets, int outlets) {
+	fclasses_ruby[fclass->rself] = fclass;
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(name);
-	fclass->rself = rself;
 	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;

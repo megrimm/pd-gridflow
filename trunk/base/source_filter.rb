@@ -219,7 +219,7 @@ def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
-	Out.print "static void #{cl}_startup (Ruby rself);"
+	Out.print "static void #{cl}_startup (FClass *fclass);"
 	Out.print "static void *#{cl}_allocator (MESSAGE) {return new #{cl}(sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method|
@@ -246,7 +246,8 @@ def handle_classinfo(line)
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->out[bself->nout-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
-	Out.print "void #{frame.name}_startup (Ruby rself) {IEVAL(rself,\"#{startup2}\");"+line.chomp
+	# "IEVAL(rself,\"#{startup2}\");" # this means no support for attributes for a while.
+	Out.print "void #{frame.name}_startup (FClass *fclass) {"+line.chomp
 end
 
 def handle_grin(line)
