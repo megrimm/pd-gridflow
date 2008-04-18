@@ -348,9 +348,6 @@ int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 	int64 p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
 	return c<p/2?p:c>q/2?q:a-b; }
 
-ruby clipadd(ruby a, ruby b) { return a+b; }
-ruby clipsub(ruby a, ruby b) { return a-b; }
-
 Numop op_table3[] = {
 	DECL_OP_NOFOLD(sinmul, "sin*", 0),
 	DECL_OP_NOFOLD(cosmul, "cos*", 0),

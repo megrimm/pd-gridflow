@@ -151,121 +151,8 @@ void *Pointer_get (Ruby rself);
 struct Numop;
 struct Pointer;
 extern Ruby cPointer;
-#ifdef USE_RUBY
-typedef struct R {
-	VALUE r;
-	R() {r=Qnil;}
-	R(int           x) {r=  INT2NUM(x);}
-	R(unsigned      x) {r= UINT2NUM(x);}
-	R(long          x) {r= LONG2NUM(x);}
-	R(unsigned long x) {r=ULONG2NUM(x);}
-	R(double     x) {r=rb_float_new(x);}
-#ifdef HAVE_GCC64
-	R( int64 x) {r= LONG2NUM(x);}
-	R(uint64 x) {r=ULONG2NUM(x);}
-#else
-	R( int64 x) {
-		r = rb_funcall( INT2NUM(( int32)(x>>32)),SI(<<),1,INT2FIX(32));
-		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
-	R(uint64 x) {
-		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
-		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
-#endif
-	R(Numop *x);
-	R(t_symbol *x) {r = ID2SYM(rb_intern(x->s_name));}
-
-	operator bool () const {
-		if (r==Qtrue) return true;
-		if (r==Qfalse) return false;
-		switch (TYPE(r)) {
-			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
-			default: RAISE("can't convert to bool");}}
-/*	operator bool () { // added a non-const copy so that gcc stops complaining. C++ is weird
-		if (r==Qtrue) return true;
-		if (r==Qfalse) return false;
-		switch (TYPE(r)) {
-			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
-			default: RAISE("can't convert to bool");}}
-*/	operator uint8 () const {return INT2NUM(r);}
-	operator int16 () const {
-		int v = (int32)*this;
-		if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
-		return v;}
-	operator uint16 () const {
-		int v = (int32)*this;
-		if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
-		return v;}
-	operator int32 () const {
-		// not using plain NUM2INT because Ruby can convert Symbol to int (compat Ruby1.4)
-		if (INTEGER_P(r)) return NUM2INT(r);
-		if (FLOAT_P(r)) return NUM2INT(rb_funcall(r,SI(round),0));
-		volatile Ruby meuh = rb_funcall(r,SI(inspect),0);
-		RAISE("expected Integer or Float (got %s)",rb_str_ptr(meuh));}
-	operator long () const {
-		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
-
-#ifdef HAVE_GCC64
-	operator uint64 () const {return NUM2ULONG(r);}
-	operator  int64 () const {return NUM2ULONG(r);}
-#else
-	operator uint64 () const {
-		if (FIXNUM_P(r)) return (uint64)FIX2LONG(r);
-		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
-		uint64 v = (uint64)NUM2UINT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
-		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
-	operator  int64 () const {
-		if (FIXNUM_P(r)) return (int64)FIX2LONG(r);
-		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
-		int64 v = (int64)NUM2INT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
-		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
-#endif
-	operator float32 () const {return (float64)*this;}
-	operator float64 () const {
-		if (INTEGER_P(r)) return (float64)(int32)*this;
-		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
-		return ((RFloat*)r)->value;}
-	operator t_symbol * () const {
-		if (TYPE(r)==T_SYMBOL) return gensym((char *)rb_sym_name(r));
-		if (TYPE(r)==T_STRING) return gensym((char *)rb_str_ptr(r));
- 		RAISE("want symbol");
-	}
-	//operator NumberTypeE () const {return NumberTypeE_find((t_symbol *)*this);}
-	operator std::string () const {
-		if (TYPE(r)==T_SYMBOL) return std::string(rb_sym_name(r));
-		if (TYPE(r)==T_STRING) return std::string(rb_str_ptr(r));
- 		RAISE("want symbol");
-	}
-	operator void * () const {
-		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
-		return (void *)Pointer_get(r);
-	}
-	static R value(VALUE r) {R x; x.r=r; return x;}
-#define FOO(As,Op) \
-	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
-	FOO(+=,+) FOO(-=,-) FOO(*=,*) FOO(/=,/) FOO(%=,%)
-	FOO(&=,&) FOO(|=,|) FOO(^=,^) FOO(<<=,<<) FOO(>>=,>>)
-#undef FOO
-//	bool operator  == (int x) {return rb_funcall(r,SI(==),1,INT2NUM(x));}
-#define FOO(Op) \
-	R operator Op (R x)   const {return rb_funcall(r,SI(Op),1,x.r);} \
-	R operator Op (int x) const {return rb_funcall(r,SI(Op),1,INT2NUM(x));}
-	FOO(+) FOO(-) FOO(*) FOO(/) FOO(%)
-	FOO(&) FOO(|) FOO(^) FOO(<<) FOO(>>)
-	FOO(<) FOO(>) FOO(<=) FOO(>=) FOO(==) FOO(!=)
-#undef FOO
-#define FOO(Op) \
-	R operator Op () const {return rb_funcall(r,SI(Op),0);}
-	FOO(-) FOO(~)
-#undef FOO
-} ruby;
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
-template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
-static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
-static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
-static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
-static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
-#endif // USE_RUBY
 
 #define a_float    a_w.w_float
 #define a_symbol   a_w.w_symbol
@@ -602,9 +489,6 @@ EACH_NUMBER_TYPE(FOO)
 		sym=gensym((char *)name);
 	}
 };
-#ifdef USE_RUBY
-inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
-#endif
 
 extern NumberType number_type_table[];
 extern std::map<string,NumberType *> number_type_dict;
