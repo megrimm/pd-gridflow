@@ -74,18 +74,6 @@ static void *Pointer_get (Ruby rself) {
 
 // **************** Grid ******************************************
 
-#define FOO(S) static inline void NUM(Ruby x, S &y) {y=convert(x,(int32*)0);}
-EACH_INT_TYPE(FOO)
-#undef FOO
-
-#define FOO(S) \
-static inline void NUM(Ruby x, S &y) { \
-	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value; \
-	else if (INTEGER_P(x)) y = convert(x,(S*)0); \
-	else RAISE("expected Float (or at least Integer)");}
-EACH_FLOAT_TYPE(FOO)
-#undef FOO
-
 void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	t_atom2 *a = (t_atom2 *)aa;
 	t_symbol *delim = gensym("#");
@@ -126,7 +114,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 		if (a[i] == delim) {
 			int32 v[i];
 			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
-			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
+			for (int j=0; j<i; j++) RAISE("MEUH");
 			init(new Dim(i,v),nt);
 			CHECK_ALIGN2(this->data,nt);
 			if (a[i] != delim) i++;
@@ -143,14 +131,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	fill:
 	int nn = dim->prod();
 	n = min(n,nn);
-#define FOO(T) { \
-	T *p = (T *)*this; \
-	if (n==0) CLEAR(p,nn); \
-	else { \
-		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
-		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
-	TYPESWITCH(nt,FOO,)
-#undef FOO
+	RAISE("meuh");
 }
 
 void Grid::init_from_atom(const t_atom &x) {
@@ -174,7 +155,7 @@ void Grid::init_from_ruby(Ruby x) {
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
-		((int32 *)*this)[0] = INT(x);
+		RAISE("meuh");
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
