@@ -21,22 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/*
-'bridge_puredata.c' becomes 'gridflow.pd_linux' which loads Ruby and tells
-Ruby to load the other 95% of Gridflow. GridFlow creates the FObject class
-and then subclasses it many times, each time calling FObject.install(),
-which tells the bridge to register a class in puredata. Puredata
-objects have proxies for each of the non-first inlets so that any inlet
-may receive any distinguished message. All inlets are typed as 'anything',
-and the 'anything' method translates the whole message to Ruby objects and
-tries to call a Ruby method of the proper name.
-*/
-
 #include "base/grid.h.fcs"
-/* resolving conflict: T_OBJECT will be PD's, not Ruby's */
-#undef T_OBJECT
-#undef T_DATA
-//#undef EXTERN
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -48,17 +33,6 @@ tries to call a Ruby method of the proper name.
 #ifdef HAVE_GEM
 #include "Base/GemPixDualObj.h"
 #endif
-
-/* I don't remember why we have to undefine Ruby's T_DATA;
-   on Linux there is no conflict with any other library */
-#if RUBY_VERSION_MINOR == 8
-#define T_DATA   0x22
-#else
-#define T_DATA   0x12
-#endif
-
-// call f(x) and if fails call g(y)
-#define RESCUE(f,x,g,y) rb_rescue2((VALUE (*)(...))(f),(Ruby)(x),(VALUE (*)(...))(g),(Ruby)(y),rb_eException,0);
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;

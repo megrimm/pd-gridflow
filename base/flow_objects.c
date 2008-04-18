@@ -52,15 +52,6 @@ static void oprintf(std::ostream &buf, const char *s, ...) {
 }
 
 /* ---------------------------------------------------------------- */
-/* stuff for using source_filter.rb without <ruby.h>: */
-
-#if 0
-#define SI(arg) gensym(#arg)
-#define SYM(arg) gensym(#arg)
-#endif
-
-/* end of stuff for using source_filter.rb without <ruby.h>. */
-/* ---------------------------------------------------------------- */
 
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG

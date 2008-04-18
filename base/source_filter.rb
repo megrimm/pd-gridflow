@@ -22,7 +22,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-$keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
 $exit = 0
@@ -311,7 +310,6 @@ def handle_startall(line)
 	}
 end
 
-$rubymode=false
 $linenumber=1
 loop{
 	x = In.gets
@@ -325,13 +323,7 @@ loop{
 			File.unlink ARGV[1]
 			exit 1
 		end
-	else
-		if $stack[-1]==:ruby then
-			x.gsub!(/([\\\"])/) { "\\"+$1 }
-			x="\"#{x.chomp}\\n\"\n"
-		end
-		Out.puts x
-	end
+	else Out.puts x end
 	$linenumber+=1
 }
 
