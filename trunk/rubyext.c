@@ -61,7 +61,6 @@ tries to call a Ruby method of the proper name.
 #define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
 
 std::map<string,FClass *> fclasses;
-std::map<Ruby,FClass *> fclasses_ruby;
 
 /* **************************************************************** */
 struct BFObject;
@@ -282,8 +281,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->nout = 0;
 	bself->in  = new  BFProxy*[1];
 	bself->out = new t_outlet*[1];
-	bself->ninlets_set( fclasses_ruby[rb_funcall(rself,SI(class),0)]->ninlets);
-	bself->noutlets_set(fclasses_ruby[rb_funcall(rself,SI(class),0)]->noutlets);
+	bself->ninlets_set( fclasses[fm->selector->s_name]->ninlets);
+	bself->noutlets_set(fclasses[fm->selector->s_name]->noutlets);
 	rb_funcall(rself,SI(initialize2),0);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	while (j<argc) {
@@ -450,7 +449,6 @@ void fclass_install(FClass *fclass, const char *super) {
 }
 
 void install2(FClass *fclass, const char *name, int inlets, int outlets) {
-	fclasses_ruby[fclass->rself] = fclass;
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(name);
