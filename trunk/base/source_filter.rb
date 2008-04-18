@@ -294,12 +294,12 @@ def handle_end(line)
 		handle_def "#{i} list(...) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
+			"in[#{i}]->from_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
 		handle_def "#{i} float(float f) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-			"Ruby a[]={rb_float_new(f)};"+
-			"in[#{i}]->from_ruby(1,a);}" if not frame.methods["_#{i}_float"].done
+			"t_atom2 a[1]; SETFLOAT(a,f);"+
+			"in[#{i}]->from_atom(1,a);}" if not frame.methods["_#{i}_float"].done
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop

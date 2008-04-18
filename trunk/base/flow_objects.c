@@ -160,10 +160,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	process(n,(uint8 *)name);
 }
 \def 0 to_ascii(...) {
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
 	std::ostringstream os;
-	pd_oprint(os,argc,at);
+	pd_oprint(os,argc,argv);
 	long n = os.str().length();
 	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
 	process(n,(uint8 *)os.str().data());
@@ -172,7 +170,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((GridObject *)this,stromgol);
-	in[0]->from_ruby_list(argc,argv,cast);}
+	in[0]->from_list(argc,argv,cast);}
 \def 1 per_message() {dim=0; dim_grid=0;}
 
 \def 0 reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
@@ -2209,10 +2207,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 	\decl 0 bang ();
 	//\grin 0
 };
-\def void initialize2 () {
-	SUPER;
-	bself->ninlets_set(this->n);
-}
+\def void initialize2 () {bself->ninlets_set(this->n);}
 \def void _n_float (int inlet, float f) {
 #define FOO(T) ((T *)*a)[inlet] = (T)f;
 TYPESWITCH(a->nt,FOO,);
@@ -2243,10 +2238,7 @@ GRID_INLET(GridUnpack,0) {
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) outlet_float(bself->out[i],(t_float)data[i]);
 } GRID_END
-\def void initialize2 () {
-	SUPER;
-	bself->noutlets_set(this->n);
-}
+\def void initialize2 () {bself->noutlets_set(this->n);}
 \end class {install("#unpack",1,0);}
 
 //****************************************************************
@@ -2258,8 +2250,8 @@ GRID_INLET(GridUnpack,0) {
 	t_outlet *o = bself->out[0];
 	R *a = (R *)argv;
 	for (int i=0; i<argc; i++) {
-		if      (TYPE(argv[i])==T_FLOAT)  outlet_float( o,a[i]);
-		else if (TYPE(argv[i])==T_SYMBOL) outlet_symbol(o,a[i]);
+		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,a[i]);
+		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,a[i]);
 		else RAISE("oops. unsupported.");
 	}
 }
@@ -2291,9 +2283,7 @@ GRID_INLET(GridUnpack,0) {
 extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 \def 0 list (...) {
 	std::ostringstream o;
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	pd_oprintf(o,format.data(),argc,at);
+	pd_oprintf(o,format.data(),argc,argv);
 	t_canvas *canvas = canvas_getrootfor(bself->mom);
 	pd_error(canvas,"%s",o.str().data());
 }
@@ -2342,9 +2332,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 };
 \def 0 list (...) {
 	for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	outlet_list(bself->te_outlet,&s_list,argc,at);
+	outlet_list(bself->te_outlet,&s_list,argc,argv);
 }
 \end class {install("listreverse",1,1);}
 
@@ -2352,20 +2340,16 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 	\constructor () {}
 	\decl 0 list(...);
 };
-\def 0 list (...) {
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	outlet_list(bself->te_outlet,&s_list,argc,at);
-}
+\def 0 list (...) {outlet_list(bself->te_outlet,&s_list,argc,argv);}
 \end class {install("listflatten",1,1);}
 
 // does not do recursive comparison of lists.
 static bool atom_eq (t_atom &a, t_atom &b) {
 	if (a.a_type!=b.a_type) return false;
-	if (a.a_type==A_FLOAT)   return a.a_w.w_float   ==b.a_w.w_float;
-	if (a.a_type==A_SYMBOL)  return a.a_w.w_symbol  ==b.a_w.w_symbol;
-	if (a.a_type==A_POINTER) return a.a_w.w_gpointer==b.a_w.w_gpointer;
-	if (a.a_type==A_LIST)    return a.a_w.w_gpointer==b.a_w.w_gpointer;
+	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
+	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
+	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer;
+	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer;
 	RAISE("don't know how to compare elements of type %d",a.a_type);
 }
 
@@ -2373,7 +2357,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 	int ac;
 	t_atom *at;
 	~ListFind() {if (at) delete[] at;}
-	\constructor (...) {ac=0; at=0; Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _1_list(argc,argv2);}
+	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
 	\decl 0 list(...);
 	\decl 1 list(...);
 	\decl 0 float(float f);
@@ -2383,23 +2367,19 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 	if (at) delete[] at;
 	ac = argc;
 	at = new t_atom[argc];
-	ruby2pd(argc,argv,at);
+	for (int i=0; i<argc; i++) at[i] = argv[i];
 }
 \def 0 list (...) {
-	t_atom a[1];
 	if (argc<1) RAISE("empty input");
-	ruby2pd(1,argv,at);
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
 	outlet_float(bself->out[0],i==ac?-1:i);
 }
 \def 0 float (float f) {
-	t_atom a[1]; SETFLOAT(a,f);
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
 	outlet_float(bself->out[0],i==ac?-1:i);
 }
 \def 0 symbol (t_symbol *s) {
-	t_atom a[1]; SETSYMBOL(a,s);
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
 	outlet_float(bself->out[0],i==ac?-1:i);
 }
 //doc:_1_list,"list to search into"
@@ -2414,7 +2394,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 		nmosusses = argc;
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
 		mosusses = new t_float[argc];
-		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_w.w_float;
+		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_float;
 	}
 	\decl void initialize2();
 	\decl 0 float(float f);
@@ -2543,15 +2523,13 @@ static void display_update(void *x) {
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void method_missing (...) {
-	string sel = string(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0))+3);
+	string sel = argv[0];
 	text.str("");
 	if (sel != "float") {text << sel; if (argc>1) text << " ";}
 	long col = text.str().length();
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
 	char buf[MAXPDSTRING];
 	for (int i=1; i<argc; i++) {
-		atom_string(&at[i],buf,MAXPDSTRING);
+		atom_string(&argv[i],buf,MAXPDSTRING);
 		text << buf;
 		col += strlen(buf);
 		if (i!=argc-1) {
@@ -2564,9 +2542,7 @@ static void display_update(void *x) {
 }
 \def 0 grid(...) {
 	text.str("");
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	pd_typedmess(gp,gensym("grid"),argc,at);
+	pd_typedmess(gp,gensym("grid"),argc,argv);
 	clock_delay(clock,0);
 }
 \def 0 very_long_name_that_nobody_uses(...) {
@@ -2626,14 +2602,14 @@ struct ArgSpec {
 		sargv = new ArgSpec[argc];
 		for (int i=0; i<argc; i++) {
 			if (argv[i].a_type==A_LIST) {
-				t_binbuf *b = (t_binbuf *)argv[i].a_w.w_gpointer;
+				t_binbuf *b = (t_binbuf *)argv[i].a_gpointer;
 				int bac = binbuf_getnatom(b);
 				t_atom *bat = binbuf_getvec(b);
 				sargv[i].name = atom_getsymbolarg(0,bac,bat);
 				sargv[i].type = atom_getsymbolarg(1,bac,bat);
 				if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
 			} else if (argv[i].a_type==A_SYMBOL) {
-				sargv[i].name = argv[i].a_w.w_symbol;
+				sargv[i].name = argv[i].a_symbol;
 				sargv[i].type = gensym("a");
 				SETNULL(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
@@ -2646,8 +2622,8 @@ struct ArgSpec {
 \def void initialize2 () {bself->noutlets_set(sargc+1);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
-	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_w.w_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_w.w_float);
+	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_float);
 	else outlet_anything(o,&s_list,argc,argv);
 }
 \def 0 bang () {
@@ -2659,13 +2635,13 @@ void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 
 	int j;
 	t_symbol *comma = gensym(",");
-	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_w.w_symbol==comma) break;
+	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
 	int jj = handle_braces(j,av);
 	process_args(jj,av);
 	while (j<ac) {
 		j++;
 		int k=j;
-		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_w.w_symbol==comma) break;
+		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
 		outlet_anything2(bself->out[sargc],j-k,av+k);
 	}
 }
@@ -2686,9 +2662,9 @@ void Args::process_args (int argc, t_atom *argv) {
 			else outlet_bang(bself->out[i]);
 		} else {
 			if (v->a_type==A_LIST) {
-				t_binbuf *b = (t_binbuf *)v->a_w.w_gpointer;
+				t_binbuf *b = (t_binbuf *)v->a_gpointer;
 				outlet_list(bself->out[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->out[i],v->a_w.w_symbol);
+			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->out[i],v->a_symbol);
 			else outlet_anything2(bself->out[i],1,v);
 		}
 	}
@@ -2807,28 +2783,24 @@ void ParallelPort::call() {
 	int nsels;
 	t_symbol **sels;
 	~Route2() {if (sels) delete[] sels;}
-	\constructor (...) {nsels=0; sels=0; Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _1_list(argc,argv2);}
+	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv);}
 	\decl void initialize2();
 	\decl void method_missing(...);
 	\decl 1 list(...);
 };
 \def void initialize2() {bself->noutlets_set(1+nsels);}
 \def void method_missing(...) {
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	t_symbol *sel = gensym(at[0].a_w.w_symbol->s_name+3);
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	int i=0;
 	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-	outlet_anything(bself->out[i],sel,argc-1,at+1);
+	outlet_anything(bself->out[i],sel,argc-1,argv+1);
 }
 \def 1 list(...) {
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	for (int i=0; i<argc; i++) if (at[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
 	if (sels) delete[] sels;
 	nsels = argc;
 	sels = new t_symbol*[argc];
-	for (int i=0; i<argc; i++) sels[i] = at[i].a_w.w_symbol;
+	for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
 }
 \end class {install("route2",1,1);}
 
@@ -2853,10 +2825,8 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 };
 \def void initialize2() {bself->noutlets_set(n);}
 \def void method_missing(...) {
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	t_symbol *sel = gensym(at[0].a_w.w_symbol->s_name+3);
-	outlet_anything(bself->out[index],sel,argc-1,at+1);
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+	outlet_anything(bself->out[index],sel,argc-1,argv+1);
 	if (mode) {
 		index += sgn(mode);
 		if (index<lo || index>hi) {
@@ -2886,7 +2856,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class UserTime : FObject {
 	clock_t time;
-	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
+	\constructor () {_0_bang(argc,argv);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
@@ -2895,7 +2865,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
-	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
+	\constructor () {_0_bang(argc,argv);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
@@ -2904,7 +2874,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
-	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
+	\constructor () {_0_bang(argc,argv);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };

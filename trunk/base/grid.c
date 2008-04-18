@@ -225,30 +225,20 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
-	if (!argc) return PTR2FIX(this);
-	GridOutlet *back_out = (GridOutlet *) Pointer_get(argv[0]);
+void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
+	GridOutlet *back_out = (GridOutlet *) (void *)argv[0];
 	nt = back_out->nt;
 	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
 			ARGS(parent), ARGS(sender), ARGS(back_out->parent), (long)dex, (long)dim->prod());
 	sender = back_out->parent;
-	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
-		RAISE("%s: inlet: unknown number type",ARGS(parent));
-	if (!supports_type(nt))
-		RAISE("%s: number type %s not supported here", ARGS(parent), number_type_table[nt].name);
+	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("%s: inlet: unknown number type",ARGS(parent));
+	if (!supports_type(nt)) RAISE("%s: number type %s not supported here", ARGS(parent), number_type_table[nt].name);
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
-	try {
-		GridInlet_begin_1(this);
-	} catch (Barf *barf) {
-		GridInlet_begin_2(this);
-		throw;
-	}
+	try {GridInlet_begin_1(this);} catch (Barf *barf) {GridInlet_begin_2(this); throw;}
 	this->dim = dim;
 	back_out->callback(this);
-	hell:;
-	return Qnil;
 }
 
 #define CATCH_IT catch (Barf *slimy) {post("error during flow: %s",slimy->text);}
