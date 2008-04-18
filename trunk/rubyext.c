@@ -58,14 +58,12 @@ tries to call a Ruby method of the proper name.
 #endif
 
 // call f(x) and if fails call g(y)
-#define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
+#define RESCUE(f,x,g,y) rb_rescue2((VALUE (*)(...))(f),(Ruby)(x),(VALUE (*)(...))(g),(Ruby)(y),rb_eException,0);
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
 
 /* **************************************************************** */
-struct BFObject;
-
 struct FMessage {
 	BFObject *self;
 	int winlet;
@@ -118,7 +116,7 @@ static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, b
 	if (method) {
 		Ruby argv2[argc];
 		pd2ruby(argc,argv2,argv);
-		method(argc,argv2,bself->rself);
+		method(bself->self,argc,argv2);
 		return;
 	}
 	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'",sel);
@@ -227,10 +225,7 @@ static Ruby BFObject_rescue (FMessage *fm) {
 
 static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
 	FMessage fm = { bself, winlet, selector, ac, at, false };
-	if (!bself->rself) {pd_error(bself,"message to a dead object. (supposed to be impossible)"); return;}
-	try {
-		RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
-	} catch (Barf *oozy) {post("error: %s",oozy->text);}
+	try {RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);} catch (Barf *oozy) {post("error: %s",oozy->text);}
 }
 static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self,0,s,argc,argv);
@@ -272,7 +267,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby rself = FObject_s_new(j,argv,fm->selector->s_name);
 	DGS(FObject);
 	self->bself = bself;
-	bself->rself = rself;
+	bself->self = self;
 	bself->mom = 0;
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)self+11); /* not 64-bit-safe */
@@ -430,21 +425,10 @@ static void add_to_path(char *dir) {
 
 //----------------------------------------------------------------
 
-void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
-	for (int i=0; i<n; i++) {
-		MethodDecl *md = &methods[i];
-		char *buf = strdup(md->selector);
-		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0) buf[strlen(buf)-2]=0;
-		rb_define_method(rself,buf,(RMethod)md->method,-1);
-		free(buf);
-	}
-}
-
 void fclass_install(FClass *fclass, const char *super) {
 	fclass->rself = super ?
 		rb_define_class_under(mGridFlow, fclass->rubyname, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fclass->rubyname));
-	define_many_methods(fclass->rself,fclass->methodsn,fclass->methods);
 	if (fclass->startup) fclass->startup(fclass);
 }
 
@@ -553,9 +537,8 @@ BUILTIN_SYMBOLS(FOO)
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	\startall
-	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
+	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (VALUE (*)(...))Pointer_s_new, 1);
 	cPointer = EVAL("GridFlow::Pointer");
 	startup_number();
 	startup_grid();

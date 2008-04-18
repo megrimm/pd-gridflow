@@ -140,7 +140,7 @@ def handle_decl(line)
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ");"
-	Out.print "static Ruby #{m.selector}_wrap(VA, Ruby rself); "
+	Out.print "static Ruby #{m.selector}_wrap(#{classname} *self, VA); "
 end
 
 def handle_def(line)
@@ -160,9 +160,8 @@ def handle_def(line)
 	else
 		qlass.methods[m.selector] = m
 	end
-	Out.print "Ruby #{classname}::#{m.selector}_wrap(VA, Ruby rself) {"
+	Out.print "Ruby #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "DGS(#{classname});"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "try {"
 	Out.print "if (argc<#{m.minargs}"

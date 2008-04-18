@@ -127,16 +127,11 @@ static inline Ruby PTR2FIX (const void *ptr) {
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
-#ifdef USE_RUBY
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
-typedef Ruby (*RMethod)(...); /* !@#$ fishy */
-#else
-//#define Qnil 4
-#define Qnil 0
-typedef void *(*RMethod)(...); /* !@#$ fishy */
-#endif // USE_RUBY
+struct FObject;
+typedef Ruby (*RMethod)(FObject *, int, Ruby *);
 typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -377,7 +372,6 @@ void CObject_free (void *);
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
 struct MethodDecl { const char *selector; RMethod method; };
-void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 extern Ruby mGridFlow, cFObject, cFormat;
 
 #undef check
@@ -891,7 +885,7 @@ struct BFObject : t_object {
 #ifdef HAVE_GEM
 	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
 #endif
-	Ruby rself;
+	FObject *self;
 	int nin,nout;   // per object settings (not class)
 	BFProxy  **in;  // direct access to  inlets (not linked lists)
 	t_outlet **out; // direct access to outlets (not linked lists)

@@ -2501,14 +2501,14 @@ string ssprintf(const char *fmt, ...) {
 	}
 };
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
-	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
 	*x1 = bself->te_xpix-1;
 	*y1 = bself->te_ypix-1;
 	*x2 = bself->te_xpix+1+self->sx;
 	*y2 = bself->te_ypix+1+self->sy;
 }
 static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
-	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
 	self->canvas = glist_getcanvas(glist);
@@ -2516,17 +2516,17 @@ static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
 	canvas_fixlinesfor(glist, (t_text *)x);
 }
 static void display_selectfn(t_gobj *x, t_glist *glist, int state) {
-	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
 	self->selected=!!state;
 	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
 }
 static void display_deletefn(t_gobj *x, t_glist *glist) {
-	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
 	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
 static void display_visfn(t_gobj *x, t_glist *glist, int flag) {
-	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
 	self->vis = !!flag;
 	display_update(self);
 }
