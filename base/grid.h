@@ -495,23 +495,10 @@ extern std::map<string,NumberType *> number_type_dict;
 extern std::map<string,Numop *> op_dict;
 extern std::map<string,Numop *> vop_dict;
 
-#ifdef USE_RUBY
-static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberTypeE_find(x);}
-#endif
 static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_w.w_symbol->s_name));}
 
 
-#ifdef USE_RUBY
-static Numop *convert(Ruby x, Numop **bogus) {
-	if (TYPE(x)!=T_STRING) x=rb_funcall(x,SI(to_s),0);
-	string k = string(rb_str_ptr(x));
-	if (op_dict.find(k)==op_dict.end()) {
-		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not %s", rb_str_ptr(rb_funcall(x,SI(inspect),0)));
-		return vop_dict[k];
-	} else return op_dict[k];
-}
-#endif
 static Numop *convert(const t_atom &x, Numop **bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
 	string k = string(x.a_symbol->s_name);
@@ -533,9 +520,7 @@ struct Grid : CObject {
 		init(dim,nt);
 		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
 	}
-	Grid(Ruby          x) {state=1; init_from_ruby(x);}
 	Grid(const t_atom &x) {state=1; init_from_atom(x);}
-	Grid(int n, Ruby   *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
 	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {state=1; init_from_list(n,a,nt_);}
 	template <class T> Grid(P<Dim> dim, T *data) {
 		state=0; this->dim=dim;
@@ -565,13 +550,9 @@ private:
 		}
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
-	void init_from_ruby(Ruby x);
 	void init_from_atom(const t_atom &x);
-	void init_from_ruby_list(int n, Ruby   *a, NumberTypeE nt=int32_e);
 	void init_from_list(     int n, t_atom *a, NumberTypeE nt=int32_e);
 };
-
-static inline Grid *convert (Ruby          r, Grid **bogus) {return r?new Grid(r):0;}
 static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
 
 // DimConstraint interface:
@@ -598,20 +579,12 @@ return *this;}
 #undef INCR
 #undef DECR
 
-static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
-	Grid *d = convert(x,(Grid **)0);
-	if (!d) RAISE("urgh");
-	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
-	return new Dim(d->dim->v[0],(int32 *)(d->data));
-}
 static inline P<Dim> convert(const t_atom &x, P<Dim> *foo) {
 	Grid *d = convert(x,(Grid **)0);
 	if (!d) RAISE("urgh");
 	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
 	return new Dim(d->dim->v[0],(int32 *)(d->data));
 }
-
-static inline PtrGrid convert(Ruby          x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
 static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
 
 //****************************************************************
@@ -837,7 +810,6 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 	void *p;
 	Pointer(MESSAGE) {RAISE("calling Pointer constructor the wrong way"); }
 	Pointer(void *_p) : p(_p) {}
-	\decl Ruby ptr ();
 };
 \end class Pointer
 

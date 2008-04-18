@@ -1315,7 +1315,9 @@ static void expect_pair (P<Dim> dim) {if (dim->prod()!=2) RAISE("expecting only 
 \class GridMoment : GridObject {
 	\constructor (int order=1) {
 		offset.constrain(expect_pair);
-		offset=new Grid(EVAL("[0,0]"));
+		//t_atom2 a[2] = {t_atom2(0),t_atom2(0)};
+		t_atom a[2]; SETFLOAT(a,0); SETFLOAT(a+1,0);
+		offset=new Grid(2,a,int32_e);
 		if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
 		this->order=order;
 	}
@@ -1703,7 +1705,8 @@ static void expect_scale_factor (P<Dim> dim) {
 	int scalex;
 	\constructor (Grid *factor=0) {
 		scale.constrain(expect_scale_factor);
-		scale=new Grid(INT2NUM(2));
+		t_atom a[1]; SETFLOAT(a,2);
+		scale=new Grid(1,a,int32_e);
 		if (factor) scale=factor;
 		prepare_scale_factor();
 	}
@@ -1757,7 +1760,8 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	PtrGrid temp;
 	\constructor (Grid *factor=0, t_symbol *option=0) {
 		scale.constrain(expect_scale_factor);
-		scale=new Grid(INT2NUM(2));
+		t_atom a[1]; SETFLOAT(a,2);
+		scale=new Grid(1,a,int32_e);
 		if (factor) scale=factor;
 		prepare_scale_factor();
 		smoothly = option==gensym("smoothly");
