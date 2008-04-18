@@ -1240,8 +1240,7 @@
 </section>
 
 <section name="jMax emulation">
-	<p>those classes emulate jMax functionality,
-	for use within PureData and Ruby.</p>
+	<p>those classes emulate jMax functionality, for use within PureData.</p>
 	
 	<class name="fork">
 		<p>Every incoming message is sent to inlet 1 and then sent to
@@ -1273,7 +1272,7 @@
 		</method>
 		<inlet id="0"><method name="list"><rest/>
 			Outputs one element of the list, as selected by "index".
-			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax.
+			Also accepts negative indices (e.g.: -1 means "last"), unlike jMax.
 		</method></inlet>
 		<inlet id="1" attr="index"/>
 	</class>
@@ -1284,7 +1283,7 @@
 		</method>
 		<inlet id="0"><method name="list"><rest/>
 			Outputs consecutive elements of the list, as selected by "index" and "length".
-			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax.
+			Also accepts negative indices (e.g.: -1 means "last"), but unlike jMax.
 		</method></inlet>
 		<inlet id="1" attr="index"/>
 		<inlet id="2" attr="length"/>
