@@ -111,14 +111,11 @@ static RMethod funcall_lookup (BFObject *bself, const char *sel) {
 	return 0;
 }
 
+void call_super(int argc, t_atom *argv) {/* unimplemented */}
+
 static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
 	RMethod method = funcall_lookup(bself,sel);
-	if (method) {
-		Ruby argv2[argc];
-		pd2ruby(argc,argv2,argv);
-		method(bself->self,argc,argv2);
-		return;
-	}
+	if (method) {method(bself->self,argc,(t_atom2 *)argv); return;}
 	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'",sel);
 }
 

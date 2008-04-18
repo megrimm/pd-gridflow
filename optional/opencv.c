@@ -82,10 +82,10 @@ enum CvMode {
 	cv_mode_nochannels,
 };
 
-CvMode convert (Ruby x, CvMode *foo) {
-	if (x==SYM(auto))       return cv_mode_auto;
-	if (x==SYM(channels))   return cv_mode_channels;
-	if (x==SYM(nochannels)) return cv_mode_nochannels;
+CvMode convert (const t_atom2 &x, CvMode *foo) {
+	if (x==gensym("auto"))       return cv_mode_auto;
+	if (x==gensym("channels"))   return cv_mode_channels;
+	if (x==gensym("nochannels")) return cv_mode_nochannels;
 	RAISE("invalid CvMode");
 }
 
