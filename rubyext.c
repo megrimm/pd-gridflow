@@ -104,7 +104,7 @@ static Ruby make_error_message () {
 
 /* **************************************************************** */
 
-static RMethod funcall_exists (BFObject *bself, const char *sel) {
+static RMethod funcall_lookup (BFObject *bself, const char *sel) {
 	FClass *fclass = fclasses_pd[*(t_class **)bself];
 	int n = fclass->methodsn;
 	for (int i=0; i<n; i++) {
@@ -114,14 +114,14 @@ static RMethod funcall_exists (BFObject *bself, const char *sel) {
 }
 
 static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
-	RMethod method = funcall_exists(bself,sel);
+	RMethod method = funcall_lookup(bself,sel);
 	if (method) {
 		Ruby argv2[argc];
 		pd2ruby(argc,argv2,argv);
 		method(argc,argv2,bself->rself);
 		return;
 	}
-	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'\n",sel);
+	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'",sel);
 }
 
 struct RMessage {BFObject *bself; const char *sel; int argc; t_atom *argv;};
@@ -203,11 +203,11 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	BFObject *bself = fm->self;
 	char buf[256];
 	sprintf(buf,"_n_%s",fm->selector->s_name);
-	if (funcall_exists(bself,buf)) {
+	if (funcall_lookup(bself,buf)) {
 		funcall_rescue(bself,buf,argc+1,argv);
 	} else {
 		sprintf(buf,"_%d_%s",fm->winlet,fm->selector->s_name);
-		if (funcall_exists(bself,buf)) {
+		if (funcall_lookup(bself,buf)) {
 			funcall_rescue(bself,buf,argc,argv+1);
 		} else {
 			SETSYMBOL(argv+0,gensym(buf));
@@ -256,7 +256,6 @@ static Ruby FObject_s_new(Ruby argc, Ruby *argv, const char *name) {
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
-	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
 }
 
@@ -316,10 +315,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	return r==Qnil ? 0 : (void *)bself; // return NULL if broken object
 }
 
-static void BFObject_delete_1 (FMessage *fm) {
-	if (fm->self->rself) rb_funcall(fm->self->rself,SI(delete),0);
-	else post("BFObject_delete is NOT handling BROKEN object at %*lx",2*sizeof(long),(long)fm);
-}
+static void BFObject_delete_1 (FMessage *fm) {funcall(fm->self,"delete",0,0,true);}
 
 static void BFObject_delete (BFObject *bself) {
 	FMessage fm = {self:bself, winlet:-1, selector:gensym("delete"), ac:0, at:0, is_init:false};
@@ -473,14 +469,6 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	RESCUE(BFObject_class_init_1,fclass->bfclass,BFObject_rescue,&fm);
 }
 
-Ruby FObject_delete (Ruby rself) {
-	DGS(FObject);
-	rb_funcall(rb_ivar_get(mGridFlow, SI(@fobjects)),SI(delete),1,rself);
-	DATA_PTR(rself) = 0; // really!
-	delete self; // really!
-	return Qnil;
-}
-
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
 int handle_braces(int ac, t_atom *av) {
 	int stack[16];
@@ -575,10 +563,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
-	Ruby fo = cFObject;
-	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
-	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
-	rb_define_method(fo,"initialize2", (RMethod)FObject_dummy,-1);
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
 	cPointer = EVAL("GridFlow::Pointer");
