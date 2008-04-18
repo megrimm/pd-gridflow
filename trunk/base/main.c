@@ -134,9 +134,6 @@ char *Dim::to_s() {
 	return strdup(buf);
 }
 
-/* ---------------------------------------------------------------- */
-/* C++<->Ruby bridge for classes/functions in base/number.c */
-
 NumberTypeE NumberTypeE_find (string s) {
 	if (number_type_dict.find(s)==number_type_dict.end()) RAISE("unknown number type \"%s\"", s.data());
 	return number_type_dict[s]->index;
@@ -146,8 +143,6 @@ NumberTypeE NumberTypeE_find (const t_atom &x) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type (as symbol)");
 	return NumberTypeE_find(string(x.a_w.w_symbol->s_name));
 }
-
-/* ---------------------------------------------------------------- */
 
 // don't touch.
 static void gfmemcopy32(int32 *as, int32 *bs, long n) {
