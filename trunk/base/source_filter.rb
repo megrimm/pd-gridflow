@@ -140,7 +140,7 @@ def handle_decl(line)
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ");"
-	Out.print "static Ruby #{m.selector}_wrap(#{classname} *self, VA); "
+	Out.print "static void #{m.selector}_wrap(#{classname} *self, VA); "
 end
 
 def handle_def(line)
@@ -160,7 +160,7 @@ def handle_def(line)
 	else
 		qlass.methods[m.selector] = m
 	end
-	Out.print "Ruby #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
+	Out.print "void #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "try {"
@@ -178,10 +178,6 @@ def handle_def(line)
 		end
 	}
 	Out.print ");} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}"
-	case m.rettype
-	when "void"; Out.print "return Qnil;"
-	else         Out.print "return R(foo).r;"
-	end
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
 	Out.print ",#{unparse_arglist m.arglist, false}" if m.arglist.length>0
 	Out.print ")#{term} "
