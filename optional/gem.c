@@ -46,7 +46,8 @@ public:
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 
-	GridExportPix () {
+	GridExportPix () : GridObject(0,0,0) {RAISE("what?");}
+	GridExportPix (MESSAGE) : GridObject(MESSAGE2) {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
@@ -110,8 +111,7 @@ void GridExportPix::obj_setupCallback(t_class *) {}
 \end class {
 	install("#to_pix",2,1);
 	add_creator("#export_pix");
-	t_class *qlass = fclasses[string("#to_pix")];
-	GridExportPix::real_obj_setupCallback(qlass);
+	GridExportPix::real_obj_setupCallback(fclass->bfclass);
 }
 
 //------------------------------------------------------------------------
@@ -123,12 +123,12 @@ struct GridImportPix : GridObject, GemPixObj {
 public:
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
-	GridImportPix () {
+	GridImportPix () : GridObject(0,0,0) {RAISE("what?");}
+	GridImportPix (MESSAGE) : GridObject(MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
 	}
-	\decl void initialize ();
 	virtual ~GridImportPix () {}
 	virtual void render(GemState *state) {
 		if (!state->image) {post("gemstate has no pix"); return;}
@@ -149,13 +149,11 @@ public:
 };
 CPPEXTERN_NEW(GridImportPix)
 
-\def void initialize () {SUPER;}
 void GridImportPix::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#import_pix",2,1);
-	t_class *qlass = fclasses[string("#import_pix")];
-	GridExportPix::real_obj_setupCallback(qlass);
+	GridExportPix::real_obj_setupCallback(fclass->bfclass);
 }
 
 //------------------------------------------------------------------------
