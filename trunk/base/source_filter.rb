@@ -213,14 +213,10 @@ def handle_classinfo(line)
 	Out.print "static void #{cl}_startup (FClass *fclass);"
 	Out.print "static void *#{cl}_allocator (MESSAGE) {return new #{cl}(sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
-	Out.print frame.methods.map {|foo,method|
-		c,s = frame.name,method.selector
-		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
-	}.join(",")
+	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(RMethod)#{frame.name}::#{method.selector}_wrap }" }.join(",")
 	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
-	get="void ___get(t_symbol *s) {"
-	get << "t_atom a[1];"
+	get="void ___get(t_symbol *s) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
 		get << "if (s==gensym(\"#{name})\")) set_atom(a,#{name}#{virtual}); else "
@@ -264,11 +260,6 @@ def handle_end(line)
 	cl = frame.name
 	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
 	$stack.push frame
-	frame.attrs.each {|name,attr|
-		type,name,default = attr.to_a
-		#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-		#handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
-	}
 	frame.grins.each {|i,v|
 		cli = "#{cl}::grinw_#{i}"
 		k = case v[1]
