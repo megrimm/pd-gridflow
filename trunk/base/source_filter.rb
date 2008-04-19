@@ -137,8 +137,7 @@ def handle_decl(line)
 	frame.methods[m.selector] = m
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
-	Out.print ");"
-	Out.print "static void #{m.selector}_wrap(#{classname} *self, VA); "
+	Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA); "
 end
 
 def handle_def(line)
@@ -164,7 +163,6 @@ def handle_def(line)
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
-	#error = proc {|x,y| "RAISE(\"got %s instead of #{x} in %s\",rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)" }
 	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -174,9 +172,8 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");"
-	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
-	Out.print ",#{unparse_arglist m.arglist, false}" if m.arglist.length>0
+	Out.print ");} #{m.rettype} #{classname}::#{m.selector}(VA"
+	Out.print ","+unparse_arglist(m.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
 end
@@ -191,7 +188,6 @@ def handle_constructor(line)
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
-	#error = proc {|x,y| "RAISE(\"got %s instead of #{x} in %s\",rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)" }
 	Out.print "#{m.selector}(sel,argc,argv"
 	m.arglist.each_with_index{|arg,i|
 		if arg.default then
@@ -292,11 +288,7 @@ end
 def handle_startall(line)
 	$classes.each {|q|
 		Out.print "fclass_install(&ci#{q.name},"
-		if q.supername then
-			Out.print "\"#{q.supername}\");"
-		else
-			Out.print "0);"
-		end
+		if q.supername then Out.print "\"#{q.supername}\");" else Out.print "0);" end
 	}
 end
 
