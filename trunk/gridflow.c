@@ -252,9 +252,10 @@ static void add_to_path(char *dir) {
 
 //----------------------------------------------------------------
 
-void fclass_install(FClass *fclass, const char *super) {
+void fclass_install(FClass *fclass, const char *super, size_t bytes) {
 	//fclass->super = fclasses[super];
 	if (fclass->startup) fclass->startup(fclass);
+	fclass->bytes = bytes;
 }
 
 void install2(FClass *fclass, const char *name, int inlets, int outlets) {
