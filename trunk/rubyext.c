@@ -84,16 +84,6 @@ struct BFProxy : t_object {
 	int id;
 };
 
-static t_class *find_bfclass (t_symbol *sym) {
-	t_atom a[1];
-	SETSYMBOL(a,sym);
-	char buf[MAXPDSTRING];
-	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
-	string name = string(buf);
-	if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",buf); return 0;}
-	return fclasses[name]->bfclass;
-}
-
 static t_class *BFProxy_class;
 
 static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
@@ -128,10 +118,11 @@ typedef void *(*t_constructor)(MESSAGE);
 static void CObject_mark (void *z) {}
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
-	t_class *qlass = find_bfclass(classsym);
-	if (!qlass) return 0;
-	BFObject *bself = (BFObject *)pd_new(qlass);
-
+    string name = string(classsym->s_name);
+    if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
+    t_class *qlass = fclasses[name]->bfclass;
+    BFObject *bself = (BFObject *)pd_new(qlass);
+    try {
 	int argc = ac;
 	t_atom argv[argc];
 	for (int i=0; i<argc; i++) argv[i] = at[i];
@@ -175,6 +166,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
+    } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text); return 0;}
 }
 
 static void BFObject_delete_1 (FMessage *fm) {}
