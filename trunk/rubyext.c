@@ -45,9 +45,7 @@ std::map<t_class *,FClass *> fclasses_pd;
 static RMethod funcall_lookup (BFObject *bself, const char *sel) {
 	FClass *fclass = fclasses_pd[*(t_class **)bself];
 	int n = fclass->methodsn;
-	for (int i=0; i<n; i++) {
-		if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
-	}
+	for (int i=0; i<n; i++) if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
 	return 0;
 }
 
@@ -74,7 +72,7 @@ struct BFProxy : t_object {
 
 static t_class *BFProxy_class;
 
-static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
+static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
     try {
 	t_atom argv[ac+1];
 	for (int i=0; i<ac; i++) argv[i+1] = at[i];
@@ -90,16 +88,16 @@ static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *sele
 			funcall_rescue(bself,buf,argc,argv+1);
 		} else {
 			SETSYMBOL(argv+0,gensym(buf));
-			funcall_rescue(bself,"method_missing",argc+1,argv);
+			funcall_rescue(bself,"anything",argc+1,argv);
 		}
 	}
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
-static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
-	BFObject_method_missing(self,0,s,argc,argv);
+static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
+	BFObject_anything(self,0,s,argc,argv);
 }
-static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_atom *argv) {
-	BFObject_method_missing(self->parent,self->id,s,argc,argv);
+static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom *argv) {
+	BFObject_anything(self->parent,self->id,s,argc,argv);
 }
 
 typedef void *(*t_constructor)(MESSAGE);
@@ -120,7 +118,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
-
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	t_constructor alloc = fclasses[string(classsym->s_name)]->allocator;
@@ -268,7 +265,7 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
-	class_addanything(fclass->bfclass,(t_method)BFObject_method_missing0);
+	class_addanything(fclass->bfclass,(t_method)BFObject_anything0);
 }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
@@ -326,10 +323,6 @@ void blargh () {
   free(symbols);
 }
 
-#undef SDEF
-#define SDEF(_class_,_name_,_argc_)   rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
-#define SDEF2(_name1_,_name2_,_argc_) rb_define_singleton_method(mGridFlow,_name1_,(RMethod)GridFlow_s_##_name2_,_argc_)
-
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -350,7 +343,7 @@ extern "C" void gridflow_setup () {
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
 	add_to_path(dirresult);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
-	class_addanything(BFProxy_class,BFProxy_method_missing);
+	class_addanything(BFProxy_class,BFProxy_anything);
 	gf_data_path.push_back(string(dirresult)+"/images");
         srandom(rdtsc());
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);

@@ -2451,7 +2451,7 @@ string ssprintf(const char *fmt, ...) {
 		if (clock) clock_free(clock);
 	}
 	\decl void initialize2();
-	\decl void method_missing (...);
+	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
@@ -2517,7 +2517,7 @@ static void display_update(void *x) {
 	clock = clock_new((void *)this,(void(*)())display_update);
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
-\def void method_missing (...) {
+\def void anything (...) {
 	string sel = argv[0];
 	text.str("");
 	if (sel != "float") {text << sel; if (argc>1) text << " ";}
@@ -2780,11 +2780,11 @@ void ParallelPort::call() {
 	~Route2() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv);}
 	\decl void initialize2();
-	\decl void method_missing(...);
+	\decl void anything(...);
 	\decl 1 list(...);
 };
 \def void initialize2() {bself->noutlets_set(1+nsels);}
-\def void method_missing(...) {
+\def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	int i=0;
 	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
@@ -2815,11 +2815,11 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 		this->index=i;
 	}
 	\decl void initialize2();
-	\decl void method_missing(...);
+	\decl void anything(...);
 	\decl 1 float(int i);
 };
 \def void initialize2() {bself->noutlets_set(n);}
-\def void method_missing(...) {
+\def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	outlet_anything(bself->out[index],sel,argc-1,argv+1);
 	if (mode) {
