@@ -25,7 +25,7 @@
 /* bt878 on heri's comp supports palettes 3, 6, 7, 8, 9, 13 */
 /* pwc supports palettes 12 and 15 */
 
-#include "../base/grid.h.fcs"
+#include "../gridflow.h.fcs"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

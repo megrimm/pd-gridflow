@@ -21,12 +21,10 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#define T_DATA T_COCOA_DATA
 #include <QuickTime/QuickTime.h>
 #include <QuickTime/Movies.h>
 #include <QuickTime/QuickTimeComponents.h>
-#undef T_DATA
-#include "../base/grid.h.fcs"
+#include "../gridflow.h.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>

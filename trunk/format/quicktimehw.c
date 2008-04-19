@@ -22,7 +22,7 @@
 */
 
 #define QUICKTIMEHW_INCLUDE_HERE
-#include "../base/grid.h.fcs"
+#include "../gridflow.h.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>

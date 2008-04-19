@@ -24,7 +24,7 @@
 /* !@#$ not handling abort on compress */
 /* !@#$ not handling abort on decompress */
 
-#include "../base/grid.h.fcs"
+#include "../gridflow.h.fcs"
 extern "C" {
 #include <libpng12/png.h>
 };
