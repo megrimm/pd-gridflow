@@ -25,6 +25,9 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <setjmp.h>
 
 /* for exception-handling in 0.9.0... Linux-only */
 #include <exception>
@@ -36,21 +39,6 @@
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
-
-/* **************************************************************** */
-struct FMessage {
-	BFObject *self;
-	int winlet;
-	t_symbol *selector;
-	int ac;
-	const t_atom *at;
-	bool is_init;
-};
-#include <sys/time.h>
-#include <signal.h>
-#include <setjmp.h>
-#define rb_sym_name rb_sym_name_r4j
-void CObject_free (void *victim) {delete (CObject *)victim;}
 
 /* **************************************************************** */
 
@@ -115,8 +103,6 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 }
 
 typedef void *(*t_constructor)(MESSAGE);
-static void CObject_mark (void *z) {}
-
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
     if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
@@ -168,8 +154,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text); return 0;}
 }
-
-static void BFObject_delete_1 (FMessage *fm) {}
 
 static void BFObject_delete (BFObject *bself) {
 	try {funcall(bself,"delete",0,0,true);} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
@@ -351,7 +335,8 @@ void blargh () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
-    post("GridFlow " GF_VERSION ", Copyright © 2001-2008 Mathieu Bouchard");
+    post("GridFlow " GF_VERSION ", Copyright (c) 2001-2008 Mathieu Bouchard");
+    post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
     try {
