@@ -31,7 +31,7 @@
 <p><b>Operating System:</b> GridFlow is mainly made on Ubuntu. We have also used Debian, SuSE and Mandrake. We suppose that it would work on FreeBSD, NetBSD or OpenBSD if someone tried. MacOSX support is a bit trickier but it should work on 10.3 (haven't tried lately). It also worked on Solaris when I tried it. Microsoft Windows is not supported, but if you do want to try to add support for that, try CygWin and/or MinGW.</p>
 
 <p><b>Required Software:</b><ul>
-	<li>Ruby 1.8 or 1.9 (with all the *.so and *.h files)</li>
+	<li>Ruby 1.8 or 1.9</li>
 	<li>PureData 0.39 or later, or DesireData</li>
 	<li>GNU C++ Compiler (g++) version 3.x or 4.x</li>
 	<li>GNU Make</li>
@@ -70,9 +70,7 @@ the actual releases are more tested.</p>
 <tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
 <tr><td><h4><a name="Installation_instructions_(incl._compilation)">Installation instructions (incl. compilation)</a></h4>
 <ol>
-	<ul><li> Install Ruby, preferably a Ruby 1.8. It needs to come with <kbd>ruby.h</kbd> and <kbd>intern.h</kbd> and
-	<kbd>libruby.so</kbd>. Those extra files may be in a package called <kbd>ruby-dev</kbd> and/or <kbd>libruby<kbd> and/or
-	<kbd>libruby-dev</kbd> or anything named similarly.
+	<ul><li> Install Ruby.</li>
 	<li>Download GridFlow from the website and uncompress it, or get it from the SVN server.</li>
 	<li>Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. Make sure it detects all the components
 	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: <kbd>libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</kbd> </li>
