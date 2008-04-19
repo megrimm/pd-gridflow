@@ -49,7 +49,7 @@ clean::
 
 .SUFFIXES:
 
-H = gridflow2.h base/grid.h.fcs
+H = gridflow.h.fcs
 
 %.h.fcs: %.h $(COMMON_DEPS)
 	$(FILT) $< $@
@@ -70,9 +70,9 @@ H = gridflow2.h base/grid.h.fcs
 %.o: %.m.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
 
-%.s: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.s: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -S $< -o $@
-%.e: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.e: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -E $< -o $@
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
@@ -85,9 +85,9 @@ base/mmx.o: base/mmx.asm
 unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
-$(PD_LIB): rubyext.c.fcs $(OBJS2) $(OBJS) base/grid.h gridflow2.h $(COMMON_DEPS)
+$(PD_LIB): gridflow.c.fcs $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
-		rubyext.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
+		gridflow.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
@@ -117,4 +117,4 @@ help::
 #--------#--------#--------#--------#--------#--------#--------#--------
 
 kloc::
-	wc configure base/*.rb format/*.rb rubyext.rb
+	wc configure base/*.rb
