@@ -76,12 +76,12 @@ void suffixes_are (const char *name, const char *suffixes) {
 \def 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
-	if (!t) outlet_symbol(bself->out[2],gensym(s));
+	if (!t) outlet_symbol(bself->outlets[2],gensym(s));
 	else {
 		*t = 0;
-		outlet_symbol(bself->out[1],gensym(t+1));
+		outlet_symbol(bself->outlets[1],gensym(t+1));
 		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
-		if (u!=suffix_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
+		if (u!=suffix_table.end()) outlet_symbol(bself->outlets[0],gensym((char *)u->second.data()));
 	}
 	free(s);
 }
@@ -94,8 +94,8 @@ void suffixes_are (const char *name, const char *suffixes) {
 };
 \def 0 symbol (string str) {
 	std::map<std::string,std::string>::iterator u = format_table.find(str);
-	if (u!=format_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
-	else outlet_bang(bself->out[0]);
+	if (u!=format_table.end()) outlet_symbol(bself->outlets[0],gensym((char *)u->second.data()));
+	else outlet_bang(bself->outlets[0]);
 }
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 

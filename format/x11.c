@@ -265,7 +265,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	SETFLOAT(a+0,y);
 	SETFLOAT(a+1,x);
 	SETFLOAT(a+2,state);
-	outlet_anything(bself->out[0],gensym("position"),COUNT(a),a);
+	outlet_anything(bself->outlets[0],gensym("position"),COUNT(a),a);
 }
 
 void FormatX11::call() {
@@ -303,7 +303,7 @@ void FormatX11::call() {
 			SETFLOAT(at+1,ek->x);
 			SETFLOAT(at+2,ek->state);
 			SETSYMBOL(at+3,gensym(buf));
-			outlet_anything(bself->out[0],sel,4,at);
+			outlet_anything(bself->outlets[0],sel,4,at);
 			//XFree(kss);
 		}break;
 		case MotionNotify:{
