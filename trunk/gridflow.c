@@ -134,10 +134,10 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	CPPExtern::m_holdname=0;
 #endif
 #endif
-	bself->nin  = 1;
-	bself->nout = 0;
-	bself->in  = new  BFProxy*[1];
-	bself->out = new t_outlet*[1];
+	bself->ninlets  = 1;
+	bself->noutlets = 0;
+	bself->inlets  = new  BFProxy*[1];
+	bself->outlets = new t_outlet*[1];
 	bself->ninlets_set( fclasses[classsym->s_name]->ninlets);
 	bself->noutlets_set(fclasses[classsym->s_name]->noutlets);
 	funcall(bself,"initialize2",0,0,true);
@@ -195,23 +195,23 @@ void BFObject::ninlets_set (int n) {
 	if (!this) RAISE("there is no bself");
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
 	BFObject_undrawio(this);
-	if (nin<n) {
+	if (ninlets<n) {
 		BFProxy **noo = new BFProxy*[n];
-		memcpy(noo,in,nin*sizeof(BFProxy*));
-		delete[] in;
-		in = noo;
-		while (nin<n) {
-			BFProxy *p = in[nin] = (BFProxy *)pd_new(BFProxy_class);
+		memcpy(noo,inlets,ninlets*sizeof(BFProxy*));
+		delete[] inlets;
+		inlets = noo;
+		while (ninlets<n) {
+			BFProxy *p = inlets[ninlets] = (BFProxy *)pd_new(BFProxy_class);
 			p->parent = this;
-			p->id = nin;
+			p->id = ninlets;
 			p->inlet = inlet_new(this, &p->ob_pd, 0,0);
-			nin++;
+			ninlets++;
 		}
 	} else {
-		while (nin>n) {
-			nin--;
-			inlet_free(in[nin]->inlet);
-			delete in[nin];
+		while (ninlets>n) {
+			ninlets--;
+			inlet_free(inlets[ninlets]->inlet);
+			delete inlets[ninlets];
 		}
 	}
 	BFObject_redraw(this);
@@ -221,14 +221,14 @@ void BFObject::noutlets_set (int n) {
 	if (!this) RAISE("there is no bself");
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
 	BFObject_undrawio(this);
-	if (nout<n) {
+	if (noutlets<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
-		memcpy(noo,out,nout*sizeof(t_outlet*));
-		delete[] out;
-		out = noo;
-		while (nout<n) out[nout++] = outlet_new(this,&s_anything);
+		memcpy(noo,outlets,noutlets*sizeof(t_outlet*));
+		delete[] outlets;
+		outlets = noo;
+		while (noutlets<n) outlets[noutlets++] = outlet_new(this,&s_anything);
 	} else {
-		while (nout>n) outlet_free(out[--nout]);
+		while (noutlets>n) outlet_free(outlets[--noutlets]);
 	}
 	BFObject_redraw(this);
 }

@@ -291,7 +291,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->dim = dim;
 	t_atom a[3];
 	SETPOINTER(a,(t_gpointer *)this); // hack
-	outlet_anything(parent->bself->out[woutlet],bsym._grid,1,a);
+	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
 	frozen=true;
 	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;

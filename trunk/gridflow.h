@@ -818,9 +818,9 @@ struct BFObject : t_object {
 	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
 #endif
 	FObject *self;
-	int nin,nout;   // per object settings (not class)
-	BFProxy  **in;  // direct access to  inlets (not linked lists)
-	t_outlet **out; // direct access to outlets (not linked lists)
+	int ninlets,noutlets; // per object settings (not class)
+	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
+	t_outlet **outlets;   // direct access to outlets (not linked lists)
 	t_canvas *mom;
 	void  ninlets_set(int n);
 	void noutlets_set(int n);
@@ -833,7 +833,7 @@ struct BFObject : t_object {
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
-		outlet_list(bself->out[outlet],&s_list,argc,foo);
+		outlet_list(bself->outlets[outlet],&s_list,argc,foo);
 	}
 };
 \end class FObject

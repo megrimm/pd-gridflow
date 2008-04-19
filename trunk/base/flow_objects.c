@@ -177,7 +177,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 };
 GRID_INLET(GridToFloat,0) {
 } GRID_FLOW {
-	for (int i=0; i<n; i++) outlet_float(bself->out[0],data[i]);
+	for (int i=0; i<n; i++) outlet_float(bself->outlets[0],data[i]);
 } GRID_END
 \end class {install("#to_float",1,1); add_creator("#export"); add_creator("@export");}
 
@@ -191,7 +191,7 @@ GRID_INLET(GridToSymbol,0) {
 	char c[n+1];
 	for (int i=0; i<n; i++) c[i]=(char)data[i];
 	c[n]=0;
-	outlet_symbol(bself->out[0],gensym(c));
+	outlet_symbol(bself->outlets[0],gensym(c));
 } GRID_END
 \end class {install("#to_symbol",1,1); add_creator("#export_symbol"); add_creator("@export_symbol");}
 
@@ -990,7 +990,7 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 GRID_INLET(GridFinished,0) {
 	in->set_mode(0);
 } GRID_FINISH {
-	outlet_bang(bself->out[0]);
+	outlet_bang(bself->outlets[0]);
 } GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
 
@@ -1010,7 +1010,7 @@ GRID_INLET(GridDim,0) {
 	\grin 0
 };
 GRID_INLET(GridType,0) {
-	outlet_symbol(bself->out[0],gensym((char *)number_type_table[in->nt].name));
+	outlet_symbol(bself->outlets[0],gensym((char *)number_type_table[in->nt].name));
 	in->set_mode(0);
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
@@ -1295,8 +1295,8 @@ GRID_INLET(GridCentroid,0) {
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
 	out->send(2,blah);
-	outlet_float(bself->out[1],blah[0]);
-	outlet_float(bself->out[2],blah[1]);
+	outlet_float(bself->outlets[1],blah[0]);
+	outlet_float(bself->outlets[2],blah[1]);
 } GRID_END
 
 \end class {install("#centroid",1,3);}
@@ -2232,7 +2232,7 @@ TYPESWITCH(a->nt,FOO,);
 GRID_INLET(GridUnpack,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	for (int i=n-1; i>=0; i--) outlet_float(bself->out[i],(t_float)data[i]);
+	for (int i=n-1; i>=0; i--) outlet_float(bself->outlets[i],(t_float)data[i]);
 } GRID_END
 \def void initialize2 () {bself->noutlets_set(this->n);}
 \end class {install("#unpack",1,0);}
@@ -2243,7 +2243,7 @@ GRID_INLET(GridUnpack,0) {
 	\decl 0 list (...);
 };
 \def 0 list (...) {
-	t_outlet *o = bself->out[0];
+	t_outlet *o = bself->outlets[0];
 	for (int i=0; i<argc; i++) {
 		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,argv[i]);
 		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,argv[i]);
@@ -2367,15 +2367,15 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 \def 0 list (...) {
 	if (argc<1) RAISE("empty input");
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->out[0],i==ac?-1:i);
+	outlet_float(bself->outlets[0],i==ac?-1:i);
 }
 \def 0 float (float f) {
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->out[0],i==ac?-1:i);
+	outlet_float(bself->outlets[0],i==ac?-1:i);
 }
 \def 0 symbol (t_symbol *s) {
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->out[0],i==ac?-1:i);
+	outlet_float(bself->outlets[0],i==ac?-1:i);
 }
 //doc:_1_list,"list to search into"
 //doc:_0_float,"float to find in that list"
@@ -2404,7 +2404,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 \def 0 float(float f) {
 	int i;
 	for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
-	outlet_float(bself->out[i],f);
+	outlet_float(bself->outlets[i],f);
 }
 \def void _n_float(int i, float f) {
 	if (!i) _0_float(argc,argv,f); // precedence problem in rubyext...
@@ -2637,7 +2637,7 @@ void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 		j++;
 		int k=j;
 		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
-		outlet_anything2(bself->out[sargc],j-k,av+k);
+		outlet_anything2(bself->outlets[sargc],j-k,av+k);
 	}
 }
 void Args::process_args (int argc, t_atom *argv) {
@@ -2653,14 +2653,14 @@ void Args::process_args (int argc, t_atom *argv) {
 			}
 		} else v = &argv[i];
 		if (sargv[i].name==wildcard) {
-			if (argc-i>0) outlet_list(bself->out[i],&s_list,argc-i,argv+i);
-			else outlet_bang(bself->out[i]);
+			if (argc-i>0) outlet_list(bself->outlets[i],&s_list,argc-i,argv+i);
+			else outlet_bang(bself->outlets[i]);
 		} else {
 			if (v->a_type==A_LIST) {
 				t_binbuf *b = (t_binbuf *)v->a_gpointer;
-				outlet_list(bself->out[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->out[i],v->a_symbol);
-			else outlet_anything2(bself->out[i],1,v);
+				outlet_list(bself->outlets[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
+			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->outlets[i],v->a_symbol);
+			else outlet_anything2(bself->outlets[i],1,v);
 		}
 	}
 	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d)", argc, sargc);
@@ -2692,8 +2692,8 @@ void Args::process_args (int argc, t_atom *argv) {
 	SETFLOAT(b+0,tv.tv_sec/86400);
 	SETFLOAT(b+1,mod(tv.tv_sec,86400));
 	SETFLOAT(b+2,tv.tv_usec);
-	outlet_anything(bself->out[2],&s_list,6,a);
-	outlet_anything(bself->out[1],&s_list,3,b);
+	outlet_anything(bself->outlets[2],&s_list,6,a);
+	outlet_anything(bself->outlets[1],&s_list,3,b);
 	send_out(0,strlen(tt),tt);
 }
 
@@ -2760,11 +2760,11 @@ void ParallelPort_call(ParallelPort *self) {self->call();}
 void ParallelPort::call() {
 	int flags;
 	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
-	if (this->flags!=flags) outlet_float(bself->out[2],flags);
+	if (this->flags!=flags) outlet_float(bself->outlets[2],flags);
 	this->flags = flags;
 	int status;
 	if (ioctl(fd,LPGETSTATUS,&status)<0) post("ioctl: %s",strerror(errno));
-	if (this->status!=status) outlet_float(bself->out[1],status);
+	if (this->status!=status) outlet_float(bself->outlets[1],status);
 	this->status = status;
 	if (clock) clock_delay(clock,2000);
 }
@@ -2788,7 +2788,7 @@ void ParallelPort::call() {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	int i=0;
 	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-	outlet_anything(bself->out[i],sel,argc-1,argv+1);
+	outlet_anything(bself->outlets[i],sel,argc-1,argv+1);
 }
 \def 1 list(...) {
 	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -2821,7 +2821,7 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 \def void initialize2() {bself->noutlets_set(n);}
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	outlet_anything(bself->out[index],sel,argc-1,argv+1);
+	outlet_anything(bself->outlets[index],sel,argc-1,argv+1);
 	if (mode) {
 		index += sgn(mode);
 		if (index<lo || index>hi) {
@@ -2856,7 +2856,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_utime-time)*1000/HZ);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
@@ -2865,7 +2865,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_stime-time)*1000/HZ);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
@@ -2874,7 +2874,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {time=rdtsc();}
-\def 1 bang () {outlet_float(bself->out[0],(rdtsc()-time)*1000.0/cpu_hertz);}
+\def 1 bang () {outlet_float(bself->outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 \end class {install("tsctime",2,1);
 	struct timeval t0,t1;
 	uint64 u0,u1;

@@ -227,7 +227,7 @@ def handle_classinfo(line)
 	frame.attrs.each {|name,attr| startup2 += ":#{name} => []," }
 	startup2 += "}"
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
-	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->out[bself->nout-1],s,1,a);}"
+	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
 	# "IEVAL(rself,\"#{startup2}\");" # this means no support for attributes for a while.
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"+line.chomp
@@ -252,7 +252,6 @@ def handle_end(line)
 	fields = line.split(/\s+/)
 	n = fields.length
 	if not ClassDecl===frame then raise "\\end: frame is not a \\class" end
-	#handle_classinfo if not frame.info
 	cl = frame.name
 	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
 	$stack.push frame
