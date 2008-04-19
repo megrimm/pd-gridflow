@@ -749,9 +749,10 @@ struct FClass {
 	int noutlets;
 	t_class *bfclass;
 	string name;
+	size_t bytes;
 };
 
-void fclass_install(FClass *fc, const char *super);
+void fclass_install(FClass *fc, const char *super, size_t bytes);
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
@@ -789,7 +790,7 @@ struct GridOutlet : CObject {
 	// beyond the call to give().
 	template <class T> void give(long n, T *data);
 
-	// third way to send (upcoming, in GF-0.8.??) is called "ask".
+	// third way to send (upcoming, in GF-1.1.??) is called "ask".
 	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
 
 private:

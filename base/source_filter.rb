@@ -288,7 +288,8 @@ end
 def handle_startall(line)
 	$classes.each {|q|
 		Out.print "fclass_install(&ci#{q.name},"
-		if q.supername then Out.print "\"#{q.supername}\");" else Out.print "0);" end
+		if q.supername then Out.print "\"#{q.supername}\"" else Out.print "0" end
+		Out.print ",sizeof(#{q.name}));"
 	}
 end
 
