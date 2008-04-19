@@ -186,10 +186,10 @@ uint64 gf_timeofday () {
 #define WRITE_LE \
 	for (int bytes = self->bytes; bytes; bytes--, t>>=8) *out++ = t;
 
-#define WRITE_BE { int bytes; \
+#define WRITE_BE {int bytes; \
 	bytes = self->bytes; \
 	while (bytes--) {out[bytes] = t; t>>=8;}\
-	out += self->bytes; }
+	out += self->bytes;}
 
 /* this macro would be faster if the _increment_
    was done only once every loop. or maybe gcc does it, i dunno */
@@ -224,7 +224,7 @@ void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) 
 /* **************************************************************** */
 
 template <class T>
-static void default_pack(BitPacking *self, long n, T * in, uint8 * out) {
+static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -259,10 +259,7 @@ static void default_pack(BitPacking *self, long n, T * in, uint8 * out) {
 		int bytes=0; uint32 temp=0; _reader_; \
 		for (int i=0; i<self->size; i++, out++) { \
 			uint32 t=temp&self->mask[i]; \
-			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7)); \
-		} \
-	}
-//			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
+			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7));}}
 
 template <class T>
 static void default_unpack(BitPacking *self, long n, uint8 * in, T * out) {
@@ -403,8 +400,7 @@ bool BitPacking::eq(BitPacking *o) {
 	return (endian ^ o->endian ^ ::is_le()) == 2;
 }
 
-BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
-Packer *packer, Unpacker *unpacker) {
+BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *packer, Unpacker *unpacker) {
 	this->endian = endian;
 	this->bytes = bytes;
 	this->size = size;
@@ -417,7 +413,6 @@ Packer *packer, Unpacker *unpacker) {
 	int packeri=-1;
 	this->packer = &bp_packers[0];
 	this->unpacker = &bp_unpackers[0];
-
 	for (int i=0; i<(int)(sizeof(builtin_bitpackers)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = &builtin_bitpackers[i];
 		if (this->eq(bp)) {
