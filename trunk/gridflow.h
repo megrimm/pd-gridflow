@@ -808,6 +808,10 @@ private:
 
 //****************************************************************
 
+#define CHECK_GRIN(class,i) \
+	if (in.size()<=i) in.resize(i+1); \
+	if (!in[i]) in[i]=new GridInlet((GridObject *)this,&class##_grid_##i##_hand);
+
 struct BFProxy;
 struct BFObject : t_object {
 #ifdef HAVE_GEM
@@ -840,8 +844,7 @@ struct BFObject : t_object {
 	GridObject(MESSAGE) : FObject(MESSAGE2) {}
 	~GridObject() {}
 	bool is_busy_except(P<GridInlet> gin) {
-		for (uint32 i=0; i<in.size(); i++)
-			if (in[i] && in[i]!=gin && in[i]->dim) return true;
+		for (uint32 i=0; i<in.size(); i++) if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
 };

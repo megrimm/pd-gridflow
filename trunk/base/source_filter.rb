@@ -266,17 +266,11 @@ def handle_end(line)
 		else raise 'BORK BORK BORK' end
 		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
-		handle_def "#{i} grid(void *foo) {"+
-			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+		handle_def "#{i} grid(void *foo) {CHECK_GRIN(#{cl},#{i});"+
 			"in[#{i}]->begin(argc,argv);}"
-		handle_def "#{i} list(...) {"+
-			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+		handle_def "#{i} list(...) {CHECK_GRIN(#{cl},#{i});"+
 			"in[#{i}]->from_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
-		handle_def "#{i} float(float f) {"+
-			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+		handle_def "#{i} float(float f) {CHECK_GRIN(#{cl},#{i});"+
 			"t_atom2 a[1]; SETFLOAT(a,f);"+
 			"in[#{i}]->from_atom(1,a);}" if not frame.methods["_#{i}_float"].done
 	}
