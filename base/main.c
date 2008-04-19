@@ -36,7 +36,7 @@
 
 //using namespace std;
 
-#include "grid.h.fcs"
+#include "../gridflow.h.fcs"
 
 BuiltinSymbols bsym;
 

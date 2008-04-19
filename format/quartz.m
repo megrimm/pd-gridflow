@@ -34,13 +34,9 @@
 
 #include <stdio.h>
 #include <objc/Object.h>
-
-/* wrapping name conflict */
-#define T_DATA T_COCOA_DATA
 #include <Cocoa/Cocoa.h>
-#undef T_DATA
 
-#include "../base/grid.h.fcs"
+#include "../gridflow.h.fcs"
 
 @interface GFView: NSView {
 	uint8 *imdata;

@@ -28,7 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "grid.h.fcs"
+#include "../gridflow.h.fcs"
 #include <ctype.h>
 
 #define Pointer_s_new Pointer_s_new_2

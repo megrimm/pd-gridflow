@@ -27,7 +27,7 @@
 #include <string>
 #include <sstream>
 #include <errno.h>
-#include "grid.h.fcs"
+#include "../gridflow.h.fcs"
 #ifndef DESIREDATA
 extern "C" {
 #include "bundled/pd/g_canvas.h"
