@@ -56,20 +56,10 @@ ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffre
 
 //#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
 #define RAISE(args...) throw new Barf(__FILE__,__LINE__,__PRETTY_FUNCTION__,args)
-
 #define VA int argc, t_atom2 *argv
-#define SI(_sym_) (rb_intern(#_sym_))
-#define SYM(_sym_) (ID2SYM(SI(_sym_)))
-#define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
-
 // returns the size of a statically defined array
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
-
-#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
-#define EVAL(s) rb_eval_string(s)
-
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
@@ -205,7 +195,6 @@ struct CObject {
 	CObject() : refcount(0) {}
 	virtual ~CObject() {}
 };
-void CObject_free (void *);
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
 struct MethodDecl {const char *selector; RMethod method;};
