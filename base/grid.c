@@ -31,9 +31,6 @@
 #include "../gridflow.h.fcs"
 #include <ctype.h>
 
-#define Pointer_s_new Pointer_s_new_2
-#define Pointer_get   Pointer_get_2
-
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",ARGS(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
 #define TRACE
 
@@ -275,7 +272,6 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	}
 	try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	//!@#$ add error handling.
-	// rescue; abort(); end ???
 	dim = 0;
 	dex = 0;
 }

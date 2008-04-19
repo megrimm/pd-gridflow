@@ -33,12 +33,11 @@ Attr = Struct.new(:type,:name,:default,:virtual)
 
 class MethodDecl
 	def ==(o)
-		return false unless rettype==o.rettype &&
-			maxargs==o.maxargs
+		return false unless rettype==o.rettype && maxargs==o.maxargs
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
-	attr_accessor:done
+	attr_accessor :done
 end
 
 class Arg
