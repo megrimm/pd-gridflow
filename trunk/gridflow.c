@@ -1,5 +1,5 @@
 /*
-	$Id$
+	$Id: rubyext.c 3621 2008-04-19 01:47:38Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2008 by Mathieu Bouchard
@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "base/grid.h.fcs"
+#include "gridflow.h.fcs"
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
