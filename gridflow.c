@@ -153,7 +153,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {funcall(bself,"delete",0,0,true);} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
+	try {delete bself->self;} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
 
 //****************************************************************
