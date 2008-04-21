@@ -188,11 +188,6 @@ end
 
 #----------------------------------------------------------------#
 
-def make_expand(x)
-  y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
-  if x!=y then make_expand y else y end
-end
-
 def read_ld_so_conf
 	return [] unless File.exist?("/etc/ld.so.conf")
 	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
@@ -206,11 +201,9 @@ $C_INCLUDE_PATH = (
 	epath("CPLUS_INCLUDE_PATH") +
 	epath("C_INCLUDE_PATH") +
 	["/usr/include"]).uniq
-
 $LIBRARY_PATH = (
 	epath("LIBRARY_PATH") +
 	["/usr/lib","/lib"]).uniq
-
 $LD_LIBRARY_PATH = (
 	epath("LD_LIBRARY_PATH") +
 	read_ld_so_conf +
@@ -257,6 +250,11 @@ Feature.add {
 	tag :gcc3
 	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
+	defines :GCC_VERSION => proc {
+		m = /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
+	# how does this handle two test procs again?
 	test proc {
 		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
@@ -271,24 +269,14 @@ Feature.add {
 		int main () {
 			printf("GCC_VERSION %d.%d.%d\\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 			return !(__GNUC__>=3);
-		}}
-	}
-	defines :GCC_VERSION => proc {
-		m = /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		m[1]
-	}
-}
+		}}}}
 Feature.add {
 	tag :stl
 	name "C++ Standard Template Library"
 	test proc {
 		c_test %{
 		#include <vector>
-		int main () {
-			std::vector<int> foo;
-		}}
-	}
-}
+		int main () {std::vector<int> foo;}}}}
 Feature.add {
 	tag :gcc64
 	name "GNU C++ in 64-bit mode"
@@ -304,15 +292,12 @@ Feature.add {
 			T(char)T(short)T(int)T(long)T(long long)puts("");
 			T(float)T(double)puts("");
 			return !( sizeof(void*)==8 );
-		}}
-	}
-}
-
-#----------------------------------------------------------------#
+		}}}}
 Feature.add {
 	tag :pentium
 	name "Pentium-compatible CPU"
 	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
+	options ["HAVE_PENTIUM"]
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
 		c_test '
@@ -328,15 +313,13 @@ Feature.add {
 			result[12]=0;
 	                fprintf(stderr,"cpuid: name=\"%12s\", flags=0x%08x\n",
 	                        result,code);
-			return 0;}'
-	}
-	options ["HAVE_PENTIUM"]
-}
+			return 0;}'}}
 Feature.add {
 	tag :mmx
 	uses_feature [:pentium]
 	uses_o ["base/mmx.o","base/mmx_loader.o"]
 	name "MMX-compatible CPU (using NASM)"
+	options ["HAVE_MMX"]
 	test proc { #!@#$ isn't 64-bit-compatible
 		asm_test '
 		global main
@@ -358,57 +341,44 @@ Feature.add {
 		yes:
 		push long 0
 		call exit
-		', '-lc'
-	}
-	options ["HAVE_MMX"]
-}
-#----------------------------------------------------------------#
+		', '-lc'}}
 =begin
 Feature.add {
 	tag :dv1394
 	name "DV1394 for Linux"
 	uses_so ["-ldv"]
 	uses_h ["format/dv1394.h"]
+	uses_o ["format/dv1394.o"]
+	options ["HAVE_DV1394"]
 	test proc {
 		c_test "
 		#include#
-		int main () {return 0;}
-		"
-	}
-	options ["HAVE_DV1394"]
-	uses_o ["format/dv1394.o"]
-}
+		int main () {return 0;}"}}
 =end
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
 	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
+	uses_o ["format/x11.o"]
 	test proc {
 		c_test "
 		#include#
-		int main () {return XSetErrorHandler==0;}
-		"
-	}
-	uses_o ["format/x11.o"]
-}
+		int main () {return XSetErrorHandler==0;}"}}
 Feature.add {
 	tag :x11_shm
 	name "X11 acceleration by shared memory (XSHM plugin)"
 	uses_feature [:x11]
 	uses_so $LIBX11+["-lXext"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
+	options ["HAVE_X11_SHARED_MEMORY"]
 	test proc {
 		c_test "
 		#include#
 		#include <X11/Xutil.h>
 		#include <X11/StringDefs.h>
 		#include <sys/ipc.h>
-		int main () {return XShmPutImage==0;}
-		"
-	}
-	options ["HAVE_X11_SHARED_MEMORY"]
-}
+		int main () {return XShmPutImage==0;}"}}
 Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
@@ -418,14 +388,11 @@ Feature.add {
 		a
 	}
 	uses_h ["SDL/SDL.h"]
+	uses_o ["format/sdl.o"]
 	test proc {
 		c_test "
 		#include#
-		int main () {return SDL_MapRGB==0;}
-		"
-	}
-	uses_o ["format/sdl.o"]
-}
+		int main () {return SDL_MapRGB==0;}"}}
 Feature.add {
 	tag :objcpp
 	name "GNU/Apple ObjectiveC++ Compiler"
@@ -435,57 +402,48 @@ Feature.add {
 		c_test "
 		#include#
 		int main () { [[Object alloc] init]; }
-		", nil, ["-xobjective-c++"]
-	}
-}
+		", nil, ["-xobjective-c++"]}}
 Feature.add {
 	tag :quartz
 	name "Apple Quartz/Cocoa Display"
 	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_feature [:objcpp]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
+	uses_o ["format/quartz.o"]
 	test proc {
 		c_test "
 		#include#
 		int main () {return CGImageRelease==0;}
-		", nil, ["-xobjective-c++"]
-	}
-	uses_o ["format/quartz.o"]
-}
+		", nil, ["-xobjective-c++"]}}
 Feature.add {
 	tag :aalib
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
+	uses_o ["format/aalib.o"]
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
 		extern \"C\" {
 		#include#
 		};
-		int main () {return aa_init==0;}
-		"
-	}
-	uses_o ["format/aalib.o"]
-}
+		int main () {return aa_init==0;}"}}
 Feature.add {
 	tag :netpbm
 	name "NetPBM 10 Library"
 	uses_so ["-lnetpbm"]
 	uses_h ["pam.h"]
+	uses_o ["format/netpbm.o"]
 	test proc {
 		c_test "
 		#include#
-		int main () {return pm_init==0;}
-		"
-	}
-	uses_o ["format/netpbm.o"]
-}
+		int main () {return pm_init==0;}"}}
 Feature.add {
 	tag :jpeg
 	name "JPEG Library"
 	uses_so ["-ljpeg"]
 	uses_h ["jpeglib.h"]
+	uses_o ["format/jpeg.o"]
 	test proc {
 		c_test "
 		extern \"C\" {
@@ -493,16 +451,13 @@ Feature.add {
 		#include#
 		};
 		int main () {
-		return jpeg_write_scanlines==0;}
-		"
-	}
-	uses_o ["format/jpeg.o"]
-}
+		return jpeg_write_scanlines==0;}"}}
 Feature.add {
 	tag :png
 	name "PNG Library"
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["libpng12/png.h"],["png.h"]]
+	uses_o ["format/png.o"]
 	test proc {|f|
 		f.c_test %`
 		extern "C" {
@@ -513,51 +468,39 @@ Feature.add {
 		#define T(a) printf("%s:%d; ",#a,sizeof(a));
 		T(png_uint_32)T(long)puts("");
 		if (!png_check_sig) return 1;
-		return 0;}
-		`
-	}
-	uses_o ["format/png.o"]
-}
-#------------------------------------------------#
+		return 0;}`}}
 Feature.add {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	uses_h ["linux/videodev.h"]
+	uses_o ["format/videodev.o"]
+	#uses_o ["format/videodev-old.o"]
 	test proc {
 		c_test "
 		#include <stdlib.h>
 		#include#
-		int main () { struct video_window foo; return 0; }"
-	}
-	uses_o ["format/videodev.o"]
-	#uses_o ["format/videodev-old.o"]
-}
+		int main () { struct video_window foo; return 0; }"}}
 Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
 	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
+	uses_o ["format/mpeg3.o"]
 	test proc {|f|
 		f.c_test "
 		#include#
-		int main () { return mpeg3_open==0; }
-		"
-	}
-	uses_o ["format/mpeg3.o"]
-}
+		int main () { return mpeg3_open==0; }"}}
 Feature.add {
 	tag :quicktimeapple
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
+	uses_o ["format/quicktimeapple.o"]
 	test proc {
 		c_test "
 		#include#
 		int main () { return EnterMovies==0; }
-		"
-	}
-	uses_o ["format/quicktimeapple.o"]
-}
+		"}}
 Feature.add {
 	tag :quicktimehw
 	unless_feature :quicktimeapple
@@ -569,6 +512,7 @@ Feature.add {
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
 		f.map{|x| "quicktime/"+x }]
+	uses_o ["format/quicktimehw.o"]
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -581,11 +525,7 @@ Feature.add {
 			"(undefined)"
 		#endif
 		); return quicktime_open==0; }
-		`
-	}
-	uses_o ["format/quicktimehw.o"]
-}
-#----------------------------------------------------------------#
+		`}}
 Feature.add {
 	tag :puredata
 	name "PureData (or DesireData)"
@@ -607,25 +547,16 @@ Feature.add {
 			#else
 				(int)(PD_VERSION*100));
 			#endif
-			return 0;
-			}
-		`
-	}
-}
+			return 0;}`}}
 Feature.add {
 	tag :desiredata
 	name "DesireData"
 	uses_h ["m_pd.h"]
+	defines ["HAVE_DESIREDATA"]
 	test proc {
 		c_test %`
 			#include#
-			int main () { return !gobj_subscribe; }
-		`
-	}
-	defines ["HAVE_DESIREDATA"]
-}
-
-#--------------------------------#
+			int main () {return !gobj_subscribe;}`}}
 Feature.add {
 	tag :gem09
 	name "PureData GEM (source code) with m_holdname"
@@ -638,9 +569,7 @@ Feature.add {
 		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_SOURCE]
 		c_test %`
 			#include "Base/GemBase.h"
-			int main () {CPPExtern::m_holdname; return 0;}`
-	}
-}
+			int main () {CPPExtern::m_holdname; return 0;}`}}
 Feature.add {
 	tag :gem08
 	unless_feature:gem09
@@ -654,9 +583,7 @@ Feature.add {
 		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_SOURCE]
 		c_test %`
 			#include "Base/GemBase.h"
-			int main () {return 0;}`
-	}
-}
+			int main () {return 0;}`}}
 Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
@@ -667,10 +594,7 @@ Feature.add {
 	test proc {
 		c_test %`
 			#include <opencv/cv.h>
-			int main () {return 0;}`
-	}
-}
-#--------------------------------#
+			int main () {return 0;}`}}
 Feature.add {
 	tag :fftw
 	name "FFTW (Fastest Fourier Transform in the West)"
@@ -680,12 +604,7 @@ Feature.add {
 	test proc {
 		c_test %`
 			#include <fftw3.h>
-			int main () {
-				return 0;
-			}
-		`
-	}
-}
+			int main () {return 0;}`}}
 #--------------------------------#
 
 $features_h = {}
@@ -753,9 +672,7 @@ DUAL.instance_eval {
 		LOG   .puts  x; LOG   .flush
 		STDERR.print x; STDERR.flush
 	end
-	def self.puts x
-		self.print x+"\n"
-	end
+	def self.puts(x) self.print x+"\n" end
 }
 
 def try feature
@@ -792,20 +709,12 @@ def try feature
 	fu = feature.unless_feature || []
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
-		if $conf[:FEATURES][f] then
-			DUAL.puts Dark+arrow+"disabled (using #{f} instead)"
-			return
-		end
+		if $conf[:FEATURES][f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
 	end
 	if feature.test
-		begin
-			tresult = feature.test.call(feature)
-		rescue StandardError => e
-		end
+		begin tresult = feature.test.call(feature); rescue StandardError => e; end
 		if tresult
-			DUAL.puts Green+arrow+"found "+(if tresult!=true
-				then " (#{tresult})"
-				else "" end)
+			DUAL.puts Green+arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
 			if tresult == "static"
 				feature.uses_so.map! {|x|
 					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
@@ -871,32 +780,6 @@ for z in [:LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
 end
 LOG.puts "-"*64
 RUBY = "$(RUBY_INSTALL_NAME)"
-
-def my_install_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
-  entries.each {|type,name,*rest|
-    if Array===name then name,oname=name else oname=name end
-    case type
-    when :ruby
-      f.puts "\t$(INSTALL_DATA) #{base+name} #{obase}/#{oname}"
-    when :directory
-      if oname[0,1]!="/" then oname="#{obase}/#{oname}" end
-      f.puts "\t$(INSTALL_DIR) #{oname}"
-      my_install_files(f,base+name,rest,oname)
-    end
-  }
-end
-
-def my_uninstall_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
-  entries.each {|type,name,*rest|
-    if Array===name then name,oname=name else oname=name end
-    case type
-    when :ruby
-      f.puts "\trm #{obase}/#{oname}"
-    when :directory
-      my_uninstall_files(f,base+name,rest) 
-    end
-  }
-end
 
 puts "generating ./config.make"
 File.open("./config.make","w") {|f|
