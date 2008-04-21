@@ -869,22 +869,12 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 				ai+i, a->v[ai+i],
 				bi+i, b->v[bi+i]);}}}
 
-\class Pointer : CObject {
-	void *p;
-	Pointer(MESSAGE) {RAISE("calling Pointer constructor the wrong way"); }
-	Pointer(void *_p) : p(_p) {}
-};
-\end class Pointer
-
 void suffixes_are (const char *name, const char *suffixes);
-
 #define install(name,inlets,outlets) install2(fclass,name,inlets,outlets)
 void install2(FClass *fclass, const char *name, int inlets, int outlets);
 #define add_creator(name) add_creator2(fclass,name)
 void add_creator2(FClass *fclass, const char *name);
-
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
-
 void call_super(int argc, t_atom *argv);
 #define SUPER call_super(argc,argv);
 
