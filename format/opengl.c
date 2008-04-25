@@ -48,10 +48,34 @@ static bool in_use = false;
 	P<Dim> dim;
 	uint8 *buf;
 	t_clock *clock;
-	\decl void call ();
-	\decl void initialize (t_symbol *mode);
+	void call ();
 	\decl 0 resize_window (int sx, int sy);
 	\grin 0
+	\constructor (t_symbol *mode) {
+		if (in_use) RAISE("only one #io:opengl object at a time; sorry");
+		in_use=true;
+		if (mode!=gensym("out")) RAISE("write-only, sorry");
+		int dummy = 0;
+		glutInit(&dummy,0);
+		glutInitDisplayMode(GLUT_RGBA);
+		resize_window(0,0,320,240);
+		gltex = 0;
+		glEnable(GL_TEXTURE_2D);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DITHER);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		window = 0xDeadBeef;
+		uint32 mask[3] = {0xff000000,0x00ff0000,0x0000ff00};
+		bit_packing = new BitPacking(4,4,3,mask);
+		clock = clock_new(this,(t_method)FormatOpenGL_call);
+		clock_delay(clock,0);
+	}
+
 	~FormatOpenGL () {
 		clock_unset(clock);
 		if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
@@ -142,34 +166,6 @@ GRID_INLET(FormatOpenGL,0) {
 	for (; n>0; y++, data+=sxc, n-=sxc) bit_packing->pack(sx, data, buf+y*bypl);
 	} GRID_FINISH {
 } GRID_END
-
-\def void initialize (t_symbol *mode) {
-	SUPER;
-	if (in_use) RAISE("only one #io:opengl object at a time; sorry");
-	in_use=true;
-	if (mode!="out") RAISE("write-only, sorry");
-	int dummy = 0;
-	glutInit(&dummy,0);
-	glutInitDisplayMode(GLUT_RGBA);
-	resize_window(0,0,320,240);
-	
-	gltex = 0;
-	glEnable(GL_TEXTURE_2D);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DITHER);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	window = 0xDeadBeef;
-
-	uint32 mask[3] = {0xff000000,0x00ff0000,0x0000ff00};
-	bit_packing = new BitPacking(4,4,3,mask);
-	clock = clock_new(this,(t_method)FormatOpenGL_call);
-	clock_delay(clock,0);
-}
 
 \classinfo {install_format("#io.opengl",2,"");}
 \end class FormatOpenGL

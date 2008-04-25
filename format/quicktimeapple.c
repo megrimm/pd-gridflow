@@ -207,7 +207,6 @@ static int nn(int c) {return c?c:' ';}
 
 \def void initialize (t_symbol *mode, string filename) {
 //vdc = SGGetVideoDigitizerComponent(c);
-  SUPER;
   dim = new Dim(240,320,4);
   OSErr e;
   rect.top=rect.left=0;
@@ -332,8 +331,34 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	uint8 *buffer;
 	P<Dim> dim;
 	int nframe, nframes;
-	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
-		buffer(), dim(0), nframe(0), nframes(0) {}
+	\constructor (t_symbol *mode, string filename) {
+		movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
+		int err;
+		filename = gf_find_file(filename);
+		FSSpec fss;
+		FSRef fsr;
+		err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);      if (err) goto err;
+		err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL); if (err) goto err;
+		err = OpenMovieFile(&fss,&movie_file,fsRdPerm);                       if (err) goto err;
+		NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
+		Rect r;
+		GetMovieBox(movie, &r);
+		post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
+		post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
+		nframes = GetMovieDuration(movie); /* i don't think so */
+		gfpost("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
+		OffsetRect(&r, -r.left, -r.top);
+		SetMovieBox(movie, &r);
+		dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
+		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
+		buffer = new uint8[dim->prod()];
+		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
+		if (err) goto err;
+		return;
+	err:
+	//	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err, rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
+		RAISE("can't open file `%s': error #%d (0x%08x)", filename.data(), err, err);
+	}
 	~FormatQuickTimeApple() {
 		if (movie) {
 			DisposeMovie(movie);
@@ -341,7 +366,6 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 			CloseMovieFile(movie_file);
 		}
 	}
-	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 codec_m (string c);
 	\decl 0 colorspace_m (string c);
 	\decl 0 bang ();
@@ -406,43 +430,6 @@ GRID_INLET(FormatQuickTimeApple,0) {
 
 \def 0 codec_m      (string c) { RAISE("Unimplemented. Sorry."); }
 \def 0 colorspace_m (string c) { RAISE("Unimplemented. Sorry."); }
-
-\def void initialize (t_symbol *mode, string filename) {
-	int err;
-	SUPER;
-	filename = gf_find_file(filename);
-	FSSpec fss;
-	FSRef fsr;
-	err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);
-	if (err) goto err;
-	err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
-	if (err) goto err;
-	err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
-	if (err) goto err;
-	NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
-	Rect r;
-	GetMovieBox(movie, &r);
-	gfpost("handle=%d movie=%d tracks=%d",
-		movie_file, movie, GetMovieTrackCount(movie));
-	gfpost("duration=%d; timescale=%d cHz",
-		(long)GetMovieDuration(movie),
-		(long)GetMovieTimeScale(movie));
-	nframes = GetMovieDuration(movie); /* i don't think so */
-	gfpost("rect=((%d..%d),(%d..%d))",
-		r.top, r.bottom, r.left, r.right);
-	OffsetRect(&r, -r.left, -r.top);
-	SetMovieBox(movie, &r);
-	dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
-	SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
-	buffer = new uint8[dim->prod()];
-	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r,
-		NULL, NULL, 0, buffer, dim->prod(1));
-	if (err) goto err;
-	return;
-err:
-//	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err, rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
-	RAISE("can't open file `%s': error #%d (0x%08x)", filename.data(), err, err);
-}
 
 \classinfo {
 	EnterMovies();
