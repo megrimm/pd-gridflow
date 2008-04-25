@@ -208,7 +208,7 @@ ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffre
 
 struct FObject;
 struct t_atom2;
-typedef void (*RMethod)(FObject *, int, t_atom2 *);
+typedef void (*Method)(FObject *, int, t_atom2 *);
 typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -332,7 +332,7 @@ struct CObject {
 };
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
-struct MethodDecl {const char *selector; RMethod method;};
+struct MethodDecl {const char *selector; Method method;};
 
 #undef check
 
@@ -835,7 +835,7 @@ struct BFObject : t_object {
 };
 
 // represents objects that have inlets/outlets
-struct FObject : CObject {
+\class FObject : CObject {
 	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
@@ -849,7 +849,9 @@ struct FObject : CObject {
 		for (uint32 i=0; i<in.size(); i++) if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
+	\decl 0 get (t_symbol *s=0);
 };
+\end class
 
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
