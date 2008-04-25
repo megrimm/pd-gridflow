@@ -43,9 +43,6 @@
 #include <X11/extensions/Xvlib.h>
 #endif
 
-#undef L
-#define L post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
 
@@ -191,7 +188,7 @@ void FormatX11_call(FormatX11 *p);
 			uint32 masks[3] = { 0x07, 0x38, 0xC0 };
 			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 		} break;
-		default: { RAISE("huh?"); }
+		default: RAISE("huh?");
 		}
 		clock = clock_new(this,(t_method)FormatX11_call);
 		clock_delay(clock,0);

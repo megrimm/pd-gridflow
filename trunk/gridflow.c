@@ -550,7 +550,6 @@ static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom2 *
 	BFObject_anything(self->parent,self->id,s,argc,argv);
 }
 
-typedef void *(*t_constructor)(MESSAGE);
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
     if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
@@ -570,11 +569,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 #endif
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-	t_constructor alloc = fclasses[string(classsym->s_name)]->allocator;
-	FObject *self = (FObject *)alloc(0,j,(t_atom2 *)argv);
-	self->bself = 0;
-
-	self->bself = bself;
+	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
+	FObject *self = (FObject *)alloc(bself,0,j,(t_atom2 *)argv);
 	bself->self = self;
 	bself->mom = 0;
 #ifdef HAVE_GEM

@@ -741,13 +741,16 @@ private:
 #endif // HAVE_LITE
 #define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
 #define MESSAGE2 sel,argc,argv
+#define MESSAGE3 t_symbol *, int, t_atom2 *
 struct AttrDecl {
 	string name;
 	string type;
 	AttrDecl(string name_, string type_) {name=name_; type=type_;}
 };
+struct BFObject;
+typedef void *(*t_allocator)(BFObject *,MESSAGE3);
 struct FClass {
-	void *(*allocator)(MESSAGE); // returns a new C++ object
+	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);
 	const char *cname; // C++ name (not PD name)
 	int methodsn; MethodDecl *methods;
@@ -839,7 +842,7 @@ struct BFObject : t_object {
 	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
-	FObject(MESSAGE) : bself(0) {}
+	FObject(BFObject *bself, MESSAGE) : bself(bself) {}
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
@@ -887,7 +890,7 @@ void call_super(int argc, t_atom *argv);
 	FILE *f;
 	NumberTypeE cast;
 	long frame;
-	Format(MESSAGE);
+	Format(BFObject *, MESSAGE);
 	\decl 0 open (t_symbol *mode, string filename);
 	\decl 0 close ();
 	\decl 0 cast (NumberTypeE nt);
