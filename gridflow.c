@@ -524,31 +524,29 @@ struct BFProxy : t_object {
 
 static t_class *BFProxy_class;
 
-static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
+static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
     try {
-	t_atom argv[ac+1];
+	t_atom2 argv[ac+1];
 	for (int i=0; i<ac; i++) argv[i+1] = at[i];
 	int argc = handle_braces(ac,argv+1);
 	SETFLOAT(argv+0,winlet);
 	char buf[256];
 	sprintf(buf,"_n_%s",selector->s_name);
-	if (funcall_lookup(bself,buf)) {
-		funcall(bself,buf,argc+1,argv);
-	} else {
-		sprintf(buf,"_%d_%s",winlet,selector->s_name);
-		if (funcall_lookup(bself,buf)) {
-			funcall(bself,buf,argc,argv+1);
-		} else if (funcall_lookup(bself,"anything")) {
-			SETSYMBOL(argv+0,gensym(buf));
-			funcall(bself,"anything",argc+1,argv);
-		} else pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-	}
+	Method m;
+	m = funcall_lookup(bself,buf);
+	if (m) {m(bself->self,argc+1,argv); return;}
+	sprintf(buf,"_%d_%s",winlet,selector->s_name);
+	m = funcall_lookup(bself,buf);
+	if (m) {m(bself->self,argc,argv+1); return;}
+	m = funcall_lookup(bself,"anything");
+	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
+	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
-static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
+static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
 }
-static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom *argv) {
+static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self->parent,self->id,s,argc,argv);
 }
 
