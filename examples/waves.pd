@@ -1,7 +1,7 @@
 #N canvas 214 26 783 699 10;
 #X obj 270 256 #greyscale_to_rgb;
 #X obj 167 66 loadbang;
-#X obj 107 85 fork;
+#X obj 107 85 t a a;
 #X obj 266 412 print;
 #X obj 10 49 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #N canvas 611 335 413 236 lighting 0;

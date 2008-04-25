@@ -47,7 +47,7 @@
 #X obj 60 72 # +;
 #X obj 60 158 outlet;
 #X msg 108 51 0;
-#X obj 60 142 fork;
+#X obj 60 142 t a a;
 #X text 164 114 divide by 32 \, 16 \, 4;
 #X text 4 1 we do like #fade but faster (because of >>);
 #X text 4 15 feedback factors are 1/32 for red \, 1/16 for green \,
