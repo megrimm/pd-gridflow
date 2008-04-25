@@ -243,7 +243,7 @@ static void gfpost(VideoMmap *self) {
 		f = fopen(filename.data(),"r+");
 		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		fd = fileno(f);
-		initialize2(); // name conflict...
+		initialize2();
 	}
 	void frame_finished (uint8 * buf);
 

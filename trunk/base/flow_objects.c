@@ -1384,9 +1384,8 @@ GRID_INPUT(GridMoment,1,offset) {} GRID_END
 	\grin 0
 	\attr int form();
 	\attr int form_val;
-	\constructor (int form=0) {form_val=form;}
-	\decl void initialize2();
-	\decl void initialize3();
+	\constructor (int form=0) {form_val=form; initialize3();}
+	void initialize3();
 };
 
 struct Stats {
@@ -1457,14 +1456,13 @@ GRID_INLET(GridLabeling,0) {
 	delete[] dat;
 } GRID_END
 
-\def void initialize2() {initialize3(0,0);}
 \def int form() {return form_val;}
 \def 0 form(int form) {
 	if (form<0 || form>1) RAISE("form must be 0 or 1, not %d",form);
 	form_val=form;
-	initialize3(0,0);
+	initialize3();
 }
-\def void initialize3() {
+void GridLabeling::initialize3() {
 	bself->ninlets_set(form_val ? 2 : 4);
 }
 
@@ -2196,14 +2194,13 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 		if (n>32) RAISE("n=%d is too many?",n);
 		a = new Grid(new Dim(n),nt,true);
 		this->n=n;
+		bself->ninlets_set(this->n);
 	}
-	\decl void initialize2 ();
 	\decl void _n_float (int inlet, float f);
 	\decl void _n_list  (int inlet, float f);
 	\decl 0 bang ();
 	//\grin 0
 };
-\def void initialize2 () {bself->ninlets_set(this->n);}
 \def void _n_float (int inlet, float f) {
 #define FOO(T) ((T *)*a)[inlet] = (T)f;
 TYPESWITCH(a->nt,FOO,);
@@ -2225,8 +2222,8 @@ TYPESWITCH(a->nt,FOO,);
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
 		this->n=n;
+		bself->noutlets_set(this->n);
 	}
-	\decl void initialize2 ();
 	\grin 0
 };
 GRID_INLET(GridUnpack,0) {
@@ -2234,7 +2231,6 @@ GRID_INLET(GridUnpack,0) {
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) outlet_float(bself->outlets[i],(t_float)data[i]);
 } GRID_END
-\def void initialize2 () {bself->noutlets_set(this->n);}
 \end class {install("#unpack",1,0);}
 
 //****************************************************************
@@ -2390,16 +2386,13 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
 		mosusses = new t_float[argc];
 		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_float;
+		bself-> ninlets_set(1+nmosusses);
+		bself->noutlets_set(1+nmosusses);
 	}
-	\decl void initialize2();
 	\decl 0 float(float f);
 	\decl 0 list(float f);
 	\decl void _n_float(int i, float f);
 };
-\def void initialize2() {
-	bself-> ninlets_set(1+nmosusses);
-	bself->noutlets_set(1+nmosusses);
-}
 \def 0 list(float f) {_0_float(argc,argv,f);}
 \def 0 float(float f) {
 	int i;
@@ -2445,12 +2438,15 @@ string ssprintf(const char *fmt, ...) {
 		SETFLOAT(a,20);
 		pd_typedmess(gp,gensym("maxrows"),1,a);
 		text << "...";
+		pd_bind((t_pd *)bself,rsym);
+		SETPOINTER(a,(t_gpointer *)bself);
+		pd_typedmess(gp,gensym("dest"),1,a);
+		clock = clock_new((void *)this,(void(*)())display_update);
 	}
 	~Display () {
 		pd_unbind((t_pd *)bself,rsym);
 		if (clock) clock_free(clock);
 	}
-	\decl void initialize2();
 	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
@@ -2508,13 +2504,6 @@ static void display_visfn(t_gobj *x, t_glist *glist, int flag) {
 static void display_update(void *x) {
 	Display *self = (Display *)x;
 	if (self->vis) self->show();
-}
-\def void initialize2 () {
-	pd_bind((t_pd *)bself,rsym);
-	t_atom a[1];
-	SETPOINTER(a,(t_gpointer *)bself);
-	pd_typedmess(gp,gensym("dest"),1,a);
-	clock = clock_new((void *)this,(void(*)())display_update);
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
@@ -2609,12 +2598,11 @@ struct ArgSpec {
 				SETNULL(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
 		}
+		bself->noutlets_set(sargc+1);
 	}
-	\decl void initialize2 ();
 	\decl 0 bang ();
 	void process_args (int argc, t_atom *argv);
 };
-\def void initialize2 () {bself->noutlets_set(sargc+1);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
 	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
@@ -2778,12 +2766,10 @@ void ParallelPort::call() {
 	int nsels;
 	t_symbol **sels;
 	~Route2() {if (sels) delete[] sels;}
-	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv);}
-	\decl void initialize2();
+	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); bself->noutlets_set(1+nsels);}
 	\decl void anything(...);
 	\decl 1 list(...);
 };
-\def void initialize2() {bself->noutlets_set(1+nsels);}
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	int i=0;
@@ -2813,12 +2799,11 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 		this->lo=0;
 		this->mode=0;
 		this->index=i;
+		bself->noutlets_set(n);
 	}
-	\decl void initialize2();
 	\decl void anything(...);
 	\decl 1 float(int i);
 };
-\def void initialize2() {bself->noutlets_set(n);}
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	outlet_anything(bself->outlets[index],sel,argc-1,argv+1);
