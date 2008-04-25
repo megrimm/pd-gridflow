@@ -210,26 +210,21 @@ def handle_classinfo(line)
 	Out.print "static void *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(Method)#{frame.name}::#{method.selector}_wrap }" }.join(",")
-	Out.print "}; FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
-	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
+	Out.print "}; FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect},COUNT(#{cl}_methods),#{cl}_methods};"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
-		get << "if (s==gensym(\"#{name})\")) set_atom(a,#{name}#{virtual}); else "
+		get << "if (s==gensym(\"#{name}\")) set_atom(a,#{name}#{virtual}); else "
 		if frame.methods["_0_"+name].done then
-			STDERR.puts "skipping already defined \\attr #{name}"
+			#STDERR.puts "skipping already defined \\attr #{name}"
 			next
 		end
 		type,name,default = attr.to_a
-		handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
+		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name};}"
 	}
-	startup2 = "@gfattrs = {"
-	frame.attrs.each {|name,attr| startup2 += ":#{name} => []," }
-	startup2 += "}"
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
-	# "IEVAL(rself,\"#{startup2}\");" # this means no support for attributes for a while.
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"
 	frame.attrs.each {|name,attr| Out.print "fclass->attrs[\"#{name}\"] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
 	Out.print line.chomp
