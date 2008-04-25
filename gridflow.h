@@ -763,7 +763,7 @@ struct FClass {
 	std::map<string,AttrDecl *> attrs;
 };
 
-void fclass_install(FClass *fc, const char *super, size_t bytes);
+void fclass_install(FClass *fc, FClass *super, size_t bytes);
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
@@ -916,5 +916,7 @@ inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
 
 extern std::map<string,FClass *> fclasses;
 int handle_braces(int ac, t_atom *av);
+
+extern FClass ciFObject, ciFormat;
 
 #endif // __GF_GRID_H
