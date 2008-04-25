@@ -22,7 +22,7 @@
 #X restore 164 41 pd distance map;
 #X obj 78 440 fps detailed;
 #X obj 283 130 loadbang;
-#X obj 47 42 fork;
+#X obj 47 42 t a a;
 #X obj 168 278 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
 1;
 #X msg 78 86 1;

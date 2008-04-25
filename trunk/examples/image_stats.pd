@@ -9,7 +9,7 @@
 #X obj 205 301 /;
 #X obj 205 219 #fold +;
 #X obj 42 239 print total_pixel;
-#X obj 205 147 fork;
+#X obj 205 147 t a a;
 #X obj 265 118 #in;
 #X obj 420 166 print dimensions;
 #X obj 205 320 print average_value;

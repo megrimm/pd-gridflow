@@ -10,7 +10,7 @@
 #X obj 19 35 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 200 39 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 332 379 fork;
+#X obj 332 379 t a a;
 #X text 258 62 height width;
 #X obj 100 364 #out window;
 #X text 97 308 applying palette;
@@ -50,7 +50,7 @@
 #X obj 127 110 #export_list;
 #X obj 18 9 inlet size;
 #X obj 18 173 outlet matrix;
-#X obj 18 33 fork;
+#X obj 18 33 t a a;
 #X text 154 150 four pixels from bottom;
 #X obj 18 78 #for (0 0) (0 0) (1 1);
 #X obj 18 97 # & (-1 0);
@@ -140,7 +140,7 @@
 #X obj 107 48 listsublist 0 2;
 #X obj 107 10 inlet;
 #X obj 132 151 listsublist 0 48;
-#X obj 30 49 fork;
+#X obj 30 49 t a a;
 #X obj 30 284 outlet;
 #X obj 30 151 listappend 0 0;
 #X obj 107 29 #export_list;

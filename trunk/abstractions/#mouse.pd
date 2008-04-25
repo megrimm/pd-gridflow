@@ -1,7 +1,7 @@
 #N canvas 313 211 690 428 10;
 #X obj 23 103 listsublist 0 2;
-#X obj 48 64 fork;
-#X obj 126 181 fork;
+#X obj 48 64 t a a;
+#X obj 126 181 t a a;
 #X text 153 149 is button pressed?;
 #X obj 129 209 -;
 #X obj 125 150 > 0;
@@ -25,7 +25,7 @@
 #X obj 530 301 outlet;
 #X obj 580 301 outlet;
 #X obj 430 273 change;
-#X obj 108 63 fork;
+#X obj 108 63 t a a;
 #X obj 469 115 # & 1;
 #X obj 469 173 unpack 0 0 0 0 0;
 #X obj 549 241 inv+;

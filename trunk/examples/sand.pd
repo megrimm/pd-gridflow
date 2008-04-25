@@ -1,6 +1,6 @@
 #N canvas 344 26 680 557 10;
 #X text 287 159 disable falling;
-#X obj 2 96 fork;
+#X obj 2 96 t a a;
 #X obj 323 314 # != 0;
 #X obj 384 352 #fold +;
 #X obj 8 442 s position;
@@ -119,7 +119,7 @@
 #X obj 13 244 #store;
 #X obj 14 18 inlet;
 #X obj 279 51 loadbang;
-#X obj 13 38 fork;
+#X obj 13 38 t a a;
 #X obj 112 225 #fold +;
 #X text 22 159 "dig" the sphere into the sand;
 #X text 240 104 compute a halfsphere;
