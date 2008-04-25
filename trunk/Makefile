@@ -21,10 +21,8 @@ else
 	CFLAGS += -O2 -funroll-loops
 endif
 
-LDSOFLAGS += -lm
-BRIDGE_LDFLAGS += -lm $(LIBS)
-OBJS2 = base/main.o base/grid.o base/flow_objects.o \
-base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
+LDSOFLAGS += -lm $(LIBS)
+OBJS2 = base/grid.o base/flow_objects.o base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 FILT = $(RUBY) -w base/source_filter.rb
 ifeq ($(OS),darwin)
@@ -86,7 +84,7 @@ unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
 $(PD_LIB): gridflow.c.fcs $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
+	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
 		gridflow.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
 
 beep::
