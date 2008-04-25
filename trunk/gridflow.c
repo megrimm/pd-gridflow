@@ -743,11 +743,33 @@ int handle_braces(int ac, t_atom *av) {
 	return j;
 }
 
+// foreach macro from desiredata:
+#define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
+
 \class FObject
-
-\def 0 get (t_symbol *s=0) {RAISE("AAAAAAAAAAAAAAAAAAAAAAAAAAA");}
-
-
+\def 0 get (t_symbol *s=0) {
+	FClass *fc = fclasses_pd[pd_class(bself)];
+	if (!s) {
+		t_atom a[1];
+		foreach(attr,fc->attrs) {
+			SETSYMBOL(a,gensym((char *)attr->second->name.data()));
+			pd_typedmess((t_pd *)bself,gensym("get"),1,a);
+		}
+	} else {
+		//t_atom a[1];
+		//outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);
+		Method m = funcall_lookup(bself,"___get");
+		t_atom2 a[1];
+		SETSYMBOL(a,s);
+		if (m) m(this,1,a);
+	}
+}
+\def 0 help () {
+	FClass *fc = fclasses_pd[pd_class(bself)];
+	post("attributes {");
+	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name.data());
+	post("}");
+}
 \classinfo {}
 \end class
 
