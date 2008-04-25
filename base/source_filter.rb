@@ -182,7 +182,7 @@ def handle_constructor(line)
 	frame = $stack[-1]
 	raise "missing \\class #{where}" if not frame or not ClassDecl===frame
 	m = parse_methoddecl("void constructor"+line,"(.*)$")
-	Out.print "#{frame.name}(MESSAGE) : #{frame.supername}(MESSAGE2) {"
+	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
 	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 
 	Out.print "if (argc<#{m.minargs}"
@@ -207,7 +207,7 @@ def handle_classinfo(line)
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
 	Out.print "static void #{cl}_startup (FClass *fclass);"
-	Out.print "static void *#{cl}_allocator (MESSAGE) {return new #{cl}(sel,argc,argv);}"
+	Out.print "static void *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(Method)#{frame.name}::#{method.selector}_wrap }" }.join(",")
 	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"

@@ -155,7 +155,7 @@ GRID_INLET(CvOp2,0) {
 GRID_INPUT2(CvOp2,1,r) {} GRID_END
 \end class {}
 
-#define FUNC(CLASS) CLASS(MESSAGE):CvOp2(MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
+#define FUNC(CLASS) CLASS(BFObject *bself, MESSAGE):CvOp2(bself,MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
 
 \class CvAdd : CvOp2 {FUNC(CvAdd) {cvAdd(l,r,o,0);}};
 \end class {install("cv.Add",2,1);}

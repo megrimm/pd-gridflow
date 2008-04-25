@@ -46,8 +46,8 @@ public:
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 
-	GridExportPix () : FObject(0,0,0) {RAISE("what?");}
-	GridExportPix (MESSAGE) : FObject(MESSAGE2) {
+	GridExportPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
+	GridExportPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
@@ -123,8 +123,8 @@ struct GridImportPix : FObject, GemPixObj {
 public:
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
-	GridImportPix () : FObject(0,0,0) {RAISE("what?");}
-	GridImportPix (MESSAGE) : FObject(MESSAGE2) {
+	GridImportPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
+	GridImportPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
