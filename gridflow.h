@@ -693,12 +693,12 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
 
-struct GridObject;
+struct FObject;
 struct GridInlet : CObject {
-	GridObject *parent;
+	FObject *parent;
 	const GridHandler *gh;
 private:
-	GridObject *sender;
+	FObject *sender;
 public:
 	P<Dim> dim;
 	NumberTypeE nt;
@@ -711,7 +711,7 @@ public:
 //	long allocfactor,allocmin,allocmax,allocn;
 //	uint8 *alloc;
 
-	GridInlet(GridObject *parent_, const GridHandler *gh_) :
+	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
@@ -770,14 +770,14 @@ struct GridOutlet : CObject {
 	static const long MIN_PACKET_SIZE = 1<<8;
 	static const long MAX_PACKET_SIZE = 1<<12;
 // those are set only once
-	GridObject *parent; // not a P<> because of circular refs
+	FObject *parent; // not a P<> because of circular refs
 	P<Dim> dim; // dimensions of the grid being sent
 	NumberTypeE nt;
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
 	long dex;  // how many numbers were already sent in this connection
 
-	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
+	GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
 	parent(parent_), dim(dim_), nt(nt_), dex(0), frozen(false), bufi(0) {
 		//int ntsz = number_type_table[nt].size;
 		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
@@ -818,7 +818,7 @@ private:
 
 #define CHECK_GRIN(class,i) \
 	if (in.size()<=i) in.resize(i+1); \
-	if (!in[i]) in[i]=new GridInlet((GridObject *)this,&class##_grid_##i##_hand);
+	if (!in[i]) in[i]=new GridInlet((FObject *)this,&class##_grid_##i##_hand);
 
 struct BFProxy;
 struct BFObject : t_object {
@@ -837,19 +837,14 @@ struct BFObject : t_object {
 // represents objects that have inlets/outlets
 struct FObject : CObject {
 	BFObject *bself; // point to PD peer
+	std::vector<P<GridInlet> > in;
+	P<GridOutlet> out;
 	FObject(MESSAGE) : bself(0) {}
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
 		outlet_list(bself->outlets[outlet],&s_list,argc,foo);
 	}
-};
-
-struct GridObject : FObject {
-	std::vector<P<GridInlet> > in;
-	P<GridOutlet> out;
-	GridObject(MESSAGE) : FObject(MESSAGE2) {}
-	~GridObject() {}
 	bool is_busy_except(P<GridInlet> gin) {
 		for (uint32 i=0; i<in.size(); i++) if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
@@ -884,7 +879,7 @@ void add_creator2(FClass *fclass, const char *name);
 void call_super(int argc, t_atom *argv);
 #define SUPER call_super(argc,argv);
 
-\class Format : GridObject {
+\class Format : FObject {
 	int mode;
 	int fd;
 	FILE *f;

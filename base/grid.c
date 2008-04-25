@@ -387,14 +387,6 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 	inlets.push_back(in);
 }
 
-\class GridObject : FObject
-\classinfo {}
-\end class
-
-void startup_grid () {
-	\startall
-}
-
 // never call this. this is a hack to make some things work.
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {

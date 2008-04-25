@@ -38,16 +38,16 @@
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
-\class GridExportPix < GridObject
-struct GridExportPix : GridObject, GemPixObj {
+\class GridExportPix < FObject
+struct GridExportPix : FObject, GemPixObj {
 	CPPEXTERN_HEADER(GridExportPix,GemPixObj)
 public:
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 
-	GridExportPix () : GridObject(0,0,0) {RAISE("what?");}
-	GridExportPix (MESSAGE) : GridObject(MESSAGE2) {
+	GridExportPix () : FObject(0,0,0) {RAISE("what?");}
+	GridExportPix (MESSAGE) : FObject(MESSAGE2) {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
@@ -117,14 +117,14 @@ void GridExportPix::obj_setupCallback(t_class *) {}
 //------------------------------------------------------------------------
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
 // out 0: grid
-\class GridImportPix < GridObject
-struct GridImportPix : GridObject, GemPixObj {
+\class GridImportPix < FObject
+struct GridImportPix : FObject, GemPixObj {
 	CPPEXTERN_HEADER(GridImportPix,GemPixObj)
 public:
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
-	GridImportPix () : GridObject(0,0,0) {RAISE("what?");}
-	GridImportPix (MESSAGE) : GridObject(MESSAGE2) {
+	GridImportPix () : FObject(0,0,0) {RAISE("what?");}
+	GridImportPix (MESSAGE) : FObject(MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
