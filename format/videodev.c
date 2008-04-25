@@ -241,6 +241,7 @@ static void gfpost(VideoMmap *self) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
 		image=0;
 		f = fopen(filename.data(),"r+");
+		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		fd = fileno(f);
 		initialize2(); // name conflict...
 	}
