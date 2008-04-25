@@ -842,7 +842,7 @@ struct BFObject : t_object {
 	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
-	FObject(BFObject *bself, MESSAGE) : bself(bself) {}
+	FObject(BFObject *bself, MESSAGE) : bself(bself) {bself->self = this;}
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);

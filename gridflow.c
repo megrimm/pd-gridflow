@@ -507,12 +507,6 @@ static Method funcall_lookup (BFObject *bself, const char *sel) {
 
 void call_super(int argc, t_atom *argv) {/* unimplemented */}
 
-static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
-	Method method = funcall_lookup(bself,sel);
-	if (method) {method(bself->self,argc,(t_atom2 *)argv); return;}
-	if (!silent) pd_error((t_pd *)bself, "method '%s' not found in class '%s'",sel,pd_classname(bself));
-}
-
 //****************************************************************
 // BFObject
 
@@ -569,25 +563,25 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 #endif
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
-	FObject *self = (FObject *)alloc(bself,0,j,(t_atom2 *)argv);
-	bself->self = self;
-	bself->mom = 0;
-#ifdef HAVE_GEM
-	bself->gemself = (CPPExtern *)((void **)self+11); /* not 64-bit-safe */
-	CPPExtern::m_holder = 0;
-#ifdef HAVE_HOLDNAME
-	CPPExtern::m_holdname=0;
-#endif
-#endif
+
+	bself->self = 0;
+	bself->mom = (t_canvas *)canvas_getcurrent();
 	bself->ninlets  = 1;
 	bself->noutlets = 0;
 	bself->inlets  = new  BFProxy*[1];
 	bself->outlets = new t_outlet*[1];
 	bself->ninlets_set( fclasses[classsym->s_name]->ninlets);
 	bself->noutlets_set(fclasses[classsym->s_name]->noutlets);
-	funcall(bself,"initialize2",0,0,true);
-	bself->mom = (t_canvas *)canvas_getcurrent();
+#ifdef HAVE_GEM
+	bself->gemself = (CPPExtern *)((void **)bself->self+11); /* not 64-bit-safe */
+	CPPExtern::m_holder = 0;
+#ifdef HAVE_HOLDNAME
+	CPPExtern::m_holdname=0;
+#endif
+#endif
+	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
+	bself->self = (FObject *)alloc(bself,0,j,(t_atom2 *)argv);
+
 	while (j<argc) {
 		j++;
 		int k=j;
@@ -636,7 +630,6 @@ static void BFObject_redraw (BFObject *bself) {
 
 /* warning: deleting inlets that are connected will cause pd to crash */
 void BFObject::ninlets_set (int n) {
-	if (!this) RAISE("there is no bself");
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
 	BFObject_undrawio(this);
 	if (ninlets<n) {
@@ -662,7 +655,6 @@ void BFObject::ninlets_set (int n) {
 }
 /* warning: deleting outlets that are connected will cause pd to crash */
 void BFObject::noutlets_set (int n) {
-	if (!this) RAISE("there is no bself");
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
 	BFObject_undrawio(this);
 	if (noutlets<n) {
