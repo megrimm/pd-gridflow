@@ -491,6 +491,10 @@ string gf_find_file (string x) {
 
 /* **************************************************************** */
 
+#undef pd_class
+#define pd_class(x) (*(t_pd *)x)
+#define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
+
 static RMethod funcall_lookup (BFObject *bself, const char *sel) {
 	FClass *fclass = fclasses_pd[*(t_class **)bself];
 	int n = fclass->methodsn;
@@ -503,7 +507,7 @@ void call_super(int argc, t_atom *argv) {/* unimplemented */}
 static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
 	RMethod method = funcall_lookup(bself,sel);
 	if (method) {method(bself->self,argc,(t_atom2 *)argv); return;}
-	if (!silent) pd_error((t_pd *)bself, "method not found: '%s'",sel);
+	if (!silent) pd_error((t_pd *)bself, "method '%s' not found in class '%s'",sel,pd_classname(bself));
 }
 
 static void funcall_rescue(BFObject *bself, const char *sel, int argc, t_atom *argv) {
@@ -535,10 +539,10 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 		sprintf(buf,"_%d_%s",winlet,selector->s_name);
 		if (funcall_lookup(bself,buf)) {
 			funcall_rescue(bself,buf,argc,argv+1);
-		} else {
+		} else if (funcall_lookup(bself,buf)) {
 			SETSYMBOL(argv+0,gensym(buf));
 			funcall_rescue(bself,"anything",argc+1,argv);
-		}
+		} else pd_error((t_pd *)bself, "method '%s' not found in class '%s'",selector->s_name,pd_classname(bself));
 	}
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
