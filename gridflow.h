@@ -44,12 +44,18 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #include <malloc.h>
 #endif
 
+#ifndef a_float
+#define a_float    a_w.w_float
+#define a_symbol   a_w.w_symbol
+#define a_gpointer a_w.w_gpointer
+#endif
+
 #ifndef DESIREDATA
 #define A_LIST t_atomtype(13) /* (t_binbuf *) */
 #endif
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
-static inline void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_w.w_gpointer = (t_gpointer *)b;}
-static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_w.w_gpointer = 0;}
+static inline void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_gpointer = (t_gpointer *)b;}
+static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_gpointer = 0;}
 
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
@@ -221,13 +227,9 @@ struct Pointer;
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
 
-#define a_float    a_w.w_float
-#define a_symbol   a_w.w_symbol
-#define a_gpointer a_w.w_gpointer
-
 // trick to be able to define methods in t_atom
 struct t_atom2 : t_atom {
-	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_w.w_symbol==b;}
+	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
 	operator bool () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
@@ -559,7 +561,7 @@ extern std::map<string,Numop *> op_dict;
 extern std::map<string,Numop *> vop_dict;
 
 static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
-	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_w.w_symbol->s_name));}
+	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_symbol->s_name));}
 
 
 static Numop *convert(const t_atom &x, Numop **bogus) {
@@ -827,7 +829,7 @@ struct BFObject : t_object {
 };
 
 // represents objects that have inlets/outlets
-\class FObject : CObject {
+struct FObject : CObject {
 	BFObject *bself; // point to PD peer
 	FObject(MESSAGE) : bself(0) {}
 	template <class T> void send_out(int outlet, int argc, T *argv) {
@@ -836,9 +838,8 @@ struct BFObject : t_object {
 		outlet_list(bself->outlets[outlet],&s_list,argc,foo);
 	}
 };
-\end class FObject
 
-\class GridObject : FObject {
+struct GridObject : FObject {
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
 	GridObject(MESSAGE) : FObject(MESSAGE2) {}
@@ -848,7 +849,6 @@ struct BFObject : t_object {
 		return false;
 	}
 };
-\end class GridObject
 
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
@@ -884,7 +884,7 @@ void call_super(int argc, t_atom *argv);
 	FILE *f;
 	NumberTypeE cast;
 	long frame;
-	Format(MESSAGE) : GridObject(MESSAGE2), mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
+	Format(MESSAGE);
 	\decl 0 open (t_symbol *mode, string filename);
 	\decl 0 close ();
 	\decl 0 cast (NumberTypeE nt);
