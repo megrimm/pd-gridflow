@@ -118,7 +118,6 @@ void GFView_display(GFView *self) {
 	NSWindow *window;
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
-	NSDate *distantFuture;
 	t_clock *clock;
 	~FormatQuartz () {
 		clock_unset(clock);
