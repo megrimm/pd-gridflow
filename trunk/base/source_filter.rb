@@ -210,7 +210,7 @@ def handle_classinfo(line)
 	Out.print "static void *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(Method)#{frame.name}::#{method.selector}_wrap }" }.join(",")
-	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
+	Out.print "}; FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
@@ -283,7 +283,7 @@ end
 def handle_startall(line)
 	$classes.each {|q|
 		Out.print "fclass_install(&ci#{q.name},"
-		if q.supername then Out.print "\"#{q.supername}\"" else Out.print "0" end
+		if q.supername then Out.print "&ci#{q.supername}" else Out.print "0" end
 		Out.print ",sizeof(#{q.name}));"
 	}
 end
