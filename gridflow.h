@@ -853,6 +853,7 @@ struct BFObject : t_object {
 		return false;
 	}
 	\decl 0 get (t_symbol *s=0);
+	\decl 0 help ();
 };
 \end class
 
