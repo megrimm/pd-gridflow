@@ -539,10 +539,10 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 		sprintf(buf,"_%d_%s",winlet,selector->s_name);
 		if (funcall_lookup(bself,buf)) {
 			funcall_rescue(bself,buf,argc,argv+1);
-		} else if (funcall_lookup(bself,buf)) {
+		} else if (funcall_lookup(bself,"anything")) {
 			SETSYMBOL(argv+0,gensym(buf));
 			funcall_rescue(bself,"anything",argc+1,argv);
-		} else pd_error((t_pd *)bself, "method '%s' not found in class '%s'",selector->s_name,pd_classname(bself));
+		} else pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
 	}
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
