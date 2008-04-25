@@ -495,23 +495,22 @@ string gf_find_file (string x) {
 #define pd_class(x) (*(t_pd *)x)
 #define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
 
-static RMethod funcall_lookup (BFObject *bself, const char *sel) {
-	FClass *fclass = fclasses_pd[*(t_class **)bself];
+static Method funcall_lookup (FClass *fclass, const char *sel) {
 	int n = fclass->methodsn;
 	for (int i=0; i<n; i++) if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
+	if (fclass->super) return funcall_lookup(fclass->super,sel);
 	return 0;
+}
+static Method funcall_lookup (BFObject *bself, const char *sel) {
+	return funcall_lookup(fclasses_pd[pd_class(bself)],sel);
 }
 
 void call_super(int argc, t_atom *argv) {/* unimplemented */}
 
 static void funcall (BFObject *bself, const char *sel, int argc, t_atom *argv, bool silent=false) {
-	RMethod method = funcall_lookup(bself,sel);
+	Method method = funcall_lookup(bself,sel);
 	if (method) {method(bself->self,argc,(t_atom2 *)argv); return;}
 	if (!silent) pd_error((t_pd *)bself, "method '%s' not found in class '%s'",sel,pd_classname(bself));
-}
-
-static void funcall_rescue(BFObject *bself, const char *sel, int argc, t_atom *argv) {
-	try {funcall(bself,sel,argc,argv);} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
 }
 
 //****************************************************************
@@ -534,14 +533,14 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	char buf[256];
 	sprintf(buf,"_n_%s",selector->s_name);
 	if (funcall_lookup(bself,buf)) {
-		funcall_rescue(bself,buf,argc+1,argv);
+		funcall(bself,buf,argc+1,argv);
 	} else {
 		sprintf(buf,"_%d_%s",winlet,selector->s_name);
 		if (funcall_lookup(bself,buf)) {
-			funcall_rescue(bself,buf,argc,argv+1);
+			funcall(bself,buf,argc,argv+1);
 		} else if (funcall_lookup(bself,"anything")) {
 			SETSYMBOL(argv+0,gensym(buf));
-			funcall_rescue(bself,"anything",argc+1,argv);
+			funcall(bself,"anything",argc+1,argv);
 		} else pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
 	}
     } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
@@ -610,8 +609,6 @@ static void BFObject_delete (BFObject *bself) {
 }
 
 //****************************************************************
-
-\class FObject
 
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
@@ -760,6 +757,11 @@ int handle_braces(int ac, t_atom *av) {
 	return j;
 }
 
+\class FObject
+
+\def 0 get (t_symbol *s=0) {RAISE("AAAAAAAAAAAAAAAAAAAAAAAAAAA");}
+
+
 \classinfo {}
 \end class
 
@@ -803,6 +805,7 @@ extern "C" void gridflow_setup () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	startup_number();
+	\startall
 	startup_flow_objects();
 	startup_format();
 	STARTUP_LIST()
