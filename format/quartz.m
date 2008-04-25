@@ -45,18 +45,22 @@
 }
 - (id) drawRect: (NSRect)rect;
 - (id) imageHeight: (int)w width: (int)h;
+- (id) imageHeight;
+- (id) imageWidth;
 - (uint8 *) imageData;
 - (int) imageDataSize;
 @end
 
 @implementation GFView
 
-- (uint8 *) imageData { return imdata; }
-- (int) imageDataSize { return imwidth*imheight*4; }
+- (uint8 *) imageData {return imdata;}
+- (int) imageDataSize {return imwidth*imheight*4;}
+- (id) imageHeight {return imheight;}
+- (id) imageWidth {return imwidth;}
 
 - (id) imageHeight: (int)h width: (int)w {
 	if (imheight==h && imwidth==w) return self;
-	gfpost("new size: y=%d x=%d",h,w);
+	post("new size: y=%d x=%d",h,w);
 	imheight=h;
 	imwidth=w;
 	if (imdata) delete imdata;
@@ -104,7 +108,7 @@ void GFView_imageHeight_width(GFView *self, int height, int width) {
 }
 
 void GFView_display(GFView *self) {
-	NSRect r = {{0,0},{self->imheight,self->imwidth}};
+	NSRect r = {{0,0},{[self imageHeight],[self imageWidth]}};
 	[self displayRect: r];
 	[self setNeedsDisplay: YES];
 	[self display];
@@ -125,13 +129,13 @@ void GFView_display(GFView *self) {
 		[window close];
 	}
 	\decl void initialize (t_symbol *mode);
-	\decl 0 call ();
+	void call ();
 	\grin 0
 };
 
 static NSDate *distantFuture, *distantPast;
 
-\def void call() {
+void FormatQuartz::call() {
 	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
 		// untilDate: distantFuture // blocking
 		untilDate: distantPast // nonblocking
@@ -145,7 +149,7 @@ static NSDate *distantFuture, *distantPast;
 	[this->window flushWindowIfNeeded];
 	clock_delay(clock,20);
 }
-FormatQuartz_call(FormatQuartz *self) {self->call(0,0);}
+void FormatQuartz_call(FormatQuartz *self) {self->call();}
 
 template <class T, class S>
 static void convert_number_type(int n, T *out, S *in) {
@@ -204,8 +208,8 @@ GRID_INLET(FormatQuartz,0) {
 		initWithWindow: window];
 	clock = clock_new(this,(t_method)FormatQuartz_call);
 	[window makeFirstResponder: widget];
-	gfpost("mainWindow = %08lx",(long)[NSApp mainWindow]);
-	gfpost(" keyWindow = %08lx",(long)[NSApp keyWindow]);
+	post("mainWindow = %08lx",(long)[NSApp mainWindow]);
+	post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 	NSColor *color = [NSColor clearColor];
 	[window setBackgroundColor: color];
 }
