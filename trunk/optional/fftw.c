@@ -30,7 +30,7 @@ typedef unsigned long ulong;
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
-\class GridFFT : GridObject {
+\class GridFFT : FObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input (for plan cache) */
 	long lastchans; /* of last input (for plan cache) */

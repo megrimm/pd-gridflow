@@ -99,8 +99,8 @@ void suffixes_are (const char *name, const char *suffixes) {
 }
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 
-\class Format : GridObject
-Format::Format (MESSAGE) : GridObject(MESSAGE2) {
+\class Format : FObject
+Format::Format (MESSAGE) : FObject(MESSAGE2) {
 	mode=0; fd=-1; f=0; cast=int32_e; frame=0;
 	if (argv[0]==gensym("out")) this->mode=2; else
 	if (argv[0]==gensym("in"))  this->mode=4; else RAISE("unknown mode");

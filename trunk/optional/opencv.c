@@ -122,7 +122,7 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	return a;
 }
 
-\class CvOp1 : GridObject {
+\class CvOp1 : FObject {
 	\attr CvMode mode;
 	\constructor () {mode = cv_mode_auto;}
 	/* has no default \grin 0 handler so far. */
@@ -176,7 +176,7 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 };
 \end class {}
 
-\class CvHaarDetectObjects : GridObject {
+\class CvHaarDetectObjects : FObject {
 	\attr double scale_factor; /*=1.1*/
 	\attr int min_neighbors;   /*=3*/
 	\attr int flags;           /*=0*/
@@ -226,7 +226,7 @@ GRID_INLET(CvHaarDetectObjects,0) {
 	\grin 1
 };
 
-void cvMatSend(const CvMat *self, GridObject *obj, int outno) {
+void cvMatSend(const CvMat *self, FObject *obj, int outno) {
 	int m = self->rows;
 	int n = self->cols;
 	int e = CV_MAT_TYPE(cvGetElemType(self));

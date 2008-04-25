@@ -764,7 +764,6 @@ int handle_braces(int ac, t_atom *av) {
 \end class
 
 void startup_number();
-void startup_grid();
 void startup_flow_objects();
 void startup_format();
 STARTUP_LIST(void)
@@ -804,7 +803,6 @@ extern "C" void gridflow_setup () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	startup_number();
-	startup_grid();
 	startup_flow_objects();
 	startup_format();
 	STARTUP_LIST()
