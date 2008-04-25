@@ -741,6 +741,11 @@ private:
 #endif // HAVE_LITE
 #define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
 #define MESSAGE2 sel,argc,argv
+struct AttrDecl {
+	string name;
+	string type;
+	AttrDecl(string name_, string type_) {name=name_; type=type_;}
+};
 struct FClass {
 	void *(*allocator)(MESSAGE); // returns a new C++ object
 	void (*startup)(FClass *);
@@ -752,6 +757,7 @@ struct FClass {
 	t_class *bfclass;
 	string name;
 	size_t bytes;
+	std::map<string,AttrDecl *> attrs;
 };
 
 void fclass_install(FClass *fc, const char *super, size_t bytes);
