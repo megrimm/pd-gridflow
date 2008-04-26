@@ -87,6 +87,7 @@ void FormatX11_call(FormatX11 *p);
 		if (is_owner) XDestroyWindow(display,window);
 		XSync(display,0);
 		dealloc_image();
+		if (imagegc) XFreeGC(display,imagegc);
 		XCloseDisplay(display);
 	}
 	template <class T> void frame_by_type (T bogus);
@@ -101,7 +102,7 @@ void FormatX11_call(FormatX11 *p);
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\constructor (...) {
 		transfer=0; use_stripes=false; window=0; ximage=0; image=0; is_owner=true;
-		dim=0; lock_size=false; override_redirect=false; clock=0;
+		dim=0; lock_size=false; override_redirect=false; clock=0; imagegc=0;
 #ifdef HAVE_X11_SHARED_MEMORY
 		shm_info=0;
 #endif
@@ -475,7 +476,7 @@ void FormatX11::resize_window (int sx, int sy) {
 
 		if (is_owner) XMapRaised(display, window);
 		imagegc = XCreateGC(display, window, 0, NULL);
-		if (visual->c_class == PseudoColor) prepare_colormap(); 
+		if (visual->c_class == PseudoColor) prepare_colormap();
 	}
 	XSync(display,0);
 }
