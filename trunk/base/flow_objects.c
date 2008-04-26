@@ -2444,6 +2444,7 @@ string ssprintf(const char *fmt, ...) {
 	}
 	~Display () {
 		pd_unbind((t_pd *)bself,rsym);
+		pd_free(gp);
 		if (clock) clock_free(clock);
 	}
 	\decl void anything (...);
