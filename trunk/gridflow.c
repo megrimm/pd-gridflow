@@ -594,6 +594,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete (BFObject *bself) {
 	try {delete bself->self;} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
+	delete[] bself->inlets;
+	delete[] bself->outlets;
 }
 
 //****************************************************************
