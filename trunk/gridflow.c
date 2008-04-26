@@ -740,8 +740,8 @@ int handle_braces(int ac, t_atom *av) {
 			j++;
 		}
 	}
-	//if (stackn) RAISE("too many open-paren (%d)",stackn);
-	if (stackn) {binbuf_free(buf); post("too many open-paren (%d)",stackn);}
+	binbuf_free(buf);
+	if (stackn) RAISE("too many open-paren (%d)",stackn);
 	return j;
 }
 
