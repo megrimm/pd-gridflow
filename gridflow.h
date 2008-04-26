@@ -295,19 +295,19 @@ public:
 #define INCR if (p) p->refcount++;
 #define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
 	T *p;
-	P() : p(0) {}
-	P(T *_p)            { p = _p; INCR; }
-	P(const P<T> &_p) {
- p = _p.p; INCR; }
-	P<T> &operator =(T *  _p) { DECR; p=_p;   INCR; return *this; }
-	P<T> &operator =(P<T> _p) { DECR; p=_p.p; INCR; return *this; }
-	bool operator ==(P<T> _p) { return p == _p.p; }
-	bool operator !=(P<T> _p) { return p != _p.p; }
-	~P() { DECR; }
-	bool operator !(){ return  !p; }
-	operator bool()  { return !!p; }
-	T &operator *()  { return  *p; }
-	T *operator ->() { return   p; }
+	P()               {p=0;}
+	P(T *_p)          {p=_p  ; INCR;}
+	P(const P<T> &_p) {p=_p.p; INCR;}
+	P<T> &operator = (T *  _p) {DECR; p=_p;   INCR; return *this;}
+	P<T> &operator = (P<T> _p) {DECR; p=_p.p; INCR; return *this;}
+	bool operator == (P<T> _p) {return p==_p.p;}
+	bool operator != (P<T> _p) {return p!=_p.p;}
+	~P() {DECR;}
+	bool operator !() {return  !p;}
+	operator bool()   {return !!p;}
+	T &operator *()   {return  *p;}
+	T *operator ->()  {return   p;}
+	operator T *() {return p;}
 //#undef INCR
 //#undef DECR
 };
