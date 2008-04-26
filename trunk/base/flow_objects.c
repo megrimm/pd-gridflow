@@ -1201,8 +1201,7 @@ GRID_INLET(GridTranspose,0) {
 	if (d1<0) d1+=in->dim->n;
 	if (d2<0) d2+=in->dim->n;
 	if (d1>=in->dim->n || d2>=in->dim->n || d1<0 || d2<0)
-		RAISE("would swap dimensions %d and %d but this grid has only %d dimensions",
-			dim1,dim2,in->dim->n);
+		RAISE("would swap dimensions %d and %d but this grid has only %d dimensions", dim1,dim2,in->dim->n);
 	memswap(v+d1,v+d2,1);
 	if (d1==d2) {
 		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
@@ -1228,7 +1227,7 @@ GRID_INLET(GridTranspose,0) {
 					     data+((a*nb+b)*nc+c)*nd,nd);
 		out->send(na*nb*nc*nd,res);
 	}
-	delete[] res; // if an exception was thrown by out->send, this never gets done
+	delete[] res; //!@#$ if an exception was thrown by out->send, this never gets done
 } GRID_END
 
 \end class {install("#transpose",3,1); add_creator("@transpose");}
@@ -2600,6 +2599,7 @@ struct ArgSpec {
 		}
 		bself->noutlets_set(sargc+1);
 	}
+	~Args () {delete[] sargv;}
 	\decl 0 bang ();
 	void process_args (int argc, t_atom *argv);
 };
