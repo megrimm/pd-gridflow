@@ -570,8 +570,9 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	bself->noutlets = 0;
 	bself->inlets  = new  BFProxy*[1];
 	bself->outlets = new t_outlet*[1];
-	bself->ninlets_set( fclasses[classsym->s_name]->ninlets);
-	bself->noutlets_set(fclasses[classsym->s_name]->noutlets);
+	bself->inlets[0] = 0; // inlet 0 of this table is not in use
+	bself->ninlets_set( fclasses[classsym->s_name]->ninlets ,false);
+	bself->noutlets_set(fclasses[classsym->s_name]->noutlets,false);
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)bself->self+11); /* not 64-bit-safe */
 	CPPExtern::m_holder = 0;
@@ -594,6 +595,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete (BFObject *bself) {
 	try {delete bself->self;} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
+	bself->ninlets_set(1,false);
 	delete[] bself->inlets;
 	delete[] bself->outlets;
 }
@@ -631,9 +633,9 @@ static void BFObject_redraw (BFObject *bself) {
 }
 
 /* warning: deleting inlets that are connected will cause pd to crash */
-void BFObject::ninlets_set (int n) {
+void BFObject::ninlets_set (int n, bool draw) {
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
-	BFObject_undrawio(this);
+	if (draw) BFObject_undrawio(this);
 	if (ninlets<n) {
 		BFProxy **noo = new BFProxy*[n];
 		memcpy(noo,inlets,ninlets*sizeof(BFProxy*));
@@ -653,12 +655,12 @@ void BFObject::ninlets_set (int n) {
 			delete inlets[ninlets];
 		}
 	}
-	BFObject_redraw(this);
+	if (draw) BFObject_redraw(this);
 }
 /* warning: deleting outlets that are connected will cause pd to crash */
-void BFObject::noutlets_set (int n) {
+void BFObject::noutlets_set (int n, bool draw) {
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
-	BFObject_undrawio(this);
+	if (draw) BFObject_undrawio(this);
 	if (noutlets<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
 		memcpy(noo,outlets,noutlets*sizeof(t_outlet*));
@@ -668,7 +670,7 @@ void BFObject::noutlets_set (int n) {
 	} else {
 		while (noutlets>n) outlet_free(outlets[--noutlets]);
 	}
-	BFObject_redraw(this);
+	if (draw) BFObject_redraw(this);
 }
 
 void add_creator2(FClass *fclass, const char *name) {
@@ -788,6 +790,15 @@ void blargh () {
   free(symbols);
 }
 
+// this will make valgrind happier about memory leaks
+static void gridflow_unsetup () {
+	foreach(iter,fclasses_pd) {
+		FClass *fc = iter->second;
+		foreach(iter2,fc->attrs) delete iter2->second;
+		fc->FClass::~FClass();
+	}
+}
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -824,5 +835,6 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGSEGV,SIG_DFL);
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
+	atexit(gridflow_unsetup);
     } catch (Barf *oozy) {post("Init_gridflow error: %s",oozy->text);}
 }
