@@ -375,9 +375,6 @@ GRID_INLET(GridPrint,0) {
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
-	//int32 wdex [Dim::MAX_DIM]; // temporary buffer, copy of put_at
-	//int32 fromb[Dim::MAX_DIM];
-	//int32 to2  [Dim::MAX_DIM];
 	int32 *wdex ; // temporary buffer, copy of put_at
 	int32 *fromb;
 	int32 *to2  ;
@@ -390,6 +387,11 @@ GRID_INLET(GridPrint,0) {
 		wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
 		fromb = new int32[Dim::MAX_DIM];
 		to2   = new int32[Dim::MAX_DIM];
+	}
+	~GridStore () {
+		delete[] wdex;
+		delete[] fromb;
+		delete[] to2;
 	}
 	\decl 0 bang ();
 	\decl 1 reassign ();
