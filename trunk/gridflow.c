@@ -790,13 +790,16 @@ void blargh () {
   free(symbols);
 }
 
-// this will make valgrind happier about memory leaks
+// those are not really leaks but deleting them make them disappear from valgrind
+// however, there's still a problem doing it, so, we won't do it.
 static void gridflow_unsetup () {
+/*
 	foreach(iter,fclasses_pd) {
 		FClass *fc = iter->second;
 		foreach(iter2,fc->attrs) delete iter2->second;
 		fc->FClass::~FClass();
 	}
+*/
 }
 
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
