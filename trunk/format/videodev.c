@@ -355,7 +355,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
 	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,colorspace.data());
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		GridOutlet out(this,0,colorspace=="magic"?new Dim(sy,sx,3):dim,cast);
+		GridOutlet out(this,0,colorspace=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
 		if (colorspace=="y") {
 			out.send(sy*sx,buf);
 		} else if (colorspace=="rgb") {
