@@ -430,13 +430,11 @@ GRID_INLET(GridStore,0) {
 	int32 v[Dim::MAX_DIM];
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 	long nc = in->dim->get(na-1);
-	if (nc > nb)
-		RAISE("got %d elements in last dimension, expecting <= %d", nc, nb);
-	int lastindexable = r->dim->prod()/r->dim->prod(nc) - 1;
+	if (nc>nb) RAISE("got %d elements in last dimension, expecting <= %d", nc, nb);
+	long nnc = r->dim->prod(nnc);
+	int lastindexable = nnc ? r->dim->prod()/nnc-1 : 0; // SIGFPE happened when r was especially empty (nnc==0)
 	int ngreatest = nt_greatest((T *)0);
-	if (lastindexable > ngreatest) {
-		RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
-	}
+	if (lastindexable > ngreatest) RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
 	int nd = nb-nc+na-1;
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r->dim->v+nc,nb-nc);
