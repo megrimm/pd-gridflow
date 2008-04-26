@@ -833,8 +833,8 @@ struct BFObject : t_object {
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
 	t_outlet **outlets;   // direct access to outlets (not linked lists)
 	t_canvas *mom;
-	void  ninlets_set(int n);
-	void noutlets_set(int n);
+	void  ninlets_set(int n, bool draw=true);
+	void noutlets_set(int n, bool draw=true);
 };
 
 // represents objects that have inlets/outlets
