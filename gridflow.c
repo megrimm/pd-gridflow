@@ -712,13 +712,13 @@ int handle_braces(int ac, t_atom *av) {
 	int stack[16];
 	int stackn=0;
 	int j=0;
-	t_binbuf *buf = binbuf_new(); // leaks if RAISE
+	t_binbuf *buf = binbuf_new();
 	for (int i=0; i<ac; ) {
 		int close=0;
 		if (av[i].a_type==A_SYMBOL) {
 			const char *s = av[i].a_w.w_symbol->s_name;
 			while (*s=='(') {
-				if (stackn==16) RAISE("too many nested lists (>16)");
+				if (stackn==16) {binbuf_free(buf); RAISE("too many nested lists (>16)");}
 				stack[stackn++]=j;
 				s++;
 			}
@@ -731,7 +731,7 @@ int handle_braces(int ac, t_atom *av) {
 		} else av[j++]=av[i];
 		i++;
 		while (close--) {
-			if (!stackn) RAISE("close-paren without open-paren",av[i]);
+			if (!stackn) {binbuf_free(buf); RAISE("close-paren without open-paren",av[i]);}
 			t_binbuf *a2 = binbuf_new();
 			int j2 = stack[--stackn];
 			binbuf_add(a2,j-j2,av+j2);
@@ -741,7 +741,7 @@ int handle_braces(int ac, t_atom *av) {
 		}
 	}
 	//if (stackn) RAISE("too many open-paren (%d)",stackn);
-	if (stackn) post("too many open-paren (%d)",stackn);
+	if (stackn) {binbuf_free(buf); post("too many open-paren (%d)",stackn);}
 	return j;
 }
 
