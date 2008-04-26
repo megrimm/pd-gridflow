@@ -6,83 +6,6 @@
    obj:/lib/ld-2.3.5.so
 }
 {
-   gc1
-   Memcheck:Cond
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc2
-   Memcheck:Cond
-   fun:gc_mark
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc3
-   Memcheck:Value4
-   fun:gc_mark_children
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc3_64
-   Memcheck:Value8
-   fun:gc_mark_children
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc4
-   Memcheck:Value4
-   fun:gc_mark
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc5
-   Memcheck:Cond
-   fun:gc_mark_children
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc6
-   Memcheck:Value4
-   fun:st_lookup
-   fun:rb_mark_generic_ivar
-   fun:gc_mark_children
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-{
-   gc7
-   Memcheck:Cond
-   fun:st_lookup
-   fun:rb_mark_generic_ivar
-   fun:gc_mark_children
-   fun:mark_locations_array
-   fun:garbage_collect
-}
-
-{
-   libusb1
-   Memcheck:Param
-   ioctl(generic)
-   fun:ioctl
-   fun:usb_os_find_devices
-}
-{
-   libusb2
-   Memcheck:Param
-   ioctl(generic)
-   obj:/lib/ld-2.3.5.so
-   fun:ioctl
-   fun:usb_find_devices
-}
-
-
-{
    unknown1
    Memcheck:Cond
    obj:/lib/ld-2.3.5.so
@@ -118,4 +41,76 @@
    obj:/usr/lib/libX11.so.6.2.0
    fun:_X11TransWrite
 }
-
+{
+   alsa1
+   Memcheck:Addr1
+   fun:strlen
+   fun:vfprintf
+   fun:vsprintf
+   fun:sprintf
+   fun:alsa_getdevs
+}
+{
+   alsa2
+   Memcheck:Addr1
+   fun:_IO_default_xsputn
+   fun:vfprintf
+   fun:vsprintf
+   fun:sprintf
+   fun:alsa_getdevs
+}
+{
+   alsa3
+   Memcheck:Addr2
+   fun:mempcpy
+   fun:vfprintf
+   fun:vsprintf
+   fun:sprintf
+   fun:alsa_getdevs
+}
+{
+   alsa4
+   Memcheck:Param
+   ioctl(arg)
+   obj:/lib/ld-2.3.6.so
+   fun:snd_pcm_prepare
+   fun:snd_pcm_hw_params
+   fun:alsaio_setup
+   fun:alsa_open_audio
+   obj:*
+}
+{
+   alsa5
+   Memcheck:Param
+   ioctl(generic)
+   obj:/lib/ld-2.3.6.so
+   fun:snd_pcm_link
+   fun:alsa_open_audio
+   obj:*
+}
+{
+   alsa6
+   Memcheck:Param
+   ioctl(arg)
+   obj:/lib/ld-2.3.6.so
+   fun:snd_pcm_prepare
+   fun:alsa_send_dacs
+}
+{
+   dlopen1
+   Memcheck:Cond
+   obj:/lib/ld-2.3.6.so
+   obj:/lib/tls/i686/cmov/libc-2.3.6.so
+   obj:/lib/ld-2.3.6.so
+   fun:_dl_open
+}
+{
+   dlopen2
+   Memcheck:Cond
+   obj:/lib/ld-2.3.6.so
+   obj:/lib/ld-2.3.6.so
+   obj:/lib/ld-2.3.6.so
+   obj:/lib/tls/i686/cmov/libc-2.3.6.so
+   obj:/lib/ld-2.3.6.so
+   fun:_dl_open
+}
