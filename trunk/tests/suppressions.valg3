@@ -97,6 +97,58 @@
    fun:alsa_send_dacs
 }
 {
+   alsa7
+   Memcheck:Addr4
+   fun:mempcpy
+   fun:vfprintf
+   fun:vsprintf
+   fun:sprintf
+   fun:alsa_getdevs
+}
+{
+   alsa8
+   Memcheck:Param
+   ioctl(arg)
+   obj:/lib/ld-2.3.6.so
+   fun:snd_pcm_prepare
+   fun:alsa_open_audio
+   obj:*
+}
+{
+   alsa9
+   Memcheck:Leak
+   fun:malloc
+   fun:snd_dlobj_cache_add
+   obj:/usr/lib/libasound.so.2.0.0
+   fun:alsa_getdevs
+}
+{
+   alsa10
+   Memcheck:Leak
+   fun:calloc
+   fun:snd_ctl_new
+   fun:snd_ctl_hw_open
+   fun:_snd_ctl_hw_open
+   obj:/usr/lib/libasound.so.2.0.0
+   fun:alsa_getdevs
+}
+{
+   alsa11
+   Memcheck:Leak
+   fun:calloc
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   obj:/usr/lib/libasound.so.2.0.0
+   fun:snd_config_update_r
+   fun:snd_config_update
+   fun:snd_ctl_open
+   fun:alsa_getdevs
+}
+{
    dlopen1
    Memcheck:Cond
    obj:/lib/ld-2.3.6.so
@@ -113,4 +165,37 @@
    obj:/lib/tls/i686/cmov/libc-2.3.6.so
    obj:/lib/ld-2.3.6.so
    fun:_dl_open
+}
+{
+   fclass1
+   Memcheck:Leak
+   fun:*
+   fun:*
+   fun:_Z14fclass_installP6FClassS0_j
+}
+{
+   fclass2
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z12suffixes_arePKcS0_
+   fun:_Z17FormatX11_startupP6FClass
+   fun:_Z14fclass_installP6FClassS0_j
+   fun:_Z11startup_x11v
+}
+{
+   cv1
+   Memcheck:Leak
+   fun:malloc
+   obj:/lib/ld-2.3.6.so
+   fun:_dl_open
+   obj:/lib/tls/i686/cmov/libdl-2.3.6.so
+   obj:/lib/ld-2.3.6.so
+   obj:/lib/tls/i686/cmov/libdl-2.3.6.so
+   fun:dlopen
+   fun:cvUseOptimized
+   fun:cvRegisterModule
+   fun:_ZN8CvModuleC1EP12CvModuleInfo
+   obj:/home/matju/lib/libcxcore.so.2.0.0
+   obj:/lib/ld-2.3.6.so
 }
