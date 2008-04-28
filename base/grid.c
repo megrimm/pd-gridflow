@@ -158,12 +158,12 @@ void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
-	try {GridInlet_begin_1(this);} catch (Barf *barf) {GridInlet_begin_2(this); throw;}
+	try {GridInlet_begin_1(this);} catch (Barf &barf) {GridInlet_begin_2(this); throw;}
 	this->dim = dim;
 	back_out->callback(this);
 }
 
-#define CATCH_IT catch (Barf *slimy) {post("error during flow: %s",slimy->text);}
+#define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy->text);}
 
 template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
