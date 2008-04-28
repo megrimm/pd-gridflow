@@ -163,7 +163,7 @@ void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
 	back_out->callback(this);
 }
 
-#define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy->text);}
+#define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy.text);}
 
 template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
