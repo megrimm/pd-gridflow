@@ -169,7 +169,6 @@ VDE VDGetDeviceNameAndFlags(Str255 outName, UInt32 *outNameFlags)
 VDE VDCaptureStateChanging(UInt32inStateFlags)
 VDE VDGetUniqueIDs(UInt64 *outDeviceID, UInt64 *outInputID)
 VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
-\end class VDC
 */
 #endif
 
@@ -188,7 +187,70 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
   long m_rowBytes;
   int m_quality;
 //int m_colorspace;
-  FormatQuickTimeCamera() : vdc(0) {}
+  \constructor (t_symbol *mode, string filename) {
+	//vdc = SGGetVideoDigitizerComponent(c);
+	dim = new Dim(240,320,4);
+	OSErr e;
+	rect.top=rect.left=0;
+	rect.bottom=dim->v[0]; rect.right=dim->v[1];
+	int n=0;
+	Component c = 0;
+	ComponentDescription cd;
+	cd.componentType = SeqGrabComponentType;
+	cd.componentSubType = 0;
+	cd.componentManufacturer = 0;
+	cd.componentFlags = 0;
+	cd.componentFlagsMask = 0;
+	for(;;) {
+		c = FindNextComponent(c, &cd);
+		if (!c) break;
+		ComponentDescription cd2;
+		Ptr name=0,info=0,icon=0;
+		GetComponentInfo(c,&cd2,&name,&info,&icon);
+		post("Component #%d",n);
+		char *t = (char *)&cd.componentType;
+		post("  type='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
+		t = (char *)&cd.componentSubType;
+		post("  subtype='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
+		post("  name=%08x, *name='%*s'",name, *name, name+1);
+		post("  info=%08x, *info='%*s'",info, *name, info+1);
+		n++;
+	}
+	post("number of components: %d",n);
+	m_sg = OpenDefaultComponent(SeqGrabComponentType, 0);
+	if(!m_sg) RAISE("could not open default component");
+	e=SGInitialize(m_sg);
+	if(e!=noErr) RAISE("could not initialize SG");
+	e=SGSetDataRef(m_sg, 0, 0, seqGrabDontMakeMovie);
+	if (e!=noErr) RAISE("dataref failed");
+	e=SGNewChannel(m_sg, VideoMediaType, &m_vc);
+	if(e!=noErr) post("could not make new SG channel");
+	e=SGSetChannelBounds(m_vc, &rect);
+	if(e!=noErr) post("could not set SG ChannelBounds");
+	e=SGSetChannelUsage(m_vc, seqGrabPreview);
+	if(e!=noErr) post("could not set SG ChannelUsage");
+	//  m_rowBytes = m_vidXSize*4;
+	switch (3) {
+	  case 0: e=SGSetChannelPlayFlags(m_vc, channelPlayNormal); break;
+	  case 1: e=SGSetChannelPlayFlags(m_vc, channelPlayHighQuality); break;
+	  case 2: e=SGSetChannelPlayFlags(m_vc, channelPlayFast); break;
+	  case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
+	}
+	int dataSize = dim->prod();
+	buf = new uint8[dataSize];
+	m_rowBytes = dim->prod(1);
+	e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,&rect,NULL,NULL,0,buf,m_rowBytes);
+	if (0/*yuv*/) {
+		int dataSize = dim->prod()*2/4;
+		buf = new uint8[dataSize];
+		m_rowBytes = dim->prod(1)*2/4;
+		e=QTNewGWorldFromPtr (&m_srcGWorld,k422YpCbCr8CodecType,&rect,NULL,NULL,0,buf,m_rowBytes);
+	}
+	if (e!=noErr) RAISE("error #%d at QTNewGWorldFromPtr",e);
+	if (!m_srcGWorld) RAISE("Could not allocate off screen");
+	SGSetGWorld(m_sg,(CGrafPtr)m_srcGWorld, NULL);
+	SGStartPreview(m_sg);
+  }
   ~FormatQuickTimeCamera() {
     if (m_vc) if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
     if (m_sg) {
@@ -196,81 +258,13 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
       if (m_srcGWorld) ::DisposeGWorld(m_srcGWorld);
     }
   }
-  \decl void initialize (t_symbol *mode, string filename);
-  \decl 0 frame ();
+  \decl 0 bang ();
   \grin 0 int
 };
 
 // /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Components.h
 
 static int nn(int c) {return c?c:' ';}
-
-\def void initialize (t_symbol *mode, string filename) {
-//vdc = SGGetVideoDigitizerComponent(c);
-  dim = new Dim(240,320,4);
-  OSErr e;
-  rect.top=rect.left=0;
-  rect.bottom=dim->v[0]; rect.right=dim->v[1];
-  int n=0;
-  Component c = 0;
-  ComponentDescription cd;
-  cd.componentType = SeqGrabComponentType;
-  cd.componentSubType = 0;
-  cd.componentManufacturer = 0;
-  cd.componentFlags = 0;
-  cd.componentFlagsMask = 0;
-  for(;;) {
-    c = FindNextComponent(c, &cd);
-    if (!c) break;
-    ComponentDescription cd2;
-    Ptr name=0,info=0,icon=0;
-    GetComponentInfo(c,&cd2,&name,&info,&icon);
-    gfpost("Component #%d",n);
-    char *t = (char *)&cd.componentType;
-    gfpost("  type='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
-    t = (char *)&cd.componentSubType;
-    gfpost("  subtype='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
-    gfpost("  name=%08x, *name='%*s'",name, *name, name+1);
-    gfpost("  info=%08x, *info='%*s'",info, *name, info+1);
-    n++;
-  }
-  gfpost("number of components: %d",n);
-  m_sg = OpenDefaultComponent(SeqGrabComponentType, 0);
-  if(!m_sg) RAISE("could not open default component");
-  e=SGInitialize(m_sg);
-  if(e!=noErr) RAISE("could not initialize SG");
-  e=SGSetDataRef(m_sg, 0, 0, seqGrabDontMakeMovie);
-  if (e!=noErr) RAISE("dataref failed");
-  e=SGNewChannel(m_sg, VideoMediaType, &m_vc);		
-  if(e!=noErr) gfpost("could not make new SG channel");
-  e=SGSetChannelBounds(m_vc, &rect);
-  if(e!=noErr) gfpost("could not set SG ChannelBounds");
-  e=SGSetChannelUsage(m_vc, seqGrabPreview);
-  if(e!=noErr) gfpost("could not set SG ChannelUsage");
-//  m_rowBytes = m_vidXSize*4;
-  switch (3) {
-    case 0: e=SGSetChannelPlayFlags(m_vc, channelPlayNormal); break;
-    case 1: e=SGSetChannelPlayFlags(m_vc, channelPlayHighQuality); break;
-    case 2: e=SGSetChannelPlayFlags(m_vc, channelPlayFast); break;
-    case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
-  }
-  int dataSize = dim->prod();
-  buf = new uint8[dataSize];
-  m_rowBytes = dim->prod(1);
-  e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,
-    &rect,NULL,NULL,0,buf,m_rowBytes);
-  if (0/*yuv*/) {
-    int dataSize = dim->prod()*2/4;
-    buf = new uint8[dataSize];
-    m_rowBytes = dim->prod(1)*2/4;
-    e=QTNewGWorldFromPtr (&m_srcGWorld,k422YpCbCr8CodecType,
-      &rect,NULL,NULL,0,buf,m_rowBytes);
-  }
-  if (e!=noErr) RAISE("error #%d at QTNewGWorldFromPtr",e);
-  if (!m_srcGWorld) RAISE("Could not allocate off screen");
-  SGSetGWorld(m_sg,(CGrafPtr)m_srcGWorld, NULL);
-  SGStartPreview(m_sg);
-}
 
 /*pascal Boolean pix_videoDarwin :: SeqGrabberModalFilterProc (DialogPtr theDialog, const EventRecord *theEvent, short *itemHit, long refCon){
     Boolean	handled = false;
@@ -305,7 +299,7 @@ void pix_videoDarwin :: DoVideoSettings(){
 }
 */
 
-\def 0 frame () {
+\def 0 bang () {
     GridOutlet out(this,0,dim);
     out.send(dim->prod(),buf);
 }
@@ -332,7 +326,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	P<Dim> dim;
 	int nframe, nframes;
 	\constructor (t_symbol *mode, string filename) {
-		movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
+		vdc=0; movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
 		int err;
 		filename = gf_find_file(filename);
 		FSSpec fss;
@@ -346,7 +340,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 		post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
 		post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
 		nframes = GetMovieDuration(movie); /* i don't think so */
-		gfpost("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
+		post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
 		OffsetRect(&r, -r.left, -r.top);
 		SetMovieBox(movie, &r);
 		dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
@@ -393,7 +387,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 		time=0;
 		return Qfalse;
 	}
-//	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
+//	post("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
 	GridOutlet out(this,0,dim);
@@ -413,7 +407,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	out.send(dim->prod(),buffer);
 	int nf=nframe;
 	nframe++;
-	return INT2NUM(nf);
+	//return INT2NUM(nf);
 }
 
 GRID_INLET(FormatQuickTimeApple,0) {
