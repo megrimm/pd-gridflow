@@ -55,8 +55,8 @@
 
 - (uint8 *) imageData {return imdata;}
 - (int) imageDataSize {return imwidth*imheight*4;}
-- (id) imageHeight {return imheight;}
-- (id) imageWidth {return imwidth;}
+- (int) imageHeight {return imheight;}
+- (int) imageWidth {return imwidth;}
 
 - (id) imageHeight: (int)h width: (int)w {
 	if (imheight==h && imwidth==w) return self;
@@ -119,6 +119,26 @@ void GFView_display(GFView *self) {
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
 	t_clock *clock;
+	\constructor (t_symbol *mode) {
+		NSRect r = {{0,0}, {320,240}};
+		window = [[NSWindow alloc]
+			initWithContentRect: r
+			styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
+			backing: NSBackingStoreBuffered
+			defer: YES];
+		widget = [[GFView alloc] initWithFrame: r];
+		[window setContentView: widget];
+		[window setTitle: @"GridFlow"];
+		[window makeKeyAndOrderFront: NSApp];
+		[window orderFrontRegardless];
+		wc = [[NSWindowController alloc] initWithWindow: window];
+		clock = clock_new(this,(t_method)FormatQuartz_call);
+		[window makeFirstResponder: widget];
+		post("mainWindow = %08lx",(long)[NSApp mainWindow]);
+		post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
+		NSColor *color = [NSColor clearColor];
+		[window setBackgroundColor: color];
+	}
 	~FormatQuartz () {
 		clock_unset(clock);
 		clock_free(clock);
@@ -188,30 +208,6 @@ GRID_INLET(FormatQuartz,0) {
 } GRID_FINISH {
 	GFView_display(widget);
 } GRID_END
-
-\def void initialize (t_symbol *mode) {
-	SUPER;
-	NSRect r = {{0,0}, {320,240}};
-	window = [[NSWindow alloc]
-		initWithContentRect: r
-		styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
-		backing: NSBackingStoreBuffered
-		defer: YES
-		];
-	widget = [[GFView alloc] initWithFrame: r];
-	[window setContentView: widget];
-	[window setTitle: @"GridFlow"];
-	[window makeKeyAndOrderFront: NSApp];
-	[window orderFrontRegardless];
-	wc = [[NSWindowController alloc]
-		initWithWindow: window];
-	clock = clock_new(this,(t_method)FormatQuartz_call);
-	[window makeFirstResponder: widget];
-	post("mainWindow = %08lx",(long)[NSApp mainWindow]);
-	post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
-	NSColor *color = [NSColor clearColor];
-	[window setBackgroundColor: color];
-}
 
 \end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
