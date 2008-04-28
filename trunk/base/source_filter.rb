@@ -209,7 +209,7 @@ def handle_classinfo(line)
 	Out.print "static void #{cl}_startup (FClass *fclass);"
 	Out.print "static void *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
-	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(Method)#{frame.name}::#{method.selector}_wrap }" }.join(",")
+	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(FMethod)#{frame.name}::#{method.selector}_wrap }" }.join(",")
 	Out.print "}; FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect},COUNT(#{cl}_methods),#{cl}_methods};"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
