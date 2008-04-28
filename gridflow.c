@@ -652,7 +652,7 @@ void BFObject::ninlets_set (int n, bool draw) {
 		while (ninlets>n) {
 			ninlets--;
 			inlet_free(inlets[ninlets]->inlet);
-			delete inlets[ninlets];
+			pd_free(inlets[ninlets]);
 		}
 	}
 	if (draw) BFObject_redraw(this);
