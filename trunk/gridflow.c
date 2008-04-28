@@ -535,7 +535,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	m = funcall_lookup(bself,"anything");
 	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
+    } catch (Barf &oozy) {pd_error(bself,"%s",oozy->text);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
@@ -590,11 +590,11 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
-    } catch (Barf *oozy) {pd_error(bself,"%s",oozy->text); return 0;}
+    } catch (Barf &oozy) {pd_error(bself,"%s",oozy->text); return 0;}
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {delete bself->self;} catch (Barf *oozy) {pd_error(bself,"%s",oozy->text);}
+	try {delete bself->self;} catch (Barf &oozy) {pd_error(bself,"%s",oozy->text);}
 	bself->ninlets_set(1,false);
 	delete[] bself->inlets;
 	delete[] bself->outlets;
@@ -839,5 +839,5 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
 	atexit(gridflow_unsetup);
-    } catch (Barf *oozy) {post("Init_gridflow error: %s",oozy->text);}
+    } catch (Barf &oozy) {post("Init_gridflow error: %s",oozy->text);}
 }
