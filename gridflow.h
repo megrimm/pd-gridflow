@@ -208,7 +208,7 @@ ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffre
 
 struct FObject;
 struct t_atom2;
-typedef void (*Method)(FObject *, int, t_atom2 *);
+typedef void (*FMethod)(FObject *, int, t_atom2 *);
 typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -332,7 +332,7 @@ struct CObject {
 };
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
-struct MethodDecl {const char *selector; Method method;};
+struct MethodDecl {const char *selector; FMethod method;};
 
 #undef check
 

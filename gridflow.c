@@ -495,13 +495,13 @@ string gf_find_file (string x) {
 #define pd_class(x) (*(t_pd *)x)
 #define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
 
-static Method funcall_lookup (FClass *fclass, const char *sel) {
+static FMethod funcall_lookup (FClass *fclass, const char *sel) {
 	int n = fclass->methodsn;
 	for (int i=0; i<n; i++) if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
 	if (fclass->super) return funcall_lookup(fclass->super,sel);
 	return 0;
 }
-static Method funcall_lookup (BFObject *bself, const char *sel) {
+static FMethod funcall_lookup (BFObject *bself, const char *sel) {
 	return funcall_lookup(fclasses_pd[pd_class(bself)],sel);
 }
 
@@ -526,7 +526,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	SETFLOAT(argv+0,winlet);
 	char buf[256];
 	sprintf(buf,"_n_%s",selector->s_name);
-	Method m;
+	FMethod m;
 	m = funcall_lookup(bself,buf);
 	if (m) {m(bself->self,argc+1,argv); return;}
 	sprintf(buf,"_%d_%s",winlet,selector->s_name);
@@ -762,7 +762,7 @@ int handle_braces(int ac, t_atom *av) {
 	} else {
 		//t_atom a[1];
 		//outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);
-		Method m = funcall_lookup(bself,"___get");
+		FMethod m = funcall_lookup(bself,"___get");
 		t_atom2 a[1];
 		SETSYMBOL(a,s);
 		if (m) m(this,1,a);
