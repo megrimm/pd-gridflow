@@ -144,6 +144,8 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 	frame = 0;
 }
 
+Format::~Format () {if (f) fclose(f); /*if (fd>=0) close(fd);*/}
+
 // This is different from IO#eof, which waits until a read has failed
 // doesn't work in nonblocking mode? (I don't recall why)
 //\def 0 eof () {

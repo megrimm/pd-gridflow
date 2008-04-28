@@ -897,6 +897,7 @@ void call_super(int argc, t_atom *argv);
 	\decl 0 cast (NumberTypeE nt);
 	\decl 0 seek(int frame);
 	\decl 0 rewind ();
+	~Format ();
 };
 
 extern std::vector<string> gf_data_path;
