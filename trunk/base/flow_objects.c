@@ -2388,6 +2388,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 		bself-> ninlets_set(1+nmosusses);
 		bself->noutlets_set(1+nmosusses);
 	}
+	~Range () {delete[] mosusses;}
 	\decl 0 float(float f);
 	\decl 0 list(float f);
 	\decl void _n_float(int i, float f);
