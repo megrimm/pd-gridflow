@@ -45,8 +45,8 @@
 }
 - (id) drawRect: (NSRect)rect;
 - (id) imageHeight: (int)w width: (int)h;
-- (id) imageHeight;
-- (id) imageWidth;
+- (int) imageHeight;
+- (int) imageWidth;
 - (uint8 *) imageData;
 - (int) imageDataSize;
 @end
@@ -113,6 +113,9 @@ void GFView_display(GFView *self) {
 	[self setNeedsDisplay: YES];
 	[self display];
 }
+
+struct FormatQuartz;
+void FormatQuartz_call(FormatQuartz *self);
 
 \class FormatQuartz : Format {
 	NSWindow *window;
