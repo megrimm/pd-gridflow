@@ -2821,6 +2821,21 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 \def 1 float(int i) {index = mod(i,n);}
 \end class {install("shunt",2,0); add_creator("demux");}
 
+\class Send39 : FObject {
+	\attr t_symbol *dest;
+	\constructor (t_symbol *dest) {
+		char buf[MAXPDSTRING];
+		sprintf(buf,"pd-%s",dest->s_name);
+		this->dest = gensym(buf);
+	}
+	\decl void anything (...);
+};
+\def void anything(...) {
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+	pd_typedmess(this->dest->s_thing,sel,argc-1,argv+1);
+}
+\end class {install("send39",1,0);}
+
 //****************************************************************
 //#ifdef UNISTD
 #include <sys/types.h>
