@@ -629,7 +629,6 @@ static void BFObject_redraw (BFObject *bself) {
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
 	if (!rt) return;
 	gobj_vis((t_gobj *)bself,bself->mom,0);
-	//fprintf(stderr,"object x=%d y=%d",bself->te_xpix,bself->te_ypix);
 	gobj_vis((t_gobj *)bself,bself->mom,1);
 	canvas_fixlinesfor(bself->mom,(t_text *)bself);
 #endif
@@ -637,6 +636,7 @@ static void BFObject_redraw (BFObject *bself) {
 
 /* warning: deleting inlets that are connected will cause pd to crash */
 void BFObject::ninlets_set (int n, bool draw) {
+	if (!te_binbuf) draw=false;
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
 	if (draw) BFObject_undrawio(this);
 	if (ninlets<n) {
@@ -662,6 +662,7 @@ void BFObject::ninlets_set (int n, bool draw) {
 }
 /* warning: deleting outlets that are connected will cause pd to crash */
 void BFObject::noutlets_set (int n, bool draw) {
+	if (!te_binbuf) draw=false;
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
 	if (draw) BFObject_undrawio(this);
 	if (noutlets<n) {
