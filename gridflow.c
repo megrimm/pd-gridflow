@@ -41,8 +41,10 @@
 #endif
 
 /* for exception-handling in 0.9.0... Linux-only */
+#ifdef MACOSX
 #include <exception>
 #include <execinfo.h>
+#endif
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
@@ -587,7 +589,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 		j++;
 		int k=j;
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_w.w_symbol,j-k-1,argv+k+1);
+		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
     } catch (Barf &oozy) {pd_error(bself,"%s",oozy.text); return 0;}
@@ -718,7 +720,7 @@ int handle_braces(int ac, t_atom *av) {
 	for (int i=0; i<ac; ) {
 		int close=0;
 		if (av[i].a_type==A_SYMBOL) {
-			const char *s = av[i].a_w.w_symbol->s_name;
+			const char *s = av[i].a_symbol->s_name;
 			while (*s=='(') {
 				if (stackn==16) {binbuf_free(buf); RAISE("too many nested lists (>16)");}
 				stack[stackn++]=j;
@@ -734,7 +736,7 @@ int handle_braces(int ac, t_atom *av) {
 		i++;
 		while (close--) {
 			if (!stackn) {binbuf_free(buf); RAISE("close-paren without open-paren",av[i]);}
-			t_binbuf *a2 = binbuf_new();
+			t_binbuf *a2 = binbuf_new(); /* leak because there is no deallocation mechanism whatsoever */
 			int j2 = stack[--stackn];
 			binbuf_add(a2,j-j2,av+j2);
 			j=j2;
@@ -784,10 +786,14 @@ STARTUP_LIST(void)
 
 void blargh () {
   void *array[25];
+#ifdef MACOSX
+  fprintf(stderr,"unhandled exception\n");
+#else
   int nSize = backtrace(array, 25);
   char **symbols = backtrace_symbols(array, nSize);
   for (int i=0; i<nSize; i++) fprintf(stderr,"%d: %s\n",i,symbols[i]);
   free(symbols);
+#endif
 }
 
 // those are not really leaks but deleting them make them disappear from valgrind
