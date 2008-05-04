@@ -1462,7 +1462,7 @@ GRID_INLET(GridLabeling,0) {
 	initialize3();
 }
 void GridLabeling::initialize3() {
-	bself->ninlets_set(form_val ? 2 : 4);
+	bself->noutlets_set(form_val ? 2 : 4);
 }
 
 \end class {install("#labeling",1,0);}
