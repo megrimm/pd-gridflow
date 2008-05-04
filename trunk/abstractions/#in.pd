@@ -4,9 +4,9 @@
 #X obj 91 246 outlet;
 #X obj 172 69 loadbang;
 #X obj 172 88 args *;
-#N canvas 116 23 450 300 1021-placeholder 0;
-#X obj 0 0 r 1010-in;
-#X obj 0 40 s 1010-out;
+#N canvas 116 23 450 300 \$0-placeholder 0;
+#X obj 0 0 r 1009-in;
+#X obj 0 40 s 1009-out;
 #X obj 0 20 #io.png in teapot.png;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
@@ -27,6 +27,7 @@
 #X connect 0 0 15 0;
 #X connect 3 0 4 0;
 #X connect 4 0 12 0;
+#X connect 4 1 15 0;
 #X connect 7 0 8 0;
 #X connect 8 0 1 0;
 #X connect 8 1 2 0;
