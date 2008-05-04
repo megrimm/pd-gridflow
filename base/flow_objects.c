@@ -267,7 +267,7 @@ GRID_INLET(GridExportList,0) {
 		}
 	}
 	void dump_dims(std::ostream &s, GridInlet *in) {
-		if (name && name!=&s_) s << name << ": ";
+		if (name && name!=&s_) s << name->s_name << ": ";
 		s << "Dim[";
 		for (int i=0; i<in->dim->n; i++) {
 			s << in->dim->v[i];
