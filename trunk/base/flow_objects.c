@@ -1441,7 +1441,7 @@ GRID_INLET(GridLabeling,0) {
 				s.y/s.area,
 				s.x/s.area};
 			float a[] = {s.area};
-			send_out(1,1,a);
+			send_out(3,1,a);
 			GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
 			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
 		} else {
