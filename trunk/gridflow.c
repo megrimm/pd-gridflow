@@ -41,7 +41,7 @@
 #endif
 
 /* for exception-handling in 0.9.0... Linux-only */
-#ifdef MACOSX
+#ifndef MACOSX
 #include <exception>
 #include <execinfo.h>
 #endif
@@ -629,6 +629,7 @@ static void BFObject_redraw (BFObject *bself) {
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
 	if (!rt) return;
 	gobj_vis((t_gobj *)bself,bself->mom,0);
+	//fprintf(stderr,"object x=%d y=%d",bself->te_xpix,bself->te_ypix);
 	gobj_vis((t_gobj *)bself,bself->mom,1);
 	canvas_fixlinesfor(bself->mom,(t_text *)bself);
 #endif
