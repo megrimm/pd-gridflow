@@ -4,11 +4,9 @@
 #X obj 350 9 loadbang;
 #X obj 350 28 args *;
 #N canvas 116 23 450 300 \$0-placeholder 0;
-#X obj 0 0 r 1015-in;
-#X obj 0 40 s 1015-out;
-#X obj 0 20 #io.x11 out;
-#X connect 0 0 2 0;
-#X connect 2 0 1 0;
+#X obj 0 0 r 1003-in;
+#X obj 0 20 gf.error not open;
+#X connect 0 0 1 0;
 #X restore 235 189 pd \$0-placeholder;
 #X obj 235 170 s \$0-in;
 #X obj 235 208 r \$0-out;
