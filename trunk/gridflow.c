@@ -787,10 +787,10 @@ void startup_format();
 STARTUP_LIST(void)
 
 void blargh () {
-  void *array[25];
 #ifdef MACOSX
   fprintf(stderr,"unhandled exception\n");
 #else
+  void *array[25];
   int nSize = backtrace(array, 25);
   char **symbols = backtrace_symbols(array, nSize);
   for (int i=0; i<nSize; i++) fprintf(stderr,"%d: %s\n",i,symbols[i]);
