@@ -209,9 +209,9 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 		GetComponentInfo(c,&cd2,&name,&info,&icon);
 		post("Component #%d",n);
 		char *t = (char *)&cd.componentType;
-		post("  type='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
+		post(" type='%c%c%c%c'",t[3],t[2],t[1],t[0]);
 		t = (char *)&cd.componentSubType;
-		post("  subtype='%c%c%c%c'",nn(t[3]),nn(t[2]),nn(t[1]),nn(t[0]));
+		post("  subtype='%c%c%c%c'",t[3],t[2],t[1],t[0]);
 		post("  name=%08x, *name='%*s'",name, *name, name+1);
 		post("  info=%08x, *info='%*s'",info, *name, info+1);
 		n++;
@@ -326,7 +326,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	P<Dim> dim;
 	int nframe, nframes;
 	\constructor (t_symbol *mode, string filename) {
-		vdc=0; movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
+		/*vdc=0;*/ movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
 		int err;
 		filename = gf_find_file(filename);
 		FSSpec fss;
@@ -377,7 +377,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	GetMovieBox(movie,&r);
 	PixMapHandle pixmap = GetGWorldPixMap(gw);
 	short flags = nextTimeStep;
-	if (nframe>=nframes) return Qfalse;
+	if (nframe>=nframes) {outlet_bang(bself->te_outlet); return;}
 	if (nframe==0) flags |= nextTimeEdgeOK;
 	TimeValue duration;
 	OSType mediaType = VisualMediaCharacteristic;
@@ -385,7 +385,8 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 		flags,1,&mediaType,time,0,&time,&duration);
 	if (time<0) {
 		time=0;
-		return Qfalse;
+		outlet_bang(bself->te_outlet);
+		return;
 	}
 //	post("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
