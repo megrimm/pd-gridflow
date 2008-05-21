@@ -286,6 +286,7 @@ Feature.add {
 		#include <stdio.h>
 		#include <stdlib.h>
 		#include <cstddef>
+		#include <sys/types.h>
 		#define T(a) printf("%s:%ld; ",#a,(long)sizeof(a));
 		int main () {
 			T(void *)T(ptrdiff_t)T(off_t)T(size_t)puts("");
