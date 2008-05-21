@@ -150,7 +150,6 @@ void FormatQuartz_call(FormatQuartz *self);
 		[window setReleasedWhenClosed: YES];
 		[window close];
 	}
-	\decl void initialize (t_symbol *mode);
 	void call ();
 	\grin 0
 };
@@ -217,7 +216,7 @@ GRID_INLET(FormatQuartz,0) {
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
-	install_format("#io:quartz",2,"");
+	install_format("#io.quartz",2,"");
 }
 void startup_quartz () {
         \startall
