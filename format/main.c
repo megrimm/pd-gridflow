@@ -57,7 +57,6 @@
 */
 
 std::map<std::string,std::string> suffix_table;
-std::map<std::string,std::string> format_table;
 void suffixes_are (const char *name, const char *suffixes) {
 	std::string name2 = name;
 	char *suff2 = strdup(suffixes);
@@ -86,18 +85,6 @@ void suffixes_are (const char *name, const char *suffixes) {
 	free(s);
 }
 \end class SuffixLookup {install("gf.suffix_lookup",1,3);}
-
-// not in use
-\class FormatLookup : FObject {
-  \constructor () {}
-  \decl 0 symbol (string str);
-};
-\def 0 symbol (string str) {
-	std::map<std::string,std::string>::iterator u = format_table.find(str);
-	if (u!=format_table.end()) outlet_symbol(bself->outlets[0],gensym((char *)u->second.data()));
-	else outlet_bang(bself->outlets[0]);
-}
-\end class FormatLookup {install("gf.format_lookup",1,1);}
 
 \class Format : FObject
 Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
