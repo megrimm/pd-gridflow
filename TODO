@@ -9,6 +9,7 @@
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement [listflatten] !
+[ ] reimplement negative indices in [listprepend], etc
 soon:
  * removed reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
@@ -465,30 +466,6 @@ FObject.subclass("rubysprintf",2,1) {
 }
 
 class FObject
-	def self.gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
-	def self.gfattr(s,*v)
-		s=s.intern if String===s
-		gfattrs[s]=v
-		attr_accessor s
-		module_eval "def _0_#{s}(o) self.#{s}=o end"
-	end
-	def self.help
-		gfattrs.each{|x,v|
-			s =      "attr=%-8s" % x
-			s <<    " type=%-8s" % v[0] if v[0]
-			s << " default=%-8s" % v[1] if v[1] # what default="false" ?
-			GridFlow.post "%s", s
-		}
-		GridFlow.post "total %d attributes", gfattrs.length
-	end
-	def _0_help; self.class.help end
-	def self.gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
-	def self.gfattr(s,*v)
-		s=s.intern if String===s
-		gfattrs[s]=v
-		attr_accessor s
-		module_eval "def _0_#{s}(o) self.#{s}=o end"
-	end
 	def _0_get(s=nil)
 		s=s.intern if String===s
 		if s then
