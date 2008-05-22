@@ -2836,6 +2836,16 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 }
 \end class {install("send39",1,0);}
 
+/* this can't report on bang,float,symbol,pointer,list because zgetfn can't either */
+\class ClassExists : FObject {
+	\constructor () {}
+	\decl void _0_symbol(t_symbol *s);
+};
+\def void _0_symbol(t_symbol *s) {
+	outlet_float(bself->outlets[0],!!zgetfn(&pd_objectmaker,s));
+}
+\end class {install("class_exists",1,1);}
+
 //****************************************************************
 //#ifdef UNISTD
 #include <sys/types.h>
