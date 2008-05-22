@@ -1,5 +1,7 @@
 all:: malloc-test
 
-malloc-test: malloc-test.c
-	g++ -xc++ malloc-test.c -o malloc-test
+COMMON = Makefile
+
+malloc-test: malloc-test.c $(COMMON)
+	g++ -xc++ -O3 malloc-test.c -o malloc-test
 
