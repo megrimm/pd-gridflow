@@ -10,16 +10,9 @@ RUBY = ruby
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
-CFLAGS += -Wall -Wno-unused -Wunused-variable
-CFLAGS += -g -fPIC -I.
+CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
-ifeq ($(HAVE_DEBUG),yes)
-	CFLAGS += -O0
-else
-#	CFLAGS += -O3 -funroll-loops -fno-omit-frame-pointer
-	CFLAGS += -O2 -funroll-loops
-endif
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = base/grid.o base/flow_objects.o base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
