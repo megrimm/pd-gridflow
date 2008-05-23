@@ -241,7 +241,7 @@ end
 
 LOG.puts "-"*64
 
-$CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
+$CFLAGS += " -xc++ -fno-operator-names"
 $CFLAGS += " -I/usr/X11R6/include"
 $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
@@ -623,6 +623,7 @@ def usage
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
 end
 
+$debug=false
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
@@ -644,8 +645,8 @@ while ARGV.length>0 do
 		$conf[:LDSOFLAGS] << "-static"
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
+		$debug=true
 		$conf[:OPTIONS].push :HAVE_DEBUG
-		$CFLAGS += " -fno-inline"
 	when "--lite"
 		puts "Lite Mode (no float64, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
@@ -663,6 +664,12 @@ while ARGV.length>0 do
 		$verbose=true
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
+end
+
+if $debug
+	$CFLAGS += " -O0 -fno-inline"
+else
+	$CFLAGS += " -O3"
 end
 
 #--------------------------------#
@@ -761,7 +768,6 @@ end
 puts Light
 
 $conf[:LDSOFLAGS].uniq!
-$CFLAGS += " -falign-functions=16" if $conf[:FEATURES][:gcc3]
 
 if not $conf[:FEATURES][:gcc3]
   puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
