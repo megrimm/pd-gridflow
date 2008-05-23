@@ -74,6 +74,7 @@ static std::map<string,string> fourccs;
 	}
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
+	\decl 0 rewind ();
 	\decl 0 force_size (int32 height, int32 width);
 	\decl 0 codec (string c);
 	\decl 0 colorspace (string c);
@@ -86,6 +87,7 @@ static std::map<string,string> fourccs;
 
 \def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
 \def 0 seek (int frame) {quicktime_set_video_position(anim,frame,track);}
+\def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
 	int nframe = quicktime_video_position(anim,track);
