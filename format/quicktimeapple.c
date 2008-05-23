@@ -325,6 +325,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	uint8 *buffer;
 	P<Dim> dim;
 	int nframe, nframes;
+	P<BitPacking> bit_packing;
 	\constructor (t_symbol *mode, string filename) {
 		/*vdc=0;*/ movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
 		int err;
@@ -347,6 +348,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 		buffer = new uint8[dim->prod()];
 		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
+		{uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000}; bit_packing = new BitPacking(is_le(),3,3,mask);}
 		if (err) goto err;
 		return;
 	err:
@@ -397,16 +399,21 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	uint32 *bufu32 = (uint32 *)buffer;
 	int n = dim->prod()/4;
 	int i;
-	for (i=0; i<n&-4; i+=4) {
-		bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
-		bufu32[i+1]=(bufu32[i+1]<<8)+(bufu32[i+1]>>24);
-		bufu32[i+2]=(bufu32[i+2]<<8)+(bufu32[i+2]>>24);
-		bufu32[i+3]=(bufu32[i+3]<<8)+(bufu32[i+3]>>24);
+	if (is_le()) {
+		for (; i<n; i++) {
+			bufu32[i+0]=bufu32[i+0]>>8;
+		}
+	} else {
+		for (i=0; i<n&-4; i+=4) {
+			bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
+			bufu32[i+1]=(bufu32[i+1]<<8)+(bufu32[i+1]>>24);
+			bufu32[i+2]=(bufu32[i+2]<<8)+(bufu32[i+2]>>24);
+			bufu32[i+3]=(bufu32[i+3]<<8)+(bufu32[i+3]>>24);
+		}
+		for (; i<n; i++) {
+			bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
+		}
 	}
-	for (; i<n; i++) {
-		bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
-	}
-
 	out.send(dim->prod(),buffer);
 	int nf=nframe;
 	nframe++;
