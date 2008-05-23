@@ -364,10 +364,12 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	\decl 0 colorspace_m (string c);
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
+	\decl 0 rewind ();
 	\grin 0
 };
 
 \def 0 seek (int frame) {nframe=frame;}
+\def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
 	CGrafPtr savedPort;
