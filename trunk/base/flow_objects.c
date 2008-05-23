@@ -298,7 +298,7 @@ GRID_INLET(GridExportList,0) {
 	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
 	trunc = x;
 }
-\def 0 maxrows (int y) { maxrows = y; }
+\def 0 maxrows (int y) {maxrows = y;}
 template <class T> void GridPrint::make_columns (int n, T *data) {
 	long maxv=0;
 	long minv=0;
@@ -2508,7 +2508,7 @@ static void display_update(void *x) {
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
-	string sel = argv[0];
+	string sel = string(argv[0]).data()+3;
 	text.str("");
 	if (sel != "float") {text << sel; if (argc>1) text << " ";}
 	long col = text.str().length();
