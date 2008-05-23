@@ -1,4 +1,4 @@
-#N canvas 427 50 597 660 10;
+#N canvas 623 0 597 657 10;
 #X obj 85 386 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
 #X obj 71 138 # max 0;
@@ -7,20 +7,20 @@
 #X obj 60 72 # +;
 #X obj 60 161 outlet;
 #X msg 108 51 0;
-#X text 164 114 divide by 32 \, 16 \, 4;
 #X text 4 1 we do like #fade but faster (because of >>);
 #X text 4 15 feedback factors are 1/32 for red \, 1/16 for green \,
 1/8 for blue.;
-#X obj 175 85 # * (31 15 3);
-#X obj 60 114 # >> (5 4 2);
 #X obj 60 142 t a a;
+#X obj 60 114 # >> (4 2 0);
+#X obj 175 85 # * (15 3 0);
+#X text 164 114 divide by 16 \, 4 \, 1;
 #X connect 0 0 1 0;
-#X connect 1 0 8 0;
+#X connect 1 0 7 0;
 #X connect 3 0 1 1;
-#X connect 7 0 1 1;
-#X connect 8 0 9 0;
-#X connect 9 0 2 0;
-#X connect 9 1 7 0;
+#X connect 6 0 2 0;
+#X connect 6 1 8 0;
+#X connect 7 0 6 0;
+#X connect 8 0 1 1;
 #X restore 129 207 pd motion fade;
 #X obj 27 252 shunt 2;
 #X obj 71 58 #downscale_by 2 smoothly;
@@ -29,25 +29,25 @@
 ;
 #X obj 86 77 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
-#X obj 26 -36 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+#X obj 26 -56 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
 ;
 #X obj 27 37 shunt 2;
 #X msg 264 245 256;
-#X obj 27 463 #out window;
+#X obj 27 444 #out window;
 #X obj 83 38 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
-#X obj 27 504 print;
+#X obj 27 485 print;
 #X obj 264 299 #for 0 256 1;
 #X floatatom 264 264 5 0 0 0 - - -;
 #X obj 102 120 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
 -1 -1 0 1;
 #X obj 27 178 shunt 2;
-#X obj 169 324 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
+#X obj 169 324 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 1
 1;
 #X obj 27 324 shunt 2;
-#X obj 27 484 fps detailed;
+#X obj 27 465 fps detailed;
 #X obj 264 226 loadbang;
-#X obj 86 324 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+#X obj 86 324 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 1 1
 ;
 #X obj 71 296 #store;
 #N canvas 81 205 480 500 sort 0;
@@ -135,7 +135,6 @@
 #X text 73 227 enable gamma correction;
 #N canvas 372 198 399 273 motion 0;
 #X obj 15 113 # << 2;
-#X obj 15 162 @! abs;
 #X obj 15 9 inlet;
 #X obj 18 80 # -;
 #X obj 70 174 # + 128;
@@ -148,35 +147,36 @@
 #X obj 70 133 inlet render;
 #X obj 155 54 inlet type;
 #X obj 15 54 shunt 2;
-#X connect 0 0 10 0;
-#X connect 1 0 6 0;
-#X connect 2 0 9 0;
-#X connect 3 0 0 0;
-#X connect 4 0 6 0;
-#X connect 6 0 7 0;
-#X connect 7 0 5 0;
-#X connect 8 0 4 0;
+#X obj 15 162 # abs-;
+#X connect 0 0 9 0;
+#X connect 1 0 8 0;
+#X connect 2 0 0 0;
+#X connect 3 0 5 0;
+#X connect 5 0 6 0;
+#X connect 6 0 4 0;
+#X connect 7 0 3 0;
+#X connect 8 0 12 0;
+#X connect 8 1 2 0;
 #X connect 9 0 13 0;
-#X connect 9 1 3 0;
-#X connect 10 0 1 0;
-#X connect 10 1 8 0;
-#X connect 11 0 10 1;
-#X connect 12 0 13 1;
-#X connect 13 0 3 1;
+#X connect 9 1 7 0;
+#X connect 10 0 9 1;
+#X connect 11 0 12 1;
+#X connect 12 0 2 1;
+#X connect 13 0 5 0;
 #X restore 71 98 pd motion detection;
-#X obj 104 324 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -241291 -1
--1 0;
+#X obj 105 324 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -241291 -1
+-1 3;
 #X text 125 138 noise reduction (on find-edges only);
-#X obj 26 -8 metro 33.3667;
+#X obj 26 -38 metro 33.3667;
 #X obj 27 58 t a a;
 #X text 100 38 Smaller Picture;
 #X obj 27 78 shunt 2;
 #X obj 210 85 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
 -1 0;
-#X obj 162 437 #export_list;
-#X floatatom 164 476 5 0 0 0 - - -;
-#X obj 163 456 unpack 0 0;
-#X floatatom 228 476 5 0 0 0 - - -;
+#X obj 182 457 #export_list;
+#X floatatom 184 496 5 0 0 0 - - -;
+#X obj 183 476 unpack 0 0;
+#X floatatom 248 496 5 0 0 0 - - -;
 #N canvas 547 147 477 267 crosshair 0;
 #X obj 12 224 outlet;
 #X obj 12 9 inlet;
@@ -199,10 +199,8 @@
 #X connect 8 0 0 0;
 #X connect 9 0 6 0;
 #X connect 9 1 7 1;
-#X restore 71 417 pd crosshair;
-#X obj 103 181 #fade;
-#X msg 144 181 32 16 4;
-#X obj 27 439 t a;
+#X restore 71 425 pd crosshair;
+#X obj 27 425 t a;
 #X text 230 99 emboss;
 #X text 229 85 hilite;
 #X text 109 386 designed to work with "hilite" above;
@@ -210,27 +208,28 @@
 -1 0;
 #X text 299 85 motion;
 #X text 300 99 presence;
-#X obj -15 542 cnv 15 620 30 empty empty empty 20 12 0 14 -200249 -66577
+#X obj 2 540 cnv 15 620 30 empty empty empty 20 12 0 14 -200249 -66577
 0;
-#X text -7 550 GridFlow 0.8.0;
-#X text -7 550 GridFlow 0.8.0;
 #X obj -13 -85 cnv 15 620 30 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X text 0 -72 Copyright 2002 Mathieu Bouchard;
 #X text 0 -86 videodev_effects.pd;
 #X obj 71 274 #outer ignore (0);
-#X obj 27 16 #camera 0;
-#X obj 162 416 #moment;
+#X obj 182 436 #moment;
 #X obj 264 280 t b a;
+#X obj 183 414 #rgb_to_greyscale;
+#X obj 71 406 #t;
+#X obj 103 181 #fade (16 4 1);
+#X obj 27 -14 #camera 0;
+#X text 10 548 GridFlow 0.9.3;
 #X connect 0 0 5 1;
 #X connect 1 0 17 0;
 #X connect 2 0 3 0;
 #X connect 3 0 19 0;
-#X connect 3 1 57 0;
+#X connect 3 1 53 0;
 #X connect 4 0 33 0;
-#X connect 5 0 44 0;
-#X connect 5 1 41 0;
-#X connect 5 1 59 0;
+#X connect 5 0 42 0;
+#X connect 5 1 57 0;
 #X connect 6 0 3 1;
 #X connect 7 0 35 1;
 #X connect 8 0 32 0;
@@ -240,7 +239,7 @@
 #X connect 11 0 20 0;
 #X connect 12 0 9 1;
 #X connect 14 0 25 0;
-#X connect 15 0 60 0;
+#X connect 15 0 55 0;
 #X connect 16 0 26 1;
 #X connect 17 0 3 0;
 #X connect 17 1 2 0;
@@ -257,7 +256,7 @@
 #X connect 27 0 17 1;
 #X connect 29 0 26 0;
 #X connect 30 0 24 1;
-#X connect 32 0 58 0;
+#X connect 32 0 59 0;
 #X connect 33 0 35 0;
 #X connect 35 0 17 0;
 #X connect 35 1 29 0;
@@ -265,14 +264,16 @@
 #X connect 37 0 39 0;
 #X connect 39 0 38 0;
 #X connect 39 1 40 0;
-#X connect 41 0 44 0;
-#X connect 42 0 3 0;
-#X connect 43 0 42 1;
-#X connect 44 0 11 0;
-#X connect 48 0 29 2;
-#X connect 57 0 23 0;
-#X connect 58 0 9 0;
-#X connect 59 0 37 0;
-#X connect 59 0 41 1;
-#X connect 60 0 14 0;
-#X connect 60 1 25 1;
+#X connect 41 0 42 0;
+#X connect 42 0 11 0;
+#X connect 46 0 29 2;
+#X connect 53 0 23 0;
+#X connect 54 0 37 0;
+#X connect 54 0 41 1;
+#X connect 55 0 14 0;
+#X connect 55 1 25 1;
+#X connect 56 0 54 0;
+#X connect 57 0 41 0;
+#X connect 57 1 56 0;
+#X connect 58 0 3 0;
+#X connect 59 0 9 0;
