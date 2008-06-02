@@ -31,12 +31,28 @@
 #include <SDL/SDL.h>
 
 static bool in_use = false;
+SDL_Surface *screen;
 
 struct FormatSDL;
 void FormatSDL_call(FormatSDL *self);
 
+static void OnKeyPressed(int key, int mod) {
+_L_	switch (key) {
+	case SDLK_F11: SDL_WM_ToggleFullScreen(screen); break;
+	}
+}
+
+static void HandleEvent() {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		_L_
+		switch (event.type) {
+		case SDL_KEYDOWN: OnKeyPressed(event.key.keysym.sym,event.key.keysym.mod); break;
+		}
+	}
+}
+
 \class FormatSDL : Format {
-	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	t_clock *clock;
@@ -59,6 +75,7 @@ void FormatSDL_call(FormatSDL *self);
 		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 		}
 		clock = clock_new(this,(t_method)FormatSDL_call);
+		clock_delay(clock,0);
 	}
 	\grin 0 int
 	~FormatSDL () {
@@ -69,11 +86,7 @@ void FormatSDL_call(FormatSDL *self);
 	}
 };
 
-void FormatSDL::call() {
-	SDL_Event event;
-	while(SDL_PollEvent(&event)) {}
-	clock_delay(clock,20);
-}
+void FormatSDL::call() {HandleEvent(); clock_delay(clock,20);}
 void FormatSDL_call(FormatSDL *self) {self->call();}
 
 void FormatSDL::resize_window (int sx, int sy) {
