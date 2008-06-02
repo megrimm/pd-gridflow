@@ -393,6 +393,7 @@ Feature.add {
 	test proc {
 		c_test "
 		#include#
+		#undef main
 		int main () {return SDL_MapRGB==0;}"}}
 Feature.add {
 	tag :objcpp
