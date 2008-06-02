@@ -1,5 +1,10 @@
 /* $Id$ */
 
+[ ] fix seek in [#in]
+[ ] full screen
+[ ] sdl is slow
+[ ] sdl window doesn't close
+
 [ ] CVS #*
 [ ] [cv.split]
 [ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
@@ -470,3 +475,6 @@ class FObject
 end
 
 there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
+
+svn propset svn:mime-type text/pure-data *.pd
+
