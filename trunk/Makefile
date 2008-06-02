@@ -97,7 +97,7 @@ deprecated/@fade.pd: abstractions/\#fade.pd
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
 	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs \
-		$(patsubst %,deprecated/%.pd,$(DEPRECATED))
+		$(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
