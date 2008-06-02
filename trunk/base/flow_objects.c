@@ -1010,7 +1010,7 @@ GRID_INLET(GridDim,0) {
 	\grin 0
 };
 GRID_INLET(GridType,0) {
-	outlet_symbol(bself->outlets[0],gensym((char *)number_type_table[in->nt].name));
+	outlet_symbol(bself->outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
 	in->set_mode(0);
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
@@ -2431,7 +2431,7 @@ string ssprintf(const char *fmt, ...) {
 	\constructor () {
 		selected=false; canvas=0; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
 		std::ostringstream os;
-		rsym = gensym((char *)ssprintf("display:%08x",this).data());
+		rsym = gensym(const_cast<char *>(ssprintf("display:%08x",this).data()));
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
