@@ -1,7 +1,5 @@
-#N canvas 349 0 871 431 10;
+#N canvas 329 190 871 431 10;
 #X obj 40 132 plotter_control;
-#X msg 40 64 pu \, pd \, pa 200 300 \, sp 3 \, ip 1 2 3 \, other foo
-50 70 \, print hello world \, print_from_ascii 29 29 13 10;
 #X obj 128 151 t a;
 #X obj 41 181 display;
 #X obj 535 97 print;
@@ -17,9 +15,7 @@
 #X obj 40 45 t a b;
 #X msg 40 26 bang;
 #X msg 54 107 meuh;
-#X obj 567 207 display;
 #X obj 535 78 ascii;
-#X obj 569 184 #export_symbol;
 #X text 41 236 list 80 85 59 10 80 68 59 10 80 65 50 48 48 44 51 48
 48 59;
 #X text 41 251 10 83 80 51 59 10 73 80 49 44 50 44 51 59 10 70 79 79
@@ -27,21 +23,21 @@
 #X text 41 266 48 44 55 48 59 10 76 66 104 101 108 108 111 32 119 111
 114;
 #X text 42 281 108 100 3 59 10 76 66 29 29 13 10 3 59 10;
-#X connect 0 0 12 0;
-#X connect 1 0 0 0;
-#X connect 2 0 12 1;
-#X connect 5 0 18 0;
+#X msg 40 64 pu \, pd \, pa 200 300 \, sp 3 \, ip 1 2 3 \, other foo
+50 70 \, print hello world \, print_from_ascii 29 29 13 10;
+#X connect 0 0 11 0;
+#X connect 1 0 11 1;
+#X connect 4 0 16 0;
+#X connect 6 0 7 0;
 #X connect 7 0 8 0;
 #X connect 8 0 9 0;
-#X connect 9 0 10 0;
-#X connect 12 0 2 0;
-#X connect 12 0 3 0;
-#X connect 12 0 7 0;
-#X connect 12 0 19 0;
-#X connect 13 0 15 0;
-#X connect 14 0 1 0;
-#X connect 14 1 12 1;
-#X connect 15 0 14 0;
-#X connect 16 0 0 0;
-#X connect 18 0 4 0;
-#X connect 19 0 17 0;
+#X connect 11 0 1 0;
+#X connect 11 0 2 0;
+#X connect 11 0 6 0;
+#X connect 12 0 14 0;
+#X connect 13 0 21 0;
+#X connect 13 1 11 1;
+#X connect 14 0 13 0;
+#X connect 15 0 0 0;
+#X connect 16 0 3 0;
+#X connect 21 0 0 0;
