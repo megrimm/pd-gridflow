@@ -582,7 +582,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
 #ifdef HAVE_HOLDNAME
-	CPPExtern::m_holdname = "keep_gem_happy";
+	CPPExtern::m_holdname = const_cast<char *>("keep_gem_happy");
 #endif
 #endif
 	int j;
