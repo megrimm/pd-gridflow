@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-COMMON_DEPS = config.make Makefile base/source_filter.rb
+#COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -89,10 +89,16 @@ DEPRECATED = camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out
 
-deprecated:: deprecated/@fade.pd
+deprecated:: deprecated/@fade.pd deprecated/@!.pd doc/flow_classes/@complex_sq-help.pd
 
 deprecated/@fade.pd: abstractions/\#fade.pd
 	for z in $(DEPRECATED); do cp abstractions/\#$$z.pd deprecated/\@$$z.pd; done
+
+deprecated/@!.pd: deprecated/0x40!.pd
+	for z in complex_sq convolve fold inner \! scan; do cp deprecated/0x40$$z.pd deprecated/@$$z.pd; done
+
+doc/flow_classes/@complex_sq-help.pd: doc/flow_classes/0x40complex_sq-help.pd
+	for z in complex_sq join; do cp doc/flow_classes/0x40$$z-help.pd doc/flow_classes/@$$z-help.pd; done
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
