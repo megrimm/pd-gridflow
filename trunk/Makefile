@@ -34,10 +34,6 @@ PD_LIB = gridflow$(PDSUF)
 
 all:: $(PD_LIB) deprecated
 
-clean::
-	@-$(RM) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs
-
 .SUFFIXES:
 
 H = gridflow.h.fcs
@@ -89,13 +85,19 @@ install::
 	@echo -e "2. delete the old gridflow.pd_linux"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
+DEPRECATED = camera_control motion_detection color mouse fade scale_to \
+	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
+	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out
+
 deprecated:: deprecated/@fade.pd
 
 deprecated/@fade.pd: abstractions/\#fade.pd
-	for z in camera_control motion_detection color mouse fade scale_to \
-	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
-	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out; do \
-		cp abstractions/\#$$z.pd deprecated/\@$$z.pd; done
+	for z in $(DEPRECATED); do cp abstractions/\#$$z.pd deprecated/\@$$z.pd; done
+
+clean::
+	@-$(RM) gridflow.pd_linux *.o */*.o *.so
+	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs \
+		$(patsubst %,deprecated/%.pd,$(DEPRECATED))
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
