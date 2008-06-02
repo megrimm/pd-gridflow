@@ -3,11 +3,12 @@
 version 0.9.3 (2008.05.22):
 
  * fixed bugs introduced in 0.9.2 relative to: [#in] loop, [#in] initbang,
-   [#out] initbang, [#print], [#labeling], 
+   [display] selector, [#out] initbang, [#print], [#labeling]
  * added example patch instant_blur.pd
  * added [class_exists]
  * fixed some example patches
  * fixed some recent OSX compilation problems
+ * fixed OSX QuickTime decoding on Intel (endianness problem)
 
 version 0.9.2 (2008.05.02):
 
