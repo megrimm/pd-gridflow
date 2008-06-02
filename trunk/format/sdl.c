@@ -53,7 +53,7 @@ static void HandleEvent () {
 		    case SDL_KEYDOWN: case SDL_KEYUP: {
 			int key = event.key.keysym.sym;
 			int mod = event.key.keysym.mod;
-			if (key==SDLK_F11) {full_screen = !full_screen; SDL_WM_ToggleFullScreen(screen); break;}
+			if (key==SDLK_F11 && event.type==SDL_KEYDOWN) {full_screen = !full_screen; SDL_WM_ToggleFullScreen(screen); break;}
 			t_symbol *sel = gensym(const_cast<char *>(event.type==SDL_KEYDOWN ? "keypress" : "keyrelease"));
 			t_atom at[4];
 			mousem &= ~0xFF;
