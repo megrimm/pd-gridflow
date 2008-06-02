@@ -296,7 +296,7 @@ void FormatX11::call() {
 			if (!kss) return; /* unknown keys ignored */
 			if (isdigit(*kss)) sprintf(buf,"D%s",kss); else strcpy(buf,kss);
 			t_atom at[4];
-			t_symbol *sel = gensym((char *)(e.type==KeyPress ? "keypress" : "keyrelease"));
+			t_symbol *sel = gensym(const_cast<char *>(e.type==KeyPress ? "keypress" : "keyrelease"));
 			SETFLOAT(at+0,ek->y);
 			SETFLOAT(at+1,ek->x);
 			SETFLOAT(at+2,ek->state);

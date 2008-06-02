@@ -122,7 +122,7 @@ static std::map<string,string> fourccs;
 \def 0 parameter (string name, int32 value) {
 	int val = value;
 	//post("quicktime_set_parameter %s %d",name.data(), val);
-	quicktime_set_parameter(anim, (char *)name.data(), &val);
+	quicktime_set_parameter(anim, const_cast<char *>(name.data()), &val);
 	if (name=="jpeg_quality") jpeg_quality=value;
 }
 
