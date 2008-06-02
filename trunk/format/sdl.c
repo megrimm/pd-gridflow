@@ -86,6 +86,8 @@ static void HandleEvent () {
 	t_clock *clock;
 	void resize_window (int sx, int sy);
 	void call ();
+	\decl 0 setcursor (int shape);
+	\decl 0 hidecursor ();
 	\constructor (t_symbol *mode) {
 		dim=0;screen=0;
 		if (in_use) RAISE("only one FormatSDL object at a time; sorry");
@@ -149,6 +151,9 @@ GRID_INLET(FormatSDL,0) {
 } GRID_FINISH {
 	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
+
+\def 0 setcursor  (int shape) {SDL_ShowCursor(SDL_ENABLE);}
+\def 0 hidecursor ()          {SDL_ShowCursor(SDL_DISABLE);}
 
 \end class FormatSDL {install_format("#io.sdl",2,"");}
 void startup_sdl () {
