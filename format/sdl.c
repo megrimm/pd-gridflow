@@ -30,24 +30,52 @@
 #include <signal.h>
 #include <SDL/SDL.h>
 
-static bool in_use = false;
-SDL_Surface *screen;
-
 struct FormatSDL;
 void FormatSDL_call(FormatSDL *self);
+static bool in_use = false;
+static bool full_screen = false;
+static int mousex,mousey,mousem;
+SDL_Surface *screen;
+FObject *instance;
 
-static void OnKeyPressed(int key, int mod) {
-_L_	switch (key) {
-	case SDLK_F11: SDL_WM_ToggleFullScreen(screen); break;
-	}
+static void report_pointer () {
+	t_atom a[3];
+	SETFLOAT(a+0,mousey);
+	SETFLOAT(a+1,mousex);
+	SETFLOAT(a+2,mousem);
+	outlet_anything(instance->bself->outlets[0],gensym("position"),COUNT(a),a);
 }
 
-static void HandleEvent() {
+static void HandleEvent () {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		_L_
 		switch (event.type) {
-		case SDL_KEYDOWN: OnKeyPressed(event.key.keysym.sym,event.key.keysym.mod); break;
+		    case SDL_KEYDOWN: case SDL_KEYUP: {
+			int key = event.key.keysym.sym;
+			int mod = event.key.keysym.mod;
+			if (key==SDLK_F11) {full_screen = !full_screen; SDL_WM_ToggleFullScreen(screen); break;}
+			t_symbol *sel = gensym(const_cast<char *>(event.type==SDL_KEYDOWN ? "keypress" : "keyrelease"));
+			t_atom at[4];
+			mousem &= ~0xFF;
+			mousem |= mod;
+			SETFLOAT(at+0,mousey);
+			SETFLOAT(at+1,mousex);
+			SETFLOAT(at+2,mousem);
+			SETSYMBOL(at+3,gensym(const_cast<char *>("huh")));
+			outlet_anything(instance->bself->outlets[0],sel,4,at);
+		    } break;
+		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
+			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
+			else                     mousem &= ~(128<<event.button.button);
+			report_pointer();
+		    } break;
+		    case SDL_MOUSEMOTION: {
+			mousey = event.motion.y;
+			mousex = event.motion.x;
+			report_pointer();
+		    } break;
+		    case SDL_VIDEORESIZE: {
+		    } break;
 		}
 	}
 }
@@ -74,6 +102,7 @@ static void HandleEvent() {
 			break;
 		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 		}
+		instance=this;
 		clock = clock_new(this,(t_method)FormatSDL_call);
 		clock_delay(clock,0);
 	}
@@ -82,6 +111,7 @@ static void HandleEvent() {
 		clock_unset(clock);
 		clock_free(clock);
 		SDL_Quit();
+		instance=0;
 		in_use=false;
 	}
 };
