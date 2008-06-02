@@ -9,9 +9,10 @@
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement [listflatten] !
-[ ] reimplement negative indices in [listprepend], etc
+[ ] reimplement negative indices in [listelement] and [listsublist]
+[ ] with pwc, 720x480 crashes
 soon:
- * removed reference.*ml
+ * remove reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
 
 +-------+-------+-------+-------+-------+-------+-------+-------
@@ -105,7 +106,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] re-enable int64,float64
 [ ] added #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
-[ ] Fully hyperlinked manual
 [ ] internals documentation
 [ ] internal grid protocol redesigned
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
@@ -134,13 +134,10 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [078] "unsupported codec" bogus errors.
 [097] bin/backtrace does not detect scripts
 [005] can't open "": Success; loading a nonquicktime file using quicktime
-[006] #in#open problem with String argument.
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
 [030] FormatGrid: not properly tested (crashes sometimes)
 [031] stdout should be redirected if bridge is present
-[032] error handling sometimes leads to crash
-[033] error handling shows inanely useless messages (sometimes)
 [034] format/mpeg3.c,quicktime.c might cause lockup on exit
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
@@ -186,8 +183,8 @@ Documentation
 --- remember to keep doc/help/screenshots/examples up to date
 
 Architecture
-[0.8] reentrancy of objects (to allow true recursion)
-[0.8] inlet-attrs (attrs associated to inlets)
+[0.9] reentrancy of objects (to allow true recursion)
+[0.9] inlet-attrs (attrs associated to inlets)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
@@ -208,8 +205,8 @@ Architecture
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] interpret nested lists as n-dimensional.
-[0.8] MMX memcpy() ?
-[0.8] MMX _runtime_ autodetection
+[0.9] MMX memcpy() ?
+[0.9] MMX _runtime_ autodetection
 
 Computation Objects
 [ ] #counter (similar to #for)
@@ -257,7 +254,6 @@ Effects
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 Input/Output
-[ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
 [ ] videodev: is it possible to reach 60 fps ?
 [ ] a #store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six types
@@ -277,8 +273,6 @@ Input/Output
 
 Format
 [ ] remaining number type support in formats
-[ ] all: possibly get rid of the "format" notion ?
-[ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM, GIF support
 [ ] fork: pseudoformat for launching format handler as separate process
 [ ] put_at/reassign in x11/sdl/quartz
@@ -300,8 +294,7 @@ User Interface
 [ ] 2d slider
 [ ] radial slider (angle chooser)
 [ ] drag-and-drop palette of object construction
-[ ] object construction menu specialized for each class
-	(generated from class reflection/metadata)
+[ ] object construction menu specialized for each class (generated from class reflection/metadata)
 
 Extra/Examples/Etc
 [ ] .pd: read; write better
