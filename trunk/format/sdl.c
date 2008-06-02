@@ -31,6 +31,7 @@
 #include <SDL/SDL.h>
 
 static bool in_use = false;
+static 
 
 struct FormatSDL;
 void FormatSDL_call(FormatSDL *self);
@@ -64,6 +65,7 @@ void FormatSDL_call(FormatSDL *self);
 	~FormatSDL () {
 		clock_unset(clock);
 		clock_free(clock);
+		SDL_Quit();
 		in_use=false;
 	}
 };
