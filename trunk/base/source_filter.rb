@@ -207,7 +207,7 @@ def handle_classinfo(line)
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
 	Out.print "static void #{cl}_startup (FClass *fclass);"
-	Out.print "static void *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
+	Out.print "static FObject *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(FMethod)#{frame.name}::#{method.selector}_wrap }" }.join(",")
 	Out.print "}; FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect},COUNT(#{cl}_methods),#{cl}_methods};"

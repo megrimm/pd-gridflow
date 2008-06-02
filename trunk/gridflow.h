@@ -751,7 +751,7 @@ struct AttrDecl {
 	AttrDecl(string name_, string type_) {name=name_; type=type_;}
 };
 struct BFObject;
-typedef void *(*t_allocator)(BFObject *,MESSAGE3);
+typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
 struct FClass {
 	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);

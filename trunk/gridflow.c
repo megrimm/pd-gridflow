@@ -605,7 +605,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 #endif
 #endif
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
-	bself->self = (FObject *)alloc(bself,0,j,(t_atom2 *)argv);
+	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
 
 	while (j<argc) {
 		j++;
