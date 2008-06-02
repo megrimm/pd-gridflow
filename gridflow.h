@@ -50,6 +50,9 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #define a_gpointer a_w.w_gpointer
 #endif
 
+EXTERN t_symbol *gensym(char *s);
+#define gensym(s) gensym((const char *)(s))
+
 #ifndef DESIREDATA
 #define A_LIST t_atomtype(13) /* (t_binbuf *) */
 #endif
