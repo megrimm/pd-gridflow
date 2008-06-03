@@ -73,7 +73,7 @@ template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
 // a remainder function such that div2(a,b)*b+mod(a,b) = a and for which mod(a,b) is in [0;b) or (b;0].
 // in contrast to C-language builtin a%b, this one has uniform behaviour around zero,
 // that is, the same as around any other whole number.
-static inline int mod(int a, int b) {return a<0 ? b-((-a)%b) : a%b;}
+static inline int mod(int a, int b) {int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 
 // counterpart of mod(a,b), just like a/b and a%b are counterparts
 static inline int div2(int a, int b) {return (a/b)-((a<0)&&!!(a%b));}
