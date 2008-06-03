@@ -343,19 +343,6 @@ Feature.add {
 		push long 0
 		call exit
 		', '-lc'}}
-=begin
-Feature.add {
-	tag :dv1394
-	name "DV1394 for Linux"
-	uses_so ["-ldv"]
-	uses_h ["format/dv1394.h"]
-	uses_o ["format/dv1394.o"]
-	options ["HAVE_DV1394"]
-	test proc {
-		c_test "
-		#include#
-		int main () {return 0;}"}}
-=end
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
@@ -482,6 +469,17 @@ Feature.add {
 		#include <stdlib.h>
 		#include#
 		int main () { struct video_window foo; return 0; }"}}
+Feature.add {
+	tag :dc1394
+	name "DC1394 for Linux"
+	uses_so ["-ldc1394_control"]
+	uses_h ["libdc1394/dc1394_control.h"]
+	uses_o ["format/dc1394.o"]
+	options ["HAVE_DC1394"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return dc1394_get_camera_port==0;}"}}
 Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
@@ -757,7 +755,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.9.2 configurator"
+DUAL.puts "This is the GridFlow 0.9.3 configurator"
 
 begin
   $features.each {|feature| try feature }
