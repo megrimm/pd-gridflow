@@ -149,6 +149,7 @@ typedef nodeid_t NID;
 	\constructor (t_symbol *mode) {
 		post("DC1394: hello world");
 		RH rh = raw1394_new_handle();
+		if (!rh) RAISE("could not get a handle for /dev/raw1394 and /dev/video1394");
 		int numPorts = raw1394_get_port_info(rh,0,0);
 		raw1394_destroy_handle(rh);
 		post("there are %d Feuerweuer ports",numPorts);
