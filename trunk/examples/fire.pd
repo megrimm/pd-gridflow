@@ -1,4 +1,4 @@
-#N canvas 340 139 634 527 10;
+#N canvas 588 0 632 527 10;
 #X obj 377 355 loadbang;
 #X text 243 362 palette generator;
 #X obj 100 383 fps detailed;
@@ -73,7 +73,7 @@
 #X obj 377 393 #color 0 800 1;
 #X msg 377 374 600 200 75;
 #X obj 220 38 loadbang;
-#N canvas 624 360 400 289 fire 1;
+#N canvas 624 360 400 289 fire 0;
 #X obj 174 180 #store;
 #X obj 61 196 #export_list;
 #X obj 6 65 # >> 2;
@@ -128,7 +128,7 @@
 #X connect 25 1 7 0;
 #X restore 65 240 pd fire generator;
 #X text 166 108 note: reset the size if you change the generator;
-#X obj 19 58 metro 33.3667;
+#X obj 19 67 metro 33.3667;
 #X obj 5 -4 cnv 15 620 30 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X text 15 -4 fire.pd;
@@ -224,14 +224,14 @@
 #X text 16 260 (height \, width) grid = matrix;
 #X obj 200 123 shunt 3;
 #X obj 253 125 hradio 15 1 0 3 empty empty empty 0 -6 0 8 -241291 -1
--1 2;
+-1 0;
 #X obj 501 203 r cursor;
 #X obj 501 223 t a;
 #X obj 58 86 spigot;
 #X obj 19 86 t b b;
-#X obj 104 87 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 1 1
+#X obj 115 86 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 1 1
 ;
-#X obj 49 109 s metro;
+#X obj 49 105 s metro;
 #X obj 67 277 #outer ignore (0);
 #X text 15 9 Copyright 2001 \, 2005 Mathieu Bouchard;
 #X msg 200 62 120 160;
@@ -239,7 +239,11 @@
 #X obj 99 326 #store;
 #X obj 264 422 #outer gamma;
 #X obj 204 90 list;
-#X obj 115 63 loadbang;
+#X obj 115 67 loadbang;
+#X obj 71 27 f;
+#X obj 96 27 + 1;
+#X obj 71 46 sel 100;
+#X floatatom 128 48 5 0 0 0 - - -;
 #X connect 0 0 19 0;
 #X connect 2 0 5 0;
 #X connect 3 0 52 0;
@@ -289,3 +293,8 @@
 #X connect 52 0 51 1;
 #X connect 53 0 39 0;
 #X connect 54 0 45 0;
+#X connect 55 0 56 0;
+#X connect 55 0 57 0;
+#X connect 56 0 55 1;
+#X connect 57 0 8 0;
+#X connect 57 1 58 0;
