@@ -17,7 +17,7 @@ LOG
 #include "Base/GemExportDef.h"
 
 #include "m_pd.h"
-#include "Base/GemVersion.h"
+//#include "Base/GemVersion.h"
 
 #include <new>
 
