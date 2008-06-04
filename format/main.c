@@ -27,7 +27,7 @@
 #include <errno.h>
 #define L _L_
 
-/* API (version 0.9.1)
+/* API (version 0.9.3)
 	mode is :in or :out
 	def initialize(mode,*args) :
 		open a file handler (do it via .new of class)
@@ -48,11 +48,11 @@
 		rewind automatically (@in handles that part), nor re-read the
 		last frame (mpeg/quicktime used to do this)
 	def 0 seek(Integer i) :     select one frame to be read next (by number)
-	def 0 length() : ^Integer   returns number of frames (never implemented ?)
 	def 0 grid() : frame to write
+	def 0 get (optional Symbol s) : get one attribute value or all of them
 	def 0 ...() : options
 	outlet 0 grid() frame just read
-	outlet 1 ...() everything else
+	outlet 0 ...() everything else
 	destructor : close a handler
 */
 
@@ -132,21 +132,6 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 }
 
 Format::~Format () {if (f) fclose(f); /*if (fd>=0) close(fd);*/}
-
-// This is different from IO#eof, which waits until a read has failed
-// doesn't work in nonblocking mode? (I don't recall why)
-//\def 0 eof () {
-//	thispos = (@stream.seek 0,IO::SEEK_CUR; @stream.tell)
-//	lastpos = (@stream.seek 0,IO::SEEK_END; @stream.tell)
-//	@stream.seek thispos,IO::SEEK_SET
-//	return thispos == lastpos
-//rescue Errno::ESPIPE # just ignore if seek is not possible
-//	return false
-//}
-
-// "ideal" buffer size or something
-// the buffer may be bigger than this but usually not by much.
-// def self.buffersize; 16384 end
 \end class Format {}
 
 /* This is the Grid format I defined: */
