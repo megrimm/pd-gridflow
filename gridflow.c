@@ -600,7 +600,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
 	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
 #ifdef HAVE_GEM
-	bself->gemself = (CPPExtern *)((void **)bself->self+11); /* not 64-bit-safe */
 	CPPExtern::m_holder = 0;
 #ifdef HAVE_HOLDNAME
 	CPPExtern::m_holdname=0;

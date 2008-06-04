@@ -828,9 +828,6 @@ private:
 
 struct BFProxy;
 struct BFObject : t_object {
-#ifdef HAVE_GEM
-	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
-#endif
 	FObject *self;
 	int ninlets,noutlets; // per object settings (not class)
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
