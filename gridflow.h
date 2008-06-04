@@ -93,6 +93,7 @@ static inline float64 ipow(float64 a, float64 b) {return pow(a,b);}
 // minimum/maximum functions; T is assumed to be Comparable
 template <class T> static inline T min(T a, T b) {return a<b?a:b;}
 template <class T> static inline T max(T a, T b) {return a>b?a:b;}
+template <class T> static inline T clip(T a, T lower, T upper) {return a<lower?lower:a>upper?upper:a;}
 //template <class T> inline T min(T a, T b) { T c = (a-b)>>31; return (a&c)|(b&~c); }
 
 // greatest common divisor, by euclid's algorithm
