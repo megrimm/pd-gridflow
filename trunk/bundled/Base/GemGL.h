@@ -27,7 +27,13 @@
 #endif
 
 #define GLEW_STATIC
-#include "Base/glew.h"
+//#include "Base/glew.h"
+#ifdef __APPLE__
+typedef unsigned long GLenum;
+#else
+typedef unsigned int GLenum;
+#endif
+typedef float GLfloat;
 
 #ifdef __APPLE__
 # include <OpenGL/OpenGL.h>
