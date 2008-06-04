@@ -30,7 +30,7 @@
 #include "../gridflow.h.fcs"
 #ifndef DESIREDATA
 extern "C" {
-#include "bundled/pd/g_canvas.h"
+#include "bundled/g_canvas.h"
 };
 #endif
 
