@@ -124,7 +124,6 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
 		bself->gemself = (GemPixObj *)this;
-		bself->noutlets_set(1); // create 1 outlet AFTER GEM has created its own
 		helper = new GridFromPixHelper;
 		helper->boss = this;
 		bself->gemself = helper;
@@ -151,7 +150,8 @@ CPPEXTERN_NEW(GridFromPixHelper)
 void GridFromPixHelper::obj_setupCallback(t_class *) {}
 
 \end class {
-	install("#import_pix",2,0); // have to say 0 outlets so that GEM's outlet is created first
+	install("#from_pix",2,1);
+	add_creator("#import_pix");
 	GridFromPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
 void GridFromPixHelper::render(GemState *state) {boss->render(state);}
