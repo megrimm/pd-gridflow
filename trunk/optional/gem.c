@@ -22,26 +22,26 @@
 */
 
 #include "../gridflow.h.fcs"
-#undef T_DATA
-#undef T_OBJECT
-#undef EXTERN
 #include "Base/GemPixDualObj.h"
-#undef T_DATA
+
+struct GridToPix;
+struct GridToPixHelper : GemPixObj {
+	GridToPix *boss;
+	CPPEXTERN_HEADER(GridToPixHelper,GemPixObj)
+public:
+	virtual void startRendering();
+	virtual void render(GemState *state);
+};
 
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
-\class GridExportPix < FObject
-struct GridExportPix : FObject, GemPixObj {
-	CPPEXTERN_HEADER(GridExportPix,GemPixObj)
-public:
+\class GridToPix < FObject {
+	GridToPixHelper *helper;
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
-
-	GridExportPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
-	GridExportPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2), GemPixObj() {
-		post("GridExportPix constructor this=%p",this);
+	GridToPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
@@ -53,19 +53,14 @@ public:
 		*(int*)im.data = 0x0000ff;
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
+		helper = new GridToPixHelper;
+		helper->boss = this;
+		post("GridExportPix constructor this=%p helper=%p bself=%p",this,helper,bself);
 	}
-	virtual ~GridExportPix () {}
+	~GridToPix () {}
 	\grin 1 int
-
-	virtual void startRendering() {m_pixBlock.newimage = 1;}
-	virtual void render(GemState *state) {state->image = &m_pixBlock;}
 };
-CPPEXTERN_NEW(GridExportPix)
-
-//	fprintf(stderr,"bang GridExportPix this=%p, this->x_obj=%p, bself=%p, rself=%p gemself=%p\n", this,this->x_obj,bself,(void *)rself,((Obj_header *)this->x_obj)->data);
-//	fprintf(stderr,"bang GridExportPix this=%p, (GemPixObj *)this=%p\n", this,(GemPixObj *)this);
-
-GRID_INLET(GridExportPix,1) {
+GRID_INLET(GridToPix,1) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 4)
@@ -91,22 +86,18 @@ GRID_INLET(GridExportPix,1) {
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
 	long sy = in->dim->v[0];
-	if (yflip) {
-		for (long y=     in->dex/sxc; n; data+=sxc, n-=sxc, y++)
-			bit_packing->pack(sx,data,buf+y*sxc);
-	} else {
-		for (long y=sy-1-in->dex/sxc; n; data+=sxc, n-=sxc, y--)
-			bit_packing->pack(sx,data,buf+y*sxc);
-	}
+	if (yflip) {for (long y=     in->dex/sxc; n; data+=sxc, n-=sxc, y++) bit_packing->pack(sx,data,buf+y*sxc);}
+        else       {for (long y=sy-1-in->dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
 } GRID_END
-
-void GridExportPix::obj_setupCallback(t_class *) {}
-
 \end class {
 	install("#to_pix",2,1);
 	add_creator("#export_pix");
-	GridExportPix::real_obj_setupCallback(fclass->bfclass);
+	GridToPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
+CPPEXTERN_NEW(GridToPixHelper)
+void GridToPixHelper::obj_setupCallback(t_class *) {}
+void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
+void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;}
 
 //------------------------------------------------------------------------
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
@@ -147,7 +138,7 @@ void GridImportPix::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#import_pix",2,1);
-	GridExportPix::real_obj_setupCallback(fclass->bfclass);
+	GridImportPix::real_obj_setupCallback(fclass->bfclass);
 }
 
 //------------------------------------------------------------------------
