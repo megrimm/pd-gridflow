@@ -633,7 +633,7 @@ struct _canvasenvironment {
     int ce_dollarzero;  /* value of "$0" */
 };
 
-#include "bundled/pd/g_canvas.h"
+#include "bundled/g_canvas.h"
 
 static void BFObject_undrawio (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
