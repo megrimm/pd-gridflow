@@ -597,6 +597,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	bself->inlets[0] = 0; // inlet 0 of this table is not in use
 	bself->ninlets_set( fclasses[classsym->s_name]->ninlets ,false);
 	bself->noutlets_set(fclasses[classsym->s_name]->noutlets,false);
+	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
+	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)bself->self+11); /* not 64-bit-safe */
 	CPPExtern::m_holder = 0;
@@ -604,8 +606,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	CPPExtern::m_holdname=0;
 #endif
 #endif
-	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
-	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
 
 	while (j<argc) {
 		j++;
@@ -870,4 +870,5 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGBUS, SIG_DFL);
 	atexit(gridflow_unsetup);
     } catch (Barf &oozy) {post("Init_gridflow error: %s",oozy.text);}
+    for (int i=-80; i<-70; i++) post("mod(%d,75) = %d",i,mod(i,75));
 }
