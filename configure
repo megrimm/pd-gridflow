@@ -77,7 +77,7 @@ $conf={
 	:OPTIONS => [],
 	:DEFINES => {
 		:CPU => nil,
-		:GEM_SOURCE => "../Gem/src",
+		:GEM_INCLUDE => "../Gem/src",
 	},
 	:CC => "g++",
 	:OBJS => [],
@@ -565,8 +565,8 @@ Feature.add {
 	options ["HAVE_GEM","HAVE_HOLDNAME"]
 	test proc {
 		# hack
-		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_SOURCE]
-		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_SOURCE]
+		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
+		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 		c_test %`
 			#include "Base/GemBase.h"
 			int main () {CPPExtern::m_holdname; return 0;}`}}
@@ -579,8 +579,8 @@ Feature.add {
 	options ["HAVE_GEM"]
 	test proc {
 		# hack
-		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_SOURCE]
-		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_SOURCE]
+		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
+		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 		c_test %`
 			#include "Base/GemBase.h"
 			int main () {return 0;}`}}
@@ -615,7 +615,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug]"
-	log << "[--gem-source directory]"
+	log << "[--gem-include directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -651,8 +651,8 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_LITE
 	when "--help"
 		usage; exit 0
-	when "--gem-source"
-		 $conf[:DEFINES][ :GEM_SOURCE]=ARGV.shift
+	when "--gem-include"
+		 $conf[:DEFINES][ :GEM_INCLUDE]=ARGV.shift
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
