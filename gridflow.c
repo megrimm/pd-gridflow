@@ -870,5 +870,4 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGBUS, SIG_DFL);
 	atexit(gridflow_unsetup);
     } catch (Barf &oozy) {post("Init_gridflow error: %s",oozy.text);}
-    for (int i=-80; i<-70; i++) post("mod(%d,75) = %d",i,mod(i,75));
 }
