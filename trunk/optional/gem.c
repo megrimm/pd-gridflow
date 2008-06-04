@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -29,14 +29,16 @@ struct GridToPixHelper : GemPixObj {
 	GridToPix *boss;
 	CPPEXTERN_HEADER(GridToPixHelper,GemPixObj)
 public:
+	GridToPixHelper () {}
 	virtual void startRendering();
 	virtual void render(GemState *state);
 };
+CPPEXTERN_NEW(GridToPixHelper)
 
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
-\class GridToPix < FObject {
+\class GridToPix : FObject {
 	GridToPixHelper *helper;
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
@@ -55,16 +57,15 @@ public:
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		helper = new GridToPixHelper;
 		helper->boss = this;
+		bself->gemself = helper;
 		post("GridExportPix constructor this=%p helper=%p bself=%p",this,helper,bself);
 	}
 	~GridToPix () {}
 	\grin 1 int
 };
 GRID_INLET(GridToPix,1) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 4)
-		RAISE("expecting 4 channels (got %d)",in->dim->get(2));
+	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 4) RAISE("expecting 4 channels (got %d)",in->dim->get(2));
 	in->set_chunk(1);
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
@@ -90,11 +91,10 @@ GRID_INLET(GridToPix,1) {
         else       {for (long y=sy-1-in->dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
 } GRID_END
 \end class {
-	install("#to_pix",2,1);
+	install("#to_pix",2,0); // outlets are 0 because GEM makes its own outlet instead
 	add_creator("#export_pix");
 	GridToPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
-CPPEXTERN_NEW(GridToPixHelper)
 void GridToPixHelper::obj_setupCallback(t_class *) {}
 void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
 void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;}
@@ -102,7 +102,7 @@ void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;
 //------------------------------------------------------------------------
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
 // out 0: grid
-\class GridImportPix < FObject
+\class GridImportPix : FObject
 struct GridImportPix : FObject, GemPixObj {
 	CPPEXTERN_HEADER(GridImportPix,GemPixObj)
 public:
@@ -113,6 +113,8 @@ public:
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
+		bself->gemself = (GemPixObj *)this;
+		bself->noutlets_set(1); // create 1 outlet AFTER GEM has created its own
 	}
 	virtual ~GridImportPix () {}
 	virtual void render(GemState *state) {
@@ -137,7 +139,7 @@ CPPEXTERN_NEW(GridImportPix)
 void GridImportPix::obj_setupCallback(t_class *) {}
 
 \end class {
-	install("#import_pix",2,1);
+	install("#import_pix",2,0); // have to say 0 outlets so that GEM's outlet is created first
 	GridImportPix::real_obj_setupCallback(fclass->bfclass);
 }
 
