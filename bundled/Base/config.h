@@ -33,7 +33,7 @@
 # endif
 
 # ifdef __APPLE__
-#  include "Base/configDarwin.h"
+//#  include "Base/configDarwin.h"
 #  define HAVE_QUICKTIME
 # endif
 
