@@ -324,7 +324,7 @@ void GridOutlet::flush() {TRACE;
 }
 
 template <class T, class S>
-static void convert_number_type(int n, T * out, S * in) {
+static void convert_number_type(int n, T *out, S *in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
@@ -339,8 +339,7 @@ void GridOutlet::send(long n, T *data) {TRACE;
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
 	T data2[bs]; \
-	for (;n>=bs;n-=bs,data+=bs) { \
-		convert_number_type(bs,data2,data); send(bs,data2);} \
+	for (;n>=bs;n-=bs,data+=bs) {convert_number_type(bs,data2,data); send(bs,data2);} \
 	convert_number_type(n,data2,data); \
 	send(n,data2); }
 		TYPESWITCH(nt,FOO,)
