@@ -29,11 +29,17 @@
 #define GLEW_STATIC
 //#include "Base/glew.h"
 #ifdef __APPLE__
-typedef unsigned long GLenum;
+typedef unsigned long GLint;
 #else
-typedef unsigned int GLenum;
+typedef unsigned int GLint;
 #endif
+typedef GLint GLenum;
 typedef float GLfloat;
+typedef unsigned char GLboolean;
+#define GL_RGBA_MODE     0x0C31
+#define GL_UNSIGNED_BYTE 0x1401
+#define GL_RGBA          0x1908
+
 
 #ifdef __APPLE__
 # include <OpenGL/OpenGL.h>
