@@ -828,6 +828,7 @@ private:
 
 struct BFProxy;
 struct BFObject : t_object {
+	void *gemself; // this absolutely needs to be the first field, to make GEM happy
 	FObject *self;
 	int ninlets,noutlets; // per object settings (not class)
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
