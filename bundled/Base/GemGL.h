@@ -29,11 +29,12 @@
 #define GLEW_STATIC
 //#include "Base/glew.h"
 #ifdef __APPLE__
-typedef unsigned long GLint;
+typedef   signed long GLint;
+typedef unsigned long GLenum;
 #else
-typedef unsigned int GLint;
+typedef   signed int GLint;
+typedef unsigned int GLenum;
 #endif
-typedef GLint GLenum;
 typedef float GLfloat;
 typedef unsigned char GLboolean;
 #define GL_RGBA_MODE     0x0C31
