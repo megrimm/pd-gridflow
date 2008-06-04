@@ -50,13 +50,15 @@
 	\decl 0 bang ();
 };
 
-\def 0 seek (int frame) { mpeg3_set_frame(mpeg,frame,track); }
+\def 0 seek (int frame) {
+	mpeg3_set_frame(mpeg,clip(frame,0,mpeg3_video_frames(mpeg,track)-1),track);
+}
 \def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
 	int nframe = mpeg3_get_frame(mpeg,track);
 	int nframes = mpeg3_video_frames(mpeg,track);
-	post("track=%d; nframe=%d; nframes=%d",track,nframe,nframes);
+	//post("track=%d; nframe=%d; nframes=%d",track,nframe,nframes);
 	if (nframe >= nframes) {outlet_bang(bself->te_outlet); return;}
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
