@@ -32,6 +32,7 @@ public:
 	GridToPixHelper () {}
 	virtual void startRendering();
 	virtual void render(GemState *state);
+	virtual bool isRunnable () {return true;} // required to keep GEM 0.9.1 (the real 0.9.1) happy
 };
 CPPEXTERN_NEW(GridToPixHelper)
 
@@ -107,6 +108,7 @@ struct GridFromPixHelper : GemPixObj {
 public:
 	GridFromPixHelper () {}
 	virtual void render(GemState *state);
+	virtual bool isRunnable () {return true;} // required to keep GEM 0.9.1 (the real 0.9.1) happy
 };
 CPPEXTERN_NEW(GridFromPixHelper)
 
