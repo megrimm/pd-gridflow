@@ -58,7 +58,6 @@ CPPEXTERN_NEW(GridToPixHelper)
 		helper = new GridToPixHelper;
 		helper->boss = this;
 		bself->gemself = helper;
-		post("GridExportPix constructor this=%p helper=%p bself=%p",this,helper,bself);
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -100,24 +99,36 @@ void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
 void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;}
 
 //------------------------------------------------------------------------
+
+struct GridFromPix;
+struct GridFromPixHelper : GemPixObj {
+	GridFromPix *boss;
+	CPPEXTERN_HEADER(GridFromPixHelper,GemPixObj)
+public:
+	GridFromPixHelper () {}
+	virtual void render(GemState *state);
+};
+CPPEXTERN_NEW(GridFromPixHelper)
+
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
 // out 0: grid
-\class GridImportPix : FObject
-struct GridImportPix : FObject, GemPixObj {
-	CPPEXTERN_HEADER(GridImportPix,GemPixObj)
-public:
+\class GridFromPix : FObject {
+	GridFromPixHelper *helper;
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
-	GridImportPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
-	GridImportPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
+	GridFromPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
+	GridFromPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
 		bself->gemself = (GemPixObj *)this;
 		bself->noutlets_set(1); // create 1 outlet AFTER GEM has created its own
+		helper = new GridFromPixHelper;
+		helper->boss = this;
+		bself->gemself = helper;
 	}
-	virtual ~GridImportPix () {}
-	virtual void render(GemState *state) {
+	virtual ~GridFromPix () {}
+	void render(GemState *state) {
 		if (!state->image) {post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
 		if (im.format != GL_RGBA         ) {post("can't produce grid from pix format %d",im.format); return;}
@@ -134,14 +145,14 @@ public:
 		}
 	}
 };
-CPPEXTERN_NEW(GridImportPix)
 
-void GridImportPix::obj_setupCallback(t_class *) {}
+void GridFromPixHelper::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#import_pix",2,0); // have to say 0 outlets so that GEM's outlet is created first
-	GridImportPix::real_obj_setupCallback(fclass->bfclass);
+	GridFromPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
+void GridFromPixHelper::render(GemState *state) {boss->render(state);}
 
 //------------------------------------------------------------------------
 
