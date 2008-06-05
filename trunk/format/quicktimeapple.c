@@ -172,6 +172,11 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 */
 #endif
 
+static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long int, TimeValue, short int, long int) {
+	post("FormatQuickTimeCamera callback");
+	return noErr;
+}
+
 \class FormatQuickTimeCamera : Format {
   P<Dim> dim;
   uint8 *buf;
@@ -187,7 +192,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
   long m_rowBytes;
   int m_quality;
 //int m_colorspace;
-  \constructor (t_symbol *mode, string filename) {
+  \constructor (t_symbol *mode) {
 	//vdc = SGGetVideoDigitizerComponent(c);
 	dim = new Dim(240,320,4);
 	OSErr e;
@@ -229,6 +234,8 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 	if(e!=noErr) post("could not set SG ChannelBounds");
 	e=SGSetChannelUsage(m_vc, seqGrabPreview);
 	if(e!=noErr) post("could not set SG ChannelUsage");
+        e=SGSetDataProc(m_sg,NewSGDataUPP(callback),0);
+	if (e!=noErr) post("could not set SG DataProc");
 	//  m_rowBytes = m_vidXSize*4;
 	switch (3) {
 	  case 0: e=SGSetChannelPlayFlags(m_vc, channelPlayNormal); break;
@@ -249,7 +256,9 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 	if (e!=noErr) RAISE("error #%d at QTNewGWorldFromPtr",e);
 	if (!m_srcGWorld) RAISE("Could not allocate off screen");
 	SGSetGWorld(m_sg,(CGrafPtr)m_srcGWorld, NULL);
-	SGStartPreview(m_sg);
+	//SGStartPreview(m_sg);
+	e=SGStartRecord(m_sg);
+	if (e!=noErr) RAISE("error #%d at SGStartRecord",e);
   }
   ~FormatQuickTimeCamera() {
     if (m_vc) if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
@@ -281,7 +290,7 @@ static int nn(int c) {return c?c:' ';}
   //  AEProcessAppleEvent (theEvent);
     return handled;
 }
-void pix_videoDarwin :: DoVideoSettings(){
+void pix_videoDarwin :: DoVideoSettings() {
     Rect	newActiveVideoRect;
     Rect	curBounds, curVideoRect, newVideoRect;
     ComponentResult	err;
@@ -290,8 +299,7 @@ void pix_videoDarwin :: DoVideoSettings(){
     err = SGGetVideoRect (m_vc, &curVideoRect);
     err = SGPause (m_sg, true);
     seqGragModalFilterUPP = (SGModalFilterUPP)NewSGModalFilterUPP(SeqGrabberModalFilterProc);
-    err = SGSettingsDialog(m_sg, m_vc, 0,
-    NULL, seqGrabSettingsPreviewOnly, seqGragModalFilterUPP, (long)m_srcGWorld);
+    err = SGSettingsDialog(m_sg, m_vc, 0, NULL, seqGrabSettingsPreviewOnly, seqGragModalFilterUPP, (long)m_srcGWorld);
     DisposeSGModalFilterUPP(seqGragModalFilterUPP);
     err = SGGetVideoRect (m_vc, &newVideoRect);
     err = SGGetSrcVideoBounds (m_vc, &newActiveVideoRect);
@@ -302,6 +310,7 @@ void pix_videoDarwin :: DoVideoSettings(){
 \def 0 bang () {
     GridOutlet out(this,0,dim);
     out.send(dim->prod(),buf);
+    SGIdle(m_sg);
 }
 
 GRID_INLET(FormatQuickTimeCamera,0) {
