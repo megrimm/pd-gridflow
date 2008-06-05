@@ -3,9 +3,7 @@
 [ ] fix seek in [#in]
 [ ] full screen
 [ ] sdl is slow
-[ ] sdl window doesn't close
 
-[ ] CVS #*
 [ ] [cv.split]
 [ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
 [ ] bugs roman
@@ -35,33 +33,16 @@ Common Video Framework :
     having objects for that.
 
 [ ] threads for video?
-
 [ ] GEM geos vs 3DP: how do they compare?
-
-[ ] is there anything else deserving to be unified between the video
-    plugins?
-
+[ ] is there anything else deserving to be unified between the video plugins?
 [ ] videojack
 [ ] http://gstreamer.freedesktop.org/
-
-+-------+-------+-------+-------+-------+-------+-------+-------
-GridFlow 0.9.0 :
-
 [ ] distinguish between C++ types Grid* and GridFlow*
-
-[ ] replace source_filter.rb by SWIG completely
 [ ] make [#draw_points] [#draw_rect] [#edit_polygon]
-[ ] redo [#rotate] as abstr
 [ ] Salsaman recommends supporting Videojack because of unicap support which means getting DV support for free.
 [ ] look at camorama
-
-+-------+-------+-------+-------+-------+-------+-------+-------
-See Also :
-[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
 [ ] OpenCV
-
-+-------+-------+-------+-------+-------+-------+-------+-------
-
+[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
 [ ] [for] has a bug in "from".
 [ ] #out x11 doesn't accept 0-sized grids
 [ ] #print   doesn't accept 0-sized grids
@@ -98,7 +79,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] [display] leaks in server ?
 [ ] deprecation warnings
 [ ] Add a video latency patch (in examples)
-[ ] can't have FPatcher and GridObject behaviour at once ??
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
@@ -114,10 +94,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] internals documentation
 [ ] internal grid protocol redesigned
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
-[ ] add support for "anything" methods (def _0_(sel,*a))
 [ ] look into -ftree-vectorize
-[ ] test.rb should become much more serious. (the @pack bug really sucked)
-
 [ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
 
 [145] "list -1"->[@import] only tells error message once every other time
@@ -129,7 +106,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not
 	move up or to the left of the low right corner of the peephole it contains.
 	Instead it will resize itself as you move it around.  
-[137] [gf] peeperr: problem with set_geometry, wrong size.
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
 [117] osx: [#store] crash instead of raising
@@ -138,9 +114,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
 [078] "unsupported codec" bogus errors.
 [097] bin/backtrace does not detect scripts
-[005] can't open "": Success; loading a nonquicktime file using quicktime
 [025] format_grid: write test for other bpv's
-[026] latency is not that good. (GC ?)
 [030] FormatGrid: not properly tested (crashes sometimes)
 [031] stdout should be redirected if bridge is present
 [034] format/mpeg3.c,quicktime.c might cause lockup on exit
@@ -255,20 +229,17 @@ Effects
 [ ] #moment could support more than 2 dimensions
 
 #<vektor> told me to:
-# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + {16 128 128}"]
+# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + (16 128 128)"]
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 Input/Output
-[ ] videodev: is it possible to reach 60 fps ?
 [ ] a #store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format
 [ ] Gimp, GStreamer, ffmpeg, xine, mplayer, PDP, OSC
-[ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] get subtitling of tv channels
 [ ] add messages "load", "save" as open,bang,close combos. (?)
-[ ] SDL: should support multiple windows
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
@@ -278,10 +249,8 @@ Input/Output
 
 Format
 [ ] remaining number type support in formats
-[ ] XBM, XPM, GIF support
 [ ] fork: pseudoformat for launching format handler as separate process
 [ ] put_at/reassign in x11/sdl/quartz
-[ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
@@ -291,10 +260,6 @@ Format
 User Interface
 [ ] color picker
 [ ] #edit, grid edition dialog, etc.
-[ ] peephole:
-    [ ] works without x11 (for osx...)
-    [ ] does it really work with something other than 3 channels ?
-    [ ] add a popup menu that makes sense
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
@@ -370,33 +335,6 @@ mencoder) or ffmpeg as a subprocess.
 the same will be done for recording later.
 "
 
-==6998== Mismatched free() / delete / delete []
-==6998==    at 0x1B9016E8: operator delete(void*) (vg_replace_malloc.c:246)
-==6998==    by 0x1C0216DD: Pointer::~Pointer() (puredata.c.fcs:89)
-==6998==    by 0x1CDD7500: CObject_free(void*) (main.c.fcs:87)
-==6998==    by 0x1CC8DBBE: garbage_collect (gc.c:1183)
-==6998==    by 0x1CC8DE14: rb_newobj (gc.c:415)
-==6998==    by 0x1CCE74D5: str_alloc (string.c:61)
-==6998==    by 0x1CCE76EF: str_new3 (string.c:127)
-==6998==    by 0x1CC77539: rb_eval (eval.c:3687)
-==6998==    by 0x1CC7798A: rb_eval (eval.c:3305)
-==6998==    by 0x1CC76F69: rb_eval (eval.c:3320)
-==6998==    by 0x1CC7CC6F: rb_yield_0 (eval.c:4869)
-==6998==    by 0x1CC7DEE5: rb_yield (eval.c:4950)
-==6998==  Address 0x1BC3E9A0 is 0 bytes inside a block of size 20 alloc'd
-==6998==    at 0x1B901DF0: memalign (vg_replace_malloc.c:332)
-==6998==    by 0x1CDD5D37: gfmalloc (main.c.fcs:499)
-==6998==    by 0x1CDB7505: GridOutlet::begin(int, P<Dim>, NumberTypeE) (grid.h.fcs:504)
-==6998==    by 0x1CDCD4EA: GridOutlet::GridOutlet(GridObject*, int, P<Dim>, NumberTypeE) (grid.h.fcs:1018)
-==6998==    by 0x1CF5B4BB: void GridStore::grin_0<int>(GridInlet*, int, Pt<int>) (flow_objects.c.fcs:275)
-==6998==    by 0x1CF5EAE5: void GridStore::grinw_0<int>(GridInlet*, int, Pt<int>) (flow_objects.c.fcs:256)
-==6998==    by 0x1CDB59DA: GridInlet_begin_1(GridInlet*) (grid.h.fcs:921)
-==6998==    by 0x1CC6D589: rb_ensure (eval.c:5303)
-==6998==    by 0x1CDB8341: GridInlet::begin(int, unsigned long*) (grid.c.fcs:199)
-==6998==    by 0x1CF0DE7D: GridStore::_0_grid(int, unsigned long*) (flow_objects.c.fcs:404)
-==6998==    by 0x1CF15353: GridStore::_0_grid_wrap(int, unsigned long*, unsigned long) (flow_objects.c.fcs:404)
-==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
-
 very old bookmarks:
 	http://pdl.perl.org/
 	http://www.opendragon.com/Pages/MaxObjects.shtml (not responding)
@@ -462,17 +400,6 @@ FObject.subclass("rubysprintf",2,1) {
   def _1_list(*format) @format = format.join(" ") end
   alias _1_symbol _1_list
 }
-
-class FObject
-	def _0_get(s=nil)
-		s=s.intern if String===s
-		if s then
-			if respond_to? s then send_out noutlets-1,s,__send__(s) else ___get s end
-		else
-			self.class.gfattrs.each_key{|k| _0_get k }
-		end
-	end
-end
 
 there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
 

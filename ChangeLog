@@ -1,14 +1,22 @@
 /* $Id$ */
 
-version 0.9.3 (2008.05.22):
+version 0.9.3 (2008.06.04):
 
  * fixed bugs introduced in 0.9.2 relative to: [#in] loop, [#in] initbang,
-   [display] selector, [#out] initbang, [#print], [#labeling]
- * added example patch instant_blur.pd
+   [display] selector, [#out] initbang, [#print], [#labeling], [#out window]
+ * added example patches instant_blur.pd game_of_life_gem.pd
  * added [class_exists]
  * fixed some example patches
  * fixed some recent OSX compilation problems
  * fixed OSX QuickTime decoding on Intel (endianness problem)
+ * fixed existing GEM 0.89 and 0.90 support
+ * added GEM 0.91 support (GemBase::isRunnable)
+ * --gem-source renamed to --gem-include
+ * --gem-include=bundled can compile gem support without gem source code
+ * swapped outlets of [#import_pix]
+ * added SDL mouse position event report
+ * added SDL hidecursor and partial setcursor
+ * x11: replaced method "transfer" by method "shared_memory".
 
 version 0.9.2 (2008.05.02):
 
