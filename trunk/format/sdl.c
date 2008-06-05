@@ -88,6 +88,7 @@ static void HandleEvent () {
 	void call ();
 	\decl 0 setcursor (int shape);
 	\decl 0 hidecursor ();
+	\decl 0 title (string title);
 	\constructor (t_symbol *mode) {
 		dim=0;screen=0;
 		if (in_use) RAISE("only one FormatSDL object at a time; sorry");
@@ -107,6 +108,7 @@ static void HandleEvent () {
 		instance=this;
 		clock = clock_new(this,(t_method)FormatSDL_call);
 		clock_delay(clock,0);
+		_0_title(0,0,string("GridFlow SDL"));
 	}
 	\grin 0 int
 	~FormatSDL () {
@@ -117,6 +119,10 @@ static void HandleEvent () {
 		in_use=false;
 	}
 };
+
+\def 0 title (string title) {
+	SDL_WM_SetCaption(title.data(),title.data());
+}
 
 void FormatSDL::call() {HandleEvent(); clock_delay(clock,20);}
 void FormatSDL_call(FormatSDL *self) {self->call();}
