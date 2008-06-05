@@ -63,6 +63,7 @@ static void HandleEvent () {
 			SETFLOAT(at+2,mousem);
 			SETSYMBOL(at+3,gensym(const_cast<char *>("huh")));
 			outlet_anything(instance->bself->outlets[0],sel,4,at);
+			post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
@@ -110,8 +111,6 @@ static void HandleEvent () {
 		clock = clock_new(this,(t_method)FormatSDL_call);
 		clock_delay(clock,0);
 		_0_title(0,0,string("GridFlow SDL"));
-		SDL_EventState(SDL_KEYUP,SDL_ENABLE);
-		SDL_EventState(SDL_MOUSEBUTTONUP,SDL_ENABLE);
 	}
 	\grin 0 int
 	~FormatSDL () {
