@@ -89,7 +89,11 @@ static void HandleEvent () {
 		    case SDL_KEYDOWN: case SDL_KEYUP: {
 			int key = event.key.keysym.sym;
 			int mod = event.key.keysym.mod;
-			if (key==SDLK_F11 && event.type==SDL_KEYDOWN) {full_screen = !full_screen; SDL_WM_ToggleFullScreen(screen); break;}
+			if (event.type==SDL_KEYDOWN && (key==SDLK_F11 || key==SDLK_ESCAPE || key=='f')) {
+				full_screen = !full_screen;
+				SDL_WM_ToggleFullScreen(screen);
+				break;
+			}
 			t_symbol *sel = gensym(const_cast<char *>(event.type==SDL_KEYDOWN ? "keypress" : "keyrelease"));
 			t_atom at[4];
 			mousem &= ~0xFF;
@@ -99,7 +103,6 @@ static void HandleEvent () {
 			SETFLOAT(at+2,mousem);
 			SETSYMBOL(at+3,keyboard[event.key.keysym.sym]);
 			outlet_anything(instance->bself->outlets[0],sel,4,at);
-			post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym.sym);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
