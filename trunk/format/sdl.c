@@ -38,6 +38,42 @@ static int mousex,mousey,mousem;
 SDL_Surface *screen;
 FObject *instance;
 
+static t_symbol *keyboard[SDLK_LAST];
+
+static void KEYS_ARE (int i, const char *s__) {
+	char *s_ = strdup(s__);
+	char *s = s_;
+	while (*s) {
+		char *t = strchr(s,' ');
+		if (t) *t=0;
+		keyboard[i] = gensym(s);
+		if (!t) break;
+		s=t+1; i++;
+	}
+	free(s_);
+}
+
+static void build_keyboard () {
+	KEYS_ARE(8,"BackSpace Tab");
+	KEYS_ARE(13,"Return");
+	KEYS_ARE(27,"Escape");
+	KEYS_ARE(32,"space exclam quotedbl numbersign dollar percent ampersand apostrophe");
+	KEYS_ARE(40,"parenleft parenright asterisk plus comma minus period slash");
+	KEYS_ARE(48,"D0 D1 D2 D3 D4 D5 D6 D7 D8 D9");
+	KEYS_ARE(58,"colon semicolon less equal greater question at");
+	//KEYS_ARE(65,"A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+	KEYS_ARE(91,"bracketleft backslash bracketright asciicircum underscore grave quoteleft");
+	KEYS_ARE(97,"a b c d e f g h i j k l m n o p q r s t u v w x y z");
+	//SDLK_DELETE = 127
+	KEYS_ARE(256,"KP_0 KP_1 KP_2 KP_3 KP_4 KP_5 KP_6 KP_7 KP_8 KP_9");
+	KEYS_ARE(266,"KP_Decimal KP_Divide KP_Multiply KP_Subtract KP_Add KP_Enter KP_Equal");
+	KEYS_ARE(273,"KP_Up KP_Down KP_Right KP_Left KP_Insert KP_Home KP_End KP_Prior KP_Next");
+	KEYS_ARE(282,"F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13 F14 F15");
+	KEYS_ARE(300,"Num_Lock Caps_Lock Scroll_Lock");
+	KEYS_ARE(303,"Shift_R Shift_L Control_R Control_L Alt_R Alt_L Meta_L Meta_R");
+	KEYS_ARE(311,"Super_L Super_R Mode_switch Multi_key");
+}
+
 static void report_pointer () {
 	t_atom a[3];
 	SETFLOAT(a+0,mousey);
@@ -61,9 +97,9 @@ static void HandleEvent () {
 			SETFLOAT(at+0,mousey);
 			SETFLOAT(at+1,mousex);
 			SETFLOAT(at+2,mousem);
-			SETSYMBOL(at+3,gensym(const_cast<char *>("huh")));
+			SETSYMBOL(at+3,keyboard[event.key.keysym.sym]);
 			outlet_anything(instance->bself->outlets[0],sel,4,at);
-			//post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym);
+			post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym.sym);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
@@ -166,4 +202,5 @@ GRID_INLET(FormatSDL,0) {
 \end class FormatSDL {install_format("#io.sdl",2,"");}
 void startup_sdl () {
 	\startall
+	build_keyboard();
 }
