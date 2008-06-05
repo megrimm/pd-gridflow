@@ -63,12 +63,12 @@ static void HandleEvent () {
 			SETFLOAT(at+2,mousem);
 			SETSYMBOL(at+3,gensym(const_cast<char *>("huh")));
 			outlet_anything(instance->bself->outlets[0],sel,4,at);
-			post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym);
+			//post("type=%d state=%d keysym=%d",event.type,event.key.state,event.key.keysym);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
 			else                     mousem &= ~(128<<event.button.button);
-			post("mousem=%d",mousem);
+			//post("mousem=%d",mousem);
 			report_pointer();
 		    } break;
 		    case SDL_MOUSEMOTION: {
