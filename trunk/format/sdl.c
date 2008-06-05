@@ -67,6 +67,7 @@ static void HandleEvent () {
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
 			else                     mousem &= ~(128<<event.button.button);
+			post("mousem=%d",mousem);
 			report_pointer();
 		    } break;
 		    case SDL_MOUSEMOTION: {
@@ -109,6 +110,8 @@ static void HandleEvent () {
 		clock = clock_new(this,(t_method)FormatSDL_call);
 		clock_delay(clock,0);
 		_0_title(0,0,string("GridFlow SDL"));
+		SDL_EventState(SDL_KEYUP,SDL_ENABLE);
+		SDL_EventState(SDL_MOUSEBUTTONUP,SDL_ENABLE);
 	}
 	\grin 0 int
 	~FormatSDL () {
