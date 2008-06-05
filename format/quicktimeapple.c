@@ -180,6 +180,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 \class FormatQuickTimeCamera : Format {
   P<Dim> dim;
   uint8 *buf;
+  uint8 *buf2;
   VDC vdc;
   int m_newFrame; 
   SeqGrabComponent m_sg;
@@ -245,6 +246,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	}
 	int dataSize = dim->prod();
 	buf = new uint8[dataSize];
+	buf2 = new uint8[dataSize];
 	m_rowBytes = dim->prod(1);
 	e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,&rect,NULL,NULL,0,buf,m_rowBytes);
 	if (0/*yuv*/) {
@@ -275,7 +277,8 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 
 static int nn(int c) {return c?c:' ';}
 
-/*pascal Boolean pix_videoDarwin :: SeqGrabberModalFilterProc (DialogPtr theDialog, const EventRecord *theEvent, short *itemHit, long refCon){
+/*
+pascal Boolean pix_videoDarwin :: SeqGrabberModalFilterProc (DialogPtr theDialog, const EventRecord *theEvent, short *itemHit, long refCon){
     Boolean	handled = false;
     if ((theEvent->what == updateEvt) &&
         ((WindowPtr) theEvent->message == (WindowPtr) refCon)) {
@@ -283,18 +286,19 @@ static int nn(int c) {return c?c:' ';}
         EndUpdate ((WindowPtr) refCon);
         handled = true;
     } 
-     WindowRef  awin = GetDialogWindow(theDialog);
+    WindowRef awin = GetDialogWindow(theDialog);
     ShowWindow (awin);
     SetWindowClass(awin,kUtilityWindowClass);
-    //ChangeWindowAttributes(awin,kWindowStandardHandlerAttribute,0);     	SGPanelEvent(m_sg,m_vc,theDialog,0,theEvent,itemHit,&handled);
-  //  AEProcessAppleEvent (theEvent);
+    //ChangeWindowAttributes(awin,kWindowStandardHandlerAttribute,0);
+    //SGPanelEvent(m_sg,m_vc,theDialog,0,theEvent,itemHit,&handled);
+    //AEProcessAppleEvent (theEvent);
     return handled;
 }
 void pix_videoDarwin :: DoVideoSettings() {
-    Rect	newActiveVideoRect;
-    Rect	curBounds, curVideoRect, newVideoRect;
-    ComponentResult	err;
-    SGModalFilterUPP	seqGragModalFilterUPP;
+    Rect newActiveVideoRect;
+    Rect curBounds, curVideoRect, newVideoRect;
+    ComponentResult err;
+    SGModalFilterUPP seqGragModalFilterUPP;
     err = SGGetChannelBounds (m_vc, &curBounds);
     err = SGGetVideoRect (m_vc, &curVideoRect);
     err = SGPause (m_sg, true);
@@ -309,17 +313,17 @@ void pix_videoDarwin :: DoVideoSettings() {
 
 \def 0 bang () {
     GridOutlet out(this,0,dim);
-    out.send(dim->prod(),buf);
+    int n = dim->prod()/4;
+    for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
+    out.send(dim->prod(),buf2);
     SGIdle(m_sg);
 }
 
 GRID_INLET(FormatQuickTimeCamera,0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_chunk(0);
 } GRID_FLOW {
 } GRID_FINISH {
