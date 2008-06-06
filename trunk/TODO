@@ -1,9 +1,6 @@
 /* $Id$ */
 
 [ ] fix seek in [#in]
-[ ] full screen
-[ ] sdl is slow
-
 [ ] [cv.split]
 [ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
 [ ] bugs roman
@@ -14,6 +11,8 @@
 [ ] reimplement [listflatten] !
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] with pwc, 720x480 crashes
+[ ] fix SDL modifiers
+
 soon:
  * remove reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
@@ -46,15 +45,12 @@ Common Video Framework :
 [ ] [for] has a bug in "from".
 [ ] #out x11 doesn't accept 0-sized grids
 [ ] #print   doesn't accept 0-sized grids
-[ ] [display] bug, can't print nested lists, due to Array===[] returning false (???)
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
-[ ] pd_examples -> examples
 [ ] update doc
-[ ] ditch xml (switch to helppatches)
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 
 malloc alignment = 4 mod 8 (en utilisant valgrind)
@@ -67,7 +63,6 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 http://oprofile.sourceforge.net/about/
 also: qprofile, amd profiler, opreport -cl --demangle=smart
 
-[ ] cvs2svn
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
@@ -101,7 +96,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [144] small leak remaining in x11. may have to do with non-use of XDestroyImage.
 [140] is [@convolve] actually cross-convolution?
 	that is, convolves with a mirror image of the convolution matrix.
-[139] [#peephole]
+[139] [peephole]
 	<mis> matju: if you try to move the GOPed abstraction the peepholes don't move along
 	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not
 	move up or to the left of the low right corner of the peephole it contains.
@@ -113,7 +108,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
 [078] "unsupported codec" bogus errors.
-[097] bin/backtrace does not detect scripts
 [025] format_grid: write test for other bpv's
 [030] FormatGrid: not properly tested (crashes sometimes)
 [031] stdout should be redirected if bridge is present
@@ -147,7 +141,6 @@ Installation
 Documentation
 [ ] make a short feature list as a promo
 [ ] add credits
-[ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un mode x11 non-supporté
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
@@ -242,10 +235,11 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
-[ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
-[ ] shell object?
-[ ] HPGL, [unixtime]
-[ ] [parallel_port], [serial_port], [usb_mouse]
+[ ] x11: double buffering using a Pixmap remote-object
+[ ] [serial_port]
+[ ] support for audio in the mpeg streams
+[ ] synchronized audio with the video when using mpeg1 & 2
+[ ] full screen mode (without the menu bars or frames)
 
 Format
 [ ] remaining number type support in formats
@@ -270,26 +264,6 @@ Extra/Examples/Etc
 [ ] .pd: read; write better
 [ ] examples/generique.pd
 [ ] add examples from the workshop, etc
-
-how about creating aliases like "open window" = "open x11 here" (or arbitrary
-user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
-videodev" -> "open videodev /dev/video0, option channel 1, option size 240 320" 
-maybe there should be a separate ~/.gridflow_config that would be saveable from
-gridflow, and ~/.gridflow_startup would be edited only by the user but
-~/.gridflow_config would still be a text file.  i say that
-because the startup is a script so gridflow couldn't just do
-search-and-replace in there, because the option could be inside a "if"
-expression and such... at most, gridflow could _append_ text to
-.gridflow_startup, to be non-intrusive...
-
-Feature Requests
-
-From: Dave Bergevin <dabergevin@eisa.com> 
-  [ ] synchronized audio with the video when using mpeg1 & 2
-  [ ] full screen mode (without the menu bars or frames)
-From: Alexandre Castonguay <acastonguay@artengine.ca>
-  [ ] server side pd to handle multiple incoming commands, audio + video streams
-  [ ] support for audio in the mpeg streams
 
 <matju> alx:
 le tab completion ne donnerait pas seulement les noms possibles pour le
