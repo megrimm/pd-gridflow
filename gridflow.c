@@ -45,6 +45,7 @@
 #include <exception>
 #include <execinfo.h>
 #endif
+#undef check
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
