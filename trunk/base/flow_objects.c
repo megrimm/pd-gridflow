@@ -68,9 +68,9 @@ public: template <class T> static inline void __attribute__((always_inline)) f(T
 
 /*template <> class SCopy<4> {
 public: template <class T>
-	static inline void __attribute__((always_inline)) f(T * a, T * b) {
+	static inline void __attribute__((always_inline)) f(T *a, T *b) {
 		*a=*b; SCopy<3>::f(a+1,b+1);}
-	static inline void __attribute__((always_inline)) f(uint8 * a, uint8 * b)
+	static inline void __attribute__((always_inline)) f(uint8 *a, uint8 *b)
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
 
@@ -384,14 +384,14 @@ GRID_INLET(GridPrint,0) {
 		put_at.constrain(expect_max_one_dim);
 		this->r = r?r:new Grid(new Dim(),int32_e,true);
 		op = op_put;
-		wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
-		fromb = new int32[Dim::MAX_DIM];
-		to2   = new int32[Dim::MAX_DIM];
+		wdex  = NEWBUF(int32,Dim::MAX_DIM); // temporary buffer, copy of put_at
+		fromb = NEWBUF(int32,Dim::MAX_DIM);
+		to2   = NEWBUF(int32,Dim::MAX_DIM);
 	}
 	~GridStore () {
-		delete[] wdex;
-		delete[] fromb;
-		delete[] to2;
+		DELBUF(wdex);
+		DELBUF(fromb);
+		DELBUF(to2);
 	}
 	\decl 0 bang ();
 	\decl 1 reassign ();
@@ -460,7 +460,7 @@ GRID_INLET(GridStore,0) {
 #define FOO(type) { \
 	type *p = (type *)*r; \
 	if (size<=16) { \
-		type *foo = new type[nd*size]; \
+		type *foo = NEWBUF(type,nd*size); \
 		long i=0; \
 		switch (size) { \
 		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
@@ -878,7 +878,7 @@ GRID_INLET(GridOuter,0) {
 		return;
 	}
 	n*=b_prod;
-	T * buf = new T[n];
+	T *buf = NEWBUF(T,n);
 	T buf2[b_prod*64];
 	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(T *)*r,b_prod);
 	switch (b_prod) {
@@ -929,9 +929,9 @@ void GridFor::trigger (T bogus) {
 	int n = from->dim->prod();
 	int32 nn[n+1];
 	T x[64*n];
-	T * fromb = (T *)*from;
-	T *   tob = (T *)*to  ;
-	T * stepb = (T *)*step;
+	T *fromb = (T *)*from;
+	T *  tob = (T *)*to  ;
+	T *stepb = (T *)*step;
 	T to2[n];
 	
 	for (int i=step->dim->prod()-1; i>=0; i--)
@@ -1105,11 +1105,11 @@ GRID_INLET(GridJoin,0) {
 	if (w<0) w+=in->dim->n;
 	long a = in->factor();
 	long b = r->dim->prod(w);
-	T * data2 = (T *)*r + in->dex*b/a;
+	T *data2 = (T *)*r + in->dex*b/a;
 	if (a==3 && b==1) {
 		int m = n+n*b/a;
 		T data3[m];
-		T * data4 = data3;
+		T *data4 = data3;
 		while (n) {
 			SCOPY(data4,data,3); SCOPY(data4+3,data2,1);
 			n-=3; data+=3; data2+=1; data4+=4;
@@ -1162,7 +1162,7 @@ GRID_INLET(GridGrade,0) {
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
 	long m = in->factor();
-	T* foo[m];
+	T *foo[m];
 	T  bar[m];
 	for (; n; n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
@@ -1216,7 +1216,7 @@ GRID_INLET(GridTranspose,0) {
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
 	//T res[na*nb*nc*nd];
-	T *res = new T[na*nb*nc*nd];
+	T *res = NEWBUF(T,na*nb*nc*nd);
 	if (dim1==dim2) { out->send(n,data); return; }
 	int prod = na*nb*nc*nd;
 	for (; n; n-=prod, data+=prod) {
@@ -1227,7 +1227,7 @@ GRID_INLET(GridTranspose,0) {
 					     data+((a*nb+b)*nc+c)*nd,nd);
 		out->send(na*nb*nc*nd,res);
 	}
-	delete[] res; //!@#$ if an exception was thrown by out->send, this never gets done
+	DELBUF(res); //!@#$ if an exception was thrown by out->send, this never gets done
 } GRID_END
 
 \end class {install("#transpose",3,1); add_creator("@transpose");}
@@ -1255,7 +1255,7 @@ GRID_INLET(GridReverse,0) {
 	long f1=in->factor(), f2=in->dim->prod(d+1);
 	while (n) {
 		long hf1=f1/2;
-		T * data2 = data+f1-f2;
+		T *data2 = data+f1-f2;
 		for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
 		out->send(f1,data);
 		data+=f1; n-=f1;
@@ -1425,7 +1425,7 @@ GRID_INLET(GridLabeling,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	int sy=in->dim->v[0], sx=in->dim->v[1];
-	T *dat = new T[n];
+	T *dat = NEWBUF(T,n);
 	for (int i=0; i<n; i++) dat[i]=data[i];
 	int y,x=0,label=2;
 	for (y=0; y<sy; y++) for (x=0; x<sx; x++) {
@@ -1452,7 +1452,7 @@ GRID_INLET(GridLabeling,0) {
 	}
 	out = new GridOutlet(this,0,new Dim(sy,sx,1),in->nt);
 	out->send(n,dat);
-	delete[] dat;
+	DELBUF(dat);
 } GRID_END
 
 \def int form() {return form_val;}
@@ -1775,7 +1775,7 @@ GRID_INLET(GridDownscaleBy,0) {
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp->dim->prod(1);
-	T * buf = (T *)*temp; //!@#$ maybe should be something else than T ?
+	T *buf = (T *)*temp; //!@#$ maybe should be something else than T ?
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
 	int chans=in->dim->get(2);
@@ -1845,7 +1845,7 @@ GRID_INLET(GridLayer,0) {
 	in->set_chunk(2);
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
-	T * rr = ((T *)*r) + in->dex*3/4;
+	T *rr = ((T *)*r) + in->dex*3/4;
 	T foo[n*3/4];
 #define COMPUTE_ALPHA(c,a) \
 	foo[j+c] = (data[i+c]*data[i+a] + rr[j+c]*(256-data[i+a])) >> 8
@@ -1936,11 +1936,11 @@ GRID_INLET(DrawPolygon,0) {
 	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
 } GRID_FLOW {
 	int nl = polygon->dim->get(0);
-	Line * ld = (Line *)(int32 *)*lines;
+	Line *ld = (Line *)(int32 *)*lines;
 	int f = in->factor();
 	int y = in->dex/f;
 	int cn = color->dim->prod();
-	T * cd = (T *)*color2;
+	T *cd = (T *)*color2;
 	
 	while (n) {
 		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
@@ -1954,7 +1954,7 @@ GRID_INLET(DrawPolygon,0) {
 			out->send(f,data);
 		} else {
 			int32 xl = in->dim->get(1);
-			T * data2 = new T[f];
+			T *data2 = NEWBUF(T,f);
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
@@ -2009,7 +2009,7 @@ static void expect_position(P<Dim> d) {
 	\grin 2 int32
 	// draw row # ry of right image in row buffer buf, starting at xs
 	// overflow on both sides has to be handled automatically by this method
-	template <class T> void draw_segment(T * obuf, T * ibuf, int ry, int x0);
+	template <class T> void draw_segment(T *obuf, T *ibuf, int ry, int x0);
 };
 
 #define COMPUTE_ALPHA(c,a) obuf[j+(c)] = ibuf[j+(c)] + (rbuf[a])*(obuf[j+(c)]-ibuf[j+(c)])/256;
@@ -2019,11 +2019,11 @@ static void expect_position(P<Dim> d) {
 	COMPUTE_ALPHA(b+2,b+3); \
 	obuf[b+3] = rbuf[b+3] + (255-rbuf[b+3])*(ibuf[j+b+3])/256;
 
-template <class T> void DrawImage::draw_segment(T * obuf, T * ibuf, int ry, int x0) {
+template <class T> void DrawImage::draw_segment(T *obuf, T *ibuf, int ry, int x0) {
 	if (ry<0 || ry>=image->dim->get(0)) return; // outside of image
 	int sx = in[0]->dim->get(1), rsx = image->dim->get(1);
 	int sc = in[0]->dim->get(2), rsc = image->dim->get(2);
-	T * rbuf = (T *)*image + ry*rsx*rsc;
+	T *rbuf = (T *)*image + ry*rsx*rsc;
 	if (x0>sx || x0<=-rsx) return; // outside of buffer
 	int n=rsx;
 	if (x0+n>sx) n=sx-x0;
@@ -2074,7 +2074,7 @@ GRID_INLET(DrawImage,0) {
 	for (; n; y++, n-=f, data+=f) {
 		int ty = div2(y-py,rsy);
 		if (tile || ty==0) {
-			T * data2 = new T[f];
+			T *data2 = NEWBUF(T,f);
 			COPY(data2,data,f);
 			if (tile) {
 				for (int x=px-div2(px+rsx-1,rsx)*rsx; x<sx; x+=rsx) {
