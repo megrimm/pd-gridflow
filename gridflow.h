@@ -188,6 +188,9 @@ ALLOCPREFIX void operator delete[](void*p) throw() {gffree(p);}
 ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffree(p);}
 ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
 
+#define NEWBUF(T,N) (new T[N])
+#define DELBUF(A) (delete[] A)
+
 #ifdef __WIN32__
 #define INT winINT
 #define random rand
