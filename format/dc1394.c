@@ -27,7 +27,6 @@
 
 /* speeds are numbered 0 to 5, worth 100<<speednum */
 /* framerates are numbers 32 to 39, worth 1.875<<(frameratenum-32) */
-/* Enumeration of camera modes for Format_0 */
 
 #define MODE(x,y,palette) /* nothing for now */
 
@@ -146,9 +145,13 @@ typedef raw1394handle_t RH;
 typedef nodeid_t NID;
 
 \class FormatDC1394 : Format {
+	RH rh;
+	int useport;
+	int usenode;
 	\constructor (t_symbol *mode) {
+		bool gotone=false;
 		post("DC1394: hello world");
-		RH rh = raw1394_new_handle();
+		rh = raw1394_new_handle();
 		if (!rh) RAISE("could not get a handle for /dev/raw1394 and /dev/video1394");
 		int numPorts = raw1394_get_port_info(rh,0,0);
 		raw1394_destroy_handle(rh);
@@ -160,16 +163,30 @@ typedef nodeid_t NID;
 			int numCameras=0xDEADBEEF;
 			NID *nodes = dc1394_get_camera_nodes(rh,&numCameras,0);
 			post("port #%d has %d cameras",port,numCameras);
-			for (int i=0; i<numCameras; i++) post("camera at node #%d",nodes[i]);
-			// I'm stuck here, can't find that iSight camera. -- matju
+			for (int i=0; i<numCameras; i++) {
+				post("camera at node #%d",nodes[i]);
+				if (!gotone) {gotone=true; useport=port; usenode=nodes[i];}
+			}
+			dc1394_destroy_handle(rh);
 		}
-		dc1394_destroy_handle(rh);
+		if (!gotone) RAISE("no cameras available");
+		this->rh = dc1394_create_handle(useport);
 	}
 	\decl 0 bang ();
 };
 
 \def 0 bang () {
-	post("i'd like to get a frame from the cam, but how?");
+	dc1394_cameracapture camera;
+	dc1394bool_t is_on;
+	if (dc1394_camera_on(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_camera_on error");
+	//if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_RGB,SPEED_400,FRAMERATE_30,&camera)!=DC1394_SUCCESS)
+	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,FRAMERATE_30,&camera)!=DC1394_SUCCESS)
+		RAISE("dc1394_setup_capture error");
+ 	if (dc1394_start_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_start_iso_transmission error");
+	if (dc1394_get_one_shot(rh,usenode,&is_on)!=DC1394_SUCCESS) RAISE("dc1394_get_one_shot error");
+	if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
+	out=new GridOutlet(this,0,new Dim(480,640,1));
+	out->send(out->dim->prod(),(uint8 *)camera.capture_buffer);
 }
 
 \end class FormatDC1394 {install_format("#io.dc1394",4,"");}
