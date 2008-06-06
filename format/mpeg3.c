@@ -65,14 +65,14 @@
 	int channels = 3;
 	/* !@#$ the doc says "You must allocate 4 extra bytes in the
 	last output_row. This is scratch area for the MMX routines." */
-	uint8 * buf = new uint8[sy*sx*channels+16];
+	uint8 *buf = NEWBUF(uint8,sy*sx*channels+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 	GridOutlet out(this,0,new Dim(sy,sx,channels),cast);
 	int bs = out.dim->prod(1);
 	for(int y=0; y<sy; y++) out.send(bs,buf+channels*sx*y);
-	delete[] (uint8 *)buf;
+	DELBUF(buf);
 //	return INT2NUM(nframe);
 }
 
