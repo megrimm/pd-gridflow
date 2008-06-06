@@ -1,11 +1,12 @@
 /* $Id$ */
 
-version 0.9.3 (2008.06.04):
+version 0.9.3 (2008.06.06):
 
  * fixed bugs introduced in 0.9.2 relative to: [#in] loop, [#in] initbang,
    [display] selector, [#out] initbang, [#print], [#labeling], [#out window]
  * added example patches instant_blur.pd game_of_life_gem.pd
  * added [class_exists]
+ * added [#in quicktimecamera]
  * fixed some example patches
  * fixed some recent OSX compilation problems
  * fixed OSX QuickTime decoding on Intel (endianness problem)
@@ -14,8 +15,10 @@ version 0.9.3 (2008.06.04):
  * --gem-source renamed to --gem-include
  * --gem-include=bundled can compile gem support without gem source code
  * swapped outlets of [#import_pix]
- * added SDL mouse position event report
- * added SDL hidecursor and partial setcursor
+ * added SDL mouse position event report (but buttonup does not work)
+ * added SDL key report
+ * added some SDL options: title, hidecursor, partial setcursor
+ * added SDL fullscreen (use key f, F11 or Escape)
  * x11: replaced method "transfer" by method "shared_memory".
 
 version 0.9.2 (2008.05.02):
