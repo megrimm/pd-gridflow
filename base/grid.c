@@ -188,7 +188,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 			if (bufi==bufn) {
 				long newdex = dex+bufn;
 				if (this->mode==6) {
-					T *data2 = new T[bufn];//!
+					T *data2 = NEWBUF(T,bufn);
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
 					try {gh->flow(this,bufn,data2);} CATCH_IT;
@@ -204,7 +204,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		if (m) {
 			int newdex = dex + m;
 			if (this->mode==6) {
-				T *data2 = new T[m];//!
+				T *data2 = NEWBUF(T,m);
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
 				try {gh->flow(this,m,data2);} CATCH_IT;
@@ -220,7 +220,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	case 6:{
 		int newdex = dex + n;
 		try {gh->flow(this,n,data);} CATCH_IT;
-		if (this->mode==4) delete[] (T *)data;
+		if (this->mode==4) DELBUF(data);
 		dex = newdex;
 	}break;
 	case 0: break; // ignore data
@@ -248,12 +248,12 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	int n = g->dim->prod();
 	gh->flow(this,-1,(T *)0);
 	if (n>0 && this->mode!=0) {
-		T * data = (T *)*g;
+		T *data = (T *)*g;
 		CHECK_ALIGN(data);
 		int size = g->dim->prod();
 		if (this->mode==6) {
-			T * d = data;
-			data = new T[size];  //! problem with int64,float64 here.
+			T *d = data;
+			data = NEWBUF(T,size);
 			COPY(data,d,size);
 			CHECK_ALIGN(data);
 			try {gh->flow(this,n,data);} CATCH_IT;
@@ -363,7 +363,7 @@ void GridOutlet::give(long n, T *data) {TRACE;
 	CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(data)!=nt) {
 		send(n,data);
-		delete[] (T *)data;
+		DELBUF(data);
 		return;
 	}
 	if (inlets.size()==1 && inlets[0]->mode == 6) {
@@ -375,7 +375,7 @@ void GridOutlet::give(long n, T *data) {TRACE;
 		flush();
 		send_direct(n,data);
 		dex += n;
-		delete[] (T *)data;
+		DELBUF(data);
 	}
 	if (dex==dim->prod()) finish();
 }
