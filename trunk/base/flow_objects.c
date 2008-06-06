@@ -1638,7 +1638,9 @@ GRID_INLET(GridConvolve,0) {
 	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d", da->get(1), db->get(1));
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
-	a=new Grid(da,in->nt);
+	//if (a) post("for %p, a->dim=%s da=%s",this,a->dim->to_s(),da->to_s());
+	if (!a || !a->dim->equal(da)) a=new Grid(da,in->nt); // with this condition it's 2% faster on Linux but takes more RAM.
+	//a=new Grid(da,in->nt); // with this condition it's 2% faster but takes more RAM.
 	int v[da->n]; COPY(v,da->v,da->n);
 	if (!wrap) {v[0]-=db->v[0]-1; v[1]-=db->v[1]-1;}
 	out=new GridOutlet(this,0,new Dim(da->n,v),in->nt);
@@ -1672,7 +1674,7 @@ GRID_INLET(GridConvolve,0) {
 		}
 		out->send(n,buf);
 	}
-	a=0;
+	//a=0; // comment this out when trying to recycle a (use the dim->equal above)
 } GRID_END
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
