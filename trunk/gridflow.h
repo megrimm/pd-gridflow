@@ -50,7 +50,6 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #define a_gpointer a_w.w_gpointer
 #endif
 
-EXTERN t_symbol *gensym(char *s);
 #define gensym(s) gensym(const_cast<char *>(s))
 
 #ifndef DESIREDATA
@@ -809,7 +808,7 @@ struct GridOutlet : CObject {
 	template <class T> void give(long n, T *data);
 
 	// third way to send (upcoming, in GF-1.1.??) is called "ask".
-	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
+	template <class T> void ask(int &n, T *&data, long factor, long min, long max);
 
 private:
 	bool frozen; // is the "begin" phase finished?
