@@ -51,6 +51,8 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #endif
 
 #define gensym(s) gensym(const_cast<char *>(s))
+#define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
+#define sys_gui(s) sys_gui(const_cast<char *>(s));
 
 #ifndef DESIREDATA
 #define A_LIST t_atomtype(13) /* (t_binbuf *) */
