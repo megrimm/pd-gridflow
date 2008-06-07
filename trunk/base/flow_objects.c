@@ -2548,7 +2548,7 @@ static void display_update(void *x) {
 	wb->w_visfn        = display_visfn;
 	wb->w_clickfn      = 0;
 	class_setwidget(qlass,wb);
-	sys_vgui("proc display_update {self x y fg bg outline font canvas text} { \n\
+	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n\
 		$canvas delete ${self}TEXT \n\
 		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
 		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
