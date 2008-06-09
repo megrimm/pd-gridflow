@@ -234,7 +234,6 @@ static void gfpost(VideoMmap *self) {
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	int fd;
-	string colorspace;
 	int palettes; /* bitfield */
 
 	\constructor (string mode, string filename) {
@@ -261,7 +260,8 @@ static void gfpost(VideoMmap *self) {
 	\decl 0 tuner (int value);
 	\decl 0 channel (int value);
 	\decl 0 transfer (string sym, int queuemax=2);
-	\decl 0 colorspace (string c);
+
+	\attr t_symbol *colorspace;
 	\attr long   frequency();
 	\attr uint16 brightness();
 	\attr uint16 hue();
@@ -346,19 +346,20 @@ void FormatVideoDev::frame_ask () {
 static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
 void FormatVideoDev::frame_finished (uint8 *buf) {
-	int downscale = colorspace=="magic";
+	string cs = colorspace->s_name;
+	int downscale = cs=="magic";
 	/* picture is converted here. */
 	int sy = dim->get(0)>>downscale;
 	int sx = dim->get(1)>>downscale;
 	int bs = dim->prod(1)>>downscale;
 	uint8 b2[bs];
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
-	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,colorspace.data());
+	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		GridOutlet out(this,0,colorspace=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
-		if (colorspace=="y") {
+		GridOutlet out(this,0,cs=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
+		if (cs=="y") {
 			out.send(sy*sx,buf);
-		} else if (colorspace=="rgb") {
+		} else if (cs=="rgb") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -378,7 +379,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace=="yuv") {
+		} else if (cs=="yuv") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -396,7 +397,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace=="magic") {
+		} else if (cs=="magic") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf        +4*sx*y;
 				uint8 *bufu = buf+4*sx*sy+  sx*y;
@@ -413,7 +414,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		GridOutlet out(this,0,dim,cast);
 		uint8 rgb[sx*3];
 		uint8 b2[sx*3];
-		if (colorspace=="y") {
+		if (cs=="y") {
 			for(int y=0; y<sy; y++) {
 			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
@@ -422,12 +423,12 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace=="rgb") {
+		} else if (cs=="rgb") {
 			for(int y=0; y<sy; y++) {
 			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				out.send(bs,rgb);
 			}
-		} else if (colorspace=="yuv") {
+		} else if (cs=="yuv") {
 			for(int y=0; y<sy; y++) {
 				bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
@@ -440,7 +441,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace=="magic") {
+		} else if (cs=="magic") {
 			RAISE("magic colorspace not supported with a RGB palette");
 		}
 	} else {
@@ -577,7 +578,8 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSFREQ, &frequency);
 }
 
-\def 0 colorspace (string c) { /* y yuv rgb */
+\def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb magic */
+	string c = colorspace->s_name;
 	if      (c=="y") {}
 	else if (c=="yuv") {}
 	else if (c=="rgb") {}
@@ -606,7 +608,7 @@ GRID_INLET(FormatVideoDev,0) {
             uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 	    bit_packing = new BitPacking(is_le(),3,3,masks);
 	}
-	colorspace=c;
+	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
 
@@ -743,7 +745,7 @@ void FormatVideoDev::initialize2 () {
 			post("palette %d supported",p);
 		}
 	}
-	_0_colorspace(0,0,"rgb");
+	_0_colorspace(0,0,gensym("rgb"));
 	_0_channel(0,0,0);
 }
 
