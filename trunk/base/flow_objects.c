@@ -2379,6 +2379,35 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 //doc_out:_0_float,"position of the incoming float in the stored list"
 \end class {install("listfind",2,1);}
 
+void outlet_atom (t_outlet *self, t_atom *av) {
+	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
+	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
+	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
+	outlet_list(self,gensym("list"),1,av);
+}
+
+\class ListRead : FObject { /* sounds like tabread */
+	int ac;
+	t_atom *at;
+	~ListRead() {if (at) delete[] at;}
+	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
+	\decl 0 float(float f);
+	\decl 1 list(...);
+};
+\def 0 float(float f) {
+	int i = int(f);
+	if (i<0) i+=ac;
+	if (i<0 || i>=ac) {outlet_bang(bself->outlets[0]); return;} /* out-of-range */
+	outlet_atom(bself->outlets[0],&at[i]);
+}
+\def 1 list (...) {
+	if (at) delete[] at;
+	ac = argc;
+	at = new t_atom[argc];
+	for (int i=0; i<argc; i++) at[i] = argv[i];
+}
+\end class {install("listread",2,1);}
+
 \class Range : FObject {
 	t_float *mosusses;
 	int nmosusses;
