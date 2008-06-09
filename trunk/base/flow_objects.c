@@ -2867,6 +2867,48 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 }
 \end class {install("send39",1,0);}
 
+struct Receives;
+struct ReceivesProxy {
+	t_pd x_pd;
+	Receives *parent;
+	t_symbol *suffix;
+};
+t_class *ReceivesProxy_class;
+
+\class Receives : FObject {
+	int ac;
+	ReceivesProxy **av;
+	t_symbol *prefix;
+	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
+	\constructor (t_symbol *prefix, ...) {
+		this->prefix = prefix;
+		ac = argc-1;
+		av = new ReceivesProxy *[argc-1];
+		for (int i=0; i<ac; i++) {
+			av[i] = (ReceivesProxy *)pd_new(ReceivesProxy_class);
+			av[i]->parent = this;
+			av[i]->suffix = argv[i+1];
+			pd_bind(  (t_pd *)av[i],local(av[i]->suffix));
+		}
+	}
+	~Receives () {
+		for (int i=0; i<ac; i++) {
+			pd_unbind((t_pd *)av[i],local(av[i]->suffix));
+			pd_free((t_pd *)av[i]);
+		}
+		delete[] av;
+	}
+};
+void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
+	outlet_symbol(  self->parent->bself->outlets[1],self->suffix);
+	outlet_anything(self->parent->bself->outlets[0],s,argc,argv);
+}
+\end class {
+	install("receives",1,2);
+	ReceivesProxy_class = class_new(gensym("receives.proxy"),0,0,sizeof(ReceivesProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
+	class_addanything(ReceivesProxy_class,(t_method)ReceivesProxy_anything);
+}
+
 /* this can't report on bang,float,symbol,pointer,list because zgetfn can't either */
 \class ClassExists : FObject {
 	\constructor () {}
