@@ -148,6 +148,8 @@ typedef nodeid_t NID;
 	RH rh;
 	int useport;
 	int usenode;
+	int framerate_e;
+	dc1394_cameracapture camera;
 	\constructor (t_symbol *mode) {
 		bool gotone=false;
 		post("DC1394: hello world");
@@ -171,21 +173,40 @@ typedef nodeid_t NID;
 		}
 		if (!gotone) RAISE("no cameras available");
 		this->rh = dc1394_create_handle(useport);
+		framerate_e = FRAMERATE_30;
+		setup();
 	}
 	\decl 0 bang ();
+	\attr float framerate();
+	//\attr uint16 brightness();
+	//\attr uint16 hue();
+	//\attr uint16 colour();
+	//\attr uint16 contrast();
+	//\attr uint16 whiteness();
+	void setup ();
 };
 
-\def 0 bang () {
-	dc1394_cameracapture camera;
-	//if (dc1394_camera_on(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_camera_on error");
-	//if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_RGB,SPEED_400,FRAMERATE_30,&camera)!=DC1394_SUCCESS)
-	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,FRAMERATE_7_5,&camera)!=DC1394_SUCCESS)
+void FormatDC1394::setup () {
+	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,framerate_e,&camera)!=DC1394_SUCCESS)
 		RAISE("dc1394_setup_capture error");
         if (dc1394_set_trigger_mode(rh,usenode,TRIGGER_MODE_0) != DC1394_SUCCESS) RAISE("dc1394_set_trigger_mode error");
  	if (dc1394_start_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_start_iso_transmission error");
+}
+
+\def float framerate() {
+	return 1.875 * (1<<framerate_e-FRAMERATE_1_875);
+}
+
+\def 0 framerate(float framerate) {
+	framerate_e = FRAMERATE_1_875;
+	while (framerate>=1.875 && framerate_e <= FRAMERATE_240) {framerate/=2; framerate_e++;}
+	setup();
+}
+
+\def 0 bang () {
 	//if (dc1394_get_one_shot(rh,usenode,&is_on)!=DC1394_SUCCESS) RAISE("dc1394_get_one_shot error");
 	if (dc1394_single_capture(rh,&camera)!=DC1394_SUCCESS) RAISE("dc1394_single_capture error");
-	if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
+	//if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
 	out=new GridOutlet(this,0,new Dim(480,640,1));
 	out->send(out->dim->prod(),(uint8 *)camera.capture_buffer);
 }
