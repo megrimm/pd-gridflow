@@ -53,7 +53,6 @@ Out = File.open ARGV[1], "w"
 
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
-	#STDERR.puts "class: #{line}"
 	/^(\w+)(?:\s*[:<]\s*(\w+))?\s*(\{.*)?/.match line or raise "syntax error #{where}"
 	classname = $1
 	superclassname = $2
@@ -70,7 +69,7 @@ def handle_class(line)
 end
 
 def parse_methoddecl(line,term)
-	/^(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
+	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
 		raise "syntax error #{where} #{line}"
 	rettype,selector,arglist = $1,$2,$3,$4
 	if /^\d+$/ =~ rettype then
@@ -112,8 +111,7 @@ def handle_attr(line)
 	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
 	virtual = !!type.slice!(/\(\)$/)
 	name = type.slice!(/\w+$/)
-	raise "missing \\class #{where}" if
-		not $stack[-1] or not ClassDecl===frame
+	raise "missing \\class #{where}" if not $stack[-1] or not ClassDecl===frame
 	handle_decl "void ___get(t_symbol *s);" if frame.attrs.size==0
 	frame.attrs[name]=Attr.new(type,name,nil,virtual)
 	if virtual then
@@ -121,7 +119,8 @@ def handle_attr(line)
 	else
 		Out.print line
 	end
-	type.gsub!(/\s+/,"")
+	type.gsub!(/\s+$/,"")
+	type.gsub!(/^\s+/,"")
 	if type=="bool" then
 		handle_decl "0 #{name} (#{type} #{name}=true);"
 	else
