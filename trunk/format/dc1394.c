@@ -177,13 +177,14 @@ typedef nodeid_t NID;
 
 \def 0 bang () {
 	dc1394_cameracapture camera;
-	dc1394bool_t is_on;
-	if (dc1394_camera_on(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_camera_on error");
+	//if (dc1394_camera_on(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_camera_on error");
 	//if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_RGB,SPEED_400,FRAMERATE_30,&camera)!=DC1394_SUCCESS)
-	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,FRAMERATE_30,&camera)!=DC1394_SUCCESS)
+	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,FRAMERATE_7_5,&camera)!=DC1394_SUCCESS)
 		RAISE("dc1394_setup_capture error");
+        if (dc1394_set_trigger_mode(rh,usenode,TRIGGER_MODE_0) != DC1394_SUCCESS) RAISE("dc1394_set_trigger_mode error");
  	if (dc1394_start_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_start_iso_transmission error");
-	if (dc1394_get_one_shot(rh,usenode,&is_on)!=DC1394_SUCCESS) RAISE("dc1394_get_one_shot error");
+	//if (dc1394_get_one_shot(rh,usenode,&is_on)!=DC1394_SUCCESS) RAISE("dc1394_get_one_shot error");
+	if (dc1394_single_capture(rh,&camera)!=DC1394_SUCCESS) RAISE("dc1394_single_capture error");
 	if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
 	out=new GridOutlet(this,0,new Dim(480,640,1));
 	out->send(out->dim->prod(),(uint8 *)camera.capture_buffer);
