@@ -1,4 +1,4 @@
-#N canvas 544 0 422 290 10;
+#N canvas 594 258 422 290 10;
 #X obj 82 6 cnv 15 184 56 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 144 9 hradio 12 1 0 4 \$0-channel \$0-channel _0_1_2_3 -2 7
@@ -71,11 +71,9 @@
 #X obj 233 96 r \$0-white_delay;
 #X msg 141 116 auto_gain \$1;
 #X obj 233 116 r \$0-auto_gain;
-#X obj 439 338 range 8;
 #X obj 520 300 args (device a -1);
 #X obj 520 281 loadbang;
 #X obj 520 338 s \$0-device;
-#X obj 520 319 mod 9;
 #X msg 140 316 noise_reduction \$1;
 #X msg 140 336 compression \$1;
 #X obj 273 336 r \$0-compression;
@@ -90,7 +88,10 @@
 #X obj 11 104 s;
 #X obj 11 85 list;
 #X obj 11 66 t b s;
-#X connect 1 0 81 0;
+#X obj 439 338 range 8 9;
+#X obj 520 319 mod 10;
+#X msg 482 415 open dc1394 \, get;
+#X connect 1 0 79 0;
 #X connect 2 0 14 0;
 #X connect 3 0 14 0;
 #X connect 4 0 14 0;
@@ -107,7 +108,7 @@
 #X connect 15 0 51 0;
 #X connect 16 0 14 0;
 #X connect 17 0 16 0;
-#X connect 18 0 67 0;
+#X connect 18 0 84 0;
 #X connect 19 0 0 0;
 #X connect 21 0 14 0;
 #X connect 22 0 21 0;
@@ -141,7 +142,7 @@
 #X connect 51 0 54 0;
 #X connect 51 1 0 0;
 #X connect 51 2 53 0;
-#X connect 52 0 78 0;
+#X connect 52 0 76 0;
 #X connect 53 0 52 1;
 #X connect 54 0 52 1;
 #X connect 55 0 14 0;
@@ -156,29 +157,31 @@
 #X connect 64 0 62 0;
 #X connect 65 0 14 0;
 #X connect 66 0 65 0;
-#X connect 67 0 48 0;
-#X connect 67 1 47 0;
-#X connect 68 0 71 0;
-#X connect 69 0 68 0;
-#X connect 71 0 70 0;
-#X connect 72 0 14 0;
-#X connect 73 0 14 0;
-#X connect 74 0 73 0;
-#X connect 75 0 72 0;
-#X connect 76 0 77 0;
-#X connect 77 0 14 0;
-#X connect 78 0 80 0;
-#X connect 78 1 0 0;
-#X connect 79 0 54 0;
-#X connect 79 1 0 0;
-#X connect 79 2 53 0;
-#X connect 80 0 79 0;
-#X connect 81 0 82 0;
-#X connect 81 1 84 1;
-#X connect 82 0 85 0;
-#X connect 84 0 83 0;
-#X connect 85 0 84 0;
-#X connect 85 1 83 1;
+#X connect 67 0 85 0;
+#X connect 68 0 67 0;
+#X connect 70 0 14 0;
+#X connect 71 0 14 0;
+#X connect 72 0 71 0;
+#X connect 73 0 70 0;
+#X connect 74 0 75 0;
+#X connect 75 0 14 0;
+#X connect 76 0 78 0;
+#X connect 76 1 0 0;
+#X connect 77 0 54 0;
+#X connect 77 1 0 0;
+#X connect 77 2 53 0;
+#X connect 78 0 77 0;
+#X connect 79 0 80 0;
+#X connect 79 1 82 1;
+#X connect 80 0 83 0;
+#X connect 82 0 81 0;
+#X connect 83 0 82 0;
+#X connect 83 1 81 1;
+#X connect 84 0 48 0;
+#X connect 84 1 86 0;
+#X connect 84 2 47 0;
+#X connect 85 0 69 0;
+#X connect 86 0 51 0;
 #X restore 45 394 pd camera;
 #X obj 18 394 #in;
 #X obj 18 413 outlet image;
@@ -192,11 +195,11 @@
 #X obj 57 356 r \$0-o;
 #X text 85 10 channel:;
 #X text 99 22 tuner:;
-#X obj 6 6 cnv 15 70 180 empty empty empty 20 12 0 14 -233017 -66577
+#X obj 6 6 cnv 15 70 192 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X text 9 7 device:;
-#X obj 11 25 vradio 15 1 0 9 \$0-device \$0-device empty 0 -6 0 8 -241291
--1 -1 0;
+#X obj 11 25 vradio 15 1 0 10 \$0-device \$0-device empty 0 -6 0 8
+-241291 -1 -1 8;
 #X obj 82 67 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 134 81 hsl 129 12 0 65535 0 0 \$0-brightness \$0-brightness
@@ -252,7 +255,7 @@ brightness 4 7 1 10 -200256 -1 -1 0 0;
 #X obj 341 117 bng 12 250 50 0 \$0-size7 empty 288x352 16 6 1 10 -241291
 -1 -1;
 #X obj 309 36 nbx 5 14 -1e+37 1e+37 0 0 \$0-framerate \$0-framerate
-empty 0 -6 1 10 -241291 -1 -1 0 256;
+empty 0 -6 1 10 -241291 -1 -1 30 256;
 #X obj 134 165 hsl 129 12 0 65535 0 0 \$0-white_blue \$0-white_blue
 white_blue 4 7 1 10 -200256 -1 -1 0 0;
 #X obj 84 165 nbx 5 12 0 65535 0 0 \$0-white_blue \$0-white_blue empty
@@ -301,7 +304,7 @@ empty 4 7 1 10 -200256 -1 -1 0 256;
 #X connect 2 1 3 0;
 #X connect 2 2 1 0;
 #X restore 18 375 pd command_filter;
-#X text 29 145 *OFF*;
+#X text 29 160 *OFF*;
 #X text 279 35 fps:;
 #X text 30 24 #0;
 #X text 30 39 #1;
@@ -359,10 +362,11 @@ _0_1_2_3_noise_reduction -2 7 1 10 -241291 -258699 -1 0;
 #X obj 84 225 hradio 12 1 0 4 \$0-compression \$0-compression _0_1_2_3_compression
 -2 7 1 10 -241291 -258699 -1 0;
 #X msg 285 257 colorspace magic;
-#X obj 11 169 tgl 12 0 \$0-pwc \$0-pwc empty 20 7 1 10 -241291 -1 -1
+#X obj 11 181 tgl 12 0 \$0-pwc \$0-pwc empty 20 7 1 10 -241291 -1 -1
 0 1;
-#X text 26 167 use PWC;
+#X text 26 179 use PWC;
 #X msg 133 334 get;
+#X text 30 145 DC1394;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 3 1 2 0;
