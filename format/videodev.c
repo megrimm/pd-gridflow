@@ -233,7 +233,7 @@ static void gfpost(VideoMmap *self) {
 	bool use_mmap, use_pwc;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	bool has_frequency, has_tuner;
+	bool has_frequency, has_tuner, has_norm;
 	int fd;
 	int palettes; /* bitfield */
 
@@ -241,6 +241,7 @@ static void gfpost(VideoMmap *self) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
 		has_frequency=false;
 		has_tuner=false;
+		has_norm=false;
 		image=0;
 		f = fopen(filename.data(),"r+");
 		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
@@ -260,7 +261,7 @@ static void gfpost(VideoMmap *self) {
 
 	\attr int channel();
 	\attr int tuner();
-	\decl 0 norm (int value);
+	\attr int norm();
 	\decl 0 size (int sy, int sx);
 	\decl 0 transfer (string sym, int queuemax=2);
 
@@ -300,10 +301,11 @@ static void gfpost(VideoMmap *self) {
 	// this is abnormal for a get-function
 	if (s==gensym("frequency") && !has_frequency  ) return;
 	if (s==gensym("tuner")     && !has_tuner      ) return;
+	if (s==gensym("norm")      && !has_norm       ) return;
 	if (s==gensym("channel")   && vcaps.channels<2) return;
-	if (!use_pwc && (s==gensym("white_mode") || s==gensym("white_red") || s==gensym("white_blue") ||
-		s==gensym("white_speed") || s==gensym("white_delay") || s==gensym("auto_gain") ||
-		s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
+	if (!use_pwc && (s==gensym("white_mode")      || s==gensym("white_red")   || s==gensym("white_blue") ||
+			 s==gensym("white_speed")     || s==gensym("white_delay") || s==gensym("auto_gain")  ||
+			 s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
 	FObject::_0_get(argc,argv,s);
 }
 
@@ -528,6 +530,13 @@ GRID_INLET(FormatVideoDev,0) {
 	}
 }
 
+\def int norm () {
+	VideoTuner vtuner;
+	vtuner.tuner = current_tuner;
+	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {post("no tuner #%d", current_tuner); return -1;}
+	return vtuner.mode;
+}
+
 \def 0 tuner (int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
@@ -535,6 +544,7 @@ GRID_INLET(FormatVideoDev,0) {
 	vtuner.mode = VIDEO_MODE_NTSC; //???
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
+	has_norm = (vtuner.mode<=3);
 	int meuh;
 	has_frequency = (ioctl(fd, VIDIOCGFREQ, &meuh)>=0);
 }
