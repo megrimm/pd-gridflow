@@ -233,20 +233,21 @@ static void gfpost(VideoMmap *self) {
 	bool use_mmap, use_pwc;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	bool has_frequency;
+	bool has_frequency, has_tuner;
 	int fd;
 	int palettes; /* bitfield */
 
 	\constructor (string mode, string filename) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
 		has_frequency=false;
+		has_tuner=false;
 		image=0;
 		f = fopen(filename.data(),"r+");
 		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		fd = fileno(f);
 		initialize2();
 	}
-	void frame_finished (uint8 * buf);
+	void frame_finished (uint8 *buf);
 
 	void alloc_image ();
 	void dealloc_image ();
@@ -298,6 +299,7 @@ static void gfpost(VideoMmap *self) {
 \def 0 get (t_symbol *s=0) {
 	// this is abnormal for a get-function
 	if (!has_frequency && s==gensym("frequency")) return;
+	if (!has_tuner     && s==gensym("tuner"    )) return;
 	if (!use_pwc && (s==gensym("white_mode") || s==gensym("white_red") || s==gensym("white_blue") ||
 		s==gensym("white_speed") || s==gensym("white_delay") || s==gensym("auto_gain") ||
 		s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
@@ -546,8 +548,8 @@ GRID_INLET(FormatVideoDev,0) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) warn("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	//if (vcaps.type & VID_TYPE_TUNER) {t_atom a[1]; SETFLOAT(a,0); pd_typedmess((t_pd *)bself,gensym("tuner"),1,a);}
 	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
+	has_tuner = (vcaps.type & VID_TYPE_TUNER && vchan.tuners > 1);
 }
 \def int channel () {return current_channel;}
 
