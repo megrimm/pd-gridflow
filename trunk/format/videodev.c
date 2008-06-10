@@ -308,6 +308,15 @@ static void gfpost(VideoMmap *self) {
 			 s==gensym("white_speed")     || s==gensym("white_delay") || s==gensym("auto_gain")  ||
 			 s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
 	FObject::_0_get(argc,argv,s);
+	if (!s) {
+		t_atom a[2];
+		SETFLOAT(a+0,vcaps.minheight);
+		SETFLOAT(a+1,vcaps.minwidth);
+		outlet_anything(bself->outlets[0],gensym("minsize"),2,a);
+		SETFLOAT(a+0,vcaps.maxheight);
+		SETFLOAT(a+1,vcaps.maxwidth);
+		outlet_anything(bself->outlets[0],gensym("maxsize"),2,a);
+	}
 }
 
 \def 0 size (int sy, int sx) {
