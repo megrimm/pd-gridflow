@@ -150,8 +150,9 @@ def handle_def(line)
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
+	n = m
 	if qlass.methods[m.selector]
-		n = m; m = qlass.methods[m.selector]
+		m = qlass.methods[m.selector]
 		if !m===n then
 			STDERR.puts "ERROR: def does not match decl:"
 			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
@@ -177,6 +178,7 @@ def handle_def(line)
 		end
 	}
 	Out.print ");} #{m.rettype} #{classname}::#{m.selector}(VA"
+	#puts "m=#{m} n=#{n}"
 	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
