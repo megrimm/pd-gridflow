@@ -298,6 +298,9 @@ static void gfpost(VideoMmap *self) {
 \def 0 get (t_symbol *s=0) {
 	// this is abnormal for a get-function
 	if (!has_frequency && s==gensym("frequency")) return;
+	if (!use_pwc && (s==gensym("white_mode") || s==gensym("white_red") || s==gensym("white_blue") ||
+		s==gensym("white_speed") || s==gensym("white_delay") || s==gensym("auto_gain") ||
+		s==gensym("noise_reduction") || s==gensym("compression"))) return;
 	FObject::_0_get(argc,argv,s);
 }
 
