@@ -1,9 +1,9 @@
-#N canvas 737 70 423 331 10;
+#N canvas 737 70 423 343 10;
 #X obj 81 32 cnv 15 184 68 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 143 35 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 10 -233017 -195568 -195568 0;
-#N canvas 275 0 906 578 camera 0;
+#N canvas 275 0 906 609 camera 0;
 #X obj 310 510 outlet;
 #X obj 51 9 inlet;
 #X obj 63 198 t a;
@@ -53,7 +53,7 @@
 #X obj 174 174 foreach;
 #X obj 174 193 makefilename \$0-%s;
 #X msg 174 212 \; \$1 color 10 20 20;
-#X msg 42 163 \; \$1 color 18 17 22;
+#X msg 176 559 \; \$1 color 18 17 22;
 #X obj 135 330 t b a b b;
 #X obj 391 306 s \$0-colorspace_e;
 #X obj 391 325 r \$0-s_colorspace_e;
@@ -69,10 +69,6 @@
 #X obj 561 263 s \$0-height;
 #X obj 371 265 route2 color;
 #X obj 371 246 r \$0-colorspace;
-#X msg 174 116 list channel tuner frequency brightness contrast colour
-hue whiteness white_mode white_red white_blue white_speed white_delay
-auto_gain framerate noise_reduction compression pwc size colorspace
-norm;
 #X obj 635 538 s \$0-title;
 #X msg 635 519 label \$1;
 #X obj 563 481 r \$0-name;
@@ -81,11 +77,6 @@ norm;
 #X msg 259 413 label No_camera_selected;
 #X msg 339 181 label Unknown_camera;
 #X obj 339 200 s \$0-title;
-#X obj 181 8 receives \$0-s_ channel tuner frequency brightness contrast
-colour hue whiteness white_mode white_red white_blue white_speed white_delay
-auto_gain framerate noise_reduction compression pwc size colorspace
-norm;
-#X obj -17 124 route minsize maxsize;
 #X obj 731 8 r \$0-minsize;
 #X obj 731 46 unpack 0 0;
 #X obj 796 65 s \$0-minwidth;
@@ -100,6 +91,19 @@ norm;
 #X msg 393 501 0 0;
 #X obj 403 542 s \$0-maxsize;
 #X obj 656 387 t a b;
+#X obj 67 482 r \$0-palette;
+#X obj 139 539 s \$0-palette2;
+#X msg 139 520 label \$1;
+#X obj 25 563 route minsize maxsize;
+#X obj 67 501 route color;
+#X obj 181 8 receives \$0-s_ channel tuner frequency brightness contrast
+colour hue whiteness white_mode white_red white_blue white_speed white_delay
+auto_gain framerate noise_reduction compression pwc size colorspace
+norm transfer;
+#X msg 174 116 list channel tuner frequency brightness contrast colour
+hue whiteness white_mode white_red white_blue white_speed white_delay
+auto_gain framerate noise_reduction compression pwc size colorspace
+norm transfer;
 #X connect 1 0 33 0;
 #X connect 2 0 27 0;
 #X connect 3 0 50 0;
@@ -134,13 +138,13 @@ norm;
 #X connect 33 0 34 0;
 #X connect 33 1 36 1;
 #X connect 34 0 37 0;
-#X connect 34 0 75 0;
+#X connect 34 0 90 0;
 #X connect 36 0 35 0;
 #X connect 37 0 36 0;
 #X connect 37 1 35 1;
 #X connect 38 0 26 0;
 #X connect 38 1 40 0;
-#X connect 38 2 70 0;
+#X connect 38 2 69 0;
 #X connect 39 0 30 0;
 #X connect 40 0 50 0;
 #X connect 41 0 51 0;
@@ -152,13 +156,13 @@ norm;
 #X connect 47 0 48 0;
 #X connect 50 0 58 0;
 #X connect 50 1 0 0;
-#X connect 50 2 65 0;
-#X connect 50 2 72 0;
+#X connect 50 2 71 0;
+#X connect 50 2 93 0;
 #X connect 50 3 57 0;
 #X connect 52 0 42 0;
 #X connect 53 0 24 0;
 #X connect 54 0 24 1;
-#X connect 55 0 89 0;
+#X connect 55 0 86 0;
 #X connect 56 0 59 0;
 #X connect 57 0 27 1;
 #X connect 58 0 27 1;
@@ -169,40 +173,43 @@ norm;
 #X connect 63 0 51 0;
 #X connect 63 1 41 0;
 #X connect 64 0 63 0;
-#X connect 65 0 46 0;
-#X connect 67 0 66 0;
-#X connect 68 0 69 0;
-#X connect 69 1 67 0;
-#X connect 70 0 50 0;
-#X connect 70 0 71 0;
-#X connect 70 0 87 0;
-#X connect 71 0 66 0;
-#X connect 72 0 73 0;
-#X connect 74 0 44 0;
-#X connect 74 1 44 1;
-#X connect 75 2 49 0;
-#X connect 76 0 84 0;
+#X connect 66 0 65 0;
+#X connect 67 0 68 0;
+#X connect 68 1 66 0;
+#X connect 69 0 50 0;
+#X connect 69 0 70 0;
+#X connect 69 0 84 0;
+#X connect 70 0 65 0;
+#X connect 71 0 72 0;
+#X connect 73 0 81 0;
+#X connect 74 0 76 0;
+#X connect 74 1 75 0;
 #X connect 77 0 79 0;
-#X connect 77 1 78 0;
-#X connect 80 0 82 0;
-#X connect 80 1 83 0;
-#X connect 81 0 85 0;
-#X connect 84 0 77 0;
-#X connect 85 0 80 0;
-#X connect 87 0 86 0;
-#X connect 87 0 88 0;
-#X connect 89 0 38 0;
-#X connect 89 1 87 0;
-#X restore 34 371 pd camera;
-#X obj 7 390 outlet image;
-#X obj 7 333 inlet;
+#X connect 77 1 80 0;
+#X connect 78 0 82 0;
+#X connect 81 0 74 0;
+#X connect 82 0 77 0;
+#X connect 84 0 83 0;
+#X connect 84 0 85 0;
+#X connect 86 0 38 0;
+#X connect 86 1 84 0;
+#X connect 87 0 91 0;
+#X connect 89 0 88 0;
+#X connect 90 2 49 0;
+#X connect 91 1 89 0;
+#X connect 92 0 44 0;
+#X connect 92 1 44 1;
+#X connect 93 0 46 0;
+#X restore 34 391 pd camera;
+#X obj 7 410 outlet image;
+#X obj 7 353 inlet;
 #X obj 143 47 hradio 12 1 0 4 \$0-s_tuner \$0-tuner _0_1_2_3 -2 7 1
 10 -233017 -195568 -195568 0;
 #X obj 133 85 hsl 129 12 0 65635 0 0 \$0-s_frequency \$0-frequency
 frequency 4 7 1 10 -233017 -195568 -195568 0 1;
 #X obj 83 85 nbx 5 12 0 65535 0 0 \$0-s_frequency \$0-frequency empty
 4 7 1 10 -233017 -195568 -195568 0 256;
-#X obj 46 333 r \$0-o;
+#X obj 46 353 r \$0-o;
 #X text 84 36 channel:;
 #X text 98 48 tuner:;
 #X obj 6 32 cnv 15 70 192 empty empty empty 20 12 0 14 -233017 -66577
@@ -232,8 +239,8 @@ empty 4 7 1 10 -62784 -44926 -1 44544 256;
 -62784 -44926 -1 65535 256;
 #X obj 83 156 nbx 5 12 0 65535 0 0 \$0-s_whiteness \$0-whiteness empty
 4 7 1 10 -62784 -44926 -1 28672 256;
-#X obj 270 215 cnv 15 144 120 empty empty empty 20 12 0 14 -233017
--66577 0;
+#X obj 270 215 cnv 15 144 124 empty \$0-palette2 YUV420P 86 8 0 12
+-233017 -1 0;
 #X obj 270 32 cnv 15 144 178 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 312 68 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_height \$0-height empty
@@ -243,8 +250,8 @@ empty 4 7 1 10 -62784 -44926 -1 44544 256;
 #X text 275 67 size:;
 #X text 311 31 height;
 #X text 361 31 width;
-#X msg 297 312 transfer mmap 4;
-#X obj 258 343 s \$0-o;
+#X msg 291 316 transfer mmap 4;
+#X obj 291 343 s \$0-o;
 #X obj 329 125 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
 10 -233017 -195568 -195568;
 #X obj 344 125 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 10
@@ -262,27 +269,27 @@ empty 4 7 1 10 -62784 -44926 -1 44544 256;
 #X obj 344 173 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 10
 -233017 -195568 -195568;
 #X obj 360 192 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
-empty 0 -6 1 10 -233017 -195568 -195568 30 256;
+empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 133 204 hsl 129 12 0 65535 0 0 \$0-s_white_blue \$0-white_blue
-white_blue 4 7 1 10 -233017 -195568 -195568 3050 0;
+white_blue 4 7 1 10 -233017 -195568 -195568 0 0;
 #X obj 83 204 nbx 5 12 0 65535 0 0 \$0-s_white_blue \$0-white_blue
-empty 4 7 1 10 -233017 -195568 -195568 15616 256;
+empty 4 7 1 10 -233017 -195568 -195568 0 256;
 #X obj 133 192 hsl 129 12 0 65535 0 0 \$0-s_white_red \$0-white_red
-white_red 4 7 1 10 -233017 -195568 -195568 2800 0;
+white_red 4 7 1 10 -233017 -195568 -195568 0 0;
 #X obj 83 192 nbx 5 12 0 65535 0 0 \$0-s_white_red \$0-white_red empty
-4 7 1 10 -233017 -195568 -195568 14336 256;
+4 7 1 10 -233017 -195568 -195568 0 256;
 #X obj 83 180 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
-20 7 1 10 -233017 -195568 -195568 1 1;
+20 7 1 10 -233017 -195568 -195568 0 1;
 #X obj 133 228 hsl 129 12 0 65535 0 0 \$0-s_white_delay \$0-white_delay
-white_delay 4 7 1 10 -233017 -195568 -195568 5000 0;
+white_delay 4 7 1 10 -233017 -195568 -195568 0 0;
 #X obj 83 228 nbx 5 12 0 65535 0 0 \$0-s_white_delay \$0-white_delay
-empty 4 7 1 10 -233017 -195568 -195568 25600 256;
+empty 4 7 1 10 -233017 -195568 -195568 0 256;
 #X obj 133 216 hsl 129 12 0 65535 0 0 \$0-s_white_speed \$0-white_speed
-white_speed 4 7 1 10 -233017 -195568 -195568 10319 0;
+white_speed 4 7 1 10 -233017 -195568 -195568 0 0;
 #X obj 83 216 nbx 5 12 0 65535 0 0 \$0-s_white_speed \$0-white_speed
-empty 4 7 1 10 -233017 -195568 -195568 52832 256;
+empty 4 7 1 10 -233017 -195568 -195568 0 256;
 #X obj 133 240 hsl 129 12 0 65535 0 0 \$0-s_auto_gain \$0-auto_gain
-auto_gain 4 7 1 10 -233017 -195568 -195568 12500 0;
+auto_gain 4 7 1 10 -233017 -195568 -195568 0 0;
 #X obj 83 240 nbx 5 12 0 65535 0 0 \$0-s_auto_gain \$0-auto_gain empty
 4 7 1 10 -233017 -195568 -195568 0 256;
 #X text 29 186 *OFF*;
@@ -297,20 +304,20 @@ auto_gain 4 7 1 10 -233017 -195568 -195568 12500 0;
 #X text 317 107 presets:;
 #X text 90 168 ------- PWC ONLY: -------;
 #X obj 83 252 hradio 12 1 0 4 \$0-s_noise_reduction \$0-noise_reduction
-_0_1_2_3_noise_reduction -2 7 1 10 -233017 -195568 -195568 3;
+_0_1_2_3_noise_reduction -2 7 1 10 -233017 -195568 -195568 0;
 #X obj 83 264 hradio 12 1 0 4 \$0-s_compression \$0-compression _0_1_2_3_compression
 -2 7 1 10 -233017 -195568 -195568 0;
 #X obj 11 207 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
 -1 0 1;
 #X text 26 205 use PWC;
 #X text 30 171 DC1394;
-#X obj 356 229 vradio 12 1 0 4 \$0-s_colorspace_e \$0-colorspace_e
+#X obj 356 233 vradio 12 1 0 4 \$0-s_colorspace_e \$0-colorspace_e
 empty 0 -8 0 10 -62784 -44926 -1 2;
-#X text 370 226 y;
-#X text 370 238 yuv;
-#X text 370 251 rgb;
-#X text 370 263 magic;
-#X text 269 246 Colorspaces:;
+#X text 370 230 y;
+#X text 370 242 yuv;
+#X text 370 255 rgb;
+#X text 370 267 magic;
+#X text 269 250 Colorspaces:;
 #N canvas 0 0 450 300 command_filtre 0;
 #X obj 22 24 inlet;
 #X obj 22 92 outlet;
@@ -320,8 +327,8 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X connect 2 0 1 0;
 #X connect 2 1 3 0;
 #X connect 2 2 1 0;
-#X restore 7 352 pd command_filtre;
-#X obj 7 371 #in;
+#X restore 7 372 pd command_filtre;
+#X obj 7 391 #in;
 #X text 275 192 framerate:;
 #X obj 201 35 vradio 12 1 0 4 \$0-s_norm \$0-norm empty 0 -8 0 10 -233017
 -195568 -195568 0;
@@ -331,11 +338,11 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 213 69 auto;
 #X obj 6 7 cnv 15 408 20 empty \$0-title Logitech_QuickCam_Pro_4000
 4 10 1 12 -1 -262144 0;
-#X obj 356 282 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
-0 -8 0 10 -62784 -44926 -1 0;
-#X text 291 286 Transfer:;
-#X text 370 280 read;
-#X text 371 292 mmap;
+#X obj 356 286 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer empty
+0 -8 0 10 -233017 -195568 -195568 0;
+#X text 291 290 Transfer:;
+#X text 370 284 read;
+#X text 371 296 mmap;
 #X obj 312 53 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
 -6 1 10 -233017 -1 -195568 120 256;
 #X obj 360 53 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
@@ -346,6 +353,7 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 -6 1 10 -233017 -1 -195568 640 256;
 #X text 275 82 max:;
 #X text 275 52 min:;
+#X text 297 215 Palette:;
 #X connect 2 0 77 0;
 #X connect 4 0 76 0;
 #X connect 8 0 77 0;
