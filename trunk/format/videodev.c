@@ -302,6 +302,8 @@ static void gfpost(VideoMmap *self) {
 		SETSYMBOL(a,gensym(foo));
 		free(foo);
 		outlet_anything(bself->outlets[0],gensym("palette"),1,a);
+		SETSYMBOL(a,use_mmap ? gensym("mmap") : gensym("read"));
+		outlet_anything(bself->outlets[0],gensym("transfer"),1,a);
 	}
 }
 
@@ -553,7 +555,7 @@ GRID_INLET(FormatVideoDev,0) {
 	vchan.channel = value;
 	current_channel = value;
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) warn("no channel #%d", value);
-	gfpost(&vchan);
+	//gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
 	has_tuner = (vcaps.type & VID_TYPE_TUNER && vchan.tuners > 1);
