@@ -283,6 +283,7 @@ static void gfpost(VideoMmap *self) {
 	\attr int    auto_gain();
 	\attr int    noise_reduction(); /* 0..3 */
 	\attr int    compression();     /* 0..3 */
+	\attr t_symbol *name;
 
 	\decl 0 get (t_symbol *s=0);
 };
@@ -758,6 +759,13 @@ void FormatVideoDev::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
 	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
+	char namebuf[33];
+	memcpy(namebuf,vcaps.name,sizeof(vcaps.name));
+	int i;
+	for (i=32; i>=1; i--) if (!namebuf[i] || !isspace(namebuf[i])) break;
+	namebuf[i]=0;
+	while (--i>=0) if (isspace(namebuf[i])) namebuf[i]='_';
+	name = gensym(namebuf);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	gfpost(&vp);
 	palettes=0;
