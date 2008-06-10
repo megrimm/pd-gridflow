@@ -37,6 +37,11 @@ class MethodDecl
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
+	def ===(o)
+		return false unless rettype==o.rettype && maxargs==o.maxargs
+		arglist.each_index{|i| arglist[i].type == o.arglist[i].type and arglist[i].default == o.arglist[i].default or return false }
+		return true
+	end
 	attr_accessor :done
 end
 
@@ -147,7 +152,7 @@ def handle_def(line)
 	classname = qlass.name
 	if qlass.methods[m.selector]
 		n = m; m = qlass.methods[m.selector]
-		if m!=n then
+		if !m===n then
 			STDERR.puts "ERROR: def does not match decl:"
 			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
 			STDERR.puts "#{n.where}: \\def #{n.inspect}"
@@ -172,7 +177,7 @@ def handle_def(line)
 		end
 	}
 	Out.print ");} #{m.rettype} #{classname}::#{m.selector}(VA"
-	Out.print ","+unparse_arglist(m.arglist,false) if m.arglist.length>0
+	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
 end
