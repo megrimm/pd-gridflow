@@ -233,11 +233,13 @@ static void gfpost(VideoMmap *self) {
 	bool use_mmap, use_pwc;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
+	bool has_frequency;
 	int fd;
 	int palettes; /* bitfield */
 
 	\constructor (string mode, string filename) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
+		has_frequency=false;
 		image=0;
 		f = fopen(filename.data(),"r+");
 		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
@@ -279,6 +281,8 @@ static void gfpost(VideoMmap *self) {
 	\attr int    auto_gain();
 	\attr int    noise_reduction(); /* 0..3 */
 	\attr int    compression();     /* 0..3 */
+
+	\decl 0 get (t_symbol *s=0);
 };
 
 #define DEBUG(args...) 42
@@ -290,6 +294,12 @@ static void gfpost(VideoMmap *self) {
   (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
 #define WIOCTL2(F,NAME,ARG) \
   (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+
+\def 0 get (t_symbol *s=0) {
+	// this is abnormal for a get-function
+	if (!has_frequency && s==gensym("frequency")) return;
+	FObject::_0_get(argc,argv,s);
+}
 
 \def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
@@ -519,6 +529,8 @@ GRID_INLET(FormatVideoDev,0) {
 	vtuner.mode = VIDEO_MODE_NTSC; //???
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
+	int meuh;
+	has_frequency = (ioctl(fd, VIDIOCGFREQ, &meuh)>=0);
 }
 
 #define warn(fmt,stuff...) post("warning: " fmt,stuff)
@@ -571,6 +583,7 @@ GRID_INLET(FormatVideoDev,0) {
 \def 0      whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
 \def long frequency  () {
 	long value;
+	//if (ioctl(fd, VIDIOCGFREQ, &value)<0) {has_frequency=false; return 0;}
 	WIOCTL(fd, VIDIOCGFREQ, &value);
 	return value;
 }
