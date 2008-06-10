@@ -52,6 +52,7 @@ typedef video_mmap       VideoMmap      ;
 #define FLAG(_num_,_name_,_desc_) #_name_,
 #define  OPT(_num_,_name_,_desc_) #_name_,
 
+/*
 static const char *video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
@@ -68,6 +69,7 @@ static const char *video_type_flags[] = {
 	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
 };
+*/
 
 static const char *tuner_flags[] = {
 	FLAG(0,PAL,      "")
@@ -171,16 +173,6 @@ static void gfpost(VideoTuner *self) {
 	WH(signal,"%d");
 	post("%s",buf);
 }
-static void gfpost(VideoCapability *self) {
-	char buf[256] = "[VideoCapability] ";
-	WH(name,"\"%.32s\"");
-	WHFLAGS(type,video_type_flags);
-	WH(channels,"%d");
-	WH(audios,"%d");
-	WHYX(maxsize,maxheight,maxwidth);
-	WHYX(minsize,minheight,minwidth);
-	post("%s",buf);
-}
 static void gfpost(VideoWindow *self) {
 	char buf[256] = "[VideoWindow] ";
 	WHYX(pos,y,x);
@@ -188,16 +180,6 @@ static void gfpost(VideoWindow *self) {
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
-	post("%s",buf);
-}
-static void gfpost(VideoPicture *self) {
-	char buf[256] = "[VideoPicture] ";
-	WH(brightness,"%d");
-	WH(hue,"%d");
-	WH(contrast,"%d");
-	WH(whiteness,"%d");
-	WH(depth,"%d");
-	WHCHOICE(palette,video_palette_choice);
 	post("%s",buf);
 }
 static void gfpost(VideoMbuf *self) {
@@ -316,6 +298,10 @@ static void gfpost(VideoMmap *self) {
 		SETFLOAT(a+0,vcaps.maxheight);
 		SETFLOAT(a+1,vcaps.maxwidth);
 		outlet_anything(bself->outlets[0],gensym("maxsize"),2,a);
+		char *foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
+		SETSYMBOL(a,gensym(foo));
+		free(foo);
+		outlet_anything(bself->outlets[0],gensym("palette"),1,a);
 	}
 }
 
@@ -766,7 +752,6 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 
 void FormatVideoDev::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	gfpost(&vcaps);
 	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
 	char namebuf[33];
 	memcpy(namebuf,vcaps.name,sizeof(vcaps.name));
@@ -776,7 +761,6 @@ void FormatVideoDev::initialize2 () {
 	while (--i>=0) if (isspace(namebuf[i])) namebuf[i]='_';
 	name = gensym(namebuf);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
-	gfpost(&vp);
 	palettes=0;
 	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUV420P};
 #if 1
