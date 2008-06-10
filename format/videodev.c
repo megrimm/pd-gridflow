@@ -257,10 +257,10 @@ static void gfpost(VideoMmap *self) {
 	\decl 0 bang ();
 	\grin 0 int
 
-	\decl 0 size (int sy, int sx);
+	\attr int channel();
+	\attr int tuner();
 	\decl 0 norm (int value);
-	\decl 0 tuner (int value);
-	\decl 0 channel (int value);
+	\decl 0 size (int sy, int sx);
 	\decl 0 transfer (string sym, int queuemax=2);
 
 	\attr t_symbol *colorspace;
@@ -300,7 +300,7 @@ static void gfpost(VideoMmap *self) {
 	if (!has_frequency && s==gensym("frequency")) return;
 	if (!use_pwc && (s==gensym("white_mode") || s==gensym("white_red") || s==gensym("white_blue") ||
 		s==gensym("white_speed") || s==gensym("white_delay") || s==gensym("auto_gain") ||
-		s==gensym("noise_reduction") || s==gensym("compression"))) return;
+		s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
 	FObject::_0_get(argc,argv,s);
 }
 
@@ -535,6 +535,7 @@ GRID_INLET(FormatVideoDev,0) {
 	int meuh;
 	has_frequency = (ioctl(fd, VIDIOCGFREQ, &meuh)>=0);
 }
+\def int tuner () {return current_tuner;}
 
 #define warn(fmt,stuff...) post("warning: " fmt,stuff)
 
@@ -548,6 +549,7 @@ GRID_INLET(FormatVideoDev,0) {
 	//if (vcaps.type & VID_TYPE_TUNER) {t_atom a[1]; SETFLOAT(a,0); pd_typedmess((t_pd *)bself,gensym("tuner"),1,a);}
 	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
 }
+\def int channel () {return current_channel;}
 
 \def 0 transfer (string sym, int queuemax=2) {
 	if (sym=="read") {
