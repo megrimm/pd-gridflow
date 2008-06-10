@@ -5,11 +5,11 @@
 #X obj 333 82 loadbang;
 #X obj 333 101 args *;
 #N canvas 116 23 450 300 \$0-placeholder 0;
-#X obj 0 0 r 1003-in;
-#X obj 0 40 s 1003-out;
-#X obj 0 20 #io.quicktime in violoncelle.mov;
-#X connect 0 0 2 0;
-#X connect 2 0 1 0;
+#X obj 0 0 r 1011-in;
+#X obj 0 20 bang;
+#X obj 0 20 gf.error not open;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
 #X restore 19 279 pd \$0-placeholder;
 #X obj 19 260 s \$0-in;
 #X obj 19 298 r \$0-out;
