@@ -186,13 +186,6 @@ typedef nodeid_t NID;
 	void setup ();
 };
 
-int
-dc1394_get_brightness(raw1394handle_t handle, nodeid_t node,
-                      unsigned int *brightness);
-int
-dc1394_set_brightness(raw1394handle_t handle, nodeid_t node,
-                      unsigned int brightness);
-
 \def unsigned brightness () {unsigned value;  dc1394_get_brightness(rh,usenode,&value); return value;}
 \def 0        brightness    (unsigned value) {dc1394_set_brightness(rh,usenode, value);}
 \def unsigned hue        () {unsigned value;  dc1394_get_hue(       rh,usenode,&value); return value;}
