@@ -178,13 +178,28 @@ typedef nodeid_t NID;
 	}
 	\decl 0 bang ();
 	\attr float framerate();
-	//\attr uint16 brightness();
-	//\attr uint16 hue();
-	//\attr uint16 colour();
+	\attr unsigned brightness();
+	\attr unsigned hue();
+	\attr unsigned colour();
 	//\attr uint16 contrast();
 	//\attr uint16 whiteness();
 	void setup ();
 };
+
+int
+dc1394_get_brightness(raw1394handle_t handle, nodeid_t node,
+                      unsigned int *brightness);
+int
+dc1394_set_brightness(raw1394handle_t handle, nodeid_t node,
+                      unsigned int brightness);
+
+\def unsigned brightness () {unsigned value;  dc1394_get_brightness(rh,usenode,&value); return value;}
+\def 0        brightness    (unsigned value) {dc1394_set_brightness(rh,usenode, value);}
+\def unsigned hue        () {unsigned value;  dc1394_get_hue(       rh,usenode,&value); return value;}
+\def 0        hue           (unsigned value) {dc1394_set_hue(       rh,usenode, value);}
+\def unsigned colour     () {unsigned value;  dc1394_get_saturation(rh,usenode,&value); return value;}
+\def 0        colour        (unsigned value) {dc1394_set_saturation(rh,usenode, value);}
+
 
 void FormatDC1394::setup () {
 	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,framerate_e,&camera)!=DC1394_SUCCESS)
