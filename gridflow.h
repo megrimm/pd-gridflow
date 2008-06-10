@@ -24,7 +24,7 @@
 #ifndef __GRIDFLOW_H
 #define __GRIDFLOW_H
 
-#define GF_VERSION "0.9.3"
+#define GF_VERSION "0.9.4"
 
 #include "m_pd.h"
 #include "config.h"
@@ -915,6 +915,7 @@ void pd_post (const char *s, int argc, t_atom *argv);
 inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, int16     v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, int32     v) {SETFLOAT(a,(float)v);}
+inline void set_atom (t_atom *a, uint32    v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, long      v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
