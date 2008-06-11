@@ -1,6 +1,7 @@
 /* $Id$ */
 
-[ ] fix seek in [#in]
+[ ] support "get" in abstractions
+[ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] [cv.split]
 [ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
 [ ] bugs roman
@@ -240,6 +241,7 @@ Input/Output
 [ ] support for audio in the mpeg streams
 [ ] synchronized audio with the video when using mpeg1 & 2
 [ ] full screen mode (without the menu bars or frames)
+[ ] support for audio in cameras / videodev ... see field vcaps.audios
 
 Format
 [ ] remaining number type support in formats
@@ -378,4 +380,12 @@ FObject.subclass("rubysprintf",2,1) {
 there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
 
 svn propset svn:mime-type text/pure-data *.pd
+
+Benchmarks on a Pentium M 1733:
+(fps)           0.9.0   0.9.3   0.9.4
+waves.pd rain    41.1    49.5   50.5
+game_of_life.pd 162     183
+sand.pd          18.7    20.5
+cellular_1d.pd  115     130.1
+wave_1d.pd       63.0    81.7
 
