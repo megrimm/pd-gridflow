@@ -1,8 +1,5 @@
-#N canvas 104 0 505 631 10;
-#X msg 20 62 open working.jpg;
+#N canvas 597 51 505 631 10;
 #X obj 20 104 #in;
-#X obj 30 83 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
-;
 #X obj 20 167 #out window;
 #X obj 2 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
@@ -20,11 +17,10 @@
 0;
 #X obj 2 410 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 399 1 GridFlow 0.8.4;
 #X text 3 227 Inlet 0;
 #X text 3 280 Inlet 1;
 #X text 3 411 Outlet 0;
-#X obj 19 137 cnv 15 191 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 19 137 cnv 15 185 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 16 0 #border;
 #X text 18 251 GRID;
@@ -39,21 +35,23 @@
 ;
 #X text 65 362 A list of three values in parentheses overides the argument.
 ;
-#X text 11 438 BORDER;
-#X text 16 513 LIST;
-#X obj 20 137 #border (10 10 0) (10 10 0);
-#X text 67 438 A border of \, in this case \, 10 X 10 X 10 X 10 pixels
-appears around the image. The values can be set to be assymetrical.
-;
-#X text 66 514 Two lists of three values in parentheses. The first
-value of the first list corresponds to the number of rows on top \,
-the second value corresponds to the number of colomns on the left.
-The first value of the second list corresponds to the number of rows
-on the bottom and the second value corresponds to the number of colomns
-on the right. The third values correspond to the channel however it
-it not in use yet.;
 #X text 65 254 Receives an image.;
-#X connect 0 0 1 0;
-#X connect 1 0 30 0;
-#X connect 2 0 1 0;
-#X connect 30 0 3 0;
+#X msg 20 62 load working.jpg;
+#X text 16 513 GRID(3);
+#X text 16 533 GRID(3);
+#X text 77 513 top padding and left padding. defaults to (1 1 0).;
+#X text 77 533 bottom and right padding. defaults to (1 1 0).;
+#X obj 20 137 #border (5 10 0) (15 20 0);
+#X text 209 118 5 at the top;
+#X text 208 132 10 at the left;
+#X text 208 146 15 at the bottom;
+#X text 208 159 20 at the right;
+#X text 75 554 both arguments must have 3 elements. The third element
+is reserved for future use.;
+#X text 16 438 GRID;
+#X text 67 438 The original image surrounded by zero padding \, which
+usually means black pixels.;
+#X text 399 1 GridFlow 0.9.4;
+#X connect 0 0 31 0;
+#X connect 26 0 0 0;
+#X connect 31 0 1 0;
