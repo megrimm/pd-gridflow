@@ -130,10 +130,10 @@ CPPEXTERN_NEW(GridFromPixHelper)
 	}
 	virtual ~GridFromPix () {}
 	void render(GemState *state) {
-		if (!state->image) {post("gemstate has no pix"); return;}
+		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
-		if (im.format != GL_RGBA         ) {post("can't produce grid from pix format %d",im.format); return;}
-		if (im.type   != GL_UNSIGNED_BYTE) {post("can't produce grid from pix type %d",  im.type  ); return;}
+		if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
+		if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
 		int32 v[] = { im.ysize, im.xsize, im.csize };
 		GridOutlet out(this,0,new Dim(3,v));
 		long sxc = im.xsize*im.csize;
