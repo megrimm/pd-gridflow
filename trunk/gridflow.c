@@ -863,11 +863,13 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects();
 	startup_format();
 	STARTUP_LIST()
+	//sys_gui("bind . <Motion> {puts %W}\n");
+	sys_vgui(".mbar.help add command -label \"GridFlow index\" -command {pd pd open index.pd %s/doc \\;}\n",dirresult);
 	delete[] dirresult;
 	delete[] dirname;
-	signal(SIGSEGV,SIG_DFL);
-	signal(SIGABRT,SIG_DFL);
-	signal(SIGBUS, SIG_DFL);
-	atexit(gridflow_unsetup);
-    } catch (Barf &oozy) {post("Init_gridflow error: %s",oozy.text);}
+    } catch (Barf &oozy) {post("gridflow_setup error: %s",oozy.text);}
+    signal(SIGSEGV,SIG_DFL);
+    signal(SIGABRT,SIG_DFL);
+    signal(SIGBUS, SIG_DFL);
+    atexit(gridflow_unsetup);
 }
