@@ -1,4 +1,5 @@
 proc say {k v} {set ::say($k) $v}
+proc category {k} {}
 source locale/english.tcl
 puts "#N canvas 0 0 640 480 10 ;"
 set y 50
