@@ -1499,9 +1499,12 @@ GRID_INLET(GridPerspective,0) {
 	\grin 0
 	\grin 1 int
 	\grin 2 int
-	\constructor (Grid *dl, Grid *dr) {
-		diml_grid=dl; diml = diml_grid->to_dim();
-		dimr_grid=dr; dimr = dimr_grid->to_dim();
+	\constructor (Grid *dl=0, Grid *dr=0) {
+		t_atom a[2]; SETFLOAT(a+0,1); SETFLOAT(a+1,1); SETFLOAT(a+2,0);
+		diml_grid=dl?dl:new Grid(3,a,int32_e);
+		dimr_grid=dr?dr:new Grid(3,a,int32_e);
+		diml = diml_grid->to_dim();
+		dimr = dimr_grid->to_dim();
 	}
 };
 
@@ -1531,8 +1534,8 @@ GRID_INLET(GridBorder,0) {
 	for (int i=0; i<dimr->v[0]; i++) out->send(zxc,duh);
 } GRID_END
 
-GRID_INPUT(GridBorder,1,diml_grid) { diml = diml_grid->to_dim(); } GRID_END
-GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
+GRID_INPUT(GridBorder,1,diml_grid) {diml = diml_grid->to_dim();} GRID_END
+GRID_INPUT(GridBorder,2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
 
 \end class {install("#border",3,1);}
 
@@ -1697,8 +1700,7 @@ static void expect_scale_factor (P<Dim> dim) {
 	\constructor (Grid *factor=0) {
 		scale.constrain(expect_scale_factor);
 		t_atom a[1]; SETFLOAT(a,2);
-		scale=new Grid(1,a,int32_e);
-		if (factor) scale=factor;
+		scale = factor?factor:new Grid(1,a,int32_e);
 		prepare_scale_factor();
 	}
 	\grin 0
@@ -1752,8 +1754,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	\constructor (Grid *factor=0, t_symbol *option=0) {
 		scale.constrain(expect_scale_factor);
 		t_atom a[1]; SETFLOAT(a,2);
-		scale=new Grid(1,a,int32_e);
-		if (factor) scale=factor;
+		scale = factor?factor:new Grid(1,a,int32_e);
 		prepare_scale_factor();
 		smoothly = option==gensym("smoothly");
 	}
