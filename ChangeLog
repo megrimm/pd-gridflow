@@ -1,5 +1,14 @@
 /* $Id$ */
 
+version 0.9.4 (2008.06.20):
+
+ * [#convolve] takes more RAM but gets faster (mostly on OSX)
+ * added [listread], [receives]
+ * added [#in dc1394]
+ * [#camera] greys out unavailable options and supports dc1394
+ * added "GridFlow index" in Help menu
+ * made arguments optional in [#border] [#draw_image] [#draw_polygon]
+
 version 0.9.3 (2008.06.06):
 
  * fixed bugs introduced in 0.9.2 relative to: [#in] loop, [#in] initbang,
