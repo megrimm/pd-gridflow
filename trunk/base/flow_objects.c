@@ -34,6 +34,8 @@ extern "C" {
 };
 #endif
 
+extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
+
 /* both oprintf are copied from desiredata */
 
 //using namespace std; // can't
@@ -2273,7 +2275,6 @@ GRID_INLET(GridUnpack,0) {
 \def 0 float (float f) {_0_list(argc,argv);}
 \def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
 
-extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 \def 0 list (...) {
 	std::ostringstream o;
 	pd_oprintf(o,format.data(),argc,argv);
@@ -2663,6 +2664,7 @@ void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	}
 }
 void Args::process_args (int argc, t_atom *argv) {
+	t_canvas *canvas = canvas_getrootfor(bself->mom);
 	t_symbol *wildcard = gensym("*");
 	for (int i=sargc-1; i>=0; i--) {
 		t_atom *v;
@@ -2670,7 +2672,7 @@ void Args::process_args (int argc, t_atom *argv) {
 			if (sargv[i].defaultv.a_type != A_NULL) {
 				v = &sargv[i].defaultv;
 			} else if (sargv[i].name!=wildcard) {
-				post("missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
+				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
 				continue;
 			}
 		} else v = &argv[i];
@@ -2685,7 +2687,7 @@ void Args::process_args (int argc, t_atom *argv) {
 			else outlet_anything2(bself->outlets[i],1,v);
 		}
 	}
-	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d)", argc, sargc);
+	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
 }
 \end class {install("args",1,1);}
 
