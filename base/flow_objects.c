@@ -1881,7 +1881,7 @@ static void expect_polygon (P<Dim> d) {
 	PtrGrid lines;
 	int lines_start;
 	int lines_stop;
-	\constructor (Numop *op, Grid *color=0, Grid *polygon=0) {
+	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
 		this->color.constrain(expect_max_one_dim);
 		this->polygon.constrain(expect_polygon);
 		this->op = op;
@@ -1998,7 +1998,7 @@ static void expect_position(P<Dim> d) {
 	\attr PtrGrid position;
 	\attr bool alpha;
 	\attr bool tile;
-	\constructor (Numop *op, Grid *image=0, Grid *position=0) {
+	\constructor (Numop *op=op_put, Grid *image=0, Grid *position=0) {
 		alpha=false; tile=false;
 		this->op = op;
 		this->position.constrain(expect_position);
@@ -2109,7 +2109,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	\grin 0
 	\grin 1 int32
 	\grin 2 int32
-	\constructor (Numop *op, Grid *color=0, Grid *points=0) {
+	\constructor (Numop *op=op_put, Grid *color=0, Grid *points=0) {
 		this->op = op;
 		if (color) this->color=color;
 		if (points) this->points=points;
