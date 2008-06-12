@@ -304,6 +304,9 @@ static void gfpost(VideoMmap *self) {
 		outlet_anything(bself->outlets[0],gensym("palette"),1,a);
 		SETSYMBOL(a,use_mmap ? gensym("mmap") : gensym("read"));
 		outlet_anything(bself->outlets[0],gensym("transfer"),1,a);
+		SETFLOAT(a+0,dim->v[0]);
+		SETFLOAT(a+1,dim->v[1]);
+		outlet_anything(bself->outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
 	}
 }
 
