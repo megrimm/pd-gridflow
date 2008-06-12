@@ -192,6 +192,8 @@ typedef nodeid_t NID;
 	\decl 0 size (int height, int width);
 };
 
+#define IO(func,args...) if (func(rh,usenode,args)!=DC1394_SUCCESS) RAISE(#func " failed");
+
 \def 0 get (t_symbol *s=0) {
 	FObject::_0_get(argc,argv,s);
 	t_atom a[2];
@@ -199,10 +201,15 @@ typedef nodeid_t NID;
 		SETFLOAT(a+0,camera.frame_height);
 		SETFLOAT(a+1,camera.frame_width);
 		outlet_anything(bself->outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
+		unsigned int width,height;
+		IO(dc1394_query_format7_max_image_size,MODE_FORMAT7_0,&width,&height);
+		SETFLOAT(a+0,height);
+		SETFLOAT(a+1,width);
+		outlet_anything(bself->outlets[0],gensym("maxsize"),2,a); // abnormal (does not use nested list)
 	}
 }
 \def 0 size (int height, int width) {
-	//dc1394_set_format7_image_size(rh,usenode,0,width,height);
+	IO(dc1394_set_format7_image_size,MODE_FORMAT7_0,width,height);
 	this->height = height;
 	this->width = width;
 	setup();
@@ -216,10 +223,9 @@ typedef nodeid_t NID;
 \def 0        colour        (unsigned value) {dc1394_set_saturation(rh,usenode, value);}
   
 void FormatDC1394::setup () {
-//	if (dc1394_setup_capture(rh,usenode,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,framerate_e,&camera)!=DC1394_SUCCESS)
-//		RAISE("dc1394_setup_capture error");
-	if (dc1394_setup_format7_capture(rh,usenode,0,MODE_FORMAT7_0,SPEED_400,USE_MAX_AVAIL,0,0,width,height,&camera)!=DC1394_SUCCESS)
-		RAISE("dc1394_setup_format7_capture error");
+	//dc1394_set_format7_image_size(rh,usenode,0,width,height);
+	IO(dc1394_setup_capture,0,FORMAT_VGA_NONCOMPRESSED,MODE_640x480_MONO,SPEED_400,framerate_e,&camera);
+	//IO(dc1394_setup_format7_capture,0,MODE_FORMAT7_0,SPEED_400,QUERY_FROM_CAMERA,0,0,width,height,&camera);
         if (dc1394_set_trigger_mode(rh,usenode,TRIGGER_MODE_0) != DC1394_SUCCESS) RAISE("dc1394_set_trigger_mode error");
  	if (dc1394_start_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_start_iso_transmission error");
 }
@@ -234,16 +240,25 @@ void FormatDC1394::setup () {
 	setup();
 }
 
+static volatile int timeout=0;
+static void rien (int) {timeout=1; post("timeout2");}
+
 \def 0 bang () {
-	//if (dc1394_get_one_shot(rh,usenode,&is_on)!=DC1394_SUCCESS) RAISE("dc1394_get_one_shot error");
+	//struct itimerval tval;
+	//tval.it_interval.tv_sec = 1;
+	//tval.it_interval.tv_usec = 0;
+	//tval.it_value = tval.it_interval;
+	//setitimer(ITIMER_REAL,&tval,0);
+	//signal(SIGALRM,rien);
 	if (dc1394_single_capture(rh,&camera)!=DC1394_SUCCESS) RAISE("dc1394_single_capture error");
-	//if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
+	//setitimer(ITIMER_REAL,0,0);
 	out=new GridOutlet(this,0,new Dim(height,width,1));
 	out->send(out->dim->prod(),(uint8 *)camera.capture_buffer);
-	post("frame_height=%d",camera.frame_height);
-	post("frame_width=%d" ,camera.frame_width);
-	post("quadlets_per_frame=%d" ,camera.quadlets_per_frame);
-	post("quadlets_per_packet=%d" ,camera.quadlets_per_packet);
+	//if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
+	//post("frame_height=%d",camera.frame_height);
+	//post("frame_width=%d" ,camera.frame_width);
+	//post("quadlets_per_frame=%d" ,camera.quadlets_per_frame);
+	//post("quadlets_per_packet=%d" ,camera.quadlets_per_packet);
 }
 
 \end class FormatDC1394 {install_format("#io.dc1394",4,"");}
