@@ -131,16 +131,6 @@ void GridInlet::set_chunk(long whichdim) {
 	if (n) set_factor(n);
 }
 
-static void GridInlet_begin_1(GridInlet *self) {
-#define FOO(T) self->gh->flow(self,-1,(T *)0); break;
-	TYPESWITCH(self->nt,FOO,)
-#undef FOO
-}
-
-static void GridInlet_begin_2(GridInlet *self) {
-	self->dim = 0; // hack
-}
-
 bool GridInlet::supports_type(NumberTypeE nt) {
 #define FOO(T) return !! gh->flow_##T;
 	TYPESWITCH(nt,FOO,return false)
@@ -158,7 +148,14 @@ void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
-	try {GridInlet_begin_1(this);} catch (Barf &barf) {GridInlet_begin_2(this); throw;}
+	try {
+#define FOO(T) gh->flow(this,-1,(T *)0); break;
+		TYPESWITCH(this->nt,FOO,)
+#undef FOO
+	} catch (Barf &barf) {
+		this->dim = 0; // hack
+		throw;
+	}
 	this->dim = dim;
 	back_out->callback(this);
 }
@@ -286,6 +283,9 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 
 /* **************** GridOutlet ************************************ */
 
+//void GridOutlet::alloc_buf() {
+//}
+
 void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->nt = nt;
 	this->dim = dim;
@@ -296,7 +296,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
-	if (nt != buf->nt) {
+	if (nt != buf->nt) { // why is it like that? (this condition is weird)
 		// biggest packet size divisible by lcm_factor
 		int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
 		if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
