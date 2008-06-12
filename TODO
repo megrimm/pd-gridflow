@@ -381,11 +381,21 @@ there are bugs with abstractions that use [route]->[list] instead of [route2] be
 
 svn propset svn:mime-type text/pure-data *.pd
 
-Benchmarks on a Pentium M 1733:
+Benchmarks on a Pentium M 1733 (with #out x11):
 (fps)           0.9.0   0.9.3   0.9.4
 waves.pd rain    41.1    49.5   50.5
-game_of_life.pd 162     183
-sand.pd          18.7    20.5
-cellular_1d.pd  115     130.1
-wave_1d.pd       63.0    81.7
+game_of_life.pd 162     183     188
+sand.pd          18.7    20.5   20.1
+cellular_1d.pd  115     130.1   130
+wave_1d.pd       63.0    81.7   81.7
+
+Benchmarks on a Pentium M 1733 (without window):
+(fps)           0.9.0   0.9.3   0.9.4
+waves.pd rain   50.1            63.0
+game_of_life.pd 397             507
+sand.pd         27              30
+cellular_1d.pd  475             730
+wave_1d.pd      107             173
+
+
 
