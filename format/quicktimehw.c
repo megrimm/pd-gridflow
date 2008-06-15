@@ -208,7 +208,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	//SUPER;
 }
 
-\classinfo {install_format("#io.quicktime",6,"mov");
+\classinfo {install_format("#io.quicktime",6,"mov avi");
 //  def self.info; %[codecs: #{@codecs.keys.join' '}] end
 //#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #ifdef LQT_VERSION
