@@ -1,0 +1,34 @@
+#N canvas 0 0 1024 768 10;
+#X obj 0 0 cnv 15 1024 62 empty empty empty 20 12 0 14 -249792 -66577 0;
+#X msg 10 0 op b  u8   uint8;
+#X text 192 0 0 to 255;
+#X text 384 0 1;
+#X text 608 0 
+	unsigned 8-bit integer. this is the usual size of numbers taken from files and cameras \,  and
+	written to files and to windows. (however #in converts to int32 unless otherwise specified.);
+#X obj 0 64 cnv 15 1024 62 empty empty empty 20 12 0 14 -233280 -66577 0;
+#X msg 10 64 op s i16   int16;
+#X text 192 64 -32768 to 32767;
+#X text 384 64 1;
+#X obj 0 128 cnv 15 1024 62 empty empty empty 20 12 0 14 -249792 -66577 0;
+#X msg 10 128 op i i32   int32;
+#X text 192 128 -(1<<31) to (1<<31)-1;
+#X text 384 128 1;
+#X text 608 128 
+	signed 32-bit integer. this is used by default throughout GridFlow.
+;
+#X obj 0 192 cnv 15 1024 62 empty empty empty 20 12 0 14 -233280 -66577 0;
+#X msg 10 192 op l i64   int64;
+#X text 192 192 -(1<<63) to (1<<63)-1;
+#X text 384 192 1;
+#X obj 0 256 cnv 15 1024 62 empty empty empty 20 12 0 14 -249792 -66577 0;
+#X msg 10 256 op f f32 float32;
+#X text 192 256 -(1<<128) to (1<<128);
+#X text 384 256 23 bits or 0.000012%;
+#X obj 0 320 cnv 15 1024 62 empty empty empty 20 12 0 14 -233280 -66577 0;
+#X msg 10 320 op d f64 float64;
+#X text 192 320 -(1<<2048) to (1<<2048);
+#X text 384 320 52 bits or 0.000000000000022%;
+#X obj 191 0 cnv 0 0 384 empty empty empty -1 12 0 14 0 -66577 0;
+#X obj 383 0 cnv 0 0 384 empty empty empty -1 12 0 14 0 -66577 0;
+#X obj 607 0 cnv 0 0 384 empty empty empty -1 12 0 14 0 -66577 0;
