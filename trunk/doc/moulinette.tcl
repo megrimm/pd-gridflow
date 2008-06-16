@@ -7,9 +7,10 @@ proc write {list} {
 	regsub "," $v " \\, " v
 	regsub ";" $v " \\; " v
 	regsub "\\$" $v "\\$" v
-	puts "$v;"
+	puts $::fh "$v;"
 }
 
+set fh [open numop.pd w]
 write [list #N canvas 0 0 1024 768 10]
 set y 0
 set row 0
@@ -28,6 +29,12 @@ write [list #X text $col3 $y "effect on coords"]
 incr y 32
 incr oid 5
 
+# onpixels = meaning in pixel context (pictures, palettes)
+# oncoords = meaning in spatial context (indexmaps, polygons)
+
+# for vecops, the two analogy-columns were labelled:
+#   meaning in geometric context (indexmaps, polygons, in which each complex number is a point)
+#   meaning in spectrum context (FFT) in which each number is a (cosine,sine) pair
 proc op {op desc onpixels oncoords} {
 	global y
 	if {$::row&1} {set bg -233280} {set bg -249792}
@@ -137,3 +144,5 @@ foreach section $sections {
 	write [list #X text 10 $y $desc]
 	incr oid 2
 }
+
+close $fh
