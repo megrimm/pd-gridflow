@@ -21,25 +21,6 @@ In GridFlow, there are six kinds of numbers:
 <table bgcolor="black" border="0" cellspacing="1">
 <td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
 
-name
-aliases
-range
-size (bytes)
-precision
-description
-uint8u8 b0..25511 
-			unsigned 8-bit integer. 
-			this is the usual size of numbers taken from files and cameras, and 
-			written to files and to windows. (however this gets converted to int32
-			unless otherwise specified.)  
-int16i16 s±2<sup>15</sup> = -32768..3276721... 
-int32i32 i±2<sup>31</sup> = -2147483648..214748364741 
-			signed 32-bit integer. 
-			this is used for most computations.  
-int64i64 l±2<sup>63</sup>81... 
-float32f32 f±10<sup>±38</sup>423 bits = 0.000012% (about 7 digits)... 
-float64f64 d±10<sup>±308</sup>852 bits (about 15 digits)... 
- 
 <td bgcolor="black"><img src="images/black.png" height="2" width="1">
 <h4><a name="Grid_Literals">Grid Literals</h4>
 	In every grid-accepting inlet, a list may be sent instead; if 
