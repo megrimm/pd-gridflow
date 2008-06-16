@@ -145,66 +145,6 @@
 <tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
 <tr class="c3"><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr>
 
-<tr class="c1"><td>ignore</td><td> A </td><td>no effect</td><td>no effect</td></tr> 
-<tr class="c2"><td>put</td><td> B </td><td>replace by</td><td>replace by</td></tr> 
-<tr class="c1"><td>+</td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr> 
-<tr class="c2"><td>-</td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr> 
-<tr class="c1"><td>inv+</td><td> B - A </td><td>negate then contrast</td><td>180 degree rotate then move</td></tr> 
-<tr class="c2"><td>*</td><td> A * B </td><td>contrast</td><td>zoom out</td></tr> 
-<tr class="c1"><td>/</td><td> A / B, rounded towards zero </td><td>contrast</td><td>zoom in</td></tr> 
-<tr class="c2"><td>div</td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr> 
-<tr class="c1"><td>inv*</td><td> B / A, rounded towards zero </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>swapdiv</td><td> B / A, rounded downwards </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>%</td><td> A % B, modulo (goes with div) </td><td>--</td><td>tile</td></tr> 
-<tr class="c2"><td>swap%</td><td> B % A, modulo (goes with div) </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>rem</td><td> A % B, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>swaprem</td><td> B % A, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>gcd</td><td> 
-	greatest common divisor</td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>lcm</td><td> 
-	least common multiple</td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>|</td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr> 
-<tr class="c2"><td>^</td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr> 
-<tr class="c1"><td>&amp;</td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr> 
-<tr class="c2"><td>&lt;&lt;</td><td> A * (2**(B % 32)), which is left-shifting </td><td>like *</td><td>like *</td></tr> 
-<tr class="c1"><td>&gt;&gt;</td><td> A / (2**(B % 32)), which is right-shifting </td><td>like /,div</td><td>like /,div</td></tr> 
-<tr class="c2"><td>||</td><td> if A is zero then B else A </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>&amp;&amp;</td><td> if A is zero then zero else B</td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>min</td><td> the lowest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
-<tr class="c1"><td>max</td><td> the highest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
-<tr class="c2"><td>cmp</td><td> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>==</td><td> is A equal to B ? 1=true, 0=false </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>!=</td><td> is A not equal to B ? </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>&gt;</td><td> is A greater than B ? </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>&lt;=</td><td> is A not greater than B ? </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>&lt;</td><td> is A less than B ? </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>&gt;=</td><td>is A not less than B ? </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>sin*</td><td> B * sin(A) </td><td>--</td><td>waves, rotations</td></tr> 
-<tr class="c2"><td>cos*</td><td> B * cos(A) </td><td>--</td><td>waves, rotations</td></tr> 
-<tr class="c1"><td>atan</td><td> arctan(A/B) </td><td>--</td><td>find angle to origin (part of polar transform)</td></tr> 
-<tr class="c2"><td>tanh*</td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid, fuzzy logic</td></tr> 
-<tr class="c1"><td>log*</td><td> B * log(A) (in base e) </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>gamma</td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>--</td></tr> 
-<tr class="c1"><td>**</td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>--</td></tr> 
-<tr class="c2"><td>abs-</td><td> absolute value of (A-B) </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>rand</td><td> randomly produces a non-negative number below A </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>sqrt</td><td> square root of A, rounded downwards </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>sq-</td><td> (A-B) times (A-B) </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>avg</td><td> (A+B)/2 </td><td>--</td><td>--</td></tr> 
-<tr class="c1"><td>hypot</td><td> square root of (A*A+B*B) </td><td>--</td><td>--</td></tr> 
-<tr class="c2"><td>clip+</td><td> like A+B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
-<tr class="c1"><td>clip-</td><td> like A-B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
-<tr class="c2"><td>erf*</td><td> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </td><td>--</td><td>--</td></tr>
-<tr class="c1"><td>weight</td><td> number of "1" bits in an integer</td><td>--</td><td>--</td></tr>
-<tr class="c2"><td>sin</td><td>sin(A-B), float only</td><td>--</td><td>--</td></tr>
-<tr class="c1"><td>cos</td><td>cos(A-B), float only</td><td>--</td><td>--</td></tr>
-<tr class="c2"><td>atan2</td><td>atan2(A,B), float only</td><td>--</td><td>--</td></tr>
-<tr class="c1"><td>tanh</td><td>tanh(A-B), float only</td><td>--</td><td>--</td></tr>
-<tr class="c2"><td>exp</td><td>exp(A-B), float only</td><td>--</td><td>--</td></tr>
-<tr class="c1"><td>log</td><td>log(A-B), float only</td><td>--</td><td>--</td></tr>
-
-</table></td></tr></table></td></tr>
-
 <p>The following are called VecOps because each operation happens between more than just two numbers.</p>
 <p>A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
 If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.</p>
