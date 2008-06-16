@@ -113,7 +113,7 @@
 #X text 768 816 clipping (of individual points);
 #X obj 0 848 cnv 15 1024 30 empty empty empty 20 12 0 14 -233280 -66577 0;
 #X msg 10 848 op cmp;
-#X text 96 848  -1 when A&lt \; B; 0 when A=B; 1 when A&gt;B. ;
+#X text 96 848  -1 when A&lt \; B \;  0 when A=B \;  1 when A&gt \; B. ;
 #X obj 0 880 cnv 15 1024 30 empty empty empty 20 12 0 14 -249792 -66577 0;
 #X msg 10 880 op ==;
 #X text 96 880  is A equal to B ? 1=true \,  0=false ;
@@ -151,7 +151,7 @@
 #X msg 10 1168 op tanh*;
 #X text 96 1168  B * tanh(A) in centidegrees ;
 #X text 512 1168 smooth clipping;
-#X text 768 1168 smooth clipping (of individual points) \,  neural sigmoid, fuzzy logic;
+#X text 768 1168 smooth clipping (of individual points) \,  neural sigmoid \,  fuzzy logic;
 #X obj 0 1200 cnv 15 1024 30 empty empty empty 20 12 0 14 -249792 -66577 0;
 #X msg 10 1200 op log*;
 #X text 96 1200  B * log(A) (in base e) ;
@@ -161,7 +161,7 @@
 #X text 512 1232 gamma correction;
 #X obj 0 1264 cnv 15 1024 30 empty empty empty 20 12 0 14 -249792 -66577 0;
 #X msg 10 1264 op **;
-#X text 96 1264  A**B \,  that is, A raised to power B ;
+#X text 96 1264  A**B \,  that is \,  A raised to power B ;
 #X text 512 1264 gamma correction;
 #X obj 0 1296 cnv 15 1024 30 empty empty empty 20 12 0 14 -233280 -66577 0;
 #X msg 10 1296 op abs-;
@@ -201,7 +201,7 @@
 #X text 96 1648 cos(A-B) in radians \,  float only;
 #X obj 0 1680 cnv 15 1024 30 empty empty empty 20 12 0 14 -233280 -66577 0;
 #X msg 10 1680 op atan2;
-#X text 96 1680 atan2(A \, B) in radians, float only;
+#X text 96 1680 atan2(A \, B) in radians \,  float only;
 #X obj 0 1712 cnv 15 1024 30 empty empty empty 20 12 0 14 -249792 -66577 0;
 #X msg 10 1712 op tanh;
 #X text 96 1712 tanh(A-B) in radians \,  float only;
