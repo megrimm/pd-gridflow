@@ -395,8 +395,8 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		// yes, this can be done now. should cause auto-cleanup.
 		shmctl(shm_info->shmid,IPC_RMID,0);
 		if (!shared_memory) return alloc_image(sx,sy);
-	}
 #endif
+	}
 #ifdef HAVE_X11_XVIDEO
 	if (xvideo) {
 		unsigned int ver, rel, req, ev, err, i, j, adaptors, formats;
