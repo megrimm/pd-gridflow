@@ -1869,21 +1869,28 @@ GRID_INPUT(GridLayer,1,r) {} GRID_END
 
 // ****************************************************************
 // pad1,pad2 only are there for 32-byte alignment
-struct Line { int32 y1,x1,y2,x2,x,m,dx,dy; };
+struct Line { int32 y1,x1,y2,x2,x,m,ox,pad2; };
 
 static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
 
+enum DrawMode {
+	DRAW_FILL,
+	DRAW_LINE
+};
+
 \class DrawPolygon : FObject {
 	\attr Numop *op;
 	\attr PtrGrid color;
 	\attr PtrGrid polygon;
+	\attr DrawMode draw;
 	PtrGrid color2;
 	PtrGrid lines;
 	int lines_start;
 	int lines_stop;
 	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
+		draw=DRAW_FILL;
 		this->color.constrain(expect_max_one_dim);
 		this->polygon.constrain(expect_polygon);
 		this->op = op;
@@ -1896,7 +1903,12 @@ static void expect_polygon (P<Dim> d) {
 	void init_lines();
 
 };
-
+DrawMode convert(const t_atom &x, DrawMode *foo) {
+	t_symbol *s = convert(x,(t_symbol **)0);
+	if (s==gensym("fill")) return DRAW_FILL;
+	if (s==gensym("line")) return DRAW_LINE;
+	RAISE("unknown draw mode '%s'",s->s_name);
+}
 void DrawPolygon::init_lines () {
 	int nl = polygon->dim->get(0);
 	lines=new Grid(new Dim(nl,8), int32_e);
@@ -1946,14 +1958,15 @@ GRID_INLET(DrawPolygon,0) {
 	int y = in->dex/f;
 	int cn = color->dim->prod();
 	T *cd = (T *)*color2;
-	
 	while (n) {
-		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
+		while (lines_stop != nl && ld[lines_stop].y1<=y) {
+			Line &l = ld[lines_stop];
+			l.x = l.x1 + (((y-l.y1)*l.m)>>16);
+			lines_stop++;
+		}
+		int fudge = draw==DRAW_FILL?0:1;
 		for (int i=lines_start; i<lines_stop; i++) {
-			if (ld[i].y2<=y) {
-				memswap(ld+i,ld+lines_start,1);
-				lines_start++;
-			}
+			if (ld[i].y2<=y-fudge) {memswap(ld+i,ld+lines_start,1); lines_start++;}
 		}
 		if (lines_start == lines_stop) {
 			out->send(f,data);
@@ -1963,16 +1976,29 @@ GRID_INLET(DrawPolygon,0) {
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
-				//l.x = l.x1 + (y-l.y1)*(l.x2-l.x1+1)/(l.y2-l.y1+1);
+				l.ox = l.x;
 				l.x = l.x1 + (((y-l.y1)*l.m)>>16);
 			}
-			qsort(ld+lines_start,lines_stop-lines_start,
-				sizeof(Line),order_by_column);
-			for (int i=lines_start; i<lines_stop-1; i+=2) {
-				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl);
-				if (xs>=xe) continue; /* !@#$ WHAT? */
-				while (xe-xs>=16) { op->zip(16*cn,data2+cn*xs,cd); xs+=16; }
-				op->zip((xe-xs)*cn,data2+cn*xs,cd);
+			qsort(ld+lines_start,lines_stop-lines_start,sizeof(Line),order_by_column);
+			if (draw==DRAW_FILL) {
+				for (int i=lines_start; i<lines_stop-1; i+=2) {
+					int xs = max(ld[i].x,(int32)0);
+					int xe = min(ld[i+1].x,xl);
+					if (xs>=xe) continue; /* !@#$ WHAT? */
+					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
+					op->zip((xe-xs)*cn,data2+cn*xs,cd);
+				}
+			} else {
+				for (int i=lines_start; i<lines_stop; i++) {
+					int xs = min(ld[i].x,ld[i].ox);
+					int xe = max(ld[i].x,ld[i].ox);
+					if (xs==xe) xe++;
+					if (xs<0 && xe<0 || xs>=xl && xe>=xl) continue;
+					xs = max(0,xs);
+					xe = min(xl,xe);
+					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
+					op->zip((xe-xs)*cn,data2+cn*xs,cd);
+				}
 			}
 			out->give(f,data2);
 		}
