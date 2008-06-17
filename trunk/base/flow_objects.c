@@ -1917,7 +1917,6 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 };
 void DrawPolygon::init_lines () {
 	int tnl = polygon->dim->get(0);
-	int step = omit==OMIT_ODD?4:2;
 	int nl = omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl;
 	lines=new Grid(new Dim(nl,8), int32_e);
 	Line *ld = (Line *)(int32 *)*lines;
@@ -1925,9 +1924,10 @@ void DrawPolygon::init_lines () {
 	for (int i=0,j=0; i<nl; i++) {
 		ld[i].y1 = pd[j+0];
 		ld[i].x1 = pd[j+1];
-		j=(j+step)%(2*tnl);
+		j=(j+2)%(2*tnl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
+		if (omit==OMIT_ODD) j=(j+2)%(2*tnl);
 		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
 		long dy = ld[i].y2-ld[i].y1;
 		long dx = ld[i].x2-ld[i].x1;
