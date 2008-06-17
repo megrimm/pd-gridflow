@@ -26,7 +26,7 @@
 #X msg 199 138 symbol #io.quartz;
 #X msg 199 214 symbol x11;
 #X msg 217 195 symbol quartz;
-#X msg 9 417 clear \, obj 0 0 r \$1-in \, obj 0 20 bang \, obj 0 20
+#X msg 9 417 clear \, obj 0 0 r \$1-in \, obj 0 20 bang \, obj 0 40
 gf.error not open \, connect 0 0 1 0 \, connect 1 0 2 0;
 #X connect 0 0 13 0;
 #X connect 1 0 13 0;
