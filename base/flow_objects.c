@@ -1875,22 +1875,34 @@ static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
 
-enum DrawMode {
-	DRAW_FILL,
-	DRAW_LINE
-};
-
+enum DrawMode {DRAW_FILL,DRAW_LINE};
+enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
+DrawMode convert(const t_atom &x, DrawMode *foo) {
+	t_symbol *s = convert(x,(t_symbol **)0);
+	if (s==gensym("fill")) return DRAW_FILL;
+	if (s==gensym("line")) return DRAW_LINE;
+	RAISE("unknown DrawMode '%s' (want fill or line)",s->s_name);
+}
+OmitMode convert(const t_atom &x, OmitMode *foo) {
+	t_symbol *s = convert(x,(t_symbol **)0);
+	if (s==gensym("none")) return OMIT_NONE;
+	if (s==gensym("last")) return OMIT_LAST;
+	if (s==gensym("odd"))  return OMIT_ODD;
+	RAISE("unknown OmitMode '%s' (want none or last or odd)",s->s_name);
+}
 \class DrawPolygon : FObject {
 	\attr Numop *op;
 	\attr PtrGrid color;
 	\attr PtrGrid polygon;
 	\attr DrawMode draw;
+	\attr OmitMode omit;
 	PtrGrid color2;
 	PtrGrid lines;
 	int lines_start;
 	int lines_stop;
 	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
 		draw=DRAW_FILL;
+		omit=OMIT_NONE;
 		this->color.constrain(expect_max_one_dim);
 		this->polygon.constrain(expect_polygon);
 		this->op = op;
@@ -1903,21 +1915,17 @@ enum DrawMode {
 	void init_lines();
 
 };
-DrawMode convert(const t_atom &x, DrawMode *foo) {
-	t_symbol *s = convert(x,(t_symbol **)0);
-	if (s==gensym("fill")) return DRAW_FILL;
-	if (s==gensym("line")) return DRAW_LINE;
-	RAISE("unknown draw mode '%s'",s->s_name);
-}
 void DrawPolygon::init_lines () {
-	int nl = polygon->dim->get(0);
+	int tnl = polygon->dim->get(0);
+	int step = omit==OMIT_ODD?4:2;
+	int nl = omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl;
 	lines=new Grid(new Dim(nl,8), int32_e);
 	Line *ld = (Line *)(int32 *)*lines;
 	int32 *pd = *polygon;
 	for (int i=0,j=0; i<nl; i++) {
 		ld[i].y1 = pd[j+0];
 		ld[i].x1 = pd[j+1];
-		j=(j+2)%(2*nl);
+		j=(j+step)%(2*tnl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
 		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
@@ -1946,13 +1954,13 @@ GRID_INLET(DrawPolygon,0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	lines_start = lines_stop = 0;
 	in->set_chunk(1);
-	int nl = polygon->dim->get(0);
+	int nl = lines->dim->get(0);
 	qsort((int32 *)*lines,nl,sizeof(Line),order_by_starting_scanline);
 	int cn = color->dim->prod();
 	color2=new Grid(new Dim(cn*16), color->nt);
 	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
 } GRID_FLOW {
-	int nl = polygon->dim->get(0);
+	int nl = lines->dim->get(0);
 	Line *ld = (Line *)(int32 *)*lines;
 	int f = in->factor();
 	int y = in->dex/f;
