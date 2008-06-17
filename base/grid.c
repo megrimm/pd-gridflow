@@ -283,6 +283,15 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 
 /* **************** GridOutlet ************************************ */
 
+GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_) {
+	parent=parent_; dim=dim_; nt=nt_;
+	dex=0; frozen=false; bufi=0;
+	//int ntsz = number_type_table[nt].size;
+	buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
+	//post("GridOutlet buf new %s[%d]",number_type_table[nt].name,MAX_PACKET_SIZE/*/ntsz*/);
+	begin(woutlet,dim,nt);
+}
+
 //void GridOutlet::alloc_buf() {
 //}
 
