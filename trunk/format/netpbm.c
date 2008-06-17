@@ -40,6 +40,7 @@ extern "C" {
 	//inpam.allocation_depth = 3;
 	pnm_readpaminit(f, &inpam, /*PAM_STRUCT_SIZE(tuple_type)*/ sizeof(struct pam));
 	tuple *tuplerow = pnm_allocpamrow(&inpam);
+	if (inpam.depth!=3) RAISE("image has %d channels instead of 3 channels",inpam.depth);
 	GridOutlet out(this,0,new Dim(inpam.height,inpam.width,inpam.depth),cast);
 	uint8 buf[inpam.width*3];
 	for (int i=0; i<inpam.height; i++) {
@@ -49,7 +50,7 @@ extern "C" {
 			buf[j*3+1] = tuplerow[j][1];
 			buf[j*3+2] = tuplerow[j][2];
 		}
-		out.send(inpam.height*inpam.depth,buf);
+		out.send(inpam.width*inpam.depth,buf);
 	}
 	pnm_freepamrow(tuplerow);
 }
