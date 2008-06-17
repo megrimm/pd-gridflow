@@ -781,12 +781,7 @@ struct GridOutlet : CObject {
 // those are updated during transmission
 	long dex;  // how many numbers were already sent in this connection
 
-	GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
-	parent(parent_), dim(dim_), nt(nt_), dex(0), frozen(false), bufi(0) {
-		//int ntsz = number_type_table[nt].size;
-		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
-		begin(woutlet,dim,nt);
-	}
+	GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e);
 	~GridOutlet() {}
 	void callback(GridInlet *in);
 
