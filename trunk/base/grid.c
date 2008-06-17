@@ -284,11 +284,7 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 /* **************** GridOutlet ************************************ */
 
 GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_) {
-	parent=parent_; dim=dim_; nt=nt_;
-	dex=0; frozen=false; bufi=0;
-	//int ntsz = number_type_table[nt].size;
-	buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
-	//post("GridOutlet buf new %s[%d]",number_type_table[nt].name,MAX_PACKET_SIZE/*/ntsz*/);
+	parent=parent_; dim=dim_; nt=nt_; dex=0; frozen=false; bufi=0; buf=0;
 	begin(woutlet,dim,nt);
 }
 
@@ -305,12 +301,10 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
-	if (nt != buf->nt) { // why is it like that? (this condition is weird)
-		// biggest packet size divisible by lcm_factor
-		int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
-		if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
-		buf=new Grid(new Dim(v),nt);
-	}
+	// biggest packet size divisible by lcm_factor
+	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
+	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
+	buf=new Grid(new Dim(v),nt);
 }
 
 // send modifies dex; send_direct doesn't
