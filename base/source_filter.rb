@@ -226,7 +226,7 @@ def handle_classinfo(line)
 			next
 		end
 		type,name,default = attr.to_a
-		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name};}"
+		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name}; changed(gensym(\"#{name}\"));}"
 	}
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);}"
