@@ -1869,18 +1869,19 @@ GRID_INPUT(GridLayer,1,r) {} GRID_END
 
 // ****************************************************************
 // pad1,pad2 only are there for 32-byte alignment
-struct Line { int32 y1,x1,y2,x2,x,m,ox,pad2; };
+struct Line {int32 y1,x1,y2,x2,x,m,ox,pad2;};
 
 static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
 
-enum DrawMode {DRAW_FILL,DRAW_LINE};
+enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
 DrawMode convert(const t_atom &x, DrawMode *foo) {
 	t_symbol *s = convert(x,(t_symbol **)0);
 	if (s==gensym("fill")) return DRAW_FILL;
 	if (s==gensym("line")) return DRAW_LINE;
+	if (s==gensym("point")) return DRAW_POINT;
 	RAISE("unknown DrawMode '%s' (want fill or line)",s->s_name);
 }
 OmitMode convert(const t_atom &x, OmitMode *foo) {
@@ -1996,8 +1997,9 @@ GRID_INLET(DrawPolygon,0) {
 					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
 					op->zip((xe-xs)*cn,data2+cn*xs,cd);
 				}
-			} else {
+			} else if (draw==DRAW_LINE) {
 				for (int i=lines_start; i<lines_stop; i++) {
+					if (ld[i].y1==ld[i].y2) ld[i].ox=ld[i].x2;
 					int xs = min(ld[i].x,ld[i].ox);
 					int xe = max(ld[i].x,ld[i].ox);
 					if (xs==xe) xe++;
@@ -2007,6 +2009,7 @@ GRID_INLET(DrawPolygon,0) {
 					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
 					op->zip((xe-xs)*cn,data2+cn*xs,cd);
 				}
+			} else {
 			}
 			out->give(f,data2);
 		}
