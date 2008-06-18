@@ -373,8 +373,8 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 			CloseMovieFile(movie_file);
 		}
 	}
-	\decl 0 codec_m (string c);
-	\decl 0 colorspace_m (string c);
+	\decl 0 codec (string c);
+	\decl 0 colorspace (string c);
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 rewind ();
