@@ -150,7 +150,7 @@ struct GridHeader {
 	GridHeader head;
 	int endian;
 	NumberTypeE nt;
-	P<Dim> headerless; // if null: headerful; if Dim: it is the assumed dimensions of received grids
+	P<Dim> headerless_dim; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
@@ -158,7 +158,7 @@ struct GridHeader {
 		_0_open(0,0,mode,filename);
 	}
 	\decl 0 bang ();
-	\decl 0 headerless_m (...);
+	\decl 0 headerless (...);
 	\decl 0 headerful ();
 	\decl 0 type (NumberTypeE nt);
 	~FormatGrid() {
@@ -171,8 +171,8 @@ struct GridHeader {
 \def 0 bang () {
 	P<Dim> dim;
 	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
-	if (headerless) {
-		dim = headerless;
+	if (headerless_dim) {
+		dim = headerless_dim;
 	} else {
 		fread(&head,1,8,f);
 		uint8 *m = (uint8 *)head.magic;
@@ -199,7 +199,7 @@ TYPESWITCH(nt,FOO,)
 }
 
 GRID_INLET(FormatGrid,0) {
-	if (!headerless) {
+	if (!headerless_dim) {
 		fwrite(&head,1,8,f);
 		fwrite(in->dim->v,in->dim->n,4,f); // forgot the endian here
 	}
@@ -213,14 +213,14 @@ TYPESWITCH(nt,FOO,)
 	fflush(f);
 } GRID_END
 
-\def 0 headerless_m (...) {
+\def 0 headerless (...) {
 	if (argc>=0 && argv[0].a_type==A_LIST) {
 		t_binbuf *b = (t_binbuf *)argv[0]; argc = binbuf_getnatom(b); argv = (t_atom2 *)binbuf_getvec(b);}
 	int v[argc];
 	for (int i=0; i<argc; i++) v[i] = argv[i];
-	headerless = new Dim(argc,v);
+	headerless_dim = new Dim(argc,v);
 }
-\def 0 headerful () { headerless = 0; }
+\def 0 headerful () { headerless_dim = 0; }
 //#!@#$ method name conflict ?
 \def 0 type (NumberTypeE nt) {
 	//!@#$ bug: should not be able to modify this _during_ a transfer
