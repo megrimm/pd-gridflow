@@ -443,8 +443,8 @@ GRID_INLET(FormatQuickTimeApple,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def 0 codec_m      (string c) { RAISE("Unimplemented. Sorry."); }
-\def 0 colorspace_m (string c) { RAISE("Unimplemented. Sorry."); }
+\def 0 codec      (string c) { RAISE("Unimplemented. Sorry."); }
+\def 0 colorspace (string c) { RAISE("Unimplemented. Sorry."); }
 
 \classinfo {
 	EnterMovies();
