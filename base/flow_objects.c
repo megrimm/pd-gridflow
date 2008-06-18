@@ -1914,7 +1914,7 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 	\grin 1
 	\grin 2 int32
 	void init_lines();
-
+	void changed(t_symbol *s) {init_lines();}
 };
 void DrawPolygon::init_lines () {
 	int tnl = polygon->dim->get(0);
@@ -1929,7 +1929,7 @@ void DrawPolygon::init_lines () {
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
 		if (omit==OMIT_ODD) j=(j+2)%(2*tnl);
-		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
+		if (draw!=DRAW_POINT) if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
 		long dy = ld[i].y2-ld[i].y1;
 		long dx = ld[i].x2-ld[i].x1;
 		ld[i].m = dy ? (dx<<16)/dy : 0;
@@ -1950,8 +1950,7 @@ GRID_INLET(DrawPolygon,0) {
 	NOTEMPTY(lines);
 	SAME_TYPE(in,color);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
-	if (in->dim->get(2)!=color->dim->get(0))
-		RAISE("image does not have same number of channels as stored color");
+	if (in->dim->get(2)!=color->dim->get(0)) RAISE("image does not have same number of channels as stored color");
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	lines_start = lines_stop = 0;
 	in->set_chunk(1);
@@ -1960,6 +1959,7 @@ GRID_INLET(DrawPolygon,0) {
 	int cn = color->dim->prod();
 	color2=new Grid(new Dim(cn*16), color->nt);
 	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
+	Line *ld = (Line *)(int32 *)*lines;
 } GRID_FLOW {
 	int nl = lines->dim->get(0);
 	Line *ld = (Line *)(int32 *)*lines;
@@ -1973,9 +1973,11 @@ GRID_INLET(DrawPolygon,0) {
 			l.x = l.x1 + (((y-l.y1)*l.m)>>16);
 			lines_stop++;
 		}
-		int fudge = draw==DRAW_FILL?0:1;
-		for (int i=lines_start; i<lines_stop; i++) {
-			if (ld[i].y2<=y-fudge) {memswap(ld+i,ld+lines_start,1); lines_start++;}
+		if (draw!=DRAW_POINT) {
+			int fudge = draw==DRAW_FILL?0:1;
+			for (int i=lines_start; i<lines_stop; i++) {
+				if (ld[i].y2<=y-fudge) {memswap(ld+i,ld+lines_start,1); lines_start++;}
+			}
 		}
 		if (lines_start == lines_stop) {
 			out->send(f,data);
@@ -1988,7 +1990,7 @@ GRID_INLET(DrawPolygon,0) {
 				l.ox = l.x;
 				l.x = l.x1 + (((y-l.y1)*l.m)>>16);
 			}
-			qsort(ld+lines_start,lines_stop-lines_start,sizeof(Line),order_by_column);
+			if (draw!=DRAW_POINT) qsort(ld+lines_start,lines_stop-lines_start,sizeof(Line),order_by_column);
 			if (draw==DRAW_FILL) {
 				for (int i=lines_start; i<lines_stop-1; i+=2) {
 					int xs = max(ld[i].x,(int32)0);
@@ -2010,6 +2012,14 @@ GRID_INLET(DrawPolygon,0) {
 					op->zip((xe-xs)*cn,data2+cn*xs,cd);
 				}
 			} else {
+				for (int i=lines_start; i<lines_stop; i++) {
+					if (y!=ld[i].y1) continue;
+					int xs=ld[i].x1;
+					int xe=xs+1;
+					if (xs<0 || xs>=xl) continue;
+					op->zip((xe-xs)*cn,data2+cn*xs,cd);
+				}
+				lines_start=lines_stop;
 			}
 			out->give(f,data2);
 		}
