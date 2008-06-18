@@ -330,6 +330,7 @@ struct CObject {
 	int32 refcount;
 	CObject() : refcount(0) {}
 	virtual ~CObject() {}
+	virtual void changed (t_symbol *s=0) {}
 };
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
