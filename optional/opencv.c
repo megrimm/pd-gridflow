@@ -166,6 +166,27 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 \class CvDiv : CvOp2 {FUNC(CvDiv) {cvDiv(l,r,o,1);}};
 \end class {install("cv.Div",2,1);}
 
+\class CvInvert : CvOp1 {
+	\constructor () {}
+	\grin 0
+};
+GRID_INLET(CvInvert,0) {
+	if (in->dim->n!=2) RAISE("should have 2 dimensions");
+	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
+	in->set_chunk(0);
+} GRID_FLOW {
+	//post("l=%p, r=%p", &*l, &*r);
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid o = new Grid(in->dim,in->nt);
+	CvArr *a = cvGrid(l,mode);
+	CvArr *c = cvGrid(o,mode);
+	//post("a=%p, b=%p", a, b);
+	cvInvert(a,c);
+	out = new GridOutlet(this,0,in->dim,in->nt);
+	out->send(o->dim->prod(),(T *)o->data);
+} GRID_END
+\end class {install("cv.Invert",1,1);}
+
 \class CvSplit : CvOp1 {
 	int channels;
 	\constructor (int channels) {
