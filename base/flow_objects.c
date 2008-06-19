@@ -1959,7 +1959,6 @@ GRID_INLET(DrawPolygon,0) {
 	int cn = color->dim->prod();
 	color2=new Grid(new Dim(cn*16), color->nt);
 	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
-	Line *ld = (Line *)(int32 *)*lines;
 } GRID_FLOW {
 	int nl = lines->dim->get(0);
 	Line *ld = (Line *)(int32 *)*lines;
@@ -2378,10 +2377,22 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listreverse",1,1);}
 
 \class ListFlatten : FObject {
+	std::vector<t_atom2> contents;
 	\constructor () {}
 	\decl 0 list(...);
+	void traverse (int argc, t_atom2 *argv) {
+		for (int i=0; i<argc; i++) {
+			if (argv[i].a_type==A_LIST) traverse(binbuf_getnatom(argv[i]),(t_atom2 *)binbuf_getvec(argv[i]));
+			else contents.push_back(argv[i]);
+		}
+	}
 };
-\def 0 list (...) {outlet_list(bself->te_outlet,&s_list,argc,argv);}
+\def 0 list (...) {
+	traverse(argc,argv);
+	outlet_list(bself->te_outlet,&s_list,contents.size(),&contents[0]);
+	contents.clear();
+
+}
 \end class {install("listflatten",1,1);}
 
 // does not do recursive comparison of lists.
