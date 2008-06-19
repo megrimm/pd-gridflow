@@ -754,7 +754,14 @@ int handle_braces(int ac, t_atom *av) {
 			while (se>s && se[-1]==')') {se--; close++;}
 			if (s!=se) {
 				binbuf_text(buf,(char *)s,se-s);
-				av[j++] = binbuf_getvec(buf)[0];
+				if (binbuf_getnatom(buf)) {
+					av[j++] = binbuf_getvec(buf)[0];
+				} else {
+					char ss[MAXPDSTRING];
+					int n = min(se-s,MAXPDSTRING-1);
+					sprintf(ss,"%.*s",n,s);
+					SETSYMBOL(av+j,gensym(s)); j++; // av[j++] = gensym(s);
+				}
 			}
 		} else av[j++]=av[i];
 		i++;
