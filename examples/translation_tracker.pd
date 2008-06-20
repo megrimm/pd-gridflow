@@ -42,7 +42,7 @@
 #X obj 65 52 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0 1
 ;
 #X obj 121 86 #camera;
-#X obj 228 121 oneshot;
+#X obj 228 121 gf.oneshot;
 #X obj 189 121 t a a;
 #X obj 279 122 bng 15 250 50 0 empty empty empty 17 7 0 10 -260818
 -1 -1;
