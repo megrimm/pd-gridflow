@@ -2547,7 +2547,8 @@ string ssprintf(const char *fmt, ...) {
  	void show() {
 		std::ostringstream quoted;
 	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
-		const char *s = text.str().data();
+		std::string ss = text.str();
+		const char *s = ss.data();
 		int n = text.str().length();
 		for (int i=0;i<n;i++) {
 			if (s[i]=='\n') quoted << "\\n";
