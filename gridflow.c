@@ -760,7 +760,7 @@ int handle_braces(int ac, t_atom *av) {
 					char ss[MAXPDSTRING];
 					int n = min(se-s,MAXPDSTRING-1);
 					sprintf(ss,"%.*s",n,s);
-					SETSYMBOL(av+j,gensym(s)); j++; // av[j++] = gensym(s);
+					SETSYMBOL(av+j,gensym(ss)); j++; // av[j++] = gensym(s);
 				}
 			}
 		} else av[j++]=av[i];
