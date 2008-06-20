@@ -569,7 +569,7 @@ static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom2 *
 	BFObject_anything(self->parent,self->id,s,argc,argv);
 }
 
-static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
+static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
     if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
     t_class *qlass = fclasses[name]->bfclass;
@@ -701,7 +701,7 @@ void BFObject::noutlets_set (int n, bool draw) {
 
 void add_creator2(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
-	class_addcreator((t_newmethod)BFObject_init,gensym((char *)name),A_GIMME,0);
+	class_addcreator((t_newmethod)BFObject_new,gensym((char *)name),A_GIMME,0);
 }
 
 //****************************************************************
@@ -728,7 +728,7 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(name);
-	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
+	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
@@ -754,7 +754,7 @@ int handle_braces(int ac, t_atom *av) {
 			while (se>s && se[-1]==')') {se--; close++;}
 			if (s!=se) {
 				binbuf_text(buf,(char *)s,se-s);
-				if (binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT) {
+				if (binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT || binbuf_getvec(buf)[0].a_type==A_COMMA) {
 					av[j++] = binbuf_getvec(buf)[0];
 				} else {
 					char ss[MAXPDSTRING];
