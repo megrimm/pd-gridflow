@@ -1917,6 +1917,7 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 	void changed(t_symbol *s) {init_lines();}
 };
 void DrawPolygon::init_lines () {
+	if (!polygon) return;
 	int tnl = polygon->dim->get(0);
 	int nl = omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl;
 	lines=new Grid(new Dim(nl,8), int32_e);
