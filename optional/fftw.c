@@ -22,40 +22,29 @@
 #include "../gridflow.h.fcs"
 #include <fftw3.h>
 
-typedef unsigned long ulong;
-
 \class GridFFT : FObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input (for plan cache) */
 	long lastchans; /* of last input (for plan cache) */
 	\attr int sign; /* -1 or +1 */
 	\attr int skip; /* 0 (y and x) or 1 (x only) */
-	\constructor () {
-		sign = -1;
-		plan = 0;
-		lastdim = 0;
-		lastchans = 0;
-		skip = 0;
-	}
+	\constructor () {sign=-1; plan=0; lastdim=0; lastchans=0; skip=0;}
 	\grin 0 float
 };
-\def void _0_sign (int sign) {
+\def 0 sign (int sign) {
 	if (sign!=-1 && sign!=1) RAISE("sign should be -1 or +1");
 	this->sign=sign;
 	fftwf_destroy_plan(plan);
 }
-\def void _0_skip (int skip) {
+\def 0 skip (int skip) {
 	if (skip<0 || skip>1) RAISE("skip should be 0 or 1");
 	this->skip=skip;
 	if (plan) {fftwf_destroy_plan(plan); plan=0;}
 }
 GRID_INLET(GridFFT,0) {
-	if (in->nt != float32_e)
-		RAISE("expecting float32");
-	if (in->dim->n != 3 && in->dim->n != 4)
-		RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
-	if (in->dim->get(in->dim->n-1)!=2)
-		RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
+	if (in->nt != float32_e)                RAISE("expecting float32");
+	if (in->dim->n != 3 && in->dim->n != 4) RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
+	if (in->dim->get(in->dim->n-1)!=2)      RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
 	in->set_chunk(0);
 } GRID_FLOW {
 	float32 *buf = (float32 *)memalign(16,n*sizeof(float32));
@@ -76,7 +65,6 @@ GRID_INLET(GridFFT,0) {
 		fftwf_execute_dft(plan,ip,op);
 	}
 	if (skip==1) {
-		//post("skip=%ld chans=%ld",skip,chans);
 		if (!plan) plan=fftwf_plan_many_dft(1,&v[1],chans,ip,0,chans,1,op,0,chans,1,sign,0);
 		//plan = fftwf_plan_many_dft(1,&v[1],v[0],ip,0,1,v[1],op,0,1,v[1],sign,0);
 		long incr = v[1]*chans;
