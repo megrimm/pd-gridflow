@@ -60,8 +60,8 @@ GRID_INLET(GridFFT,0) {
 } GRID_FLOW {
 	float32 *buf = (float32 *)memalign(16,n*sizeof(float32));
 	long chans = in->dim->prod(2)/2;
-	CHECK_ALIGN(data,in->nt)
-	CHECK_ALIGN(buf, in->nt)
+	CHECK_ALIGN16(data,in->nt)
+	CHECK_ALIGN16(buf, in->nt)
 	fftwf_complex *ip = (fftwf_complex *)data;
 	fftwf_complex *op = (fftwf_complex *)buf;
 	if (plan && lastdim && lastdim!=in->dim && chans!=lastchans) {fftwf_destroy_plan(plan); plan=0;}

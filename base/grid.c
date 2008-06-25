@@ -47,7 +47,6 @@
 #define CHECK_BUSY(s) \
 	if (!dim) RAISE("%s: " #s " not busy (wanting to write %ld values)",ARGS(parent),(long)n);
 
-#undef CHECK_ALIGN
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
