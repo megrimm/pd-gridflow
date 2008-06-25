@@ -187,6 +187,27 @@ GRID_INLET(CvInvert,0) {
 } GRID_END
 \end class {install("cv.Invert",1,1);}
 
+\class CvSVD : CvOp1 {
+	\grin 0
+	\constructor () {}
+};
+GRID_INLET(CvSVD,0) {
+	if (in->dim->n!=2) RAISE("should have 2 dimensions");
+	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
+	in->set_chunk(0);
+} GRID_FLOW {
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid o0 = new Grid(in->dim,in->nt);
+	PtrGrid o1 = new Grid(in->dim,in->nt);
+	CvArr *a = cvGrid(l,mode);
+	CvArr *c0 = cvGrid(o0,mode);
+	CvArr *c1 = cvGrid(o1,mode);
+	cvSVD(a,c0,c1);
+	(new GridOutlet(this,1,in->dim,in->nt))->send(o1->dim->prod(),(T *)o1->data);
+	(new GridOutlet(this,0,in->dim,in->nt))->send(o0->dim->prod(),(T *)o0->data);
+} GRID_END
+\end class {install("cv.SVD",1,2);}
+
 \class CvSplit : CvOp1 {
 	int channels;
 	\constructor (int channels) {
@@ -290,10 +311,12 @@ GRID_INLET(CvKalmanWrapper,1) {
 \end class {install("cv.Kalman",2,1);}
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
-	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
-	RAISE("OpenCV error: status=%d func_name=%s err_msg=\"%s\" file_name=%s line=%d",status,func_name,err_msg,file_name,line);
+	cvSetErrStatus(CV_StsOk);
+	// we might be looking for trouble because we don't know whether OpenCV is throw-proof.
+	RAISE("OpenCV error: status='%s' func_name=%s err_msg=\"%s\" file_name=%s line=%d",cvErrorStr(status),func_name,err_msg,file_name,line);
 	// if this breaks OpenCV, then we will have to use post() or a custom hybrid of post() and RAISE() that does not cause a
 	// longjmp when any OpenCV functions are on the stack.
+	return 0;
 }
 
 void startup_opencv() {
