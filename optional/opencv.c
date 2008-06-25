@@ -147,6 +147,9 @@ GRID_INLET(CvOp2,0) {
 	CvArr *b = cvGrid(r,mode);
 	CvArr *c = cvGrid(o,mode);
 	func(a,b,c);
+	cvReleaseMat((CvMat **)&a);
+	cvReleaseMat((CvMat **)&b);
+	cvReleaseMat((CvMat **)&c);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
@@ -186,6 +189,8 @@ GRID_INLET(CvInvert,0) {
 	CvArr *c = cvGrid(o,mode);
 	//post("a=%p, b=%p", a, b);
 	cvInvert(a,c);
+	cvReleaseMat((CvMat **)&a);
+	cvReleaseMat((CvMat **)&c);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
@@ -209,6 +214,10 @@ GRID_INLET(CvSVD,0) {
 	CvArr *c1 = cvGrid(o1,mode);
 	CvArr *c2 = cvGrid(o2,mode);
 	cvSVD(a,c0,c1,c2);
+	cvReleaseMat((CvMat **)&a);
+	cvReleaseMat((CvMat **)&c0);
+	cvReleaseMat((CvMat **)&c1);
+	cvReleaseMat((CvMat **)&c2);
 	(new GridOutlet(this,2,in->dim,in->nt))->send(o2->dim->prod(),(T *)o2->data);
 	(new GridOutlet(this,1,in->dim,in->nt))->send(o1->dim->prod(),(T *)o1->data);
 	(new GridOutlet(this,0,in->dim,in->nt))->send(o0->dim->prod(),(T *)o0->data);
