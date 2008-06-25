@@ -163,6 +163,12 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 \end class {install("cv.Mul",2,1);}
 \class CvDiv : CvOp2 {FUNC(CvDiv) {cvDiv(l,r,o,1);}};
 \end class {install("cv.Div",2,1);}
+\class CvAnd : CvOp2 {FUNC(CvAnd) {cvAnd(l,r,o,0);}};
+\end class {install("cv.And",2,1);}
+\class CvOr  : CvOp2 {FUNC(CvOr ) {cvOr( l,r,o,0);}};
+\end class {install("cv.Or" ,2,1);}
+\class CvXor : CvOp2 {FUNC(CvXor) {cvXor(l,r,o,0);}};
+\end class {install("cv.Xor",2,1);}
 
 \class CvInvert : CvOp1 {
 	\constructor () {}
