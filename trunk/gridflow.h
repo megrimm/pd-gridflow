@@ -820,7 +820,7 @@ private:
 	if (in.size()<=i) in.resize(i+1); \
 	if (!in[i]) in[i]=new GridInlet((FObject *)this,&class##_grid_##i##_hand);
 
-#define CHECK_ALIGN(d,nt) \
+#define CHECK_ALIGN16(d,nt) \
 	{int bytes = 16; \
 	int align = ((ulong)(void*)d)%bytes; \
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
