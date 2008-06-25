@@ -156,9 +156,9 @@ GRID_INPUT(GridImport,1,dim_grid) {
 \def 0 to_ascii(...) {
 	std::ostringstream os;
 	pd_oprint(os,argc,argv);
-	long n = os.str().length();
-	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
 	string s = os.str();
+	long n = s.length();
+	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
 	process(n,(uint8 *)s.data());
 }
 
