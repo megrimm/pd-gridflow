@@ -24,12 +24,6 @@
 
 typedef unsigned long ulong;
 
-#define CHECK_ALIGN(d,nt) \
-	{int bytes = 16; \
-	int align = ((ulong)(void*)d)%bytes; \
-	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
-		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
-
 \class GridFFT : FObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input (for plan cache) */

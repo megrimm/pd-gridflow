@@ -47,6 +47,7 @@
 #define CHECK_BUSY(s) \
 	if (!dim) RAISE("%s: " #s " not busy (wanting to write %ld values)",ARGS(parent),(long)n);
 
+#undef CHECK_ALIGN
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
@@ -301,6 +302,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
+	//size_t ntsz = number_type_table[nt].size;
 	// biggest packet size divisible by lcm_factor
 	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
 	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
@@ -312,7 +314,7 @@ template <class T>
 void GridOutlet::send_direct(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
-		long pn = min((long)n,MAX_PACKET_SIZE);
+		long pn = n;//min((long)n,MAX_PACKET_SIZE);
 		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(4,pn,data);} CATCH_IT;
 		data+=pn, n-=pn;
 	}
