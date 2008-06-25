@@ -141,13 +141,11 @@ GRID_INLET(CvOp2,0) {
 	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
 	in->set_chunk(0);
 } GRID_FLOW {
-	//post("l=%p, r=%p", &*l, &*r);
 	PtrGrid l = new Grid(in->dim,(T *)data);
 	PtrGrid o = new Grid(in->dim,in->nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
 	CvArr *c = cvGrid(o,mode);
-	//post("a=%p, b=%p", a, b);
 	func(a,b,c);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
@@ -199,14 +197,17 @@ GRID_INLET(CvSVD,0) {
 	PtrGrid l = new Grid(in->dim,(T *)data);
 	PtrGrid o0 = new Grid(in->dim,in->nt);
 	PtrGrid o1 = new Grid(in->dim,in->nt);
+	PtrGrid o2 = new Grid(in->dim,in->nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *c0 = cvGrid(o0,mode);
 	CvArr *c1 = cvGrid(o1,mode);
-	cvSVD(a,c0,c1);
+	CvArr *c2 = cvGrid(o2,mode);
+	cvSVD(a,c0,c1,c2);
+	(new GridOutlet(this,2,in->dim,in->nt))->send(o2->dim->prod(),(T *)o2->data);
 	(new GridOutlet(this,1,in->dim,in->nt))->send(o1->dim->prod(),(T *)o1->data);
 	(new GridOutlet(this,0,in->dim,in->nt))->send(o0->dim->prod(),(T *)o0->data);
 } GRID_END
-\end class {install("cv.SVD",1,2);}
+\end class {install("cv.SVD",1,3);}
 
 \class CvSplit : CvOp1 {
 	int channels;
