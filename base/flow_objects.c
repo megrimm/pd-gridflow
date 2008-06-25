@@ -158,7 +158,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	pd_oprint(os,argc,argv);
 	long n = os.str().length();
 	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
-	process(n,(uint8 *)os.str().data());
+	string s = os.str();
+	process(n,(uint8 *)s.data());
 }
 
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
@@ -2326,7 +2327,8 @@ GRID_INLET(GridUnpack,0) {
 	std::ostringstream o;
 	pd_oprintf(o,format.data(),argc,argv);
 	t_canvas *canvas = canvas_getrootfor(bself->mom);
-	pd_error(canvas,"%s",o.str().data());
+	string s = o.str();
+	pd_error(canvas,"%s",s.data());
 }
 \end class {install("gf.error",1,0);}
 
@@ -2549,20 +2551,17 @@ string ssprintf(const char *fmt, ...) {
 	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
 		std::string ss = text.str();
 		const char *s = ss.data();
-		int n = text.str().length();
+		int n = ss.length();
 		for (int i=0;i<n;i++) {
 			if (s[i]=='\n') quoted << "\\n";
 			else if (strchr("\"[]$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		//fprintf(stderr,"text=%s\n",    text.str().data());
-		//fprintf(stderr,"quoted=%s\n",quoted.str().data());
 		//return if not canvas or not @vis # can't show for now...
 		/* we're not using quoting for now because there's a bug in it. */
 		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
 		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier 12} .x%x.c {%s}\n",
-			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,
-			text.str().data());
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,ss.data());
 	}
 };
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
