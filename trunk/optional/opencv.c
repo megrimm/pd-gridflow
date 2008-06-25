@@ -218,9 +218,9 @@ GRID_INLET(CvSVD,0) {
 	cvReleaseMat((CvMat **)&c0);
 	cvReleaseMat((CvMat **)&c1);
 	cvReleaseMat((CvMat **)&c2);
-	(new GridOutlet(this,2,in->dim,in->nt))->send(o2->dim->prod(),(T *)o2->data);
-	(new GridOutlet(this,1,in->dim,in->nt))->send(o1->dim->prod(),(T *)o1->data);
-	(new GridOutlet(this,0,in->dim,in->nt))->send(o0->dim->prod(),(T *)o0->data);
+	out = new GridOutlet(this,2,in->dim,in->nt); out->send(o2->dim->prod(),(T *)o2->data);
+	out = new GridOutlet(this,1,in->dim,in->nt); out->send(o1->dim->prod(),(T *)o1->data);
+	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o0->dim->prod(),(T *)o0->data);
 } GRID_END
 \end class {install("cv.SVD",1,3);}
 
