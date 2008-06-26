@@ -128,7 +128,7 @@ say inv+              "swapped -"
 say #moment_polar     "convert covariance matrix to the longest and shortest radius of an ellipse and a rotation angle"
 say #motion_detection "frame difference with some options"
 say #mouse            "converts mouse events to reports of clicks, drags, unclicks, motions, and separate buttons and wheel"
-say oneshot           "spigot that shuts itself down after each message"
+say gf.oneshot        "spigot that shuts itself down after each message"
 say pingpong          "turns value of a counter into a zigzag between 0 and a given value"
 
 category "Polygons"
