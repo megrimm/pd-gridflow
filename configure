@@ -789,26 +789,18 @@ RUBY = "$(RUBY_INSTALL_NAME)"
 
 puts "generating ./config.make"
 File.open("./config.make","w") {|f|
-
-  f.puts "RUBYARCH=#{CONFIG['arch']}"
   $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
   $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
   $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
-  #$CFLAGS += " -fforce-addr"
-  #$CFLAGS += " -fprefetch-loop-arrays"
-  #$CFLAGS += " -falign-jumps=4"
-  #$CFLAGS += " -falign-loops=4"
   $CFLAGS += " -DMACOSX" if OSX
   f.puts "CFLAGS += " + $CFLAGS
   f.puts "LDSOFLAGS += " + $conf[:LDSOFLAGS].flatten.join(" ")
-
   for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
   for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
   f.puts "CXX = #{$conf[:CC]}"
   f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
-
   if OSX then
     f.puts "OS = darwin"
   else
