@@ -3,11 +3,19 @@
 version 0.9.4 (2008.06.20):
 
  * [#convolve] takes more RAM but gets faster (mostly on OSX)
- * added [listread], [receives]
+ * added [listread], [receives], [ascii_to_f], [plotter_parser]
+ * [plotter_control] supports most other commands and uppercase selectors
  * added [#in dc1394]
+ * added [#window] (a shortcut for a [spigot] and a [#out window])
+ * rewrote [listflatten] (was removed in 0.9.2)
  * [#camera] greys out unavailable options and supports dc1394
  * added "GridFlow index" in Help menu
  * made arguments optional in [#border] [#draw_image] [#draw_polygon]
+ * [#draw_polygon]: added attribute "draw" (fill, line)
+ * [#draw_polygon]: added attribute "omit" (none, last, odd)
+ * support whitespace in symbols again (after bug in 0.9.2)
+ * fixed ppm loader
+ * documentation update
 
 version 0.9.3 (2008.06.06):
 
