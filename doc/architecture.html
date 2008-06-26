@@ -1,5 +1,4 @@
-<td bgcolor="black"><img src="images/black.png" height="2" width="1">
-<h4><a name="Grid_Literals">Grid Literals</h4>
+Grid Literals
 	In every grid-accepting inlet, a list may be sent instead; if 
 	it consists only of integers, it will be converted to a 
 	one-dimensional grid. Else it may contain a single "#" sign and 
@@ -9,11 +8,7 @@
  	In every grid-accepting inlet, an integer or float may also be sent; 
 	it will be converted to a zero-dimensional grid (a scalar). 
 
-
-<td bgcolor="black">
-<img src="images/black.png" height="2" width="1">
-
-<h4><a name="Grid_Protocol">Grid Protocol</h4>
+Grid Protocol
 	a grid has an associated number type that defines what are the possible values for its elements 
 	(and how much space it takes). the default is int32. 
 	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a 
@@ -37,13 +32,11 @@
 	property to your advantage sometimes. 
 	Zero-dimensional grids exist. They are called dim(). They can only contain 
 	a single number. 
-<td bgcolor="black">
-<img src="images/black.png" height="2" width="1">
-<h4><a name="Picture_Protocol">Picture Protocol</h4>
-<i>This section is useful if you want to know what a picture is in terms of a grid. </i>
-A picture is a three-dimensional Grid:  0 : rows</li> 1 : columns</li> 2 : channels</li> 
+Picture Protocol
+  This section is useful if you want to know what a picture is in terms of a grid.
+  A picture is a three-dimensional Grid: 0:rows 1:columns 2:channels
 
-Channels for the RGB color model are:  0 : red</li> 1 : green</li> 2 : blue</li> 
+Channels for the RGB color model are:  0:red 1:green 2:blue
  	Because Grids are made of 32-bit integers, a three-channel picture uses 
 	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
 	for display. That huge amount of slack is there because when you create 
@@ -56,27 +49,17 @@ Channels for the RGB color model are:  0 : red</li> 1 : green</li> 2 : blue</li>
 	0, maximum is 255, and values wrap like with % 256. If you want to 
 	clip them, you may use [# max 0] and [# min 255] objects.
 
-<h4><a name="Numeric_Operators">Numeric Operators</h4>
-In the following table, A is the value entered to the 
-		left, and B is the value entered to the right.
-Angles are in hundredths of degrees. This means a full circle 
-		(two pi radians) is 36000. You convert from degrees to our angles 
-		by multiplying by 100. You convert from radians to our angles by 
-		multiplying by 18000/pi.
-Hyperbolic functions (tanh) work with our angles too, so the same conversions apply.
-
 The following are called VecOps because each operation happens between more than just two numbers.
 A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
 If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.
 All the complex number operators are only for floats.
 TODO: fill the last two columns of this table.
 
+Synchronisation
 
-
-<h4><a name="Synchronisation">Synchronisation</h4>
 In GridFlow you cannot send two grids in different inlets at the 
 same time. You have to use [#finished] together with (possibly) [fork] and [#store], 
 which can be cumbersome. If you don't do this, the result is undefined 
 behaviour (or crash!).
 There are two exceptions: [#store] and # allow right-inlet grids to be buffered if an operation is occuring on left inlet. This 
-should make many programs simpler. 
+should make many programs simpler.
