@@ -1,5 +1,26 @@
 /* $Id$ */
 
+[ ] Accumulation of Background Statistics
+[ ] correction/détection de translations dans l'image (avec fft et #remap_image).
+[ ] cvEstimateRigidTransform
+[ ] compenser pour les ajustements progressifs ou soudains de luminosite
+[ ] ajouter detection et correction d'interference par fft
+[ ] cvEllipse
+[ ] cvApproxPoly pour un seul poly `a la fois
+[ ] cvMeanShift (?)
+[ ] cvCamShift (?)
+       Ça s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
+       Celui-ci peut être représenté comme une grid de 5 éléments pour faire plus facile
+       (contrairement à cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que ça).
+[ ] cvCalcBackProject (?)
+[ ] cvCalcHist, cvCreateHist.
+[ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
+[ ] SnakeImage (what is the concept of 'energy', squared luminosity?)
+        J'aurais supposé que oui, mais c'est juste trois mesures reliées à trois forces qui "shapent" la courbe:
+	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
+	être un edge-detect d'une image plus vieille).
+[ ] cvOpticalFlow
+
 0.9.4
 [ ] get rid of architecture.html
 [ ] support "get" in abstractions
@@ -10,6 +31,10 @@
 [ ] #line_to_polygon is buggy
 [ ] #draw_polygon draw point is buggy
 [ ] #draw_polygon init_lines() not sufficiently called
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance
+    trigger_mode? trigger, trigger_delay
+
 
 whatever version
 [ ] [cv.split]
