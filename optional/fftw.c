@@ -22,14 +22,18 @@
 #include "../gridflow.h.fcs"
 #include <fftw3.h>
 
+#define C(x) ((fftwf_complex *)x)
+
 \class GridFFT : FObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input (for plan cache) */
 	long lastchans; /* of last input (for plan cache) */
 	\attr int sign; /* -1 or +1 */
 	\attr int skip; /* 0 (y and x) or 1 (x only) */
-	\constructor () {sign=-1; plan=0; lastdim=0; lastchans=0; skip=0;}
-	\grin 0 float
+	\attr bool real;
+	bool lastreal;
+	\constructor () {sign=-1; plan=0; lastdim=0; lastchans=0; skip=0; real=false;}
+	\grin 0 float32
 };
 \def 0 sign (int sign) {
 	if (sign!=-1 && sign!=1) RAISE("sign should be -1 or +1");
@@ -42,38 +46,55 @@
 	if (plan) {fftwf_destroy_plan(plan); plan=0;}
 }
 GRID_INLET(GridFFT,0) {
-	if (in->nt != float32_e)                RAISE("expecting float32");
-	if (in->dim->n != 3 && in->dim->n != 4) RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
-	if (in->dim->get(in->dim->n-1)!=2)      RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
+	if (in->nt != float32_e)                  RAISE("expecting float32");
+	if (real && sign==-1) {
+	  if (in->dim->n != 2 && in->dim->n != 3) RAISE("expecting 2 or 3 dimensions: rows,columns,channels?");
+	} else {
+	  if (in->dim->n != 3 && in->dim->n != 4) RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
+	  if (in->dim->get(in->dim->n-1)!=2)      RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
+	}
 	in->set_chunk(0);
 } GRID_FLOW {
-	float32 *buf = (float32 *)memalign(16,n*sizeof(float32));
-	long chans = in->dim->prod(2)/2;
+	if (skip==1 && !real) RAISE("can't do 1-D FFT in real mode, sorry");
+	Dim *dim;
+	if (!real) dim = in->dim;
+	else if (sign==-1) {
+		int v[Dim::MAX_DIM];
+		for (int i=0; i<in->dim->n; i++) v[i]=in->dim->v[i];
+		v[in->dim->n] = 2;
+		dim = new Dim(in->dim->n+1,v);
+	} else dim = new Dim(in->dim->n-1,in->dim->v);
+	GridOutlet out(this,0,dim,in->nt);
+	float32 *tada = (float32 *)memalign(16,dim->prod()*sizeof(float32));
+	long chans = in->dim->n>=3 ? in->dim->get(2) : 1;
 	CHECK_ALIGN16(data,in->nt)
-	CHECK_ALIGN16(buf, in->nt)
-	fftwf_complex *ip = (fftwf_complex *)data;
-	fftwf_complex *op = (fftwf_complex *)buf;
-	if (plan && lastdim && lastdim!=in->dim && chans!=lastchans) {fftwf_destroy_plan(plan); plan=0;}
+	CHECK_ALIGN16(tada,in->nt)
+	if (plan && lastdim && lastdim!=in->dim && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
 	int v[] = {in->dim->v[0],in->dim->v[1]};
 //	if (chans==1) {
-//		if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],ip,op,sign,0);
-//		if (skip==1) plan = fftwf_plan_many_dft(1,&v[1],v[0],ip,0,1,v[1],op,0,1,v[1],sign,0);
+//		if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
+//		if (skip==1) plan = fftwf_plan_many_dft(1,&v[1],v[0],data,0,1,v[1],tada,0,1,v[1],sign,0);
 //	}
 	if (skip==0) {
-		//plan = fftwf_plan_dft_2d(v[0],v[1],ip,op,sign,0);
-		if (!plan) plan=fftwf_plan_many_dft(2,&v[0],chans,ip,0,chans,1,op,0,chans,1,sign,0);
-		fftwf_execute_dft(plan,ip,op);
+		//plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
+		if (!plan) {
+			if (!real)         {_L_ plan=fftwf_plan_many_dft(    2,&v[0],chans,C(data),0,chans,1,C(tada),0,  chans,1,sign,0);}
+			else if (sign==-1) {_L_ plan=fftwf_plan_many_dft_r2c(2,&v[0],chans,  data ,0,chans,1,C(tada),0,  chans,1,0);}
+			else               {_L_ plan=fftwf_plan_many_dft_c2r(2,&v[0],chans,C(data),0,chans,1,  tada ,0,  chans,1,0);}
+		}
+		if (!real)         fftwf_execute_dft(    plan,C(data),C(tada));
+		else if (sign==-1) fftwf_execute_dft_r2c(plan,  data ,C(tada));
+		else               fftwf_execute_dft_c2r(plan,C(data),  tada );
 	}
 	if (skip==1) {
-		if (!plan) plan=fftwf_plan_many_dft(1,&v[1],chans,ip,0,chans,1,op,0,chans,1,sign,0);
-		//plan = fftwf_plan_many_dft(1,&v[1],v[0],ip,0,1,v[1],op,0,1,v[1],sign,0);
+		if (!plan) plan=fftwf_plan_many_dft(1,&v[1],chans,C(data),0,chans,1,C(tada),0,chans,1,sign,0);
+		//plan = fftwf_plan_many_dft(1,&v[1],v[0],C(data),0,1,v[1],C(tada),0,1,v[1],sign,0);
 		long incr = v[1]*chans;
-		for (int i=0; i<v[0]; i++, ip+=incr, op+=incr) fftwf_execute_dft(plan,ip,op);
+		for (int i=0; i<v[0]; i++) fftwf_execute_dft(plan,C(data)+i*incr,C(tada)+i*incr);
 	}
-	GridOutlet out(this,0,in->dim,in->nt);
-	out.send(n,buf);
-	free(buf);
-	lastdim=in->dim; lastchans=chans;
+	out.send(out.dim->prod(),tada);
+	free(tada);
+	lastdim=in->dim; lastchans=chans; lastreal=real;
 } GRID_END
 \end class {install("#fft",1,1);}
 void startup_fftw () {
