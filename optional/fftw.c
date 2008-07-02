@@ -78,10 +78,10 @@ GRID_INLET(GridFFT,0) {
 	if (skip==0) {
 		//plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
 		if (!plan) {
-			int onembed[] = {dim->v[0],dim->v[1]};
-			if (!real)         {plan=fftwf_plan_many_dft(    2,&v[0],chans,C(data),0,chans,1,C(tada),0,      chans,1,sign,0);}
-			else if (sign==-1) {plan=fftwf_plan_many_dft_r2c(2,&v[0],chans,  data ,0,chans,1,C(tada),onembed,chans,1,0);}
-			else               {plan=fftwf_plan_many_dft_c2r(2,&v[0],chans,C(data),0,chans,1,  tada ,onembed,chans,1,0);}
+			int embed[] = {dim->v[0],dim->v[1]};
+			if (!real)         {plan=fftwf_plan_many_dft(    2,&v[0],chans,C(data),0    ,chans,1,C(tada),0    ,chans,1,sign,0);}
+			else if (sign==-1) {plan=fftwf_plan_many_dft_r2c(2,&v[0],chans,  data ,embed,chans,1,C(tada),embed,chans,1,0);}
+			else               {plan=fftwf_plan_many_dft_c2r(2,&v[0],chans,C(data),embed,chans,1,  tada ,embed,chans,1,0);}
 		}
 		if (!real)         fftwf_execute_dft(    plan,C(data),C(tada));
 		else if (sign==-1) fftwf_execute_dft_r2c(plan,  data ,C(tada));
