@@ -70,7 +70,7 @@ GRID_INLET(GridFFT,0) {
 	CHECK_ALIGN16(data,in->nt)
 	CHECK_ALIGN16(tada,in->nt)
 	if (plan && lastdim && lastdim!=in->dim && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
-	int v[] = {in->dim->v[0],in->dim->v[1]};
+	int v[] = {in->dim->v[0],in->dim->v[1],in->dim->n>2?in->dim->v[2]:1};
 //	if (chans==1) {
 //		if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
 //		if (skip==1) plan = fftwf_plan_many_dft(1,&v[1],v[0],data,0,1,v[1],tada,0,1,v[1],sign,0);
@@ -78,9 +78,10 @@ GRID_INLET(GridFFT,0) {
 	if (skip==0) {
 		//plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
 		if (!plan) {
-			if (!real)         {_L_ plan=fftwf_plan_many_dft(    2,&v[0],chans,C(data),0,chans,1,C(tada),0,  chans,1,sign,0);}
-			else if (sign==-1) {_L_ plan=fftwf_plan_many_dft_r2c(2,&v[0],chans,  data ,0,chans,1,C(tada),0,  chans,1,0);}
-			else               {_L_ plan=fftwf_plan_many_dft_c2r(2,&v[0],chans,C(data),0,chans,1,  tada ,0,  chans,1,0);}
+			int onembed[] = {dim->v[0],dim->v[1]};
+			if (!real)         {plan=fftwf_plan_many_dft(    2,&v[0],chans,C(data),0,chans,1,C(tada),0,      chans,1,sign,0);}
+			else if (sign==-1) {plan=fftwf_plan_many_dft_r2c(2,&v[0],chans,  data ,0,chans,1,C(tada),onembed,chans,1,0);}
+			else               {plan=fftwf_plan_many_dft_c2r(2,&v[0],chans,C(data),0,chans,1,  tada ,onembed,chans,1,0);}
 		}
 		if (!real)         fftwf_execute_dft(    plan,C(data),C(tada));
 		else if (sign==-1) fftwf_execute_dft_r2c(plan,  data ,C(tada));
@@ -91,6 +92,17 @@ GRID_INLET(GridFFT,0) {
 		//plan = fftwf_plan_many_dft(1,&v[1],v[0],C(data),0,1,v[1],C(tada),0,1,v[1],sign,0);
 		long incr = v[1]*chans;
 		for (int i=0; i<v[0]; i++) fftwf_execute_dft(plan,C(data)+i*incr,C(tada)+i*incr);
+	}
+	if (real && sign==-1) {
+		for (int i=0; i<v[0]; i++) {
+			int h = mod(-i,v[0]);
+			T *tada2 = tada + (h*v[1]+v[1]/2)*v[2]*2;
+			T *tada3 = tada + (i*v[1]+v[1]/2)*v[2]*2;
+			for (int j=1+v[1]/2; j<v[1]; j++) {
+				tada2-=v[2]*2; tada3+=v[2]*2;
+				for (int k=0; k<v[2]; k++) {tada3[k+k]=tada2[k+k]; tada3[k+k+1]=-tada2[k+k+1];}
+			}
+		}
 	}
 	out.send(out.dim->prod(),tada);
 	free(tada);
