@@ -3,7 +3,7 @@
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 10 -233017 -195568 -195568 0;
-#N canvas 275 0 906 659 camera 0;
+#N canvas 275 0 906 659 camera 1;
 #X obj 310 510 outlet;
 #X obj 51 9 inlet;
 #X obj 63 198 t a;
@@ -32,9 +32,9 @@
 #X obj 673 290 #export_list;
 #X obj 700 439 makefilename /dev/video%d;
 #X obj 85 419 spigot;
-#X obj 756 375 args (device a -1);
-#X obj 756 356 loadbang;
-#X obj 756 413 s \$0-device;
+#X obj 308 579 args (device a -1);
+#X obj 308 560 loadbang;
+#X obj 308 617 s \$0-device;
 #X obj 85 441 route pwc;
 #X msg 85 460 pwc \$1 \, get;
 #X obj 51 28 list split 1;
@@ -51,7 +51,7 @@
 #X obj 174 174 foreach;
 #X obj 174 193 makefilename \$0-%s;
 #X msg 174 212 \; \$1 color 10 20 20;
-#X msg 176 559 \; \$1 color 18 17 22;
+#X msg 179 559 \; \$1 color 18 17 22;
 #X obj 122 381 t b a b b;
 #X obj 391 306 s \$0-colorspace_e;
 #X obj 391 325 r \$0-s_colorspace_e;
@@ -109,7 +109,7 @@ norm transfer;
 #X obj 744 601 listread read mmap;
 #X msg 744 620 transfer \$1;
 #X obj 714 524 route2 color;
-#X obj 756 394 mod 11;
+#X obj 308 598 mod 11;
 #X obj 656 417 range 8 9 10;
 #X msg 434 399 open quicktimecamera \, get;
 #X connect 1 0 33 0;
@@ -139,6 +139,7 @@ norm transfer;
 #X connect 26 0 3 0;
 #X connect 27 0 31 0;
 #X connect 28 0 99 0;
+#X connect 28 1 0 0;
 #X connect 29 0 28 0;
 #X connect 31 0 32 0;
 #X connect 31 1 0 0;
@@ -233,58 +234,58 @@ frequency 4 7 1 10 -233017 -195568 -195568 0 1;
 0;
 #X text 9 32 device:;
 #X obj 11 50 vradio 15 1 0 11 \$0-s_device \$0-device empty 0 -6 0
-8 -241291 -1 -1 9;
+8 -241291 -1 -1 0;
 #X obj 81 105 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 133 119 hsl 129 12 0 65535 0 0 \$0-s_brightness \$0-brightness
-brightness 4 7 1 10 -233017 -195568 -195568 0 0;
+brightness 4 7 1 10 -62784 -44926 -1 6300 0;
 #X obj 133 143 hsl 129 12 0 65535 0 0 \$0-s_hue \$0-hue hue 4 7 1 10
--233017 -195568 -195568 0 0;
+-62784 -44926 -1 12800 0;
 #X obj 133 107 hsl 129 12 0 65535 0 0 \$0-s_contrast \$0-contrast contrast
-4 7 1 10 -233017 -195568 -195568 0 0;
+4 7 1 10 -62784 -44926 -1 12600 0;
 #X obj 133 155 hsl 129 12 0 65535 0 0 \$0-s_whiteness \$0-whiteness
-whiteness 4 7 1 10 -233017 -195568 -195568 0 0;
+whiteness 4 7 1 10 -62784 -44926 -1 12400 0;
 #X obj 133 131 hsl 129 12 0 65535 0 0 \$0-s_colour \$0-colour colour
-4 7 1 10 -233017 -195568 -195568 0 0;
+4 7 1 10 -62784 -44926 -1 6400 0;
 #X obj 83 107 nbx 5 12 0 65535 0 0 \$0-s_contrast \$0-contrast empty
-4 7 1 10 -233017 -195568 -195568 0 256;
+4 7 1 10 -62784 -44926 -1 64512 256;
 #X obj 83 119 nbx 5 12 0 65535 0 0 \$0-s_brightness \$0-brightness
-empty 4 7 1 10 -233017 -195568 -195568 0 256;
+empty 4 7 1 10 -62784 -44926 -1 32256 256;
 #X obj 83 131 nbx 5 12 0 65535 0 0 \$0-s_colour \$0-colour empty 4
-7 1 10 -233017 -195568 -195568 0 256;
+7 1 10 -62784 -44926 -1 32768 256;
 #X obj 83 143 nbx 5 12 0 65535 0 0 \$0-s_hue \$0-hue empty 4 7 1 10
--233017 -195568 -195568 0 256;
+-62784 -44926 -1 65535 256;
 #X obj 83 155 nbx 5 12 0 65535 0 0 \$0-s_whiteness \$0-whiteness empty
-4 7 1 10 -233017 -195568 -195568 0 256;
+4 7 1 10 -62784 -44926 -1 63488 256;
 #X obj 270 214 cnv 15 144 124 empty \$0-palette2 YUV420P 86 8 0 12
 -233017 -1 0;
 #X obj 270 31 cnv 15 144 178 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 312 67 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_height \$0-height empty
-0 -6 1 10 -233017 -195568 -195568 0 256;
+0 -6 1 10 -62784 -44926 -1 480 256;
 #X obj 360 67 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_width \$0-width empty
-0 -6 1 10 -233017 -195568 -195568 0 256;
+0 -6 1 10 -62784 -44926 -1 640 256;
 #X text 275 66 size:;
 #X text 315 35 height;
 #X text 365 35 width;
 #X msg 291 315 transfer mmap 4;
 #X obj 291 352 s \$0-o;
 #X obj 329 124 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
-10 -233017 -195568 -195568;
+10 -62784 -44926 -1;
 #X obj 344 124 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 10
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 329 136 bng 12 250 50 0 \$0-size2 \$0-sizec 240x320 -46 6 1
-10 -233017 -195568 -195568;
+10 -62784 -44926 -1;
 #X obj 344 136 bng 12 250 50 0 \$0-size3 \$0-sizec 240x360 16 6 1 10
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 329 148 bng 12 250 50 0 \$0-size4 \$0-sizec 480x640 -46 6 1
-10 -233017 -195568 -195568;
+10 -62784 -44926 -1;
 #X obj 344 148 bng 12 250 50 0 \$0-size5 \$0-sizec 480x720 16 6 1 10
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 344 160 bng 12 250 50 0 \$0-size6 \$0-sizec 576x720 16 6 1 10
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 344 172 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 10
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 360 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
 empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 133 203 hsl 129 12 0 65535 0 0 \$0-s_white_blue \$0-white_blue
@@ -323,12 +324,12 @@ auto_gain 4 7 1 10 -233017 -195568 -195568 0 0;
 _0_1_2_3_noise_reduction -2 7 1 10 -233017 -195568 -195568 0;
 #X obj 83 263 hradio 12 1 0 4 \$0-s_compression \$0-compression _0_1_2_3_compression
 -2 7 1 10 -233017 -195568 -195568 0;
-#X obj 11 226 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
--195568 0 1;
+#X obj 11 226 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
+-1 0 1;
 #X text 26 224 use PWC;
 #X text 28 170 DC1394;
 #X obj 356 232 vradio 12 1 0 4 \$0-s_colorspace_e \$0-colorspace_e
-empty 0 -8 0 10 -233017 -195568 -195568 0;
+empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 370 229 y;
 #X text 370 241 yuv;
 #X text 370 254 rgb;
@@ -352,21 +353,21 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 214 45 NTSC;
 #X text 213 57 SECAM;
 #X text 213 68 auto;
-#X obj 6 6 cnv 15 408 20 empty \$0-title Unknown_camera 4 10 1 12 -1
--262144 0;
+#X obj 6 6 cnv 15 408 20 empty \$0-title Logitech_QuickCam_Pro_4000
+4 10 1 12 -1 -262144 0;
 #X obj 356 285 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
-0 -8 0 10 -233017 -195568 -195568 0;
+0 -8 0 10 -62784 -44926 -1 1;
 #X text 291 289 Transfer:;
 #X text 370 283 read;
 #X text 371 295 mmap;
 #X obj 312 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 120 256;
 #X obj 360 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 160 256;
 #X obj 312 82 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxheight empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 480 256;
 #X obj 360 82 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxwidth empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 640 256;
 #X text 275 81 max:;
 #X text 275 51 min:;
 #X text 297 214 Palette:;
