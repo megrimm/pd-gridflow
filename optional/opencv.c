@@ -326,6 +326,45 @@ GRID_INLET(CvKalmanWrapper,1) {
 } GRID_END
 \end class {install("cv.Kalman",2,1);}
 
+//\class CvEllipse : FObject {
+//	\grin 0
+//};
+//GRID_INLET(CvEllipse,0) {
+//	in->set_chunk(0);
+//} GRID_FLOW {
+//} GRID_END
+//\end class {install("cv.Ellipse",1,1);}
+
+/*
+void cvEllipse( CvArr* img, CvPoint center, CvSize axes, double angle,
+                double start_angle, double end_angle, CvScalar color,
+                int thickness=1, int line_type=8, int shift=0 );
+CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,
+                     int method, double parameter, int parameter2=0 );
+void cvCalcOpticalFlowHS( const CvArr* prev, const CvArr* curr, int use_previous,
+                          CvArr* velx, CvArr* vely, double lambda,
+                          CvTermCriteria criteria );
+void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size,
+                          CvArr* velx, CvArr* vely );
+void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size,
+                          CvSize shift_size, CvSize max_range, int use_previous,
+                          CvArr* velx, CvArr* vely );
+void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
+                             const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
+                             int count, CvSize win_size, int level, char* status,
+                             float* track_error, CvTermCriteria criteria, int flags );
+void cvCalcBackProject( IplImage** image, CvArr* back_project, const CvHistogram* hist );
+void cvCalcHist( IplImage** image, CvHistogram* hist, int accumulate=0, const CvArr* mask=NULL );
+CvHistogram* cvCreateHist( int dims, int* sizes, int type, float** ranges=NULL, int uniform=1 );
+void cvSnakeImage( const IplImage* image, CvPoint* points, int length,
+                   float* alpha, float* beta, float* gamma, int coeff_usage,
+                   CvSize win, CvTermCriteria criteria, int calc_gradient=1 );
+int cvMeanShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp );
+int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp, CvBox2D* box=NULL );
+*/
+
+/* **************************************************************** */
+
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
 	cvSetErrStatus(CV_StsOk);
 	// we might be looking for trouble because we don't know whether OpenCV is throw-proof.
