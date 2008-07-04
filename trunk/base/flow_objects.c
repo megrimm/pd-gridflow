@@ -466,7 +466,7 @@ GRID_INLET(GridStore,0) {
 		type *foo = NEWBUF(type,nd*size); \
 		long i=0; \
 		switch (size) { \
-		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
+		case 1: for (; i<(nd&-4); i+=4, foo+=4) { \
 			foo[0] = p[v[i+0]]; \
 			foo[1] = p[v[i+1]]; \
 			foo[2] = p[v[i+2]]; \
@@ -2980,6 +2980,33 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	outlet_float(bself->outlets[0],!!zgetfn(&pd_objectmaker,s));
 }
 \end class {install("class_exists",1,1);}
+
+typedef t_binbuf t_list;
+
+static t_list *list_new (int argc, t_atom *argv) {
+	t_list *b = binbuf_new();
+	binbuf_add(b,argc,argv);
+	return b;
+}
+static void list_free (t_list *self) {binbuf_free(self);}
+
+\class ListEqual : FObject {
+	t_list *list;
+	\constructor (...) {list=0; _1_list(argc,argv);}
+	\decl 0 list (...);
+	\decl 1 list (...);
+};
+\def 1 list (...) {
+	if (list) list_free(list);
+	list = list_new(argc,argv);
+}
+\def 0 list (...) {
+	if (binbuf_getnatom(list) != argc) {outlet_float(bself->outlets[0],0); return;}
+	t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
+	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {outlet_float(bself->outlets[0],0); return;}
+	outlet_float(bself->outlets[0],1);
+}
+\end class {install("list.==",2,1);}
 
 //****************************************************************
 //#ifdef UNISTD
