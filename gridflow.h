@@ -107,10 +107,10 @@ template <class T> static T gcd (T a, T b) {
 // greatest common divisor, the binary algorithm. haven't tried yet.
 template <class T> static T gcd2 (T a, T b) {
 	int s=0;
-	while ((a|b)&1==0) { a>>=1; b>>=1; s++; }
+	while (((a|b)&1)==0) { a>>=1; b>>=1; s++; }
 	while (a) {
-		if (a&1==0) a>>=1;
-		else if (b&1==0) b>>=1;
+		if ((a&1)==0) a>>=1;
+		else if ((b&1)==0) b>>=1;
 		else {T t=abs(a-b); if (a<b) b=t; else a=t;}
 	}
 	return b<<s;
