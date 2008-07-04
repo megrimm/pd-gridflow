@@ -30,6 +30,8 @@
 
 #define MODE(x,y,palette) /* nothing for now */
 
+static std::map<int,string> feature_names;
+
 static void setup_modes () {
     int i=64; // format 0
     MODE(160,120,YUV444);
@@ -74,7 +76,7 @@ static void setup_modes () {
 // image formats start at #384 and are VGA_NONCOMPRESSED SVGA_NONCOMPRESSED_1 SVGA_NONCOMPRESSED_2
 //   and continue at #390 and are STILL_IMAGE FORMAT_SCALABLE_IMAGE_SIZE
 
-#define FEATURE(foo) /* nothing */
+#define FEATURE(foo) feature_names[i++] = #foo;
 
     i=416;
     FEATURE(BRIGHTNESS);
@@ -144,6 +146,8 @@ static void setup_modes () {
 typedef raw1394handle_t RH;
 typedef nodeid_t NID;
 
+#define IO(func,args...) if (func(rh,usenode,args)!=DC1394_SUCCESS) RAISE(#func " failed");
+
 \class FormatDC1394 : Format {
 	RH rh;
 	int useport;
@@ -152,6 +156,8 @@ typedef nodeid_t NID;
 	int height;
 	int width;
 	dc1394_cameracapture camera;
+	dc1394_feature_set features;
+	std::map<int,int> feature_index;
 	\constructor (t_symbol *mode) {
 		bool gotone=false;
 		post("DC1394: hello world");
@@ -175,6 +181,18 @@ typedef nodeid_t NID;
 		}
 		if (!gotone) RAISE("no cameras available");
 		this->rh = dc1394_create_handle(useport);
+		IO(dc1394_get_camera_feature_set,&features);
+		dc1394_print_feature_set(&features);
+		post("NUM_FEATURES=%d",NUM_FEATURES);
+		for (int i=0; i<NUM_FEATURES; i++) {
+			dc1394_feature_info &f = features.feature[i];
+			int id = f.feature_id;
+			string name = feature_names.find(id)==feature_names.end() ? "(unknown)" : feature_names[id];
+			bool is_there = f.available;
+			post("  feature %d '%s' is %s",id,name.data(),is_there?"present":"absent");
+			if (!is_there) continue;
+			post("    min=%u max=%u abs_min=%u abs_max=%u",f.min,f.max,f.abs_min,f.abs_max);
+		}
 		framerate_e = FRAMERATE_30;
 		height = 480;
 		width = 640;
@@ -191,8 +209,6 @@ typedef nodeid_t NID;
 	\decl 0 get (t_symbol *s=0);
 	\decl 0 size (int height, int width);
 };
-
-#define IO(func,args...) if (func(rh,usenode,args)!=DC1394_SUCCESS) RAISE(#func " failed");
 
 \def 0 get (t_symbol *s=0) {
 	FObject::_0_get(argc,argv,s);
@@ -262,7 +278,10 @@ static void rien (int) {timeout=1; post("timeout2");}
 	//post("quadlets_per_packet=%d" ,camera.quadlets_per_packet);
 }
 
-\end class FormatDC1394 {install_format("#io.dc1394",4,"");}
+\end class FormatDC1394 {
+	install_format("#io.dc1394",4,"");
+	setup_modes();
+}
 void startup_dc1394 () {
 	\startall
 }
