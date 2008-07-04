@@ -247,7 +247,7 @@ void FormatDC1394::setup () {
 }
 
 \def float framerate() {
-	return 1.875 * (1<<framerate_e-FRAMERATE_1_875);
+	return 1.875 * (1<<(framerate_e-FRAMERATE_1_875));
 }
 
 \def 0 framerate(float framerate) {
