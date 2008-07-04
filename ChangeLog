@@ -1,9 +1,10 @@
 /* $Id$ */
 
-version 0.9.4 (2008.06.20):
+version 0.9.4 (2008.07.04):
 
- * [#convolve] takes more RAM but gets faster (mostly on OSX)
- * added [listread], [receives], [ascii_to_f], [plotter_parser]
+ * [#convolve] takes more RAM but gets faster on OSX
+ * added [listread], [receives], [ascii_to_f], [plotter_parser], [list.==]
+ * added [cv.Invert], [cv.SVD], [expect]
  * [plotter_control] supports most other commands and uppercase selectors
  * added [#in dc1394]
  * added [#window] (a shortcut for a [spigot] and a [#out window])
@@ -15,7 +16,8 @@ version 0.9.4 (2008.06.20):
  * [#draw_polygon]: added attribute "omit" (none, last, odd)
  * support whitespace in symbols again (after bug in 0.9.2)
  * fixed ppm loader
- * documentation update
+ * [#fft]: added attribute "real"
+ * added example frequency_mask.pd
 
 version 0.9.3 (2008.06.06):
 
