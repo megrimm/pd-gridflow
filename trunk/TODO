@@ -1,10 +1,22 @@
 /* $Id$ */
 
+0.9.5
+[ ] get rid of architecture.html
+[ ] support "get" in abstractions
+[ ] fix [nbx]<->[hsl] relationship in [#camera]
+[ ] bugs roman
+[ ] add claude's fixes
+[ ] other gf mails in inbox
+[ ] #line_to_polygon is buggy
+[ ] #draw_polygon init_lines() not sufficiently called
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance
+    trigger_mode? trigger, trigger_delay
 [ ] Accumulation of Background Statistics
-[ ] correction/détection de translations dans l'image (avec fft et #remap_image).
+[x] correction/détection de translations dans l'image (avec fft et #remap_image).
 [ ] cvEstimateRigidTransform
 [ ] compenser pour les ajustements progressifs ou soudains de luminosite
-[ ] ajouter detection et correction d'interference par fft
+[x] ajouter detection et correction d'interference par fft
 [ ] cvEllipse
 [ ] cvApproxPoly pour un seul poly `a la fois
 [ ] cvMeanShift (?)
@@ -21,28 +33,12 @@
 	être un edge-detect d'une image plus vieille).
 [ ] cvOpticalFlow
 
-0.9.4
-[ ] get rid of architecture.html
-[ ] support "get" in abstractions
-[ ] fix [nbx]<->[hsl] relationship in [#camera]
-[ ] bugs roman
-[ ] add claude's fixes
-[ ] other gf mails in inbox
-[ ] #line_to_polygon is buggy
-[ ] #draw_polygon draw point is buggy
-[ ] #draw_polygon init_lines() not sufficiently called
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance
-    trigger_mode? trigger, trigger_delay
-
-
 whatever version
 [ ] [cv.split]
 [ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
 [ ] ...
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
-[ ] reimplement [listflatten] !
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] with pwc, 720x480 crashes
 [ ] fix SDL modifiers
