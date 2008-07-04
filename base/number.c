@@ -221,10 +221,10 @@ DEF_OP(max, max(a,b), nt_smallest((T*)0), x==nt_smallest(&x), x==nt_greatest(&x)
 DEF_OP(cmp, cmp(a,b), 0, false, false)
 DEF_OP(eq,  a == b, 0, false, false)
 DEF_OP(ne,  a != b, 0, false, false)
-DEF_OP(gt,  a >  b, 0, false, (side==at_left && x==nt_smallest(&x)) || side==at_right && x==nt_greatest(&x)))
-DEF_OP(le,  a <= b, 0, false, (side==at_left && x==nt_smallest(&x)) || side==at_right && x==nt_greatest(&x)))
-DEF_OP(lt,  a <  b, 0, false, (side==at_left && x==nt_greatest(&x)) || side==at_right && x==nt_smallest(&x)))
-DEF_OP(ge,  a >= b, 0, false, (side==at_left && x==nt_greatest(&x)) || side==at_right && x==nt_smallest(&x)))
+DEF_OP(gt,  a >  b, 0, false, (side==at_left && x==nt_smallest(&x)) || (side==at_right && x==nt_greatest(&x)))
+DEF_OP(le,  a <= b, 0, false, (side==at_left && x==nt_smallest(&x)) || (side==at_right && x==nt_greatest(&x)))
+DEF_OP(lt,  a <  b, 0, false, (side==at_left && x==nt_greatest(&x)) || (side==at_right && x==nt_smallest(&x)))
+DEF_OP(ge,  a >= b, 0, false, (side==at_left && x==nt_greatest(&x)) || (side==at_right && x==nt_smallest(&x)))
 #endif
 #ifdef PASS3
 DEF_OP(sinmul, (float64)b * sin((float64)a * (M_PI / 18000)), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
