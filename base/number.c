@@ -180,9 +180,11 @@ template <class T> static inline T gf_floor (T a) {
 template <class T> static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
+namespace {
 // trying to avoid GCC warning about uint8 too small for ==256
 template <class T> static bool equal256 (T     x) {return x==256;}
 template <>               bool equal256 (uint8 x) {return false;}
+};
 
 #ifdef PASS1
 DEF_OP(ignore, a, 0, side==at_right, side==at_left)
