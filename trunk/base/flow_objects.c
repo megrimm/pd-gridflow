@@ -2006,7 +2006,7 @@ GRID_INLET(DrawPolygon,0) {
 					int xs = min(ld[i].x,ld[i].ox);
 					int xe = max(ld[i].x,ld[i].ox);
 					if (xs==xe) xe++;
-					if (xs<0 && xe<0 || xs>=xl && xe>=xl) continue;
+					if ((xs<0 && xe<0) || (xs>=xl && xe>=xl)) continue;
 					xs = max(0,xs);
 					xe = min(xl,xe);
 					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
