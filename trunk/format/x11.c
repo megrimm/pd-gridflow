@@ -213,8 +213,6 @@ void FormatX11_call(FormatX11 *p);
 
 /* ---------------------------------------------------------------- */
 
-static const char *xfers[5] = {"plain","xshm","xvideo","xvideoshm","opengl"};
-
 void FormatX11::show_section(int x, int y, int sx, int sy) {
 	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
