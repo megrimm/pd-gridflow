@@ -96,7 +96,7 @@ CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 	int dims=g->dim->n;
 	//post("mode=%d",(int)mode);
 	if (mode==cv_mode_channels && g->dim->n==0) RAISE("CV: channels dimension required for 'mode channels'");
-	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
+	if ((mode==cv_mode_auto && g->dim->n>=3) || mode==cv_mode_channels) channels=g->dim->v[--dims];
 	if (channels>64) RAISE("CV: too many channels. max 64, got %d",channels);
 	//post("channels=%d dims=%d nt=%d",channels,dims,g->nt);
 	//post("bits=%d",number_type_table[g->nt].size);

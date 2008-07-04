@@ -754,7 +754,7 @@ int handle_braces(int ac, t_atom *av) {
 			while (se>s && se[-1]==')') {se--; close++;}
 			if (s!=se) {
 				binbuf_text(buf,(char *)s,se-s);
-				if (binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT || binbuf_getvec(buf)[0].a_type==A_COMMA) {
+				if ((binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT) || binbuf_getvec(buf)[0].a_type==A_COMMA) {
 					av[j++] = binbuf_getvec(buf)[0];
 				} else {
 					char ss[MAXPDSTRING];
