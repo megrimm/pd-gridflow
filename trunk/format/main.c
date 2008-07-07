@@ -137,7 +137,7 @@ Format::~Format () {if (f) fclose(f); /*if (fd>=0) close(fd);*/}
 
 /* This is the Grid format I defined: */
 struct GridHeader {
-	char magic[5]; // = "\7fgrid" on little endian, "\x7fGRID" on big endian
+	char magic[5]; // = "\x7fgrid" on little endian, "\x7fGRID" on big endian
 	uint8 type; // number of bits.
 		   // the original doc said: "plus one of: 1:unsigned 2:float" but i don't recall what this means.
 	uint8 reserved; // set this to 0 all of the time.
@@ -153,7 +153,7 @@ struct GridHeader {
 	P<Dim> headerless_dim; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
-		strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
+		strncpy(head.magic,is_le()?"\177grid":"\177GRID",5);
 		head.type = 32;
 		_0_open(0,0,mode,filename);
 	}
@@ -176,8 +176,8 @@ struct GridHeader {
 	} else {
 		fread(&head,1,8,f);
 		uint8 *m = (uint8 *)head.magic;
-		if (strncmp((char *)m,"\7fgrid",5)==0) endian=1; else
-		if (strncmp((char *)m,"\7fGRID",5)==0) endian=1; else
+		if (strncmp((char *)m,"\177grid",5)==0) endian=1; else
+		if (strncmp((char *)m,"\177GRID",5)==0) endian=1; else
 		RAISE("unknown header, can't read grid from file: "
 			"%02x %02x %02x %02x %02x %02x %02x %02x",
 			m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7]);
