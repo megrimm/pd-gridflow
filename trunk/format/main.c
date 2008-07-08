@@ -153,7 +153,8 @@ struct GridHeader {
 	P<Dim> headerless_dim; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
-		strncpy(head.magic,is_le()?"\177grid":"\177GRID",5);
+		nt = int32_e;
+		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
 		head.type = 32;
 		_0_open(0,0,mode,filename);
 	}
@@ -176,8 +177,8 @@ struct GridHeader {
 	} else {
 		fread(&head,1,8,f);
 		uint8 *m = (uint8 *)head.magic;
-		if (strncmp((char *)m,"\177grid",5)==0) endian=1; else
-		if (strncmp((char *)m,"\177GRID",5)==0) endian=1; else
+		if (strncmp((char *)m,"\x7fgrid",5)==0) endian=1; else
+		if (strncmp((char *)m,"\x7fGRID",5)==0) endian=1; else
 		RAISE("unknown header, can't read grid from file: "
 			"%02x %02x %02x %02x %02x %02x %02x %02x",
 			m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7]);
