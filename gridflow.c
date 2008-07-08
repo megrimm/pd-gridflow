@@ -703,6 +703,30 @@ void add_creator2(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
 	class_addcreator((t_newmethod)BFObject_new,gensym((char *)name),A_GIMME,0);
 }
+typedef struct _methodentry
+{
+    t_symbol *me_name;
+    t_gotfn me_fun;
+    t_atomtype me_arg[MAXPDARG+1];
+} t_methodentry;
+struct _class {
+    t_symbol *c_name;                   /* name (mostly for error reporting) */
+    t_symbol *c_helpname;               /* name of help file */
+    t_symbol *c_externdir;              /* directory extern was loaded from */
+    size_t c_size;                      /* size of an instance */
+    t_methodentry *c_methods;           /* methods other than bang, etc below */
+    int c_nmethod;                      /* number of methods */
+    // ...
+};
+void add_creator3(FClass *fclass, const char *name) {
+	fclasses[string(name)] = fclass;
+	t_class *c = pd_objectmaker;
+	t_symbol *want = gensym(name);
+	for (int i=c->c_nmethod-1; i>=0; i--) {
+		t_methodentry *m = c->c_methods+i;
+		if (m->me_name==want) {m->me_fun = t_gotfn(BFObject_new); m->me_arg[0]=A_GIMME; m->me_arg[1]=A_NULL; break;}
+	}
+}
 
 //****************************************************************
 
