@@ -718,6 +718,15 @@ static void add_to_path(char *dir) {
 
 //----------------------------------------------------------------
 
+static t_list *list_new (int argc, t_atom *argv) {
+	t_list *b = binbuf_new();
+	binbuf_add(b,argc,argv);
+	return b;
+}
+static void list_free (t_list *self) {binbuf_free(self);}
+
+//----------------------------------------------------------------
+
 void fclass_install(FClass *fclass, FClass *super, size_t bytes) {
 	fclass->super = super;
 	if (fclass->startup) fclass->startup(fclass);
