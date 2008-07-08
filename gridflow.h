@@ -61,6 +61,11 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 static inline void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_gpointer = (t_gpointer *)b;}
 static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_gpointer = 0;}
 
+typedef t_binbuf t_list;
+
+static t_list *list_new (int argc, t_atom *argv);
+static void list_free (t_list *self);
+
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
 typedef int       int32; typedef unsigned int       uint32;

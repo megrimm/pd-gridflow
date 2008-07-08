@@ -2981,15 +2981,6 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 }
 \end class {install("class_exists",1,1);}
 
-typedef t_binbuf t_list;
-
-static t_list *list_new (int argc, t_atom *argv) {
-	t_list *b = binbuf_new();
-	binbuf_add(b,argc,argv);
-	return b;
-}
-static void list_free (t_list *self) {binbuf_free(self);}
-
 \class ListEqual : FObject {
 	t_list *list;
 	\constructor (...) {list=0; _1_list(argc,argv);}
