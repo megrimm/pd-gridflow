@@ -63,8 +63,8 @@ static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_gpo
 
 typedef t_binbuf t_list;
 
-static t_list *list_new (int argc, t_atom *argv);
-static void list_free (t_list *self);
+t_list *list_new (int argc, t_atom *argv);
+void list_free (t_list *self);
 
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
