@@ -2568,7 +2568,7 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 	for (int i=1; i<argc; i++) {text << " " << argv[i];}
 	post("%s",text.str().data());
 }
-\end class {install("gf.print",1,0);}
+\end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
 #ifndef HAVE_DESIREDATA
 static void display_update(void *x);
