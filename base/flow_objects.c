@@ -2502,8 +2502,6 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 
 //****************************************************************
 
-static void display_update(void *x);
-
 string ssprintf(const char *fmt, ...) {
 	std::ostringstream os;
 	va_list va;
@@ -2516,7 +2514,23 @@ string ssprintf(const char *fmt, ...) {
 // write me
 \class GFPrint : FObject {
 	t_symbol *prefix;
-	\constructor (t_symbol *s=0) {prefix=s?s:gensym("print");}
+	t_pd *gp;
+	t_symbol *rsym;
+	\constructor (t_symbol *s=0) {
+		rsym = gensym(const_cast<char *>(ssprintf("gf.print:%08x",this).data())); // not in use atm.
+		prefix=s?s:gensym("print");
+		t_atom a[1];
+		SETSYMBOL(a,prefix);
+		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
+		gp = pd_newest();
+		SETPOINTER(a,(t_gpointer *)bself);
+		//pd_typedmess(gp,gensym("dest"),1,a);
+	}
+	~GFPrint () {
+		pd_unbind((t_pd *)bself,rsym);
+		pd_free(gp);
+	}
+	\decl 0 grid(...);
 	\decl void anything (...);
 };
 std::ostream &operator << (std::ostream &self, t_atom &a) {
@@ -2536,17 +2550,28 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 	}
 	return self;
 }
+\def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 \def void anything(...) {
 	std::ostringstream text;
-	text << prefix << ": ";
-	if (!((argv[0]==gensym("_0_float") || argv[0]==gensym("_0_list")) && argc>1 && argv[1].a_type==A_FLOAT))
-		text << argv[0].a_symbol->s_name+3 << " ";
-	for (int i=1; i<argc; i++) {text << argv[i]; if (i<argc-1) text << ' ';}
+	text << prefix->s_name << ":";
+	if (argv[0]==gensym("_0_list") && argc>=2 && argv[1].a_type==A_FLOAT) {
+		// don't show the selector.
+	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_SYMBOL) {
+		text << " symbol";
+	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_POINTER) {
+		text << " pointer";
+	} else if (argv[0]==gensym("_0_list") && argc==1) {
+		text << " bang";
+	} else {
+		text << " " << argv[0].a_symbol->s_name+3; // as is
+	}
+	for (int i=1; i<argc; i++) {text << " " << argv[i];}
 	post("%s",text.str().data());
 }
 \end class {install("gf.print",1,0);}
 
 #ifndef HAVE_DESIREDATA
+static void display_update(void *x);
 \class Display : FObject {
 	bool selected;
 	t_glist *canvas;
