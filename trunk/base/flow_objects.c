@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string>
 #include <sstream>
+#include <iomanip>
 #include <errno.h>
 #include "../gridflow.h.fcs"
 #ifndef DESIREDATA
@@ -2511,6 +2512,39 @@ string ssprintf(const char *fmt, ...) {
 	va_end(va);
 	return os.str();
 }
+
+// write me
+\class GFPrint : FObject {
+	t_symbol *prefix;
+	\constructor (t_symbol *s=0) {prefix=s?s:gensym("print");}
+	\decl void anything (...);
+};
+std::ostream &operator << (std::ostream &self, t_atom &a) {
+	switch (a.a_type) {
+		case A_FLOAT:   self << a.a_float; break;
+		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
+		case A_POINTER: self << "\\p(0x" << std::hex << a.a_gpointer << std::dec << ")"; break;
+		case A_LIST: {
+			t_list *b = (t_list *)a.a_gpointer;
+			int argc = binbuf_getnatom(b);
+			t_atom *argv = binbuf_getvec(b);
+			self << "(";
+			for (int i=0; i<argc; i++) self << argv[i] << " )"[i==argc-1];
+			break;
+		}
+		default: self << "\\a(" << a.a_type << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
+	}
+	return self;
+}
+\def void anything(...) {
+	std::ostringstream text;
+	text << prefix << ": ";
+	if (!((argv[0]==gensym("_0_float") || argv[0]==gensym("_0_list")) && argc>1 && argv[1].a_type==A_FLOAT))
+		text << argv[0].a_symbol->s_name+3 << " ";
+	for (int i=1; i<argc; i++) {text << argv[i]; if (i<argc-1) text << ' ';}
+	post("%s",text.str().data());
+}
+\end class {install("gf.print",1,0);}
 
 #ifndef HAVE_DESIREDATA
 \class Display : FObject {
