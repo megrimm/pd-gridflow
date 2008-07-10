@@ -65,7 +65,7 @@ def handle_class(line)
 	q=ClassDecl.new(classname,superclassname,{},{},{},false)
 	$stack << q
 	$classes << q
-	Out.print "/* begin class */"
+	Out.print "#define THISCLASS #{classname}\n\# #{$linenumber}\n"
 	if rest and /^\{/ =~ rest then
 		Out.print "struct #{classname} "
 		Out.print ": #{superclassname}" if superclassname
@@ -280,7 +280,7 @@ def handle_end(line)
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop
-	Out.print " /*end class*/ "
+	Out.print "\n#undef THISCLASS\n\# #{$linenumber}\n"
 end
 
 def handle_startall(line)
