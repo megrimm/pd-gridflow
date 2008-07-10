@@ -284,25 +284,31 @@ GRID_INLET(CvSVD,0) {
 	\attr int line_type;
 	\attr int shift;
 	\constructor () {
-		center=cvPoint(0,0); axes=cvSize(0,0); angle=0; start_angle=0; end_angle=0; color=cvScalar(0);
+		center=cvPoint(0,0); axes=cvSize(0,0); angle=0; start_angle=0; end_angle=360; color=cvScalar(0);
 		thickness=1; line_type=8; shift=0;
 	}
 };
 GRID_INLET(CvEllipse,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid l = new Grid(in->dim,in->nt); COPY((T *)*l,data,in->dim->prod());
 	IplImage *img = cvImageGrid(l);
 	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
 	cvReleaseImageHeader(&img);
-	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in->dim->prod(),data);
+	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in->dim->prod(),(T *)*l);
 } GRID_END
 \end class {install("cv.Ellipse",1,2);}
 
+\class CvApproxPoly : FObject {
+	\grin 0
+	\constructor () {}
+};
+GRID_INLET(CvApproxPoly,0) {
+} GRID_FLOW {
+} GRID_END
+\end class {install("cv.ApproxPoly",1,1);}
+
 /*
-void cvEllipse( CvArr* img, CvPoint center, CvSize axes, double angle,
-                double start_angle, double end_angle, CvScalar color,
-                int thickness=1, int line_type=8, int shift=0 );
 CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,
                      int method, double parameter, int parameter2=0 );
 void cvCalcOpticalFlowHS( const CvArr* prev, const CvArr* curr, int use_previous,
