@@ -122,6 +122,54 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	return a;
 }
 
+void cvMatSend(const CvMat *self, FObject *obj, int outno) {
+	int m = self->rows;
+	int n = self->cols;
+	int e = CV_MAT_TYPE(cvGetElemType(self));
+	int c = CV_MAT_CN(  cvGetElemType(self));
+	GridOutlet *out = new GridOutlet(obj,0,new Dim(m,n));
+	for (int i=0; i<m; i++) {
+		uchar *meuh = cvPtr2D(self,i,0,0);
+		switch (e) {
+		  case CV_8U:  out->send(c*n,  (uint8 *)meuh); break;
+		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
+		  case CV_32S: out->send(c*n,  (int32 *)meuh); break;
+		  case CV_32F: out->send(c*n,(float32 *)meuh); break;
+		  case CV_64F: out->send(c*n,(float64 *)meuh); break;
+		}
+	}
+}
+
+#define binbuf_addv(SELF,FMT,ARGS...) binbuf_addv(SELF,const_cast<char *>(FMT),ARGS)
+
+void set_atom (t_atom *a, CvPoint &v) {
+	t_binbuf *b = binbuf_new();
+	binbuf_addv(b,"ii",v.y,v.x);
+	SETLIST(a,b);
+}
+void set_atom (t_atom *a, CvSize &v) {
+	t_binbuf *b = binbuf_new();
+	binbuf_addv(b,"ii",v.height,v.width);
+	SETLIST(a,b);
+}
+void set_atom (t_atom *a, CvScalar &scal) {
+	t_binbuf *b = binbuf_new();
+	binbuf_addv(b,"ffff",scal.val[0],scal.val[1],scal.val[2],scal.val[3]);
+	SETLIST(a,b);
+}
+#define USELIST \
+	if (a.a_type != A_LIST) RAISE("expected listatom"); \
+	t_list *b = (t_list *)a.a_gpointer; \
+	int argc = binbuf_getnatom(b); \
+	t_atom *argv = binbuf_getvec(b);
+#define GETF(I)     atom_getfloatarg(I,argc,argv)
+#define GETI(I) int(atom_getfloatarg(I,argc,argv))
+CvPoint  convert (const t_atom &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}
+CvSize   convert (const t_atom &a, CvSize *)    {USELIST; return cvSize(  GETI(0),GETI(1));}
+CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0),GETF(1),GETF(2),GETF(3));}
+
+/* ******************************** CLASSES ******************************** */
+
 \class CvOp1 : FObject {
 	\attr CvMode mode;
 	\constructor () {mode = cv_mode_auto;}
@@ -224,6 +272,63 @@ GRID_INLET(CvSVD,0) {
 } GRID_END
 \end class {install("cv.SVD",1,3);}
 
+\class CvEllipse : FObject {
+	\grin 0
+	\attr CvPoint center;
+	\attr CvSize axes;
+	\attr double angle;
+	\attr double start_angle;
+	\attr double end_angle;
+	\attr CvScalar color;
+	\attr int thickness;
+	\attr int line_type;
+	\attr int shift;
+	\constructor () {
+		center=cvPoint(0,0); axes=cvSize(0,0); angle=0; start_angle=0; end_angle=0; color=cvScalar(0);
+		thickness=1; line_type=8; shift=0;
+	}
+};
+GRID_INLET(CvEllipse,0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	IplImage *img = cvImageGrid(l);
+	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
+	cvReleaseImageHeader(&img);
+	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in->dim->prod(),data);
+} GRID_END
+\end class {install("cv.Ellipse",1,2);}
+
+/*
+void cvEllipse( CvArr* img, CvPoint center, CvSize axes, double angle,
+                double start_angle, double end_angle, CvScalar color,
+                int thickness=1, int line_type=8, int shift=0 );
+CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,
+                     int method, double parameter, int parameter2=0 );
+void cvCalcOpticalFlowHS( const CvArr* prev, const CvArr* curr, int use_previous,
+                          CvArr* velx, CvArr* vely, double lambda,
+                          CvTermCriteria criteria );
+void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size,
+                          CvArr* velx, CvArr* vely );
+void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size,
+                          CvSize shift_size, CvSize max_range, int use_previous,
+                          CvArr* velx, CvArr* vely );
+void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
+                             const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
+                             int count, CvSize win_size, int level, char* status,
+                             float* track_error, CvTermCriteria criteria, int flags );
+void cvCalcBackProject( IplImage** image, CvArr* back_project, const CvHistogram* hist );
+void cvCalcHist( IplImage** image, CvHistogram* hist, int accumulate=0, const CvArr* mask=NULL );
+CvHistogram* cvCreateHist( int dims, int* sizes, int type, float** ranges=NULL, int uniform=1 );
+void cvSnakeImage( const IplImage* image, CvPoint* points, int length,
+                   float* alpha, float* beta, float* gamma, int coeff_usage,
+                   CvSize win, CvTermCriteria criteria, int calc_gradient=1 );
+int cvMeanShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp );
+int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp, CvBox2D* box=NULL );
+*/
+
+/* ******************************** UNFINISHED ******************************** */
+
 \class CvSplit : CvOp1 {
 	int channels;
 	\constructor (int channels) {
@@ -283,30 +388,10 @@ GRID_INLET(CvHaarDetectObjects,0) {
 	\grin 0
 	\grin 1
 };
-
-void cvMatSend(const CvMat *self, FObject *obj, int outno) {
-	int m = self->rows;
-	int n = self->cols;
-	int e = CV_MAT_TYPE(cvGetElemType(self));
-	int c = CV_MAT_CN(  cvGetElemType(self));
-	GridOutlet *out = new GridOutlet(obj,0,new Dim(m,n));
-	for (int i=0; i<m; i++) {
-		uchar *meuh = cvPtr2D(self,i,0,0);
-		switch (e) {
-		  case CV_8U:  out->send(c*n,  (uint8 *)meuh); break;
-		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
-		  case CV_32S: out->send(c*n,  (int32 *)meuh); break;
-		  case CV_32F: out->send(c*n,(float32 *)meuh); break;
-		  case CV_64F: out->send(c*n,(float64 *)meuh); break;
-		}
-	}
-}
-
 \def void _0_bang () {
 	const CvMat *r = cvKalmanPredict(kal,0);
 	cvMatSend(r,this,0);
 }
-
 GRID_INLET(CvKalmanWrapper,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -325,43 +410,6 @@ GRID_INLET(CvKalmanWrapper,1) {
 	cvMatSend(r,this,0);
 } GRID_END
 \end class {install("cv.Kalman",2,1);}
-
-//\class CvEllipse : FObject {
-//	\grin 0
-//};
-//GRID_INLET(CvEllipse,0) {
-//	in->set_chunk(0);
-//} GRID_FLOW {
-//} GRID_END
-//\end class {install("cv.Ellipse",1,1);}
-
-/*
-void cvEllipse( CvArr* img, CvPoint center, CvSize axes, double angle,
-                double start_angle, double end_angle, CvScalar color,
-                int thickness=1, int line_type=8, int shift=0 );
-CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,
-                     int method, double parameter, int parameter2=0 );
-void cvCalcOpticalFlowHS( const CvArr* prev, const CvArr* curr, int use_previous,
-                          CvArr* velx, CvArr* vely, double lambda,
-                          CvTermCriteria criteria );
-void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size,
-                          CvArr* velx, CvArr* vely );
-void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size,
-                          CvSize shift_size, CvSize max_range, int use_previous,
-                          CvArr* velx, CvArr* vely );
-void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
-                             const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
-                             int count, CvSize win_size, int level, char* status,
-                             float* track_error, CvTermCriteria criteria, int flags );
-void cvCalcBackProject( IplImage** image, CvArr* back_project, const CvHistogram* hist );
-void cvCalcHist( IplImage** image, CvHistogram* hist, int accumulate=0, const CvArr* mask=NULL );
-CvHistogram* cvCreateHist( int dims, int* sizes, int type, float** ranges=NULL, int uniform=1 );
-void cvSnakeImage( const IplImage* image, CvPoint* points, int length,
-                   float* alpha, float* beta, float* gamma, int coeff_usage,
-                   CvSize win, CvTermCriteria criteria, int calc_gradient=1 );
-int cvMeanShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp );
-int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp, CvBox2D* box=NULL );
-*/
 
 /* **************************************************************** */
 
