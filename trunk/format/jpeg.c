@@ -48,11 +48,9 @@ extern "C" {
 	\grin 0 int
 };
 
-GRID_INLET(FormatJPEG,0) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+GRID_INLET(0) {
+	if (in->dim->n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2)!=3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_chunk(1);
 	cjpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cjpeg);
@@ -67,7 +65,7 @@ GRID_INLET(FormatJPEG,0) {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
-	uint8 *rows[1] = { row };
+	uint8 *rows[1] = {row};
 	while (n) {
 		bit_packing->pack(in->dim->get(1),data,row);
 		jpeg_write_scanlines(&cjpeg,rows,1);

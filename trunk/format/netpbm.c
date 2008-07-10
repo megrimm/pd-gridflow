@@ -54,7 +54,7 @@ extern "C" {
 	}
 	pnm_freepamrow(tuplerow);
 }
-GRID_INLET(FormatNetPBM,0) {
+GRID_INLET(0) {
 	if (in->dim->n!=3) RAISE("need 3 dimensions");
 	if (in->dim->v[2]!=3) RAISE("need 3 channels");
 	outpam.size = sizeof(struct pam);

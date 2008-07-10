@@ -142,7 +142,7 @@ static std::map<string,string> fourccs;
 	quicktime_set_cmodel(anim,colorspace);
 }
 
-GRID_INLET(FormatQuickTimeHW,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2)!=channels) RAISE("expecting %d channels (got %d)",channels,in->dim->get(2));
 	in->set_chunk(0);

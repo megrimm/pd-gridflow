@@ -512,7 +512,7 @@ static int read3(int fd, uint8 *image, int n) {
 	frame_ask();
 }
 
-GRID_INLET(FormatVideoDev,0) {
+GRID_INLET(0) {
 	RAISE("can't write.");
 } GRID_FLOW {
 } GRID_FINISH {
