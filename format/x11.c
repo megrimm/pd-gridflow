@@ -493,7 +493,7 @@ void FormatX11::resize_window (int sx, int sy) {
 	XSync(display,0);
 }
 
-GRID_INLET(FormatX11,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)

@@ -175,7 +175,7 @@ void FormatSDL::resize_window (int sx, int sy) {
 		RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
 }
 
-GRID_INLET(FormatSDL,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)

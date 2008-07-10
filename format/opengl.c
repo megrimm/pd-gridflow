@@ -149,7 +149,7 @@ void FormatOpenGL_call (FormatOpenGL *self) {self->call();}
 
 }
 
-GRID_INLET(FormatOpenGL,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)

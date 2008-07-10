@@ -67,7 +67,7 @@ static std::map<string,const aa_driver *> drivers;
 	\grin 0 int
 };
 
-GRID_INLET(FormatAALib,0) {
+GRID_INLET(0) {
 	if (!context) RAISE("boo");
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");

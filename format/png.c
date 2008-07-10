@@ -42,11 +42,9 @@ extern "C" {
 	\grin 0 int
 };
 
-GRID_INLET(FormatPNG,0) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+GRID_INLET(0) {
+	if (in->dim->n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2)!=3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_chunk(1);
 	RAISE("bother, said pooh, as the PNG encoding was found unimplemented");
 } GRID_FLOW {

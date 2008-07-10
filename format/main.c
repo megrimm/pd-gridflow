@@ -199,7 +199,7 @@ TYPESWITCH(nt,FOO,)
 	SUPER;
 }
 
-GRID_INLET(FormatGrid,0) {
+GRID_INLET(0) {
 	if (!headerless_dim) {
 		fwrite(&head,1,8,f);
 		fwrite(in->dim->v,in->dim->n,4,f); // forgot the endian here
