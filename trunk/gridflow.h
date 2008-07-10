@@ -906,6 +906,7 @@ void call_super(int argc, t_atom *argv);
 	\decl 0 rewind ();
 	~Format ();
 };
+\end class
 
 extern std::vector<string> gf_data_path;
 string gf_find_file (string x);
