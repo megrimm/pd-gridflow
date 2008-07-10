@@ -319,7 +319,7 @@ void pix_videoDarwin :: DoVideoSettings() {
     SGIdle(m_sg);
 }
 
-GRID_INLET(FormatQuickTimeCamera,0) {
+GRID_INLET(0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
 	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
@@ -431,7 +431,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	//return INT2NUM(nf);
 }
 
-GRID_INLET(FormatQuickTimeApple,0) {
+GRID_INLET(0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
 	if (in->dim->n != 3)
