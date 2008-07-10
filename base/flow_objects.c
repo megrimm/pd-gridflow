@@ -2489,15 +2489,9 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 	\decl void _n_float(int i, float f);
 };
 \def 0 list(float f) {_0_float(argc,argv,f);}
-\def 0 float(float f) {
-	int i;
-	for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
-	outlet_float(bself->outlets[i],f);
-}
-\def void _n_float(int i, float f) {
-	if (!i) _0_float(argc,argv,f); // precedence problem in rubyext...
-	else mosusses[i-1] = f;
-}
+\def 0 float(float f) {for (int i=0; i<nmosusses; i++) if (f<mosusses[i]) {outlet_float(bself->outlets[i],f); return;}}
+ // precedence problem in dispatcher... does this problem still exist?
+\def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
 \end class {install("range",1,1);}
 
 //****************************************************************
@@ -2511,13 +2505,12 @@ string ssprintf(const char *fmt, ...) {
 	return os.str();
 }
 
-// write me
 \class GFPrint : FObject {
 	t_symbol *prefix;
 	t_pd *gp;
-	t_symbol *rsym;
+	//t_symbol *rsym;
 	\constructor (t_symbol *s=0) {
-		rsym = gensym(const_cast<char *>(ssprintf("gf.print:%08x",this).data())); // not in use atm.
+		//rsym = gensym(const_cast<char *>(ssprintf("gf.print:%08x",this).data())); // not in use atm.
 		prefix=s?s:gensym("print");
 		t_atom a[1];
 		SETSYMBOL(a,prefix);
@@ -2527,7 +2520,7 @@ string ssprintf(const char *fmt, ...) {
 		//pd_typedmess(gp,gensym("dest"),1,a);
 	}
 	~GFPrint () {
-		pd_unbind((t_pd *)bself,rsym);
+		//pd_unbind((t_pd *)bself,rsym);
 		pd_free(gp);
 	}
 	\decl 0 grid(...);
@@ -3127,4 +3120,3 @@ void startup_flow_objects () {
 	op_put = OP(put);
 	\startall
 }
-
