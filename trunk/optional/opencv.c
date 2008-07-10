@@ -184,7 +184,7 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 	\grin 0
 	\grin 1
 };
-GRID_INLET(CvOp2,0) {
+GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
 	in->set_chunk(0);
@@ -201,7 +201,7 @@ GRID_INLET(CvOp2,0) {
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
-GRID_INPUT2(CvOp2,1,r) {} GRID_END
+GRID_INPUT2(1,r) {} GRID_END
 \end class {}
 
 #define FUNC(CLASS) CLASS(BFObject *bself, MESSAGE):CvOp2(bself,MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
@@ -225,7 +225,7 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(CvInvert,0) {
+GRID_INLET(0) {
 	if (in->dim->n!=2) RAISE("should have 2 dimensions");
 	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
 	in->set_chunk(0);
@@ -248,7 +248,7 @@ GRID_INLET(CvInvert,0) {
 	\grin 0
 	\constructor () {}
 };
-GRID_INLET(CvSVD,0) {
+GRID_INLET(0) {
 	if (in->dim->n!=2) RAISE("should have 2 dimensions");
 	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
 	in->set_chunk(0);
@@ -288,7 +288,7 @@ GRID_INLET(CvSVD,0) {
 		thickness=1; line_type=8; shift=0;
 	}
 };
-GRID_INLET(CvEllipse,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in->dim,in->nt); COPY((T *)*l,data,in->dim->prod());
@@ -303,22 +303,18 @@ GRID_INLET(CvEllipse,0) {
 	\grin 0
 	\constructor () {}
 };
-GRID_INLET(CvApproxPoly,0) {
+GRID_INLET(0) {
 } GRID_FLOW {
 } GRID_END
 \end class {install("cv.ApproxPoly",1,1);}
 
 /*
-CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage,
-                     int method, double parameter, int parameter2=0 );
-void cvCalcOpticalFlowHS( const CvArr* prev, const CvArr* curr, int use_previous,
-                          CvArr* velx, CvArr* vely, double lambda,
+CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage, int method, double parameter, int parameter2=0 );
+void cvCalcOpticalFlowHS(const CvArr* prev, const CvArr* curr, int use_previous, CvArr* velx, CvArr* vely, double lambda,
                           CvTermCriteria criteria );
-void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size,
-                          CvArr* velx, CvArr* vely );
-void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size,
-                          CvSize shift_size, CvSize max_range, int use_previous,
-                          CvArr* velx, CvArr* vely );
+void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size, CvArr* velx, CvArr* vely);
+void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size, CvSize shift_size, CvSize max_range, int use_previous,
+                          CvArr* velx, CvArr* vely);
 void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
                              const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
                              int count, CvSize win_size, int level, char* status,
@@ -326,8 +322,7 @@ void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_p
 void cvCalcBackProject( IplImage** image, CvArr* back_project, const CvHistogram* hist );
 void cvCalcHist( IplImage** image, CvHistogram* hist, int accumulate=0, const CvArr* mask=NULL );
 CvHistogram* cvCreateHist( int dims, int* sizes, int type, float** ranges=NULL, int uniform=1 );
-void cvSnakeImage( const IplImage* image, CvPoint* points, int length,
-                   float* alpha, float* beta, float* gamma, int coeff_usage,
+void cvSnakeImage( const IplImage* image, CvPoint* points, int length, float* alpha, float* beta, float* gamma, int coeff_usage,
                    CvSize win, CvTermCriteria criteria, int calc_gradient=1 );
 int cvMeanShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp );
 int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria, CvConnectedComp* comp, CvBox2D* box=NULL );
@@ -368,7 +363,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 	CvMemStorage *storage;
 	\grin 0
 };
-GRID_INLET(CvHaarDetectObjects,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in->dim,(T *)data);
@@ -398,7 +393,7 @@ GRID_INLET(CvHaarDetectObjects,0) {
 	const CvMat *r = cvKalmanPredict(kal,0);
 	cvMatSend(r,this,0);
 }
-GRID_INLET(CvKalmanWrapper,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in->dim,(T *)data);
@@ -407,7 +402,7 @@ GRID_INLET(CvKalmanWrapper,0) {
 	cvMatSend(r,this,0);
 } GRID_END
 
-GRID_INLET(CvKalmanWrapper,1) {
+GRID_INLET(1) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in->dim,(T *)data);
