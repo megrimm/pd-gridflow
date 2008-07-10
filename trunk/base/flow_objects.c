@@ -94,7 +94,7 @@ static void expect_max_one_dim (P<Dim> d) {
 	\constructor (NumberTypeE nt) {this->nt = nt;}
 	\grin 0
 };
-GRID_INLET(GridCast,0) {
+GRID_INLET(0) {
 	out = new GridOutlet(this,0,in->dim,nt);
 } GRID_FLOW {
 	out->send(n,data);
@@ -141,8 +141,8 @@ GridHandler *stromgol; // remove this asap
 	}
 };
 
-GRID_INLET(GridImport,0) {} GRID_FLOW { process(n,data); } GRID_END
-GRID_INPUT(GridImport,1,dim_grid) {
+GRID_INLET(0) {} GRID_FLOW { process(n,data); } GRID_END
+GRID_INPUT(1,dim_grid) {
 	P<Dim> d = dim_grid->to_dim();
 	if (!d->prod()) RAISE("target grid size must not be zero");
 	dim = d;
@@ -179,7 +179,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(GridToFloat,0) {
+GRID_INLET(0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) outlet_float(bself->outlets[0],data[i]);
 } GRID_END
@@ -189,7 +189,7 @@ GRID_INLET(GridToFloat,0) {
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(GridToSymbol,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	char c[n+1];
@@ -207,7 +207,7 @@ GRID_INLET(GridToSymbol,0) {
 	\grin 0
 };
 
-GRID_INLET(GridExportList,0) {
+GRID_INLET(0) {
 	long n = in->dim->prod();
 	if (n>1000000) RAISE("list too big (%ld elements, max 1000000)", n);
 	this->n = n;
@@ -315,7 +315,7 @@ template <class T> void GridPrint::make_columns (int n, T *data) {
 	//fprintf(stderr,"v=(%d,%d) d=(%d,%d)\n",minv,maxv,mind,maxd);
 	columns = max(maxd,mind);
 }
-GRID_INLET(GridPrint,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	std::ostringstream head;
@@ -428,7 +428,7 @@ template <class T> void GridStore::compute_indices(T *v, long nc, long nd) {
 
 // !@#$ i should ensure that n is not exceedingly large
 // !@#$ worse: the size of the foo buffer may still be too large
-GRID_INLET(GridStore,0) {
+GRID_INLET(0) {
 	// snap_backstore must be done before *anything* else
 	snap_backstore(r);
 	int na = in->dim->n;
@@ -495,7 +495,7 @@ GRID_INLET(GridStore,0) {
 	}
 } GRID_END
 
-GRID_INLET(GridStore,1) {
+GRID_INLET(1) {
 	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
 		if (in[0].dim)
@@ -573,7 +573,7 @@ GRID_INLET(GridStore,1) {
 	\grin 1
 };
 
-GRID_INLET(GridOp,0) {
+GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
@@ -616,7 +616,7 @@ GRID_INLET(GridOp,0) {
 	out->give(n,data);
 } GRID_END
 
-GRID_INPUT2(GridOp,1,r) {} GRID_END
+GRID_INPUT2(1,r) {} GRID_END
 \end class {install("#",2,1); add_creator("@");}
 
 //****************************************************************
@@ -627,7 +627,7 @@ GRID_INPUT2(GridOp,1,r) {} GRID_END
 	\grin 0
 };
 
-GRID_INLET(GridFold,0) {
+GRID_INLET(0) {
 	//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,*Cs]<T> }
 	if (seed) SAME_TYPE(in,seed);
 	int an = in->dim->n;
@@ -671,7 +671,7 @@ GRID_INLET(GridFold,0) {
 	\grin 0
 };
 
-GRID_INLET(GridScan,0) {
+GRID_INLET(0) {
 	//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,B,*Cs]<T> }
 	if (seed) SAME_TYPE(in,seed);
 	int an = in->dim->n;
@@ -757,7 +757,7 @@ template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {
 	}
 }
 
-GRID_INLET(GridInner,0) {
+GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
 	P<Dim> a=in->dim, b=r->dim;
@@ -843,7 +843,7 @@ GRID_INLET(GridInner,0) {
 	r2=0;
 } GRID_END
 
-GRID_INPUT(GridInner,1,r) {} GRID_END
+GRID_INPUT(1,r) {} GRID_END
 
 \end class {install("#inner",2,1);}
 
@@ -860,7 +860,7 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 	\grin 1
 };
 
-GRID_INLET(GridOuter,0) {
+GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	P<Dim> a = in->dim;
 	P<Dim> b = r->dim;
@@ -901,7 +901,7 @@ GRID_INLET(GridOuter,0) {
 	out->give(n,buf);
 } GRID_END
 
-GRID_INPUT(GridOuter,1,r) {} GRID_END
+GRID_INPUT(1,r) {} GRID_END
 
 \end class {install("#outer",2,1); add_creator("@outer");}
 
@@ -981,9 +981,9 @@ void GridFor::trigger (T bogus) {
 }
 
 \def 0 set (Grid *r) { from=new Grid(argv[0]); }
-GRID_INPUT(GridFor,2,step) {} GRID_END
-GRID_INPUT(GridFor,1,to) {} GRID_END
-GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
+GRID_INPUT(2,step) {} GRID_END
+GRID_INPUT(1,to) {} GRID_END
+GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
 \end class {install("#for",3,1); add_creator("@for");}
 
 //****************************************************************
@@ -991,7 +991,7 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(GridFinished,0) {
+GRID_INLET(0) {
 	in->set_mode(0);
 } GRID_FINISH {
 	outlet_bang(bself->outlets[0]);
@@ -1002,7 +1002,7 @@ GRID_INLET(GridFinished,0) {
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(GridDim,0) {
+GRID_INLET(0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
 	out.send(in->dim->n,in->dim->v);
 	in->set_mode(0);
@@ -1013,7 +1013,7 @@ GRID_INLET(GridDim,0) {
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(GridType,0) {
+GRID_INLET(0) {
 	outlet_symbol(bself->outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
 	in->set_mode(0);
 } GRID_END
@@ -1036,7 +1036,7 @@ GRID_INLET(GridType,0) {
 	\grin 1 int32
 };
 
-GRID_INLET(GridRedim,0) {
+GRID_INLET(0) {
 	long a=in->dim->prod(), b=dim->prod();
 	if (a<b) temp=new Grid(new Dim(a),in->nt);
 	out=new GridOutlet(this,0,dim,in->nt);
@@ -1063,7 +1063,7 @@ GRID_INLET(GridRedim,0) {
 	temp=0;
 } GRID_END
 
-GRID_INPUT(GridRedim,1,dim_grid) {
+GRID_INPUT(1,dim_grid) {
 	P<Dim> d = dim_grid->to_dim();
 //	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
 	dim = d;
@@ -1083,7 +1083,7 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 	}
 };
 
-GRID_INLET(GridJoin,0) {
+GRID_INLET(0) {
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	P<Dim> d = in->dim;
@@ -1139,7 +1139,7 @@ GRID_INLET(GridJoin,0) {
 	if (in->dim->prod()==0) out->send(r->dim->prod(),(T *)*r);
 } GRID_END
 
-GRID_INPUT(GridJoin,1,r) {} GRID_END
+GRID_INPUT(1,r) {} GRID_END
 
 \end class {install("@join",2,1);}
 
@@ -1161,7 +1161,7 @@ FOO(float32)
 FOO(float64)
 #undef FOO
 
-GRID_INLET(GridGrade,0) {
+GRID_INLET(0) {
 	out=new GridOutlet(this,0,in->dim);
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
@@ -1198,7 +1198,7 @@ GRID_INLET(GridGrade,0) {
 \def 1 float (int dim1) { this->dim1=dim1; }
 \def 2 float (int dim2) { this->dim2=dim2; }
 
-GRID_INLET(GridTranspose,0) {
+GRID_INLET(0) {
 	int32 v[in->dim->n];
 	COPY(v,in->dim->v,in->dim->n);
 	d1=dim1; d2=dim2;
@@ -1247,7 +1247,7 @@ GRID_INLET(GridTranspose,0) {
 
 \def 1 float (int dim1) { this->dim1=dim1; }
 
-GRID_INLET(GridReverse,0) {
+GRID_INLET(0) {
 	d=dim1;
 	if (d<0) d+=in->dim->n;
 	if (d>=in->dim->n || d<0)
@@ -1275,7 +1275,7 @@ GRID_INLET(GridReverse,0) {
 	int sumx,sumy,sum,y; // temporaries
 };
 
-GRID_INLET(GridCentroid,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
 	in->set_chunk(1);
@@ -1323,7 +1323,7 @@ static void expect_pair (P<Dim> dim) {if (dim->prod()!=2) RAISE("expecting only 
 	int64 sumy,sumxy,sumx,sum,y; // temporaries
 };
 
-GRID_INLET(GridMoment,0) {
+GRID_INLET(0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
 	in->set_chunk(1);
@@ -1378,7 +1378,7 @@ GRID_INLET(GridMoment,0) {
 	}
 } GRID_END
 
-GRID_INPUT(GridMoment,1,offset) {} GRID_END
+GRID_INPUT(1,offset) {} GRID_END
 
 \end class {install("#moment",2,1);}
 
@@ -1424,7 +1424,7 @@ template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *
 	}
 }
 
-GRID_INLET(GridLabeling,0) {
+GRID_INLET(0) {
 	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -1477,7 +1477,7 @@ void GridLabeling::initialize3() {
 	\grin 0
 	\constructor (int32 z=256) {this->z=z;}
 };
-GRID_INLET(GridPerspective,0) {
+GRID_INLET(0) {
 	int n = in->dim->n;
 	int32 v[n];
 	COPY(v,in->dim->v,n);
@@ -1512,7 +1512,7 @@ GRID_INLET(GridPerspective,0) {
 	}
 };
 
-GRID_INLET(GridBorder,0) {
+GRID_INLET(0) {
 	int n = in->dim->n;
 	if (n!=3) RAISE("only 3 dims supported for now");
 	if (diml->n != n) RAISE("diml mismatch");
@@ -1538,8 +1538,8 @@ GRID_INLET(GridBorder,0) {
 	for (int i=0; i<dimr->v[0]; i++) out->send(zxc,duh);
 } GRID_END
 
-GRID_INPUT(GridBorder,1,diml_grid) {diml = diml_grid->to_dim();} GRID_END
-GRID_INPUT(GridBorder,2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
+GRID_INPUT(1,diml_grid) {diml = diml_grid->to_dim();} GRID_END
+GRID_INPUT(2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
 
 \end class {install("#border",3,1);}
 
@@ -1632,7 +1632,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	plann = i;
 }
 
-GRID_INLET(GridConvolve,0) {
+GRID_INLET(0) {
 	SAME_TYPE(in,b);
 	SAME_TYPE(in,seed);
 	P<Dim> da=in->dim, db=b->dim;
@@ -1684,7 +1684,7 @@ GRID_INLET(GridConvolve,0) {
 	//a=0; // comment this out when trying to recycle a (use the dim->equal above)
 } GRID_END
 
-GRID_INPUT(GridConvolve,1,b) {} GRID_END
+GRID_INPUT(1,b) {} GRID_END
 
 \end class {install("#convolve",2,1);}
 
@@ -1717,7 +1717,7 @@ static void expect_scale_factor (P<Dim> dim) {
 	}
 };
 
-GRID_INLET(GridScaleBy,0) {
+GRID_INLET(0) {
 	P<Dim> a = in->dim;
 	expect_picture(a);
 	out=new GridOutlet(this,0,new Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
@@ -1743,7 +1743,7 @@ GRID_INLET(GridScaleBy,0) {
 	#undef Z
 } GRID_END
 
-GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
+GRID_INPUT(1,scale) { prepare_scale_factor(); } GRID_END
 
 \end class {install("#scale_by",2,1); add_creator("@scale_by");}
 
@@ -1772,7 +1772,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	}
 };
 
-GRID_INLET(GridDownscaleBy,0) {
+GRID_INLET(0) {
 	P<Dim> a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
@@ -1830,7 +1830,7 @@ GRID_INLET(GridDownscaleBy,0) {
 	#undef Z
 } GRID_END
 
-GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
+GRID_INPUT(1,scale) { prepare_scale_factor(); } GRID_END
 
 \end class {install("#downscale_by",2,1); add_creator("@downscale_by");}
 
@@ -1842,7 +1842,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	\grin 1 int
 };
 
-GRID_INLET(GridLayer,0) {
+GRID_INLET(0) {
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	P<Dim> a = in->dim;
@@ -1865,7 +1865,7 @@ GRID_INLET(GridLayer,0) {
 	out->send(n*3/4,foo);
 } GRID_END
 
-GRID_INPUT(GridLayer,1,r) {} GRID_END
+GRID_INPUT(1,r) {} GRID_END
 
 \end class {install("#layer",2,1); add_creator("@layer");}
 
@@ -1947,7 +1947,7 @@ static int order_by_column (const void *a, const void *b) {
 	return ((Line *)a)->x - ((Line *)b)->x;
 }
 
-GRID_INLET(DrawPolygon,0) {
+GRID_INLET(0) {
 	NOTEMPTY(color);
 	NOTEMPTY(polygon);
 	NOTEMPTY(lines);
@@ -2032,8 +2032,8 @@ GRID_INLET(DrawPolygon,0) {
 } GRID_END
 
 
-GRID_INPUT(DrawPolygon,1,color) {} GRID_END
-GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
+GRID_INPUT(1,color) {} GRID_END
+GRID_INPUT(2,polygon) {init_lines();} GRID_END
 
 \end class {install("#draw_polygon",3,1); add_creator("@draw_polygon");}
 
@@ -2102,7 +2102,7 @@ template <class T> void DrawImage::draw_segment(T *obuf, T *ibuf, int ry, int x0
 	}
 }
 
-GRID_INLET(DrawImage,0) {
+GRID_INLET(0) {
 	NOTEMPTY(image);
 	NOTEMPTY(position);
 	SAME_TYPE(in,image);
@@ -2144,8 +2144,8 @@ GRID_INLET(DrawImage,0) {
 	}
 } GRID_END
 
-GRID_INPUT(DrawImage,1,image) {} GRID_END
-GRID_INPUT(DrawImage,2,position) {} GRID_END
+GRID_INPUT(1,image) {} GRID_END
+GRID_INPUT(2,position) {} GRID_END
 
 \end class {install("#draw_image",3,1); add_creator("@draw_image");}
 
@@ -2167,10 +2167,10 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	}
 };
 
-GRID_INPUT(GridDrawPoints,1,color) {} GRID_END
-GRID_INPUT(GridDrawPoints,2,points) {} GRID_END
+GRID_INPUT(1,color) {} GRID_END
+GRID_INPUT(2,points) {} GRID_END
 
-GRID_INLET(GridDrawPoints,0) {
+GRID_INLET(0) {
 	NOTEMPTY(color);
 	NOTEMPTY(points);
 	SAME_TYPE(in,color);
@@ -2200,7 +2200,7 @@ GRID_INLET(GridDrawPoints,0) {
 	\grin 0
 };
 
-GRID_INLET(GridPolygonize,0) {
+GRID_INLET(0) {
 	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -2217,7 +2217,7 @@ GRID_INLET(GridPolygonize,0) {
 	\constructor (int v=0) {thresh=v;}
 };
 
-GRID_INLET(GridNoiseGateYuvs,0) {
+GRID_INLET(0) {
 	if (in->dim->n!=3) RAISE("requires 3 dimensions: dim(y,x,3)");
 	if (in->dim->v[2]!=3) RAISE("requires 3 channels");
 	out=new GridOutlet(this,0,in->dim,in->nt);
@@ -2279,7 +2279,7 @@ TYPESWITCH(a->nt,FOO,);
 	}
 	\grin 0
 };
-GRID_INLET(GridUnpack,0) {
+GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) outlet_float(bself->outlets[i],(t_float)data[i]);

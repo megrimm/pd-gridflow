@@ -664,10 +664,10 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
-#define GRID_INLET(C,I) \
-	template <class T> void C::grinw_##I (GridInlet *in, long n, T *data) { \
-		((C*)(in->parent))->grin_##I(in,n,data); } \
-	template <class T> void  C::grin_##I (GridInlet *in, long n, T *data) { \
+#define GRID_INLET(I) \
+	template <class T> void THISCLASS::grinw_##I (GridInlet *in, long n, T *data) { \
+		((THISCLASS*)in->parent)->grin_##I(in,n,data);} \
+	template <class T> void THISCLASS::grin_##I (GridInlet *in, long n, T *data) { \
 	if (n==-1)
 #define GRID_ALLOC  else if (n==-3)
 #define GRID_FLOW   else if (n>=0)
@@ -676,20 +676,17 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
 // V is a PtrGrid instance-var
-#define GRID_INPUT(C,I,V) \
-GRID_INLET(C,I) { V=new Grid(in->dim,NumberTypeE_type_of(data)); } \
-GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
+#define GRID_INPUT(I,V) \
+	GRID_INLET(I) { V=new Grid(in->dim,NumberTypeE_type_of(data)); } GRID_FLOW {COPY((T *)*(V)+in->dex,data,n);} GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
-#define GRID_INPUT2(C,I,V) \
-	GRID_INLET(C,I) { \
+#define GRID_INPUT2(I,V) \
+	GRID_INLET(I) { \
 		if (is_busy_except(in)) { \
 			V.next = new Grid(in->dim,NumberTypeE_type_of(data)); \
-		} else V=        new Grid(in->dim,NumberTypeE_type_of(data)); \
-	} GRID_FLOW { \
-		COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
-	} GRID_FINISH
+		} else  V      = new Grid(in->dim,NumberTypeE_type_of(data)); \
+	} GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
