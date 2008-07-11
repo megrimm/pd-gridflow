@@ -106,24 +106,14 @@ void Grid::init_from_atom(const t_atom &x) {
 // must be set before the end of GRID_BEGIN phase, and so cannot be changed
 // afterwards. This is to allow some optimisations. Anyway there is no good reason
 // why this would be changed afterwards.
-void GridInlet::set_factor(long factor) {
-	if(!dim) RAISE("huh?");
-	if(factor<=0) RAISE("%s: factor=%d should be >= 1",ARGS(parent),factor);
-	int i;
-	for (i=0; i<=dim->n; i++) if (dim->prod(i)==factor) break;
-	if (i>dim->n) RAISE("%s: set_factor: expecting dim->prod(i) for some i, "
-		"but factor=%ld and dim=%s",ARGS(parent),factor,dim->to_s());
-	if (factor > 1) {
-		buf=new Grid(new Dim(factor), nt);
-		bufi=0;
-	} else {
-		buf=0;
-	}
-}
-
 void GridInlet::set_chunk(long whichdim) {
 	long n = dim->prod(whichdim);
-	if (n) set_factor(n);
+	if (!n) n=1;
+	if(!dim) RAISE("huh?");
+	if (n>1) {
+		buf=new Grid(new Dim(n), nt);
+		bufi=0;
+	} else buf=0;
 }
 
 bool GridInlet::supports_type(NumberTypeE nt) {
