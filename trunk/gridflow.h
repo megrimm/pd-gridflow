@@ -711,7 +711,7 @@ private:
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
 public:
-	int mode; // 0=ignore; 4=ro; 6=rw
+	int mode; // 0=ignore; 4=ro
 //	long allocfactor,allocmin,allocmax,allocn;
 //	uint8 *alloc;
 
@@ -721,7 +721,7 @@ public:
 	~GridInlet() {}
 	void set_factor(long factor); // obsolete
 	void set_chunk(long whichdim);
-	void set_mode(int mode_) { mode=mode_; }
+	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;}
 	void begin(int argc, t_atom2 *argv);
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
@@ -794,11 +794,6 @@ struct GridOutlet : CObject {
 	// unbuffered mode, flush() must be called
 	template <class T> void send(long n, T *data);
 	void flush(); // goes with send();
-
-	// give: data must be dynamically allocated as a whole: the data
-	// will be deleted eventually, and should not be used by the caller
-	// beyond the call to give().
-	template <class T> void give(long n, T *data);
 
 	// third way to send (upcoming, in GF-1.1.??) is called "ask".
 	template <class T> void ask(int &n, T *&data, long factor, long min, long max);
