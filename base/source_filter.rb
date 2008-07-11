@@ -244,7 +244,7 @@ def handle_grin(line)
 	Out.print "template <class T> void grin_#{i}(GridInlet *in, long n, T *data);"
 	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
-	handle_decl "#{i} grid(void *foo);"
+	handle_decl "#{i} grid(GridOutlet *foo);"
 	handle_decl "#{i} list(...);"
 	handle_decl "#{i} float(float f);"
 	$stack[-1].grins[i] = fields.dup
@@ -270,7 +270,7 @@ def handle_end(line)
 		else raise 'BORK BORK BORK' end
 		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
-		handle_def "#{i} grid(void *foo) {CHECK_GRIN(#{cl},#{i});"+
+		handle_def "#{i} grid(GridOutlet *foo) {CHECK_GRIN(#{cl},#{i});"+
 			"in[#{i}]->begin(argc,argv);}"
 		handle_def "#{i} list(...) {CHECK_GRIN(#{cl},#{i});"+
 			"in[#{i}]->from_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
