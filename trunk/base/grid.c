@@ -36,8 +36,7 @@
 
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(&d)!=this->nt) RAISE("%s(%s): " \
-		"type mismatch during transmission (got %s expecting %s)", \
-		ARGS(parent), __PRETTY_FUNCTION__, \
+		"type mismatch during transmission (got %s expecting %s)", ARGS(parent), __PRETTY_FUNCTION__, \
 		number_type_table[NumberTypeE_type_of(&d)].name, \
 		number_type_table[this->nt].name);
 
@@ -50,14 +49,13 @@
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;post("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {post("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
 		ARGS(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 #define CHECK_ALIGN2(d,nt) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;post("Alignment Warning: %p is not %d-aligned: %d", \
-		(void*)d,bytes,align);}}
+	if (align) {post("Alignment Warning: %p is not %d-aligned: %d", (void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
 
@@ -76,10 +74,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 			goto fill;
 		}
 	}
-	if (n!=0 && a[0].a_type==A_SYMBOL) {
-		nt = NumberTypeE_find(a[0]);
-		a++, n--;
-	}
+	if (n!=0 && a[0].a_type==A_SYMBOL) {nt = NumberTypeE_find(a[0]); a++; n--;}
 	init(new Dim(n),nt);
 	CHECK_ALIGN2(this->data,nt);
 	fill:
@@ -87,8 +82,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	n = min(n,nn);
 #define FOO(T) { \
 	T *p = (T *)*this; \
-	if (n==0) CLEAR(p,nn); \
-	else { \
+	if (n==0) CLEAR(p,nn); else { \
 		for (int i=0; i<n; i++) p[i] = a[i]; \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 	TYPESWITCH(nt,FOO,)
@@ -96,13 +90,14 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 }
 
 void Grid::init_from_atom(const t_atom &x) {
-	if (x.a_type==A_LIST) {
-		t_binbuf *b = (t_binbuf *)x.a_gpointer;
+	const t_atom2 &a = *(t_atom2 *)&x;
+	if (a.a_type==A_LIST) {
+		t_binbuf *b = a;
 		init_from_list(binbuf_getnatom(b),binbuf_getvec(b));
 	} else if (x.a_type==A_FLOAT) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
-		((int32 *)*this)[0] = (int32)x.a_float;
+		((int32 *)*this)[0] = (int32)a.a_float;
 	} else RAISE("can't convert to grid");
 }
 
@@ -248,7 +243,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->nt = nt;
 	this->dim = dim;
-	t_atom a[3];
+	t_atom a[1];
 	SETGRIDOUT(a,this);
 	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
 	frozen=true;
@@ -293,11 +288,9 @@ void GridOutlet::send(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
-#define FOO(T) { \
-	T data2[bs]; \
+#define FOO(T) {T data2[bs]; \
 	for (;n>=bs;n-=bs,data+=bs) {convert_number_type(bs,data2,data); send(bs,data2);} \
-	convert_number_type(n,data2,data); \
-	send(n,data2); }
+	convert_number_type(n,data2,data); send(n,data2);}
 		TYPESWITCH(nt,FOO,)
 #undef FOO
 	} else {
@@ -334,4 +327,3 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	//foo.send(0,(float64 *)0); // this doesn't work, when trying to fix the new link problem in --lite mode.
 }
-
