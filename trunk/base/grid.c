@@ -152,10 +152,7 @@ void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
 #define FOO(T) gh->flow(this,-1,(T *)0); break;
 		TYPESWITCH(this->nt,FOO,)
 #undef FOO
-	} catch (Barf &barf) {
-		this->dim = 0; // hack
-		throw;
-	}
+	} catch (Barf &barf) {this->dim=0; throw;}
 	this->dim = dim;
 	back_out->callback(this);
 }
@@ -168,55 +165,45 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_ALIGN(data);
 	if (this->mode==0) {dex += n; return;} // ignore data
 	if (n==0) return; // no data
-	switch(mode) {
-	case 4:{
-		long d = dex + bufi;
-		if (d+n > dim->prod()) {
-			post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender), 0);
-			n = dim->prod() - d;
-			if (n<=0) return;
-		}
-		int bufn = factor();
-		if (buf && bufi) {
-			T *bufd = *buf;
-			long k = min((long)n,bufn-bufi);
-			COPY(bufd+bufi,data,k);
-			bufi+=k; data+=k; n-=k;
-			if (bufi==bufn) {
-				long newdex = dex+bufn;
-				CHECK_ALIGN(bufd);
-				try {gh->flow(this,bufn,bufd);} CATCH_IT;
-				dex = newdex;
-				bufi = 0;
-			}
-		}
-		int m = (n/bufn)*bufn;
-		if (m) {
-			int newdex = dex + m;
-			try {gh->flow(this,m,data);} CATCH_IT;
-			dex = newdex;
-		}
-		data += m;
-		n -= m;
-		if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
-	}break;
-	case 0: break; // ignore data
-	default: RAISE("%s: unknown inlet mode",ARGS(parent));
+	if (mode==0) return; // ignore data
+	long d = dex + bufi;
+	if (d+n > dim->prod()) {
+		post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender), 0);
+		n = dim->prod() - d;
+		if (n<=0) return;
 	}
+	int bufn = factor();
+	if (buf && bufi) {
+		T *bufd = *buf;
+		long k = min((long)n,bufn-bufi);
+		COPY(bufd+bufi,data,k);
+		bufi+=k; data+=k; n-=k;
+		if (bufi==bufn) {
+			long newdex = dex+bufn;
+			CHECK_ALIGN(bufd);
+			try {gh->flow(this,bufn,bufd);} CATCH_IT;
+			dex = newdex;
+			bufi = 0;
+		}
+	}
+	int m = (n/bufn)*bufn;
+	if (m) {
+		int newdex = dex + m;
+		try {gh->flow(this,m,data);} CATCH_IT;
+		dex = newdex;
+	}
+	data += m;
+	n -= m;
+	if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
 }
 
 void GridInlet::finish() {TRACE;
 	if (!dim) RAISE("%s: inlet not busy",ARGS(parent));
-	if (dim->prod() != dex) {
-		post("incomplete grid: %d of %d from [%s] to [%s]",
-			dex, dim->prod(), ARGS(sender), ARGS(parent));
-	}
+	if (dim->prod() != dex) post("incomplete grid: %d of %d from [%s] to [%s]",dex,dim->prod(),ARGS(sender),ARGS(parent));
 #define FOO(T) try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(nt,FOO,)
 #undef FOO
-	dim=0;
-	buf=0;
-	dex=0;
+	dim=0; buf=0; dex=0;
 }
 
 template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
@@ -227,7 +214,6 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	if (n>0 && this->mode!=0) {
 		T *data = (T *)*g;
 		CHECK_ALIGN(data);
-		int size = g->dim->prod();
 		//int ntsz = number_type_table[nt].size;
 		int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
 		if (!m) m++;
@@ -259,9 +245,6 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 	parent=parent_; dim=dim_; nt=nt_; dex=0; frozen=false; bufi=0; buf=0;
 	begin(woutlet,dim,nt);
 }
-
-//void GridOutlet::alloc_buf() {
-//}
 
 void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->nt = nt;
@@ -337,6 +320,12 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 	CHECK_BUSY1(outlet);
 	if (!(in->mode==4 || in->mode==0)) RAISE("mode error");
 	inlets.push_back(in);
+}
+
+void GridOutlet::finish () {
+	flush();
+	for (uint32 i=0; i<inlets.size(); i++) inlets[i]->finish();
+	dim=0;
 }
 
 // never call this. this is a hack to make some things work.
