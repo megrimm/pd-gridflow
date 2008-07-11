@@ -623,7 +623,7 @@ private:
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
 	void init_from_atom(const t_atom &x);
-	void init_from_list(     int n, t_atom *a, NumberTypeE nt=int32_e);
+	void init_from_list(int n, t_atom *a, NumberTypeE nt=int32_e);
 };
 static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
 
@@ -804,11 +804,7 @@ private:
 	long bufi; // number of bytes used in the buffer
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(long n, T *data);
-	void finish() {
-		flush();
-		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->finish();
-		dim=0;
-	}
+	void finish();
 };
 
 //****************************************************************
