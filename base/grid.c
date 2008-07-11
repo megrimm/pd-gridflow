@@ -228,23 +228,15 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 		T *data = (T *)*g;
 		CHECK_ALIGN(data);
 		int size = g->dim->prod();
-		if (this->mode==6) {
-			T *d = data;
-			data = NEWBUF(T,size);
-			COPY(data,d,size);
+		//int ntsz = number_type_table[nt].size;
+		int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
+		if (!m) m++;
+		m *= factor();
+		while (n) {
+			if (m>n) m=n;
 			CHECK_ALIGN(data);
-			try {gh->flow(this,n,data);} CATCH_IT;
-		} else {
-			//int ntsz = number_type_table[nt].size;
-			int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
-			if (!m) m++;
-			m *= factor();
-			while (n) {
-				if (m>n) m=n;
-				CHECK_ALIGN(data);
-				try {gh->flow(this,m,data);} CATCH_IT;
-				data+=m; n-=m; dex+=m;
-			}
+			try {gh->flow(this,m,data);} CATCH_IT;
+			data+=m; n-=m; dex+=m;
 		}
 	}
 	try {gh->flow(this,-2,(T *)0);} CATCH_IT;
@@ -343,7 +335,7 @@ void GridOutlet::send(long n, T *data) {TRACE;
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
 	CHECK_BUSY1(outlet);
-	if (!(in->mode==6 || in->mode==4 || in->mode==0)) RAISE("mode error");
+	if (!(in->mode==4 || in->mode==0)) RAISE("mode error");
 	inlets.push_back(in);
 }
 
