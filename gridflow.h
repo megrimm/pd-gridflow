@@ -688,7 +688,7 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
 // V is a PtrGrid instance-var
 #define GRID_INPUT(I,V) \
-	GRID_INLET(I) { V=new Grid(in->dim,NumberTypeE_type_of(data)); } GRID_FLOW {COPY((T *)*(V)+in->dex,data,n);} GRID_FINISH
+	GRID_INLET(I) {V=new Grid(in->dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in->dex,data,n);} GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
@@ -723,21 +723,16 @@ private:
 	long bufi;   // buffer index: how much of buf is filled
 public:
 	int mode; // 0=ignore; 4=ro
-//	long allocfactor,allocmin,allocmax,allocn;
-//	uint8 *alloc;
-
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
-		parent(parent_), gh(gh_), sender(0),
-		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
+		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
-	void set_factor(long factor); // obsolete
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;}
 	void begin(GridOutlet *back_out);
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
-	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
+	// n=-1 is begin, and n=-2 is finish.
 	template <class T> void flow(int mode, long n, T *data);
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
 	void from_atom(VA) {Grid t(argv[0]); from_grid(&t);}
