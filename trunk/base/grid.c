@@ -250,7 +250,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->nt = nt;
 	this->dim = dim;
 	t_atom a[3];
-	SETPOINTER(a,(t_gpointer *)this); // hack
+	SETGRIDOUT(a,this);
 	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
 	frozen=true;
 	if (!dim->prod()) {finish(); return;}
@@ -267,7 +267,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 template <class T>
 void GridOutlet::send_direct(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
-	for (; n>0; ) {
+	while (n>0) {
 		long pn = n;//min((long)n,MAX_PACKET_SIZE);
 		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(4,pn,data);} CATCH_IT;
 		data+=pn, n-=pn;
@@ -283,9 +283,7 @@ void GridOutlet::flush() {TRACE;
 }
 
 template <class T, class S>
-static void convert_number_type(int n, T *out, S *in) {
-	for (int i=0; i<n; i++) out[i]=(T)in[i];
-}
+static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) out[i]=(T)in[i];}
 
 //!@#$ buffering in outlet still is 8x faster...?
 //!@#$ should use BitPacking for conversion...?
