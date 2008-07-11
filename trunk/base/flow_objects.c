@@ -464,7 +464,8 @@ GRID_INLET(0) {
 #define FOO(type) { \
 	type *p = (type *)*r; \
 	if (size<=16) { \
-		type *foo = NEWBUF(type,nd*size); \
+		type tada[nd*size]; \
+		type *foo = tada; \
 		long i=0; \
 		switch (size) { \
 		case 1: for (; i<(nd&-4); i+=4, foo+=4) { \
@@ -478,7 +479,7 @@ GRID_INLET(0) {
 		case 4: for (; i<nd; i++, foo+=4) SCOPY(foo,p+4*v[i],4); break; \
 		default:; }; \
 		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
-		out->give(size*nd,foo-size*nd); \
+		out->send(size*nd,tada); \
 	} else { \
 		for (int i=0; i<nd; i++) out->send(size,p+size*v[i]); \
 	} \
@@ -577,7 +578,6 @@ GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
-	in->set_mode(6);
 	if (op->size>1 && (in->dim->get(in->dim->n-1)!=op->size || r->dim->get(r->dim->n-1)!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in->dim->to_s(),r->dim->to_s());
@@ -586,14 +586,12 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	T *rdata = (T *)*r;
 	long loop = r->dim->prod();
-	if (sizeof(T)==8) {
-		fprintf(stderr,"1: data=%p rdata=%p\n",data,rdata);
-		WATCH(n,data);
-	}
 	//fprintf(stderr,"[#] op=%s loop=%ld\n",op->name,loop);
+	T tada[n];
+	COPY(tada,data,n);
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			op->zip(n/op->size,data,rdata+in->dex);
+			op->zip(n/op->size,tada,rdata+in->dex);
 		} else {
 			// !@#$ should prebuild and reuse this array when "loop" is small
 			T data2[n];
@@ -603,17 +601,10 @@ GRID_INLET(0) {
 			long nn = m+((n-m)/loop)*loop;
 			for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
 			if (n>nn) COPY(data2+nn,rdata,n-nn);
-			if (sizeof(T)==8) {
-				fprintf(stderr,"2: data=%p data2=%p\n",data,data2);
-				WATCH(n,data); WATCH(n,data2);
-			}
-			op->zip(n/op->size,data,data2);
-			if (sizeof(T)==8) {WATCH(n,data); WATCH(n,data2);}
+			op->zip(n/op->size,tada,data2);
 		}
-	} else {
-		op->map(n,data,*rdata);
-	}
-	out->give(n,data);
+	} else op->map(n,tada,*rdata);
+	out->send(n,tada);
 } GRID_END
 
 GRID_INPUT2(1,r) {} GRID_END
@@ -882,7 +873,7 @@ GRID_INLET(0) {
 		return;
 	}
 	n*=b_prod;
-	T *buf = NEWBUF(T,n);
+	T buf[n];
 	T buf2[b_prod*64];
 	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(T *)*r,b_prod);
 	switch (b_prod) {
@@ -898,7 +889,7 @@ GRID_INLET(0) {
 	int nn=(n/ch)*ch;
 	for (int j=0; j<nn; j+=ch) op->zip(ch,buf+j,buf2);
 	op->zip(n-nn,buf+nn,buf2);
-	out->give(n,buf);
+	out->send(n,buf);
 } GRID_END
 
 GRID_INPUT(1,r) {} GRID_END
@@ -1985,7 +1976,7 @@ GRID_INLET(0) {
 			out->send(f,data);
 		} else {
 			int32 xl = in->dim->get(1);
-			T *data2 = NEWBUF(T,f);
+			T data2[f];
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
@@ -2023,7 +2014,7 @@ GRID_INLET(0) {
 				}
 				lines_start=lines_stop;
 			}
-			out->give(f,data2);
+			out->send(f,data2);
 		}
 		n-=f;
 		data+=f;
@@ -2128,7 +2119,7 @@ GRID_INLET(0) {
 	for (; n; y++, n-=f, data+=f) {
 		int ty = div2(y-py,rsy);
 		if (tile || ty==0) {
-			T *data2 = NEWBUF(T,f);
+			T data2[f];
 			COPY(data2,data,f);
 			if (tile) {
 				for (int x=px-div2(px+rsx-1,rsx)*rsx; x<sx; x+=rsx) {
@@ -2137,7 +2128,7 @@ GRID_INLET(0) {
 			} else {
 				draw_segment(data2,data,y-py,px);
 			}
-			out->give(f,data2);
+			out->send(f,data2);
 		} else {
 			out->send(f,data);
 		}
