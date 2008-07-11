@@ -184,15 +184,8 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
 				long newdex = dex+bufn;
-				if (this->mode==6) {
-					T *data2 = NEWBUF(T,bufn);
-					COPY(data2,bufd,bufn);
-					CHECK_ALIGN(data2);
-					try {gh->flow(this,bufn,data2);} CATCH_IT;
-				} else {
-					CHECK_ALIGN(bufd);
-					try {gh->flow(this,bufn,bufd);} CATCH_IT;
-				}
+				CHECK_ALIGN(bufd);
+				try {gh->flow(this,bufn,bufd);} CATCH_IT;
 				dex = newdex;
 				bufi = 0;
 			}
@@ -200,25 +193,12 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		int m = (n/bufn)*bufn;
 		if (m) {
 			int newdex = dex + m;
-			if (this->mode==6) {
-				T *data2 = NEWBUF(T,m);
-				COPY(data2,data,m);
-				CHECK_ALIGN(data2);
-				try {gh->flow(this,m,data2);} CATCH_IT;
-			} else {
-				try {gh->flow(this,m,data);} CATCH_IT;
-			}
+			try {gh->flow(this,m,data);} CATCH_IT;
 			dex = newdex;
 		}
 		data += m;
 		n -= m;
 		if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
-	}break;
-	case 6:{
-		int newdex = dex + n;
-		try {gh->flow(this,n,data);} CATCH_IT;
-		if (this->mode==4) DELBUF(data);
-		dex = newdex;
 	}break;
 	case 0: break; // ignore data
 	default: RAISE("%s: unknown inlet mode",ARGS(parent));
@@ -361,29 +341,6 @@ void GridOutlet::send(long n, T *data) {TRACE;
 	}
 }
 
-template <class T>
-void GridOutlet::give(long n, T *data) {TRACE;
-	CHECK_BUSY(outlet);
-	CHECK_ALIGN(data);
-	if (NumberTypeE_type_of(data)!=nt) {
-		send(n,data);
-		DELBUF(data);
-		return;
-	}
-	if (inlets.size()==1 && inlets[0]->mode == 6) {
-		// this is the copyless buffer passing
-		flush();
-		try {inlets[0]->flow(6,n,data);} CATCH_IT;
-		dex += n;
-	} else {
-		flush();
-		send_direct(n,data);
-		dex += n;
-		DELBUF(data);
-	}
-	if (dex==dim->prod()) finish();
-}
-
 void GridOutlet::callback(GridInlet *in) {TRACE;
 	CHECK_BUSY1(outlet);
 	if (!(in->mode==6 || in->mode==4 || in->mode==0)) RAISE("mode error");
@@ -394,7 +351,7 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
 	GridOutlet foo(0,0,0);
-#define FOO(S) foo.give(0,(S *)0);
+#define FOO(S) foo.send(0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	//foo.send(0,(float64 *)0); // this doesn't work, when trying to fix the new link problem in --lite mode.
