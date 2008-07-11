@@ -52,14 +52,20 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 
 #define gensym(s) gensym(const_cast<char *>(s))
 #define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
-#define sys_gui(s) sys_gui(const_cast<char *>(s));
+#define sys_gui(s) sys_gui(const_cast<char *>(s))
 
 #ifndef DESIREDATA
-#define A_LIST t_atomtype(13) /* (t_binbuf *) */
+#define A_LIST    t_atomtype(13) /* (t_binbuf *) */
 #endif
+#define A_GRID    t_atomtype(14) /* (Grid *)    */
+#define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
-static inline void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_gpointer = (t_gpointer *)b;}
-static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_gpointer = 0;}
+struct Grid;
+struct GridOutlet;
+static inline void SETLIST(   t_atom *a, t_binbuf *b)   {a->a_type = A_LIST;    a->a_gpointer = (t_gpointer *)b;}
+static inline void SETGRID(   t_atom *a, Grid *g)       {a->a_type = A_GRID;    a->a_gpointer = (t_gpointer *)g;}
+static inline void SETGRIDOUT(t_atom *a, GridOutlet *g) {a->a_type = A_GRIDOUT; a->a_gpointer = (t_gpointer *)g;}
+static inline void SETNULL(   t_atom *a)                {a->a_type = A_NULL;    a->a_gpointer = 0;}
 
 typedef t_binbuf t_list;
 
@@ -288,6 +294,12 @@ struct t_atom2 : t_atom {
 	operator t_binbuf * () const {
 		if (a_type!=A_LIST) RAISE("expected nested list");
  		return (t_binbuf *)a_gpointer;}
+	operator Grid * () const {
+		if (a_type!=A_GRID) RAISE("expected grid");
+ 		return (Grid *)a_gpointer;}
+	operator GridOutlet * () const {
+		if (a_type!=A_GRIDOUT) RAISE("expected grid outlet");
+ 		return (GridOutlet *)a_gpointer;}
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
