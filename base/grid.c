@@ -137,8 +137,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-void GridInlet::begin(int argc, t_atom2 *argv) {TRACE;
-	GridOutlet *back_out = (GridOutlet *) (void *)argv[0];
+void GridInlet::begin(GridOutlet *back_out) {TRACE;
 	nt = back_out->nt;
 	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
 			ARGS(parent), ARGS(sender), ARGS(back_out->parent), (long)dex, (long)dim->prod());

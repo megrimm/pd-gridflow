@@ -735,7 +735,7 @@ public:
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;}
-	void begin(int argc, t_atom2 *argv);
+	void begin(GridOutlet *back_out);
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
 	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
