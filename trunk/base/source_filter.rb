@@ -271,7 +271,7 @@ def handle_end(line)
 		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
 		handle_def "#{i} grid(GridOutlet *foo) {CHECK_GRIN(#{cl},#{i});"+
-			"in[#{i}]->begin(argc,argv);}"
+			"in[#{i}]->begin(foo);}"
 		handle_def "#{i} list(...) {CHECK_GRIN(#{cl},#{i});"+
 			"in[#{i}]->from_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
 		handle_def "#{i} float(float f) {CHECK_GRIN(#{cl},#{i});"+
