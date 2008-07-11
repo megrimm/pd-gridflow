@@ -45,7 +45,7 @@
 	this->skip=skip;
 	if (plan) {fftwf_destroy_plan(plan); plan=0;}
 }
-GRID_INLET(GridFFT,0) {
+GRID_INLET(0) {
 	if (in->nt != float32_e)                  RAISE("expecting float32");
 	if (real && sign==-1) {
 	  if (in->dim->n != 2 && in->dim->n != 3) RAISE("expecting 2 or 3 dimensions: rows,columns,channels?");

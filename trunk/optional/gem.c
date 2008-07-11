@@ -63,7 +63,7 @@ CPPEXTERN_NEW(GridToPixHelper)
 	~GridToPix () {}
 	\grin 1 int
 };
-GRID_INLET(GridToPix,1) {
+GRID_INLET(1) {
 	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 4) RAISE("expecting 4 channels (got %d)",in->dim->get(2));
 	in->set_chunk(1);
