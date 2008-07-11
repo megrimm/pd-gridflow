@@ -681,7 +681,6 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 		((THISCLASS*)in->parent)->grin_##I(in,n,data);} \
 	template <class T> void THISCLASS::grin_##I (GridInlet *in, long n, T *data) { \
 	if (n==-1)
-#define GRID_ALLOC  else if (n==-3)
 #define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
 #define GRID_END }
@@ -806,9 +805,6 @@ struct GridOutlet : CObject {
 	// unbuffered mode, flush() must be called
 	template <class T> void send(long n, T *data);
 	void flush(); // goes with send();
-
-	// third way to send (upcoming, in GF-1.1.??) is called "ask".
-	template <class T> void ask(int &n, T *&data, long factor, long min, long max);
 
 private:
 	bool frozen; // is the "begin" phase finished?
