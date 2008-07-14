@@ -236,14 +236,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 	begin(woutlet,dim,nt);
 }
 
-void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
-	this->nt = nt;
-	this->dim = dim;
-	t_atom a[1];
-	SETGRIDOUT(a,this);
-	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
-	frozen=true;
-	if (!dim->prod()) {finish(); return;}
+void GridOutlet::create_buf () {TRACE;
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	//size_t ntsz = number_type_table[nt].size;
@@ -253,10 +246,21 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	buf=new Grid(new Dim(v),nt);
 #ifdef TRACEBUFS
 	std::ostringstream text;
-	oprintf(text,"GridOutlet: %20s buf for sending to  ",dim->to_s());
+	oprintf(text,"GridOutlet: %20s buf for sending to  ",buf->dim->to_s());
 	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
 	post("%s",text.str().data());
 #endif
+}
+
+void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
+	this->nt = nt;
+	this->dim = dim;
+	t_atom a[1];
+	SETGRIDOUT(a,this);
+	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
+	frozen=true;
+	if (!dim->prod()) {finish(); return;}
+	create_buf();
 }
 
 // send modifies dex; send_direct doesn't
