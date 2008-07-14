@@ -260,7 +260,6 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
 	frozen=true;
 	if (!dim->prod()) {finish(); return;}
-	create_buf();
 }
 
 // send modifies dex; send_direct doesn't
@@ -275,6 +274,7 @@ void GridOutlet::send_direct(long n, T *data) {TRACE;
 }
 
 void GridOutlet::flush() {TRACE;
+	if (!buf) return;
 	if (!bufi) return;
 #define FOO(T) send_direct(bufi,(T *)*buf);
 	TYPESWITCH(buf->nt,FOO,)
@@ -308,6 +308,7 @@ void GridOutlet::send(long n, T *data) {TRACE;
 			send_direct(n,data);
 		} else {
 			//post("send_indirect %d",n);
+			if (!buf) create_buf();
 			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
