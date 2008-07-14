@@ -718,17 +718,18 @@ public:
 	P<Dim> dim;
 	NumberTypeE nt;
 	long dex;
+	int chunk;
 private:
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
 public:
 	int mode; // 0=ignore; 4=ro
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
-		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
+		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0), mode(4) {}
 	~GridInlet() {}
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) {mode=mode_;}
-	int32 factor() {return buf?buf->dim->prod():1;}
+	int32 factor() {return buf?buf->dim->prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *back_out);
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
