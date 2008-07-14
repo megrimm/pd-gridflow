@@ -712,17 +712,13 @@ struct FObject;
 struct GridInlet : CObject {
 	FObject *parent;
 	const GridHandler *gh;
-private:
 	FObject *sender;
-public:
 	P<Dim> dim;
 	NumberTypeE nt;
 	long dex;
 	int chunk;
-private:
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
-public:
 	int mode; // 0=ignore; 4=ro
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0), mode(4) {}
