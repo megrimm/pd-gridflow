@@ -107,6 +107,7 @@ void Grid::init_from_atom(const t_atom &x) {
 // afterwards. This is to allow some optimisations. Anyway there is no good reason
 // why this would be changed afterwards.
 void GridInlet::set_chunk(long whichdim) {
+	chunk = whichdim;
 	long n = dim->prod(whichdim);
 	if (!n) n=1;
 	if(!dim) RAISE("huh?");
@@ -245,6 +246,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
 	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
 	buf=new Grid(new Dim(v),nt);
+	//post("GridOutlet: made buf of size %s",dim->to_s());
 }
 
 // send modifies dex; send_direct doesn't
