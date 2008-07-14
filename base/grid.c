@@ -31,6 +31,8 @@
 #include "../gridflow.h.fcs"
 #include <ctype.h>
 
+//#define TRACEBUFS
+
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",ARGS(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
 #define TRACE
 
@@ -140,6 +142,9 @@ void GridInlet::begin(GridOutlet *back_out) {TRACE;
 	} catch (Barf &barf) {this->dim=0; throw;}
 	this->dim = dim;
 	back_out->callback(this);
+#ifdef TRACEBUFS
+	post("GridInlet:  %20s buf for recving from %p",dim->to_s(),sender);
+#endif
 }
 
 #define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy.text);}
@@ -246,7 +251,12 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
 	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
 	buf=new Grid(new Dim(v),nt);
-	//post("GridOutlet: made buf of size %s",dim->to_s());
+#ifdef TRACEBUFS
+	std::ostringstream text;
+	oprintf(text,"GridOutlet: %20s buf for sending to  ",dim->to_s());
+	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
+	post("%s",text.str().data());
+#endif
 }
 
 // send modifies dex; send_direct doesn't
@@ -276,6 +286,7 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 // send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send(long n, T *data) {TRACE;
+	//if (inlets.size()==1 && inlets[0]->buf) post("GridOutlet::send(%ld), bufsize %ld",long(n),long(inlets[0]->buf->dim->prod()));
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(data)!=nt) {
@@ -289,8 +300,10 @@ void GridOutlet::send(long n, T *data) {TRACE;
 		dex += n;
 		if (n > MIN_PACKET_SIZE || bufi + n > MAX_PACKET_SIZE) flush();
 		if (n > MIN_PACKET_SIZE) {
+			//post("send_direct %d",n);
 			send_direct(n,data);
 		} else {
+			//post("send_indirect %d",n);
 			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
