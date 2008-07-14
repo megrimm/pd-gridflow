@@ -41,19 +41,6 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 
 //using namespace std; // can't
 
-static void voprintf(std::ostream &buf, const char *s, va_list args) {
-    char *b;
-    vasprintf(&b,s,args);
-    buf << b;
-    free(b);
-}
-static void oprintf(std::ostream &buf, const char *s, ...) {
-    va_list args;
-    va_start(args,s);
-    voprintf(buf,s,args);
-    va_end(args);
-}
-
 /* ---------------------------------------------------------------- */
 
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)

@@ -922,4 +922,17 @@ int handle_braces(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;
 
+static inline void voprintf(std::ostream &buf, const char *s, va_list args) {
+    char *b;
+    vasprintf(&b,s,args);
+    buf << b;
+    free(b);
+}
+static inline void oprintf(std::ostream &buf, const char *s, ...) {
+    va_list args;
+    va_start(args,s);
+    voprintf(buf,s,args);
+    va_end(args);
+}
+
 #endif // __GF_GRID_H
