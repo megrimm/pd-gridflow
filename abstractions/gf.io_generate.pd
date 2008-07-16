@@ -1,4 +1,4 @@
-#N canvas 626 139 789 550 10;
+#N canvas 491 139 789 550 10;
 #X msg 74 372 connect 0 0 2 0 \, connect 2 0 1 0;
 #X obj 96 353 list trim;
 #X obj 96 75 list split 1;
@@ -28,14 +28,16 @@
 #X msg 231 195 symbol quartz;
 #X msg 9 417 clear \, obj 0 0 r \$1-in \, obj 0 20 bang \, obj 0 40
 gf.error not open \, connect 0 0 1 0 \, connect 1 0 2 0;
-#X obj 117 168 display;
+#X obj 96 142 route bang;
+#X obj 409 233 gf.error unknown suffix '%s';
+#X obj 409 214 list;
 #X connect 0 0 13 0;
 #X connect 1 0 13 0;
 #X connect 2 0 7 0;
 #X connect 2 1 4 1;
-#X connect 3 0 6 0;
+#X connect 3 0 28 0;
+#X connect 3 1 30 1;
 #X connect 3 2 15 0;
-#X connect 3 2 28 0;
 #X connect 4 0 19 0;
 #X connect 5 0 19 0;
 #X connect 6 0 5 0;
@@ -66,3 +68,6 @@ gf.error not open \, connect 0 0 1 0 \, connect 1 0 2 0;
 #X connect 25 0 21 0;
 #X connect 26 0 21 0;
 #X connect 27 0 13 0;
+#X connect 28 0 30 0;
+#X connect 28 1 6 0;
+#X connect 30 0 29 0;
