@@ -149,13 +149,12 @@ void GridInlet::begin(GridOutlet *back_out) {TRACE;
 
 #define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy.text);}
 
-template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
+template <class T> void GridInlet::flow(long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
-	if (this->mode==0) {dex += n; return;} // ignore data
-	if (n==0) return; // no data
-	if (mode==0) return; // ignore data
+	if (!mode) {dex += n; return;} // ignore data
+	if (!n) return; // no data
 	long d = dex + bufi;
 	if (d+n > dim->prod()) {
 		post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender), 0);
@@ -268,7 +267,7 @@ void GridOutlet::send_direct(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	while (n>0) {
 		long pn = n;//min((long)n,MAX_PACKET_SIZE);
-		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(4,pn,data);} CATCH_IT;
+		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(pn,data);} CATCH_IT;
 		data+=pn, n-=pn;
 	}
 }
