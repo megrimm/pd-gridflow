@@ -37,9 +37,10 @@ extern "C" {
 
 extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 
-/* both oprintf are copied from desiredata */
-
 //using namespace std; // can't
+
+//#undef GRID_INPUT
+//#define GRID_INPUT(I,V) GRID_INLET(I) {in->buf=V=new Grid(in->dim,NumberTypeE_type_of(data));} GRID_FINISH
 
 /* ---------------------------------------------------------------- */
 
@@ -543,8 +544,8 @@ GRID_INLET(1) {
 	SETSYMBOL(a+1,gensym("#"));
 	pd_list((t_pd *)bself,&s_list,2,a);
 }
-\def 1 reassign () { put_at=0; }
-\def 1 put_at (Grid *index) { put_at=index; }
+\def 1 reassign () {put_at=0;}
+\def 1 put_at (Grid *index) {put_at=index;}
 \end class {install("#store",2,1); add_creator("@store");}
 
 //****************************************************************
@@ -568,6 +569,7 @@ GRID_INLET(0) {
 	if (op->size>1 && (in->dim->get(in->dim->n-1)!=op->size || r->dim->get(r->dim->n-1)!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in->dim->to_s(),r->dim->to_s());
+	//if (out->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",out->inlets[0]->dim->to_s());
 } GRID_FLOW {
 	T *rdata = (T *)*r;
 	long loop = r->dim->prod();
@@ -715,23 +717,11 @@ template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) 
 // --j--*---k---
 // AAAAA  CCCCC
 template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {
-		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
-		*cs++=c;
-	}
-}
+	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
 template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {
-		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
-		*cs++=c;
-	}
-}
+	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
 template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {
-		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
-		*cs++=c;
-	}
-}
+	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
 
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
