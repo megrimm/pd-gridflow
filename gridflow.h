@@ -692,12 +692,8 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
-#define GRID_INPUT2(I,V) \
-	GRID_INLET(I) { \
-		if (is_busy_except(in)) { \
-			V.next = new Grid(in->dim,NumberTypeE_type_of(data)); \
-		} else  V      = new Grid(in->dim,NumberTypeE_type_of(data)); \
-	} GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n);} GRID_FINISH
+#define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in->dim,NumberTypeE_type_of(data));} \
+	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
@@ -727,10 +723,8 @@ struct GridInlet : CObject {
 	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *back_out);
-	void finish(); /* i thought this should be private but maybe it shouldn't. */
-
-	// n=-1 is begin, and n=-2 is finish.
-	template <class T> void flow(long n, T *data);
+	void finish();
+	template <class T> void flow(long n, T *data); // n=-1 is begin, and n=-2 is finish.
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
 	void from_atom(VA) {Grid t(argv[0]); from_grid(&t);}
 	void from_grid(Grid *g);
