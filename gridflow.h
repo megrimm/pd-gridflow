@@ -730,7 +730,7 @@ struct GridInlet : CObject {
 	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
 	// n=-1 is begin, and n=-2 is finish.
-	template <class T> void flow(int mode, long n, T *data);
+	template <class T> void flow(long n, T *data);
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
 	void from_atom(VA) {Grid t(argv[0]); from_grid(&t);}
 	void from_grid(Grid *g);
