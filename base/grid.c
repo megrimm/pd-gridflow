@@ -150,9 +150,7 @@ void GridInlet::begin(GridOutlet *back_out) {TRACE;
 #define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy.text);}
 
 template <class T> void GridInlet::flow(long n, T *data) {TRACE;
-	CHECK_BUSY(inlet);
-	CHECK_TYPE(*data);
-	CHECK_ALIGN(data);
+	CHECK_BUSY(inlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	if (!mode) {dex += n; return;} // ignore data
 	if (!n) return; // no data
 	long d = dex + bufi;
@@ -231,8 +229,7 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 /* **************** GridOutlet ************************************ */
 
 GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_) {
-	parent=parent_; dim=dim_; nt=nt_; dex=0; frozen=false; bufi=0; buf=0;
-	begin(woutlet,dim,nt);
+	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0; begin(woutlet,dim,nt);
 }
 
 void GridOutlet::create_buf () {TRACE;
@@ -257,7 +254,6 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	t_atom a[1];
 	SETGRIDOUT(a,this);
 	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
-	frozen=true;
 	if (!dim->prod()) {finish(); return;}
 }
 

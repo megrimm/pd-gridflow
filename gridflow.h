@@ -791,8 +791,6 @@ struct GridOutlet : CObject {
 	// unbuffered mode, flush() must be called
 	template <class T> void send(long n, T *data);
 	void flush(); // goes with send();
-
-	bool frozen; // is the "begin" phase finished?
 	PtrGrid buf; // temporary buffer
 	long bufi; // number of bytes used in the buffer
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
