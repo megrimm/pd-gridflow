@@ -104,27 +104,29 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	for (; *s; s++) {
 		if (*s!='%') {o << (char)*s; continue;}
 		s++; // skip the %
-		if (*s=='f') {
+		switch (*s) {
+		  case 'f':
 			if (!argc) RAISE("not enough args");
 			if (argv[i].a_type != A_FLOAT) RAISE("expected float");
 			o << argv[i].a_float;
-		}
-		if (*s=='s') {
+		  break;
+		  case 's':
 			if (!argc) RAISE("not enough args");
 			if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
 			o << argv[i].a_symbol->s_name;
-		}
-		if (*s=='_') {
+		  break;
+		  case '_':
 			if (!argc) RAISE("not enough args");
 			char buf[MAXPDSTRING];
 			atom_string(&argv[i],buf,MAXPDSTRING);
 			o << buf;
-		}
-		if (*s=='%') {
+		  break;
+		  case '%':
 			o << "%";
-			continue;
+		  break;
+		  default:
+			RAISE("sorry, the format character '%c' is not supported yet",*s);
 		}
-		RAISE("sorry, this format string is not supported yet");
 	}
 }
 
