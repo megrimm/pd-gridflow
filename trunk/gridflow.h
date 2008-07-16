@@ -836,10 +836,6 @@ struct BFObject : t_object {
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
 		outlet_list(bself->outlets[outlet],&s_list,argc,foo);
 	}
-	bool is_busy_except(P<GridInlet> gin) {
-		for (uint32 i=0; i<in.size(); i++) if (in[i] && in[i]!=gin && in[i]->dim) return true;
-		return false;
-	}
 	\decl 0 get (t_symbol *s=0);
 	\decl 0 help ();
 };
@@ -911,6 +907,8 @@ extern std::map<string,FClass *> fclasses;
 int handle_braces(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;
+
+/* both oprintf are copied from desiredata */
 
 static inline void voprintf(std::ostream &buf, const char *s, va_list args) {
     char *b;
