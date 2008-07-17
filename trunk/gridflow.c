@@ -73,8 +73,8 @@ Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
 }
 
 void Barf::error(BFObject *bself) {
-	if (bself) pd_error(bself,"%s",text.data());
-	else        ::error(      "%s",text.data());
+	if (bself) pd_error(bself,"%s: %s",bself->binbuf_string().data(),text.data());
+	else        ::error(      "%s: %s",bself->binbuf_string().data(),text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
