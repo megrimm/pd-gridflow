@@ -33,30 +33,15 @@
 
 //#define TRACEBUFS
 
-//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",ARGS(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
-#define TRACE
-
-#define CHECK_TYPE(d) \
-	if (NumberTypeE_type_of(&d)!=this->nt) RAISE("%s(%s): " \
-		"type mismatch during transmission (got %s expecting %s)", ARGS(parent), __PRETTY_FUNCTION__, \
+#define CHECK_TYPE(d) if (NumberTypeE_type_of(&d)!=this->nt) RAISE("(%s): " \
+		"type mismatch during transmission (got %s expecting %s)", __PRETTY_FUNCTION__, \
 		number_type_table[NumberTypeE_type_of(&d)].name, \
 		number_type_table[this->nt].name);
-
-#define CHECK_BUSY1(s) \
-	if (!dim) RAISE("%s: " #s " not busy",ARGS(parent));
-
-#define CHECK_BUSY(s) \
-	if (!dim) RAISE("%s: " #s " not busy (wanting to write %ld values)",ARGS(parent),(long)n);
-
-#define CHECK_ALIGN(d) \
-	{int bytes = number_type_table[nt].size/8; \
-	int align = ((long)(void*)d)%bytes; \
-	if (align) {post("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
-		ARGS(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
-
-#define CHECK_ALIGN2(d,nt) \
-	{int bytes = number_type_table[nt].size/8; \
-	int align = ((long)(void*)d)%bytes; \
+#define CHECK_BUSY1(s) if (!dim) RAISE(#s " not busy");
+#define CHECK_BUSY(s)  if (!dim) RAISE(#s " not busy (wanting to write %ld values)",(long)n);
+#define CHECK_ALIGN(d)     {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
+	if (align) {post("(%s): Alignment Warning: %p is not %d-aligned: %d", __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
+#define CHECK_ALIGN2(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
 	if (align) {post("Alignment Warning: %p is not %d-aligned: %d", (void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
@@ -125,13 +110,13 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-void GridInlet::begin(GridOutlet *back_out) {TRACE;
+void GridInlet::begin(GridOutlet *back_out) {
 	nt = back_out->nt;
-	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
-			ARGS(parent), ARGS(sender), ARGS(back_out->parent), (long)dex, (long)dim->prod());
+	if (dim) RAISE("grid inlet aborting from %s at %ld/%ld because of %s",
+			ARGS(sender),long(dex),long(dim->prod()),ARGS(back_out->parent));
 	sender = back_out->parent;
-	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("%s: inlet: unknown number type",ARGS(parent));
-	if (!supports_type(nt)) RAISE("%s: number type %s not supported here", ARGS(parent), number_type_table[nt].name);
+	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("inlet: unknown number type");
+	if (!supports_type(nt)) RAISE("number type %s not supported here", number_type_table[nt].name);
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
@@ -147,9 +132,9 @@ void GridInlet::begin(GridOutlet *back_out) {TRACE;
 #endif
 }
 
-#define CATCH_IT catch (Barf &slimy) {post("error during flow: %s",slimy.text);}
+#define CATCH_IT catch (Barf &slimy) {slimy.error(parent->bself);}
 
-template <class T> void GridInlet::flow(long n, T *data) {TRACE;
+template <class T> void GridInlet::flow(long n, T *data) {
 	CHECK_BUSY(inlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	if (!mode) {dex += n; return;} // ignore data
 	if (!n) return; // no data
@@ -184,16 +169,16 @@ template <class T> void GridInlet::flow(long n, T *data) {TRACE;
 	if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
 }
 
-void GridInlet::finish() {TRACE;
-	if (!dim) RAISE("%s: inlet not busy",ARGS(parent));
-	if (dim->prod() != dex) post("incomplete grid: %d of %d from [%s] to [%s]",dex,dim->prod(),ARGS(sender),ARGS(parent));
+void GridInlet::finish() {
+	if (!dim) RAISE("inlet not busy");
+	if (dim->prod() != dex) post("%s: incomplete grid: %d of %d from [%s] to [%s]",ARGS(parent),dex,dim->prod(),ARGS(sender));
 #define FOO(T) try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 	dim=0; buf=0; dex=0;
 }
 
-template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
+template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	nt = g->nt;
 	dim = g->dim;
 	int n = g->dim->prod();
@@ -218,7 +203,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	dex = 0;
 }
 
-void GridInlet::from_grid(Grid *g) {TRACE;
+void GridInlet::from_grid(Grid *g) {
 	if (!supports_type(g->nt))
 		RAISE("%s: number type %s not supported here", ARGS(parent), number_type_table[g->nt].name);
 #define FOO(T) from_grid2(g,(T)0);
@@ -232,7 +217,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0; begin(woutlet,dim,nt);
 }
 
-void GridOutlet::create_buf () {TRACE;
+void GridOutlet::create_buf () {
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	//size_t ntsz = number_type_table[nt].size;
@@ -248,7 +233,7 @@ void GridOutlet::create_buf () {TRACE;
 #endif
 }
 
-void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
+void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {
 	this->nt = nt;
 	this->dim = dim;
 	t_atom a[1];
@@ -259,7 +244,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(long n, T *data) {TRACE;
+void GridOutlet::send_direct(long n, T *data) {
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	while (n>0) {
 		long pn = n;//min((long)n,MAX_PACKET_SIZE);
@@ -268,7 +253,7 @@ void GridOutlet::send_direct(long n, T *data) {TRACE;
 	}
 }
 
-void GridOutlet::flush() {TRACE;
+void GridOutlet::flush() {
 	if (!buf) return;
 	if (!bufi) return;
 #define FOO(T) send_direct(bufi,(T *)*buf);
@@ -284,7 +269,7 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 //!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(long n, T *data) {TRACE;
+void GridOutlet::send(long n, T *data) {
 	//if (inlets.size()==1 && inlets[0]->buf) post("GridOutlet::send(%ld), bufsize %ld",long(n),long(inlets[0]->buf->dim->prod()));
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
@@ -311,7 +296,7 @@ void GridOutlet::send(long n, T *data) {TRACE;
 	}
 }
 
-void GridOutlet::callback(GridInlet *in) {TRACE;
+void GridOutlet::callback(GridInlet *in) {
 	CHECK_BUSY1(outlet);
 	if (!(in->mode==4 || in->mode==0)) RAISE("mode error");
 	inlets.push_back(in);
