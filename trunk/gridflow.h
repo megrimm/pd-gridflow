@@ -909,17 +909,19 @@ extern FClass ciFObject, ciFormat;
 
 /* both oprintf are copied from desiredata */
 
-static inline void voprintf(std::ostream &buf, const char *s, va_list args) {
+static inline int voprintf(std::ostream &buf, const char *s, va_list args) {
     char *b;
-    vasprintf(&b,s,args);
+    int n = vasprintf(&b,s,args);
     buf << b;
     free(b);
+    return n;
 }
-static inline void oprintf(std::ostream &buf, const char *s, ...) {
+static inline int oprintf(std::ostream &buf, const char *s, ...) {
     va_list args;
     va_start(args,s);
-    voprintf(buf,s,args);
+    int n = voprintf(buf,s,args);
     va_end(args);
+    return n;
 }
 
 std::ostream &operator << (std::ostream &self, t_atom &a);
