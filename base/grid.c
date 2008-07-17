@@ -204,8 +204,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 }
 
 void GridInlet::from_grid(Grid *g) {
-	if (!supports_type(g->nt))
-		RAISE("%s: number type %s not supported here", ARGS(parent), number_type_table[g->nt].name);
+	if (!supports_type(g->nt)) RAISE("number type %s not supported here",number_type_table[g->nt].name);
 #define FOO(T) from_grid2(g,(T)0);
 	TYPESWITCH(g->nt,FOO,)
 #undef FOO
