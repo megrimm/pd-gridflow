@@ -175,8 +175,8 @@ void gfmemcopy(uint8 *out, const uint8 *in, long n) {
 		((int32*)out)[2] = ((int32*)in)[2];
 		((int32*)out)[3] = ((int32*)in)[3];
 	}
-	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
-	for (; n; in++, out++, n--) { *out = *in; }
+	for (; n>4; in+=4, out+=4, n-=4) *(int32*)out = *(int32*)in;
+	for (; n; in++, out++, n--) *out=*in;
 }
 
 //----------------------------------------------------------------
@@ -699,6 +699,16 @@ void BFObject::noutlets_set (int n, bool draw) {
 		while (noutlets>n) outlet_free(outlets[--noutlets]);
 	}
 	if (draw) BFObject_redraw(this);
+}
+
+string BFObject::binbuf_string () {
+	if (!te_binbuf) return "[???]";
+	std::ostringstream s;
+	int n = binbuf_getnatom(te_binbuf);
+	t_atom *at = binbuf_getvec(te_binbuf);
+	for (int i=0; i<n; i++) s << (i ? " " : "[") << at[i];
+	s << "]";
+	return s.str();
 }
 
 void add_creator2(FClass *fclass, const char *name) {

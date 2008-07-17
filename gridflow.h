@@ -821,6 +821,7 @@ struct BFObject : t_object {
 	t_canvas *mom;
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
+	string binbuf_string ();
 };
 
 // represents objects that have inlets/outlets
@@ -843,7 +844,7 @@ uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
-#define ARGS(OBJ) "(some object...)"
+#define ARGS(OBJ) (OBJ->bself->binbuf_string().data())
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",ARGS(this), #_a_);
 #define SAME_TYPE(_a_,_b_) \
 	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", ARGS(this), \
@@ -920,5 +921,7 @@ static inline void oprintf(std::ostream &buf, const char *s, ...) {
     voprintf(buf,s,args);
     va_end(args);
 }
+
+std::ostream &operator << (std::ostream &self, t_atom &a);
 
 #endif // __GF_GRID_H
