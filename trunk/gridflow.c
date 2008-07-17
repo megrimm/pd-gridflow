@@ -55,23 +55,26 @@ std::map<t_class *,FClass *> fclasses_pd;
 BuiltinSymbols bsym;
 
 Barf::Barf(const char *s, ...) {
-    char buf[1024];
+    std::ostringstream os;
     va_list ap;
     va_start(ap,s);
-    vsnprintf(buf,1024,s,ap);
-    buf[1023]=0;
+    voprintf(os,s,ap);
     va_end(ap);
-    text = strdup(buf);
+    text = os.str();
 }
-Barf::Barf(const char *file, int line, const char *func, const char *s, ...) {
-    char buf[1024];
+Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
+    std::ostringstream os;
     va_list ap;
-    va_start(ap,s);
-    int n = vsnprintf(buf,1024,s,ap);
-    if (n<1024) snprintf(buf+n, 1024-n, "\n%s:%d:in `%s'", file, line, func);
-    buf[1023]=0;
+    va_start(ap,fmt);
+    voprintf(os,fmt,ap);
+    //oprintf(os,"\n%s:%d:in `%s'",file,line,func);
     va_end(ap);
-    text = strdup(buf);
+    text = os.str();
+}
+
+void Barf::error(BFObject *bself) {
+	if (bself) pd_error(bself,"%s",text.data());
+	else        ::error(      "%s",text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
@@ -562,7 +565,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	m = funcall_lookup(bself,"anything");
 	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf &oozy) {pd_error(bself,"%s",oozy.text);}
+    } catch (Barf &oozy) {oozy.error(bself);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
@@ -616,11 +619,11 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
-    } catch (Barf &oozy) {pd_error(bself,"%s",oozy.text); return 0;}
+    } catch (Barf &oozy) {oozy.error(bself); return 0;}
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {delete bself->self;} catch (Barf &oozy) {pd_error(bself,"%s",oozy.text);}
+	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself);}
 	bself->ninlets_set(1,false);
 	delete[] bself->inlets;
 	delete[] bself->outlets;
@@ -922,7 +925,7 @@ BUILTIN_SYMBOLS(FOO)
 	sys_vgui(".mbar.help add command -label \"GridFlow index\" -command {pd pd open index.pd %s/doc \\;}\n",dirresult);
 	delete[] dirresult;
 	delete[] dirname;
-    } catch (Barf &oozy) {post("gridflow_setup error: %s",oozy.text);}
+    } catch (Barf &oozy) {oozy.error(0);}
     signal(SIGSEGV,SIG_DFL);
     signal(SIGABRT,SIG_DFL);
     signal(SIGBUS, SIG_DFL);
