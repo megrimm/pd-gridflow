@@ -44,6 +44,8 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #include <malloc.h>
 #endif
 
+typedef std::string string;
+
 #ifndef a_float
 #define a_float    a_w.w_float
 #define a_symbol   a_w.w_symbol
@@ -175,11 +177,13 @@ static inline uint64 rdtsc()
 		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
+struct BFObject;
 struct Barf {
-  char *text;
+  string text;
   Barf(const char *s, ...);
   Barf(const char *file, int line, const char *func, const char *s, ...);
-  ~Barf() {free(text);}
+  void error(BFObject *bself);
+  ~Barf() {}
 };
 
 #include <stdio.h>
@@ -228,7 +232,6 @@ ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffre
 struct FObject;
 struct t_atom2;
 typedef void (*FMethod)(FObject *, int, t_atom2 *);
-typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
@@ -748,7 +751,6 @@ struct AttrDecl {
 	string type;
 	AttrDecl(string name_, string type_) {name=name_; type=type_;}
 };
-struct BFObject;
 typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
 struct FClass {
 	t_allocator allocator; // returns a new C++ object
