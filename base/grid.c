@@ -213,7 +213,11 @@ void GridInlet::from_grid(Grid *g) {
 /* **************** GridOutlet ************************************ */
 
 GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_) {
-	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0; begin(woutlet,dim,nt);
+	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0;
+	t_atom a[1];
+	SETGRIDOUT(a,this);
+	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
+	if (!dim->prod()) {finish(); return;}
 }
 
 void GridOutlet::create_buf () {
@@ -230,15 +234,6 @@ void GridOutlet::create_buf () {
 	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
 	post("%s",text.str().data());
 #endif
-}
-
-void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {
-	this->nt = nt;
-	this->dim = dim;
-	t_atom a[1];
-	SETGRIDOUT(a,this);
-	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
-	if (!dim->prod()) {finish(); return;}
 }
 
 // send modifies dex; send_direct doesn't

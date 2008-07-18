@@ -795,7 +795,6 @@ struct GridOutlet : CObject {
 	void flush(); // goes with send();
 	PtrGrid buf; // temporary buffer
 	long bufi; // number of bytes used in the buffer
-	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(long n, T *data);
 	void finish();
 	void create_buf();
