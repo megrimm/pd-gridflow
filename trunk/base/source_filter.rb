@@ -241,8 +241,8 @@ def handle_grin(line)
 	i = fields[0].to_i
 	c = $stack[-1].name
 	frame = $stack[-1]
-	Out.print "template <class T> void grin_#{i}(GridInlet *in, long n, T *data);"
-	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
+	Out.print "template <class T> void grin_#{i}(GRIDHANDLER_ARGS(T));"
+	Out.print "template <class T> static void grinw_#{i} (GRIDHANDLER_ARGS(T));"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "#{i} grid(GridOutlet *foo);"
 	handle_decl "#{i} list(...);"

@@ -677,13 +677,14 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 //****************************************************************
 // GridInlet represents a grid-aware inlet
 
+#define GRIDHANDLER_ARGS(T) GridInlet *in, long dex, long n, T *data
+
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(I) \
-	template <class T> void THISCLASS::grinw_##I (GridInlet *in, long n, T *data) { \
-		((THISCLASS*)in->parent)->grin_##I(in,n,data);} \
-	template <class T> void THISCLASS::grin_##I (GridInlet *in, long n, T *data) { \
-	if (n==-1)
+	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {\
+		((THISCLASS*)in->parent)->grin_##I(in,dex,n,data);}\
+	template <class T> void THISCLASS::grin_##I  (GRIDHANDLER_ARGS(T)) {if (n==-1)
 #define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
 #define GRID_END }
@@ -700,9 +701,8 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
-#define FOO(T) \
-	void (*flow_##T)(GridInlet *in, long n, T *data); \
-	void flow(GridInlet *in, long n, T *data) const {flow_##T(in,n,data);}
+#define FOO(T) void (*flow_##T)(GRIDHANDLER_ARGS(T)); \
+	       void   flow     (GRIDHANDLER_ARGS(T)) const {flow_##T(in,dex,n,data);}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
@@ -713,7 +713,7 @@ struct GridInlet : CObject {
 	const GridHandler *gh;
 	GridOutlet *sender;
 	P<Dim> dim;
-	NumberTypeE nt;
+	NumberTypeE nt; // kill this
 	long dex;
 	int chunk;
 	PtrGrid buf;// factor-chunk buffer
