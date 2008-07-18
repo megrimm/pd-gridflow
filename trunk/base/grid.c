@@ -132,7 +132,6 @@ void GridInlet::begin(GridOutlet *sender) {
 
 template <class T> void GridInlet::flow(long n, T *data) {
 	CHECK_BUSY(inlet); CHECK_TYPE(*data,sender->nt); CHECK_ALIGN(data,sender->nt);
-	if (!mode) {dex += n; return;} // ignore data
 	if (!n) return; // no data
 	long d = dex + bufi;
 	if (d+n > dim->prod()) {
@@ -272,7 +271,6 @@ void GridOutlet::send(long n, T *data) {
 
 void GridOutlet::callback(GridInlet *in) {
 	CHECK_BUSY1(outlet);
-	if (!(in->mode==4 || in->mode==0)) RAISE("mode error");
 	inlets.push_back(in);
 }
 

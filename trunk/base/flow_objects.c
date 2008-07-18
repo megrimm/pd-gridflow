@@ -958,12 +958,11 @@ GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
 	\grin 0
 };
 GRID_INLET(0) {
-	in->set_mode(0);
+	//in->set_mode(0);
 } GRID_FINISH {
 	outlet_bang(bself->outlets[0]);
 } GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
-
 \class GridDim : FObject {
 	\constructor () {}
 	\grin 0
@@ -971,17 +970,16 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
 	out.send(in->dim->n,in->dim->v);
-	in->set_mode(0);
+	//in->set_mode(0);
 } GRID_END
 \end class {install("#dim",1,1); add_creator("@dim");}
-
 \class GridType : FObject {
 	\constructor () {}
 	\grin 0
 };
 GRID_INLET(0) {
 	outlet_symbol(bself->outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
-	in->set_mode(0);
+	/*in->set_mode(0);*/
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
 

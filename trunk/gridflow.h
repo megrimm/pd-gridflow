@@ -718,12 +718,10 @@ struct GridInlet : CObject {
 	int chunk;
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
-	int mode; // 0=ignore; 4=ro
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
-		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0), mode(4) {}
+		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
 	void set_chunk(long whichdim);
-	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *sender);
 	void finish();
