@@ -372,6 +372,7 @@ GRID_INLET(0) {
 	int32 *to2  ;
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
+	long cs; // chunksize used in put_at
 	\constructor (Grid *r=0) {
 		put_at.constrain(expect_max_one_dim);
 		this->r = r?r:new Grid(new Dim(),int32_e,true);
@@ -487,10 +488,8 @@ GRID_INLET(0) {
 GRID_INLET(1) {
 	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
-		if (in[0].dim)
-			r.next = new Grid(in->dim,nt);
-		else
-			r = new Grid(in->dim,nt);
+		if (in[0].dim) r.next = new Grid(in->dim,nt);
+		else           r      = new Grid(in->dim,nt);
 		return;
 	}
 	SAME_TYPE(in,r);
@@ -514,7 +513,8 @@ GRID_INLET(1) {
 			fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
-	in->set_chunk(lsd-nn+in->dim->n);
+	in->set_chunk(     lsd-nn+in->dim->n);
+	cs = in->dim->prod(lsd-nn+in->dim->n);
 } GRID_FLOW {
 	//fprintf(stderr,"d=%d\n",d);
 	if (!put_at) { // reassign
@@ -522,7 +522,6 @@ GRID_INLET(1) {
 		return;
 	}
 	// put_at (...)
-	long cs = in->factor(); // chunksize
 	int32 v[lsd];
 	int32 *x = wdex;
 	while (n) {
@@ -663,7 +662,7 @@ GRID_INLET(0) {
 	int bn = seed?seed->dim->n:0;
 	long yn = in->dim->v[an-bn-1];
 	long zn = in->dim->prod(an-bn);
-	long factor = in->factor();
+	long factor = yn*zn;
 	T buf[n];
 	COPY(buf,data,n);
 	if (seed) {
@@ -737,7 +736,7 @@ GRID_INLET(0) {
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 	in->set_chunk(a->n-1);
-	long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
+	long sjk=r->dim->prod(), sj=in->dim->prod(a->n-1), sk=sjk/sj;
 	long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
 	T *rdata = (T *)*r;
 	r2=new Grid(new Dim(chunk*sjk),r->nt);
@@ -747,7 +746,7 @@ GRID_INLET(0) {
 			COPY(buf3+(j+i*chunk)*sk,rdata+i*sk,sk);
 	use_dot = op==op_mul && fold==op_add && seed->dim->n==0 && *(T *)*seed==0;
 } GRID_FLOW {
-    long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
+    long sjk=r->dim->prod(), sj=in->dim->prod(in->dim->n-1), sk=sjk/sj;
     long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
     T buf [chunk*sk];
     T buf2[chunk*sk];
@@ -1071,7 +1070,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
-	long a = in->factor();
+	long a = in->dim->prod(w);
 	long b = r->dim->prod(w);
 	T *data2 = (T *)*r + dex*b/a;
 	if (a==3 && b==1) {
@@ -1129,7 +1128,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,in->dim);
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
-	long m = in->factor();
+	long m = in->dim->prod(in->dim->n-1);
 	T *foo[m];
 	T  bar[m];
 	for (; n; n-=m,data+=m) {
@@ -1220,7 +1219,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,new Dim(in->dim->n,in->dim->v), in->nt);
 	in->set_chunk(d);
 } GRID_FLOW {
-	long f1=in->factor(), f2=in->dim->prod(d+1);
+	long f1=in->dim->prod(d), f2=in->dim->prod(d+1);
 	while (n) {
 		long hf1=f1/2;
 		T *data2 = data+f1-f2;
@@ -1449,7 +1448,7 @@ GRID_INLET(0) {
 	in->set_chunk(in->dim->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 } GRID_FLOW {
-	int m = in->factor();
+	int m = in->dim->prod(in->dim->n-1);
 	for (; n; n-=m,data+=m) {
 		op_mul->map(m-1,data,(T)z);
 		op_div->map(m-1,data,data[m-1]);
@@ -1707,7 +1706,7 @@ GRID_INLET(0) {
 	#undef Z
 } GRID_END
 
-GRID_INPUT(1,scale) { prepare_scale_factor(); } GRID_END
+GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 
 \end class {install("#scale_by",2,1); add_creator("@scale_by");}
 
@@ -1794,7 +1793,7 @@ GRID_INLET(0) {
 	#undef Z
 } GRID_END
 
-GRID_INPUT(1,scale) { prepare_scale_factor(); } GRID_END
+GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 
 \end class {install("#downscale_by",2,1); add_creator("@downscale_by");}
 
@@ -1929,7 +1928,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int nl = lines->dim->get(0);
 	Line *ld = (Line *)(int32 *)*lines;
-	int f = in->factor();
+	int f = in->dim->prod(1);
 	int y = dex/f;
 	int cn = color->dim->prod();
 	T *cd = (T *)*color2;
@@ -2084,7 +2083,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(1);
 } GRID_FLOW {
-	int f = in->factor();
+	int f = in->dim->prod(1);
 	int y = dex/f;
 	if (position->nt != int32_e) RAISE("position has to be int32");
 	int py = ((int32*)*position)[0], rsy = image->dim->v[0];
