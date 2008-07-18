@@ -692,12 +692,12 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
 // V is a PtrGrid instance-var
 #define GRID_INPUT(I,V) \
-	GRID_INLET(I) {V=new Grid(in->dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in->dex,data,n);} GRID_FINISH
+	GRID_INLET(I) {V=new Grid(in->dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+dex,data,n);} GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
 #define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in->dim,NumberTypeE_type_of(data));} \
-	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n);} GRID_FINISH
+	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+dex,data,n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {

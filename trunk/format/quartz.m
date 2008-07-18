@@ -185,7 +185,7 @@ GRID_INLET(FormatQuartz,0) {
 	GFView_imageHeight_width(widget,in->dim->get(0),in->dim->get(1));
 	in->set_chunk(1);
 } GRID_FLOW {
-	int off = in->dex/in->dim->prod(2);
+	int off = dex/in->dim->prod(2);
 	int c=in->dim->get(2);
 	NSView *w = widget;
 	uint8 *data2 = GFView_imageData(w)+off*4;

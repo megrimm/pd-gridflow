@@ -162,7 +162,7 @@ GRID_INLET(0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int bypl = 4*sx;
-	int y = in->dex / sxc;
+	int y = dex/sxc;
 	for (; n>0; y++, data+=sxc, n-=sxc) bit_packing->pack(sx, data, buf+y*bypl);
 	} GRID_FINISH {
 } GRID_END

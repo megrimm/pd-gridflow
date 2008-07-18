@@ -188,7 +188,7 @@ GRID_INLET(0) {
 	int bypl = screen->pitch;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
-	int y = in->dex / sxc;
+	int y = dex/sxc;
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
