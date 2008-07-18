@@ -711,7 +711,7 @@ struct FObject;
 struct GridInlet : CObject {
 	FObject *parent;
 	const GridHandler *gh;
-	FObject *sender;
+	GridOutlet *sender;
 	P<Dim> dim;
 	NumberTypeE nt;
 	long dex;
@@ -725,7 +725,7 @@ struct GridInlet : CObject {
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) {mode=mode_;}
 	int32 factor() {return buf?buf->dim->prod():1;} // which is usually not the same as this->dim->prod(chunk)
-	void begin(GridOutlet *back_out);
+	void begin(GridOutlet *sender);
 	void finish();
 	template <class T> void flow(long n, T *data); // n=-1 is begin, and n=-2 is finish.
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
