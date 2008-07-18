@@ -110,14 +110,14 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-void GridInlet::begin(GridOutlet *back_out) {
-	nt = back_out->nt;
+void GridInlet::begin(GridOutlet *sender) {
 	if (dim) RAISE("grid inlet aborting from %s at %ld/%ld because of %s",
-			ARGS(sender),long(dex),long(dim->prod()),ARGS(back_out->parent));
-	sender = back_out->parent;
+		ARGS(this->sender->parent),long(dex),long(dim->prod()),ARGS(sender->parent));
+	this->sender = sender;
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("inlet: unknown number type");
 	if (!supports_type(nt)) RAISE("number type %s not supported here", number_type_table[nt].name);
-	P<Dim> dim = this->dim = back_out->dim;
+	nt = sender->nt;
+	P<Dim> dim = this->dim = sender->dim;
 	dex=0;
 	buf=0;
 	try {
@@ -126,7 +126,7 @@ void GridInlet::begin(GridOutlet *back_out) {
 #undef FOO
 	} catch (Barf &barf) {this->dim=0; throw;}
 	this->dim = dim;
-	back_out->callback(this);
+	sender->callback(this);
 #ifdef TRACEBUFS
 	post("GridInlet:  %20s buf for recving from %p",dim->to_s(),sender);
 #endif
@@ -140,7 +140,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 	if (!n) return; // no data
 	long d = dex + bufi;
 	if (d+n > dim->prod()) {
-		post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender), 0);
+		post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender->parent), 0);
 		n = dim->prod() - d;
 		if (n<=0) return;
 	}
@@ -171,7 +171,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 
 void GridInlet::finish() {
 	if (!dim) RAISE("inlet not busy");
-	if (dim->prod() != dex) post("%s: incomplete grid: %d of %d from [%s] to [%s]",ARGS(parent),dex,dim->prod(),ARGS(sender));
+	if (dim->prod() != dex) post("%s: incomplete grid: %d of %d from [%s] to [%s]",ARGS(parent),dex,dim->prod(),ARGS(sender->parent));
 #define FOO(T) try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(nt,FOO,)
 #undef FOO
