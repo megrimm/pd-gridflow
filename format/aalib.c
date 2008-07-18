@@ -82,7 +82,7 @@ GRID_INLET(0) {
 	int f = in->factor();
 	if (raw_mode) {
 		int sx = min(f,aa_scrwidth(context));
-		int y = in->dex/f;
+		int y = dex/f;
 		while (n) {
 			if (y>=aa_scrheight(context)) return;
 			for (int x=0; x<sx; x++) {
@@ -95,7 +95,7 @@ GRID_INLET(0) {
 		}
 	} else {
 		int sx = min(f,context->imgwidth);
-		int y = in->dex/f;
+		int y = dex/f;
 		while (n) {
 			if (y>=context->imgheight) return;
 			for (int x=0; x<sx; x++) aa_putpixel(context,x,y,data[x]);
