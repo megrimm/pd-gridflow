@@ -117,7 +117,7 @@ void GridInlet::begin(GridOutlet *sender) {
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("inlet: unknown number type");
 	if (!supports_type(nt)) RAISE("number type %s not supported here", number_type_table[nt].name);
 	nt = sender->nt;
-	P<Dim> dim = this->dim = sender->dim;
+	this->dim = sender->dim;
 	dex=0;
 	buf=0;
 	try {
@@ -179,28 +179,10 @@ void GridInlet::finish() {
 }
 
 template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
-	nt = g->nt;
-	dim = g->dim;
-	int n = g->dim->prod();
-	gh->flow(this,-1,(T *)0);
-	if (n>0 && this->mode!=0) {
-		T *data = (T *)*g;
-		CHECK_ALIGN(data);
-		//int ntsz = number_type_table[nt].size;
-		int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
-		if (!m) m++;
-		m *= factor();
-		while (n) {
-			if (m>n) m=n;
-			CHECK_ALIGN(data);
-			try {gh->flow(this,m,data);} CATCH_IT;
-			data+=m; n-=m; dex+=m;
-		}
-	}
-	try {gh->flow(this,-2,(T *)0);} CATCH_IT;
-	//!@#$ add error handling.
-	dim = 0;
-	dex = 0;
+	GridOutlet out(0,-1,g->dim,g->nt);
+	begin(&out);
+	size_t n = g->dim->prod();
+	if (n) out.send(n,(T *)*g); else finish();
 }
 
 void GridInlet::from_grid(Grid *g) {
@@ -216,8 +198,10 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0;
 	t_atom a[1];
 	SETGRIDOUT(a,this);
-	outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
-	if (!dim->prod()) {finish(); return;}
+	if (parent) {
+		outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
+		if (!dim->prod()) finish();
+	}
 }
 
 void GridOutlet::create_buf () {
