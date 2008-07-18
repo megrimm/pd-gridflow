@@ -33,16 +33,13 @@
 
 //#define TRACEBUFS
 
-#define CHECK_TYPE(d) if (NumberTypeE_type_of(&d)!=this->nt) RAISE("(%s): " \
+#define CHECK_TYPE(d,NT) if (NumberTypeE_type_of(&d)!=NT) RAISE("(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", __PRETTY_FUNCTION__, \
-		number_type_table[NumberTypeE_type_of(&d)].name, \
-		number_type_table[this->nt].name);
+		number_type_table[NumberTypeE_type_of(&d)].name, number_type_table[NT].name);
 #define CHECK_BUSY1(s) if (!dim) RAISE(#s " not busy");
 #define CHECK_BUSY(s)  if (!dim) RAISE(#s " not busy (wanting to write %ld values)",(long)n);
-#define CHECK_ALIGN(d)     {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
+#define CHECK_ALIGN(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
 	if (align) {post("(%s): Alignment Warning: %p is not %d-aligned: %d", __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
-#define CHECK_ALIGN2(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
-	if (align) {post("Alignment Warning: %p is not %d-aligned: %d", (void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
 
@@ -55,7 +52,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 			if (i!=0 && a[i-1].a_type==A_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
 			init(new Dim(i,v),nt);
-			CHECK_ALIGN2(this->data,nt);
+			CHECK_ALIGN(this->data,nt);
 			if (a[i] != delim) i++;
 			i++; a+=i; n-=i;
 			goto fill;
@@ -63,7 +60,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	}
 	if (n!=0 && a[0].a_type==A_SYMBOL) {nt = NumberTypeE_find(a[0]); a++; n--;}
 	init(new Dim(n),nt);
-	CHECK_ALIGN2(this->data,nt);
+	CHECK_ALIGN(this->data,nt);
 	fill:
 	int nn = dim->prod();
 	n = min(n,nn);
@@ -83,7 +80,7 @@ void Grid::init_from_atom(const t_atom &x) {
 		init_from_list(binbuf_getnatom(b),binbuf_getvec(b));
 	} else if (x.a_type==A_FLOAT) {
 		init(new Dim(),int32_e);
-		CHECK_ALIGN2(this->data,nt);
+		CHECK_ALIGN(this->data,nt);
 		((int32 *)*this)[0] = (int32)a.a_float;
 	} else RAISE("can't convert to grid");
 }
@@ -99,7 +96,7 @@ void GridInlet::set_chunk(long whichdim) {
 	if (!n) n=1;
 	if(!dim) RAISE("huh?");
 	if (n>1) {
-		buf=new Grid(new Dim(n), nt);
+		buf=new Grid(new Dim(n), sender->nt);
 		bufi=0;
 	} else buf=0;
 }
@@ -114,15 +111,14 @@ void GridInlet::begin(GridOutlet *sender) {
 	if (dim) RAISE("grid inlet aborting from %s at %ld/%ld because of %s",
 		ARGS(this->sender->parent),long(dex),long(dim->prod()),ARGS(sender->parent));
 	this->sender = sender;
-	if ((int)nt<0 || (int)nt>=(int)number_type_table_end) RAISE("inlet: unknown number type");
-	if (!supports_type(nt)) RAISE("number type %s not supported here", number_type_table[nt].name);
-	nt = sender->nt;
+	if (!supports_type(sender->nt)) RAISE("number type %s not supported here", number_type_table[sender->nt].name);
+	this->nt = sender->nt;
 	this->dim = sender->dim;
 	dex=0;
 	buf=0;
 	try {
 #define FOO(T) gh->flow(this,-1,(T *)0); break;
-		TYPESWITCH(this->nt,FOO,)
+		TYPESWITCH(sender->nt,FOO,)
 #undef FOO
 	} catch (Barf &barf) {this->dim=0; throw;}
 	this->dim = dim;
@@ -135,7 +131,7 @@ void GridInlet::begin(GridOutlet *sender) {
 #define CATCH_IT catch (Barf &slimy) {slimy.error(parent->bself);}
 
 template <class T> void GridInlet::flow(long n, T *data) {
-	CHECK_BUSY(inlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
+	CHECK_BUSY(inlet); CHECK_TYPE(*data,sender->nt); CHECK_ALIGN(data,sender->nt);
 	if (!mode) {dex += n; return;} // ignore data
 	if (!n) return; // no data
 	long d = dex + bufi;
@@ -152,7 +148,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 		bufi+=k; data+=k; n-=k;
 		if (bufi==bufn) {
 			long newdex = dex+bufn;
-			CHECK_ALIGN(bufd);
+			CHECK_ALIGN(bufd,sender->nt);
 			try {gh->flow(this,bufn,bufd);} CATCH_IT;
 			dex = newdex;
 			bufi = 0;
@@ -173,7 +169,7 @@ void GridInlet::finish() {
 	if (!dim) RAISE("inlet not busy");
 	if (dim->prod() != dex) post("%s: incomplete grid: %d of %d from [%s] to [%s]",ARGS(parent),dex,dim->prod(),ARGS(sender->parent));
 #define FOO(T) try {gh->flow(this,-2,(T *)0);} CATCH_IT;
-	TYPESWITCH(nt,FOO,)
+	TYPESWITCH(sender->nt,FOO,)
 #undef FOO
 	dim=0; buf=0; dex=0;
 }
@@ -223,7 +219,7 @@ void GridOutlet::create_buf () {
 // send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send_direct(long n, T *data) {
-	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
+	CHECK_BUSY(outlet); CHECK_TYPE(*data,nt); CHECK_ALIGN(data,nt);
 	while (n>0) {
 		long pn = n;//min((long)n,MAX_PACKET_SIZE);
 		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(pn,data);} CATCH_IT;
@@ -250,7 +246,7 @@ template <class T>
 void GridOutlet::send(long n, T *data) {
 	//if (inlets.size()==1 && inlets[0]->buf) post("GridOutlet::send(%ld), bufsize %ld",long(n),long(inlets[0]->buf->dim->prod()));
 	if (!n) return;
-	CHECK_BUSY(outlet); CHECK_ALIGN(data);
+	CHECK_BUSY(outlet); CHECK_ALIGN(data,nt);
 	if (NumberTypeE_type_of(data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) {T data2[bs]; \
