@@ -76,7 +76,7 @@
 #X obj 337 324 # min 255;
 #X obj 337 345 #greyscale_to_rgb;
 #X obj 116 547 #out window;
-#X text 1 -85 goop.pd;
+#X text 1 -85 surface_tension.pd;
 #X obj 39 478 #scale_by 2;
 #X obj 71 185 # - 31;
 #X obj 337 301 # *>>8 27;
