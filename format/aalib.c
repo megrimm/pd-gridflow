@@ -79,7 +79,7 @@ GRID_INLET(0) {
 	}
 	in->set_chunk(1);
 } GRID_FLOW {
-	int f = in->factor();
+	int f = in->dim->prod(1);
 	if (raw_mode) {
 		int sx = min(f,aa_scrwidth(context));
 		int y = dex/f;
