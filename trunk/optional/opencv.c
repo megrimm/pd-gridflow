@@ -299,26 +299,70 @@ GRID_INLET(0) {
 } GRID_END
 \end class {install("cv.Ellipse",1,2);}
 
-\class CvApproxPoly : FObject {
+\class CvApproxPoly : CvOp1 {
+	\grin 0
+	\attr int accuracy;
+	\attr bool closed;
+	CvMemStorage* storage;
+	\constructor () {closed=true; storage = cvCreateMemStorage(0);}
+	~CvApproxPoly () {cvReleaseMemStorage(&storage);}
+};
+GRID_INLET(0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	PtrGrid l = new Grid(in->dim,(T *)data); CvArr *a = cvGrid(l,mode);
+	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
+} GRID_END
+\end class {install("cv.ApproxPoly",1,1);}
+
+\class CvCalcOpticalFlowHS : CvOp1 {
+	\grin 0
+	\attr double lambda;
+	//\attr CvTermCriteria criteria;
+	\constructor () {}
+};
+GRID_INLET(0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+//	cvCalcOpticalFlowHS(prev,curr,use_previous, CvArr* velx, CvArr* vely, lambda, CvTermCriteria criteria );
+} GRID_END
+\end class {install("cv.CalcOpticalFlowHS",1,1);}
+\class CvCalcOpticalFlowLK : CvOp1 {
 	\grin 0
 	\constructor () {}
 };
 GRID_INLET(0) {
+	in->set_chunk(0);
 } GRID_FLOW {
 } GRID_END
-\end class {install("cv.ApproxPoly",1,1);}
+\end class {install("cv.CalcOpticalFlowLK",1,1);}
+\class CvCalcOpticalFlowBM : CvOp1 {
+	\grin 0
+	\constructor () {}
+};
+GRID_INLET(0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+} GRID_END
+\end class {install("cv.CalcOpticalFlowBM",1,1);}
+\class CvCalcOpticalFlowPyrLK : CvOp1 {
+	\grin 0
+	\constructor () {}
+};
+GRID_INLET(0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+} GRID_END
+\end class {install("cv.CalcOpticalFlowPyrLK",1,1);}
 
 /*
-CvSeq* cvApproxPoly( const void* src_seq, int header_size, CvMemStorage* storage, int method, double parameter, int parameter2=0 );
-void cvCalcOpticalFlowHS(const CvArr* prev, const CvArr* curr, int use_previous, CvArr* velx, CvArr* vely, double lambda,
-                          CvTermCriteria criteria );
-void cvCalcOpticalFlowLK( const CvArr* prev, const CvArr* curr, CvSize win_size, CvArr* velx, CvArr* vely);
-void cvCalcOpticalFlowBM( const CvArr* prev, const CvArr* curr, CvSize block_size, CvSize shift_size, CvSize max_range, int use_previous,
-                          CvArr* velx, CvArr* vely);
-void cvCalcOpticalFlowPyrLK( const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
-                             const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
-                             int count, CvSize win_size, int level, char* status,
-                             float* track_error, CvTermCriteria criteria, int flags );
+void cvCalcOpticalFlowLK(const CvArr* prev, const CvArr* curr, CvSize win_size, CvArr* velx, CvArr* vely);
+void cvCalcOpticalFlowBM(const CvArr* prev, const CvArr* curr, CvSize block_size, CvSize shift_size, CvSize max_range, int use_previous,
+                         CvArr* velx, CvArr* vely);
+void cvCalcOpticalFlowPyrLK(const CvArr* prev, const CvArr* curr, CvArr* prev_pyr, CvArr* curr_pyr,
+                            const CvPoint2D32f* prev_features, CvPoint2D32f* curr_features,
+                            int count, CvSize win_size, int level, char* status,
+                            float* track_error, CvTermCriteria criteria, int flags );
 void cvCalcBackProject( IplImage** image, CvArr* back_project, const CvHistogram* hist );
 void cvCalcHist( IplImage** image, CvHistogram* hist, int accumulate=0, const CvArr* mask=NULL );
 CvHistogram* cvCreateHist( int dims, int* sizes, int type, float** ranges=NULL, int uniform=1 );
