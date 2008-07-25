@@ -87,8 +87,8 @@ GRID_INLET(1) {
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
 	long sy = in->dim->v[0];
-	if (yflip) {for (long y=     in->dex/sxc; n; data+=sxc, n-=sxc, y++) bit_packing->pack(sx,data,buf+y*sxc);}
-        else       {for (long y=sy-1-in->dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
+	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bit_packing->pack(sx,data,buf+y*sxc);}
+        else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
 } GRID_END
 \end class {
 	install("#to_pix",2,0); // outlets are 0 because GEM makes its own outlet instead
