@@ -41,7 +41,6 @@ static std::map<string,string> fourccs;
 	int channels;
 	bool started;
 	P<Dim> force;
-	int length; // in frames
 	float64 framerate;
 	P<BitPacking> bit_packing;
 	int jpeg_quality; // in theory we shouldn't need this, but...
@@ -54,13 +53,6 @@ static std::map<string,string> fourccs;
 		if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
 			filename.data(), strerror(errno));
 		if (mode==gensym("in")) {
-			length = quicktime_video_length(anim,track);
-			post("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
-				quicktime_video_compressor(anim,track),
-				quicktime_video_height(anim,track),
-				quicktime_video_width(anim,track),
-				quicktime_video_depth(anim,track),
-				quicktime_frame_rate(anim,track));
 	/* This doesn't really work: (is it just for encoding?)
 			if (!quicktime_supported_video(anim,track))
 				RAISE("quicktime: unsupported codec: %s",
@@ -203,7 +195,7 @@ GRID_INLET(0) {
 	outlet_anything(bself->te_outlet,gensym("frames"),1,a);
 */
 	t_atom a[1];
-	SETFLOAT(a,length);
+	SETFLOAT(a,quicktime_video_length(anim,track));
 	outlet_anything(bself->outlets[0],gensym("frames"),1,a);
 	SETFLOAT(a,quicktime_frame_rate(anim,track));
 	outlet_anything(bself->outlets[0],gensym("framerate"),1,a);
