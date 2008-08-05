@@ -207,6 +207,12 @@ GRID_INLET(0) {
 	outlet_anything(bself->outlets[0],gensym("frames"),1,a);
 	SETFLOAT(a,quicktime_frame_rate(anim,track));
 	outlet_anything(bself->outlets[0],gensym("framerate"),1,a);
+	SETFLOAT(a,quicktime_video_height(anim,track));
+	outlet_anything(bself->outlets[0],gensym("height"),1,a);
+	SETFLOAT(a,quicktime_video_width(anim,track));
+	outlet_anything(bself->outlets[0],gensym("width"),1,a);
+	SETFLOAT(a,quicktime_video_depth(anim,track));
+	outlet_anything(bself->outlets[0],gensym("depth"),1,a);
 	//SUPER;
 }
 
