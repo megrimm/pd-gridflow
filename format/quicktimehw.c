@@ -213,6 +213,8 @@ GRID_INLET(0) {
 	outlet_anything(bself->outlets[0],gensym("width"),1,a);
 	SETFLOAT(a,quicktime_video_depth(anim,track));
 	outlet_anything(bself->outlets[0],gensym("depth"),1,a);
+	SETSYMBOL(a,gensym(quicktime_video_compressor(anim,track)));
+	outlet_anything(bself->outlets[0],gensym("codec"),1,a);
 	//SUPER;
 }
 
