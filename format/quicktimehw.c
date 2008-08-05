@@ -205,6 +205,8 @@ GRID_INLET(0) {
 	t_atom a[1];
 	SETFLOAT(a,length);
 	outlet_anything(bself->outlets[0],gensym("frames"),1,a);
+	SETFLOAT(a,quicktime_frame_rate(anim,track));
+	outlet_anything(bself->outlets[0],gensym("framerate"),1,a);
 	//SUPER;
 }
 
