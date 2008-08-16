@@ -38,6 +38,7 @@ extern "C" {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
+	short quality;
 	\constructor (t_symbol *mode, string filename) {
 		Format::_0_open(0,0,mode,filename);
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
@@ -60,6 +61,7 @@ GRID_INLET(0) {
 	cjpeg.input_components = 3;
 	cjpeg.in_color_space = JCS_RGB;
 	jpeg_set_defaults(&cjpeg);
+	jpeg_set_quality(&cjpeg,quality,false);
 	jpeg_start_compress(&cjpeg,TRUE);
 } GRID_FLOW {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
@@ -106,12 +108,7 @@ static bool gfeof(FILE *f) {
 	jpeg_destroy_decompress(&djpeg);
 }
 
-\def 0 quality (short quality) {
-	quality = min(max((int)quality,0),100);
-	// should the last arg ("baseline") be set to true ?
-	// and what is it for? is it for accuracy of the DC component?
-	jpeg_set_quality(&cjpeg,quality,false);
-}
+\def 0 quality (short quality) {this->quality = min(max((int)quality,0),100);}
 
 \classinfo {install_format("#io.jpeg",6,"jpeg jpg");}
 \end class FormatJPEG
