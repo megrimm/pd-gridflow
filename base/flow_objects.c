@@ -256,6 +256,7 @@ GRID_INLET(0) {
 				}
 			}
 			if (i<n-1) s << sep;
+			if (s.tellp()>trunc) return;
 		}
 	}
 	void dump_dims(std::ostream &s, GridInlet *in) {
@@ -321,9 +322,10 @@ GRID_INLET(0) {
 		make_columns(n,data);
 		long sy = in->dim->v[0];
 		long sx = n/sy;
-		for (int row=0; row<in->dim->v[0]; row++) {
+		for (int row=0; row<sy; row++) {
 			std::ostringstream body;
 			dump(body,sx,&data[sx*row],' ',trunc);
+			if (body.tellp()>trunc) body << "...";
 			puts(body);
 			if (row>maxrows) {puts("..."); break;}
 		}
@@ -339,8 +341,7 @@ GRID_INLET(0) {
 			for (int col=0; col<sx; col++) {
 				str << "(";
 				dump(str,sz2,&data[sz*row+sz2*col],' ',trunc);
-				str << ")";
-				if (str.str().size()>trunc) break;
+				if (str.tellp()>trunc) {str << "..."; break;} else str << ")";
 			}
 			puts(str);
 			if (row>maxrows) {puts("..."); break;}
@@ -572,7 +573,6 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	T *rdata = (T *)*r;
 	long loop = r->dim->prod();
-	//fprintf(stderr,"[#] op=%s loop=%ld\n",op->name,loop);
 	T tada[n];
 	COPY(tada,data,n);
 	if (loop>1) {
