@@ -750,9 +750,9 @@ extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" void namelist_append_files(t_namelist *, char *);
 static void add_to_path(char *dir) {
 	char bof[1024];
-	sprintf(bof,"%s/abstractions",dir);        namelist_append_files(sys_searchpath,bof);
-	sprintf(bof,"%s/deprecated",dir);          namelist_append_files(sys_searchpath,bof);
-	sprintf(bof,"%s/doc/flow_classes",dir);    namelist_append_files(sys_helppath,  bof);
+	sprintf(bof,"%s/abstractions",dir);        sys_searchpath = namelist_append_files(sys_searchpath,bof);
+	sprintf(bof,"%s/deprecated",dir);          sys_searchpath = namelist_append_files(sys_searchpath,bof);
+	sprintf(bof,"%s/doc/flow_classes",dir);    sys_helppath   = namelist_append_files(sys_helppath,  bof);
 }
 
 //----------------------------------------------------------------
