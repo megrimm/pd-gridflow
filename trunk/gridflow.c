@@ -747,7 +747,7 @@ void add_creator3(FClass *fclass, const char *name) {
 
 struct t_namelist;
 extern t_namelist *sys_searchpath, *sys_helppath;
-extern "C" void namelist_append_files(t_namelist *, char *);
+extern "C" t_namelist *namelist_append_files(t_namelist *, char *);
 static void add_to_path(char *dir) {
 	char bof[1024];
 	sprintf(bof,"%s/abstractions",dir);        sys_searchpath = namelist_append_files(sys_searchpath,bof);
