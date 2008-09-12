@@ -606,6 +606,16 @@ Feature.add {
 		c_test %`
 			#include <fftw3.h>
 			int main () {return 0;}`}}
+Feature.add {
+	tag :fann
+	name "FANN (Fast Artificial Neural Network)"
+	uses_o ["optional/fann.o"]
+	uses_so ["-lfann"]
+	options ["HAVE_FANN"]
+	test proc {
+		c_test %`
+			#include <fann.h>
+			int main () {return !fann_create_array;}`}}
 #--------------------------------#
 
 $features_h = {}
