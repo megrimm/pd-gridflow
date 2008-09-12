@@ -1,5 +1,20 @@
 /* $Id$ */
 
+version 0.9.5 (2008.07.18):
+
+ * added [gf.print] (aliased to [print])
+ * added [cv.Ellipse]
+ * renamed goop.pd to surface_tension.pd
+ * [#in quicktime]: "get" also produces messages "framerate", "height",
+   "width", "depth", "codec".
+ * 
+ *
+ *
+ *
+ *
+ *
+ *
+
 version 0.9.4 (2008.07.04):
 
  * [#convolve] takes more RAM but gets faster on OSX
