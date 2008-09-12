@@ -1,6 +1,7 @@
 /* $Id$ */
 
 0.9.5
+[ ] reintroduce set_mode(0)
 [ ] get rid of architecture.html
 [ ] support "get" in abstractions
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
