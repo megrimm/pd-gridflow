@@ -186,24 +186,6 @@ struct Barf {
   ~Barf() {}
 };
 
-#include <stdio.h>
-extern "C" void *gfmalloc(size_t n);
-extern "C" void gffree(void *p);
-#if __GNUC__<4
-#define ALLOCPREFIX static inline
-#else
-#define ALLOCPREFIX inline
-#endif
-#include "base/new.h"
-ALLOCPREFIX void *operator new   (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
-ALLOCPREFIX void *operator new[] (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
-ALLOCPREFIX void *operator new   (size_t n, const std::nothrow_t&) throw () {return gfmalloc(n);}
-ALLOCPREFIX void *operator new[] (size_t n, const std::nothrow_t&) throw () {return gfmalloc(n);}
-ALLOCPREFIX void operator delete  (void*p) throw() {gffree(p);}
-ALLOCPREFIX void operator delete[](void*p) throw() {gffree(p);}
-ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffree(p);}
-ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
-
 #define NEWBUF(T,N) (new T[N])
 #define DELBUF(A) (delete[] A)
 
