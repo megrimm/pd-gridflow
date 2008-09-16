@@ -184,36 +184,6 @@ void gfmemcopy(uint8 *out, const uint8 *in, long n) {
 
 //----------------------------------------------------------------
 
-//#define DEBUG
-
-extern "C" {
-    void *gfmalloc(size_t n) {
-#ifdef DEBUG
-	static long cumul=0;
-	uint64 t = gf_timeofday();
-#endif
-	void *p = memalign(16,n);
-	long align = (long)p & 15;
-	if (align) fprintf(stderr,"malloc alignment = %ld mod 16\n",align);
-#ifdef DEBUG
-	t = gf_timeofday() - t; cumul += t; post("malloc p=%p bytes=%ld time=%ld cumul=%ld",p,(long)n,(long)t,(long)cumul);
-#endif
-	return p;
-    }
-    void gffree(void *p) {
-#ifdef DEBUG
-	static long cumul=0;
-	uint64 t = gf_timeofday();
-#endif
-	free(p);
-#ifdef DEBUG
-	t = gf_timeofday() - t; cumul += t; post("free   p=%p           time=%ld cumul=%ld",p,        (long)t,(long)cumul);
-#endif
-    }
-};
-
-//----------------------------------------------------------------
-
 uint64 gf_timeofday () {
 	timeval t;
 	gettimeofday(&t,0);
