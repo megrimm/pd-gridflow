@@ -2452,7 +2452,10 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 	\decl void _n_float(int i, float f);
 };
 \def 0 list(float f) {_0_float(argc,argv,f);}
-\def 0 float(float f) {for (int i=0; i<nmosusses; i++) if (f<mosusses[i]) {outlet_float(bself->outlets[i],f); return;}}
+\def 0 float(float f) {
+	int i; while (i<nmosusses; i++) if (f<mosusses[i]) break;
+	outlet_float(bself->outlets[i],f);
+}
  // precedence problem in dispatcher... does this problem still exist?
 \def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
 \end class {install("range",1,1);}
