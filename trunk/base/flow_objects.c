@@ -157,7 +157,7 @@ GRID_INPUT(1,dim_grid) {
 	in[0]->from_list(argc,argv,cast);}
 \def 1 per_message() {dim=0; dim_grid=0;}
 
-\def 0 reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
+\def 0 reset() {int32 foo[1]={0}; if (out) while (out->dim) out->send(1,foo);}
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
 
 //****************************************************************
