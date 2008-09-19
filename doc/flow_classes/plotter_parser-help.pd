@@ -1,0 +1,65 @@
+#N canvas 1250 258 545 441 10;
+#X obj 75 131 plotter_parser;
+#X obj 281 133 display;
+#X obj 75 33 until;
+#X obj 75 16 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
+-1;
+#X obj 8 17 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1;
+#X msg 82 57 rewind;
+#X obj 177 129 print bogus;
+#X obj 9 285 #draw_hpgl;
+#X obj 9 310 #out window;
+#X msg 41 264 255 255 255;
+#X obj 41 245 loadbang;
+#X obj 86 174 print command;
+#X obj 9 222 #store;
+#X obj 55 203 loadbang;
+#X obj 86 155 spigot;
+#X obj 132 156 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 1
+1;
+#X obj 9 329 fps;
+#X floatatom 9 350 5 0 0 0 - - -;
+#X obj 166 18 bng 15 250 50 0 empty empty empty 17 7 0 10 -258699 -1
+-1;
+#X obj 8 73 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 55 222 800 1000 3 #;
+#X obj 8 33 metro 1;
+#X obj 147 277 #pack;
+#X obj 199 260 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+-262144 -1 -1 9 256;
+#X obj 139 257 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+-262144 -1 -1 642 256;
+#X text 185 241 facteurs de offset en y et x;
+#X obj 75 79 #in grid plotter_parser_old.pd.hpgl \, headerless \, type
+b;
+#X connect 0 0 7 2;
+#X connect 0 0 14 0;
+#X connect 0 1 6 0;
+#X connect 2 0 26 0;
+#X connect 3 0 2 0;
+#X connect 4 0 21 0;
+#X connect 5 0 26 0;
+#X connect 7 0 8 0;
+#X connect 7 0 12 1;
+#X connect 7 1 12 0;
+#X connect 8 0 16 0;
+#X connect 9 0 7 1;
+#X connect 10 0 9 0;
+#X connect 12 0 7 0;
+#X connect 13 0 20 0;
+#X connect 14 0 11 0;
+#X connect 15 0 14 1;
+#X connect 16 0 17 0;
+#X connect 18 0 5 0;
+#X connect 18 0 20 0;
+#X connect 19 0 26 0;
+#X connect 20 0 12 1;
+#X connect 21 0 26 0;
+#X connect 22 0 7 3;
+#X connect 23 0 22 1;
+#X connect 24 0 22 0;
+#X connect 26 0 0 0;
+#X connect 26 1 1 0;
+#X connect 26 1 2 1;
+#X connect 26 1 4 0;
