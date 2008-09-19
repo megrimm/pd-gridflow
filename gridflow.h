@@ -364,7 +364,8 @@ struct Dim : CObject {
 	Card get(Card i) {return v[i];}
 /*	Dim *range(Card i, Card j) {return new Dim(...);} */
 	Card prod(Card start=0, Card end=-1) {
-		if (end<0) end+=n;
+		if (start<0) start+=n;
+		if (end  <0) end  +=n;
 		Card tot=1;
 		for (Card i=start; i<=end; i++) tot *= v[i];
 		return tot;
