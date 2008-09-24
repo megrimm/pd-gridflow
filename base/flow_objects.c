@@ -2497,6 +2497,8 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
 		case A_POINTER: self << "\\p(0x" << std::hex << a.a_gpointer << std::dec << ")"; break;
+		case A_COMMA:   self << ","; break;
+		case A_SEMI:    self << ";"; break;
 		case A_LIST: {
 			t_list *b = (t_list *)a.a_gpointer;
 			int argc = binbuf_getnatom(b);
