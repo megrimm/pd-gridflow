@@ -107,6 +107,7 @@ CvTermCriteria convert (const t_atom2 &a, CvTermCriteria *foo) {
 	if (argc>0 && argv[0]!=gensym("nil")) {tc.type |= CV_TERMCRIT_ITER; tc.max_iter = GETI(0);}
 	if (argc>1 && argv[1]!=gensym("nil")) {tc.type |= CV_TERMCRIT_EPS ; tc.epsilon  = GETF(1);}
 	if (argc>2) RAISE("invalid CvTermCriteria (too many args)");
+	//post("type=0x%08x max_iter=%d epsilon=%f",tc.type,tc.max_iter,tc.epsilon);
 	return tc;
 }
 
@@ -498,36 +499,30 @@ GRID_INLET(1) {
 
 \def 1 float (int v) {numClusters = v;}
 
+//post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("opencv-matrix"));
+//for (CvTypeInfo *t = cvFirstType(); t; t=t->next) post("type %s",t->type_name);
+
 GRID_INLET(0) {
 	if (in->dim->n<1) RAISE("should have at least 1 dimension");
 	in->set_chunk(0);
 } GRID_FLOW {
-	post("in->dim=%s",in->dim->to_s());
 	int32 v[] = {in->dim->prod(0)/in->dim->prod(-1),in->dim->prod(-1)};
-	post("v[0]=%d v[1]=%d",v[0],v[1]);
 	PtrGrid l = new Grid(new Dim(2,v),(T *)data);
-	CvMat *a = (CvMat *)cvGrid(l,mode,2);
+	CvArr *a = (CvMat *)cvGrid(l,mode,2);
 	PtrGrid o = new Grid(new Dim(1,v),int32_e);
-	CvMat *c = (CvMat *)cvGrid(o,mode);
+	CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvKMeans2(a,numClusters,c,termcrit);
-	//cvMatSend(c,this,0,new Dim(in->dim->n-1,in->dim->v));
 	int w[in->dim->n];
 	COPY(w,in->dim->v,in->dim->n);
 	w[in->dim->n-1] = 1;
 	P<Dim> d = new Dim(in->dim->n,w);
-	post("d = %s",d->to_s());
 	out = new GridOutlet(this,0,d);
-	out->send(v[0],(T *)*o);
-	//post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("opencv-matrix"));
-	//for (CvTypeInfo *t = cvFirstType(); t; t=t->next) post("type %s",t->type_name);
-	//post("release=%p cvReleaseMat");
+	out->send(v[0],(int32 *)*o);
 	cvRelease(&a);
 	cvRelease(&c);
 } GRID_END
 
 \end class {install("cv.KMeans",2,1);}
-//void cvKMeans2( const CvArr* samples, int numClusters,
-//                CvArr* clusterIdx, CvTermCriteria termcrit );
 
 /* **************************************************************** */
 
