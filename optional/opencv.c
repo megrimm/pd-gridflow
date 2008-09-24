@@ -77,6 +77,14 @@ NumberTypeE gf_cveltype(int e) {
   }
 }
 
+#define USELIST \
+	if (a.a_type != A_LIST) RAISE("expected listatom"); \
+	t_list *b = (t_list *)a.a_gpointer; \
+	int argc = binbuf_getnatom(b); \
+	t_atom2 *argv = (t_atom2 *)binbuf_getvec(b);
+#define GETF(I)     atom_getfloatarg(I,argc,argv)
+#define GETI(I) int(atom_getfloatarg(I,argc,argv))
+
 enum CvMode {
 	cv_mode_auto,
 	cv_mode_channels,
@@ -88,6 +96,23 @@ CvMode convert (const t_atom2 &x, CvMode *foo) {
 	if (x==gensym("channels"))   return cv_mode_channels;
 	if (x==gensym("nochannels")) return cv_mode_nochannels;
 	RAISE("invalid CvMode");
+}
+
+CvTermCriteria convert (const t_atom2 &a, CvTermCriteria *foo) {
+	USELIST;
+	CvTermCriteria tc;
+	tc.type = 0;
+	if (argc>0 && argv[0]!=gensym("nil")) {tc.type |= CV_TERMCRIT_ITER; tc.max_iter = GETI(0);}
+	if (argc>1 && argv[1]!=gensym("nil")) {tc.type |= CV_TERMCRIT_EPS ; tc.epsilon  = GETF(1);}
+	if (argc>2) RAISE("invalid CvTermCriteria (too many args)");
+	return tc;
+}
+
+void set_atom (t_atom *a, CvTermCriteria &tc) {
+	t_binbuf *b = binbuf_new();
+	if (tc.type & CV_TERMCRIT_ITER) binbuf_addv(b,"f",tc.max_iter); else binbuf_addv(b,"s",gensym("nil"));
+	if (tc.type & CV_TERMCRIT_EPS ) binbuf_addv(b,"f",tc.epsilon ); else binbuf_addv(b,"s",gensym("nil"));
+	SETLIST(a,b);
 }
 
 CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
@@ -107,6 +132,11 @@ CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
 		return a;
 	}
+	if (dims==1) {
+		CvMat *a = cvCreateMatHeader(g->dim->v[0],           1,CV_MAKETYPE(cv_eltype(g->nt),channels));
+		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
+		return a;
+	}
 	RAISE("unsupported number of dimensions (got %d)",g->dim->n);
 	//return 0;
 }
@@ -122,12 +152,12 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	return a;
 }
 
-void cvMatSend(const CvMat *self, FObject *obj, int outno) {
+void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim *dim=0) {
 	int m = self->rows;
 	int n = self->cols;
 	int e = CV_MAT_TYPE(cvGetElemType(self));
 	int c = CV_MAT_CN(  cvGetElemType(self));
-	GridOutlet *out = new GridOutlet(obj,0,new Dim(m,n));
+	GridOutlet *out = new GridOutlet(obj,0,dim?dim:new Dim(m,n));
 	for (int i=0; i<m; i++) {
 		uchar *meuh = cvPtr2D(self,i,0,0);
 		switch (e) {
@@ -157,13 +187,6 @@ void set_atom (t_atom *a, CvScalar &scal) {
 	binbuf_addv(b,"ffff",scal.val[0],scal.val[1],scal.val[2],scal.val[3]);
 	SETLIST(a,b);
 }
-#define USELIST \
-	if (a.a_type != A_LIST) RAISE("expected listatom"); \
-	t_list *b = (t_list *)a.a_gpointer; \
-	int argc = binbuf_getnatom(b); \
-	t_atom *argv = binbuf_getvec(b);
-#define GETF(I)     atom_getfloatarg(I,argc,argv)
-#define GETI(I) int(atom_getfloatarg(I,argc,argv))
 CvPoint  convert (const t_atom &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}
 CvSize   convert (const t_atom &a, CvSize *)    {USELIST; return cvSize(  GETI(0),GETI(1));}
 CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0),GETF(1),GETF(2),GETF(3));}
@@ -172,7 +195,7 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 
 \class CvOp1 : FObject {
 	\attr CvMode mode;
-	\constructor () {mode = cv_mode_auto;}
+	\constructor (...) {mode = cv_mode_auto;}
 	/* has no default \grin 0 handler so far. */
 };
 \end class {}
@@ -312,6 +335,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	PtrGrid l = new Grid(in->dim,(T *)data); CvArr *a = cvGrid(l,mode);
 	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
+	seq=seq; //blah
 } GRID_END
 \end class {install("cv.ApproxPoly",1,1);}
 
@@ -453,8 +477,50 @@ GRID_INLET(1) {
 	CvMat *a = (CvMat *)cvGrid(l,mode,2);
 	const CvMat* r = cvKalmanCorrect(kal,a);
 	cvMatSend(r,this,0);
+	cvReleaseMat((CvMat **)&r);
 } GRID_END
 \end class {install("cv.Kalman",2,1);}
+
+/* **************************************************************** */
+
+\class CvKMeans : CvOp1 {
+	\attr int numClusters;
+	\attr CvTermCriteria termcrit;
+	\grin 0 float32
+	\decl 1 float (int v);
+	\constructor (int v) {
+		_1_float(0,0,v);
+		termcrit = CvTermCriteria();
+	}
+};
+
+\def 1 float (int v) {numClusters = v;}
+
+GRID_INLET(0) {
+	if (in->dim->n<1) RAISE("should have at least 1 dimension");
+	in->set_chunk(0);
+} GRID_FLOW {
+	post("in->dim=%s",in->dim->to_s());
+	int32 v[] = {in->dim->prod(0)/in->dim->prod(-1),in->dim->prod(-1)};
+	post("v[0]=%d v[1]=%d",v[0],v[1]);
+	PtrGrid l = new Grid(new Dim(2,v),(T *)data);
+	CvMat *a = (CvMat *)cvGrid(l,mode,2);
+	PtrGrid o = new Grid(new Dim(1,v),int32_e);
+	CvMat *c = (CvMat *)cvGrid(o,mode);
+	cvKMeans2(a,numClusters,c,termcrit);
+	//cvMatSend(c,this,0,new Dim(in->dim->n-1,in->dim->v));
+	v[1] = 1;
+	out = new GridOutlet(this,0,new Dim(2,v));
+	out->send(v[0],(T *)*o);
+	post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("Mat"));
+	//post("release=%p cvReleaseMat");
+	cvReleaseMat((CvMat **)&a);
+	cvReleaseMat((CvMat **)&c);
+} GRID_END
+
+\end class {install("cv.KMeans",2,1);}
+//void cvKMeans2( const CvArr* samples, int numClusters,
+//                CvArr* clusterIdx, CvTermCriteria termcrit );
 
 /* **************************************************************** */
 
