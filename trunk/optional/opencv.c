@@ -25,6 +25,8 @@
 #include <opencv/cv.h>
 #include <errno.h>
 
+#define cvRelease(euh) cvRelease((void **)(euh))
+
 int ipl_eltype(NumberTypeE e) {
   switch (e) {
     case uint8_e: return IPL_DEPTH_8U;
@@ -218,9 +220,9 @@ GRID_INLET(0) {
 	CvArr *b = cvGrid(r,mode);
 	CvArr *c = cvGrid(o,mode);
 	func(a,b,c);
-	cvReleaseMat((CvMat **)&a);
-	cvReleaseMat((CvMat **)&b);
-	cvReleaseMat((CvMat **)&c);
+	cvRelease(&a);
+	cvRelease(&b);
+	cvRelease(&c);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
@@ -260,8 +262,8 @@ GRID_INLET(0) {
 	CvArr *c = cvGrid(o,mode);
 	//post("a=%p, b=%p", a, b);
 	cvInvert(a,c);
-	cvReleaseMat((CvMat **)&a);
-	cvReleaseMat((CvMat **)&c);
+	cvRelease(&a);
+	cvRelease(&c);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
@@ -285,10 +287,10 @@ GRID_INLET(0) {
 	CvArr *c1 = cvGrid(o1,mode);
 	CvArr *c2 = cvGrid(o2,mode);
 	cvSVD(a,c0,c1,c2);
-	cvReleaseMat((CvMat **)&a);
-	cvReleaseMat((CvMat **)&c0);
-	cvReleaseMat((CvMat **)&c1);
-	cvReleaseMat((CvMat **)&c2);
+	cvRelease(&a);
+	cvRelease(&c0);
+	cvRelease(&c1);
+	cvRelease(&c2);
 	out = new GridOutlet(this,2,in->dim,in->nt); out->send(o2->dim->prod(),(T *)o2->data);
 	out = new GridOutlet(this,1,in->dim,in->nt); out->send(o1->dim->prod(),(T *)o1->data);
 	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o0->dim->prod(),(T *)o0->data);
@@ -477,7 +479,7 @@ GRID_INLET(1) {
 	CvMat *a = (CvMat *)cvGrid(l,mode,2);
 	const CvMat* r = cvKalmanCorrect(kal,a);
 	cvMatSend(r,this,0);
-	cvReleaseMat((CvMat **)&r);
+	cvRelease(&r);
 } GRID_END
 \end class {install("cv.Kalman",2,1);}
 
@@ -509,13 +511,18 @@ GRID_INLET(0) {
 	CvMat *c = (CvMat *)cvGrid(o,mode);
 	cvKMeans2(a,numClusters,c,termcrit);
 	//cvMatSend(c,this,0,new Dim(in->dim->n-1,in->dim->v));
-	v[1] = 1;
-	out = new GridOutlet(this,0,new Dim(2,v));
+	int w[in->dim->n];
+	COPY(w,in->dim->v,in->dim->n);
+	w[in->dim->n-1] = 1;
+	P<Dim> d = new Dim(in->dim->n,w);
+	post("d = %s",d->to_s());
+	out = new GridOutlet(this,0,d);
 	out->send(v[0],(T *)*o);
-	post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("Mat"));
+	//post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("opencv-matrix"));
+	//for (CvTypeInfo *t = cvFirstType(); t; t=t->next) post("type %s",t->type_name);
 	//post("release=%p cvReleaseMat");
-	cvReleaseMat((CvMat **)&a);
-	cvReleaseMat((CvMat **)&c);
+	cvRelease(&a);
+	cvRelease(&c);
 } GRID_END
 
 \end class {install("cv.KMeans",2,1);}
