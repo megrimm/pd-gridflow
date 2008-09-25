@@ -737,7 +737,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 	in->set_chunk(a->n-1);
 	long sjk=r->dim->prod(), sj=in->dim->prod(a->n-1), sk=sjk/sj;
-	long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
+	long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk);
 	T *rdata = (T *)*r;
 	r2=new Grid(new Dim(chunk*sjk),r->nt);
 	T *buf3 = (T *)*r2;
@@ -747,10 +747,9 @@ GRID_INLET(0) {
 	use_dot = op==op_mul && fold==op_add && seed->dim->n==0 && *(T *)*seed==0;
 } GRID_FLOW {
     long sjk=r->dim->prod(), sj=in->dim->prod(in->dim->n-1), sk=sjk/sj;
-    long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
+    long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk), off=chunk;
     T buf [chunk*sk];
     T buf2[chunk*sk];
-    long off = chunk;
     if (use_dot) {
 	while (n) {
 		if (chunk*sj>n) chunk=n/sj;
