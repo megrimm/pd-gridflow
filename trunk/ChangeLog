@@ -7,10 +7,9 @@ version 0.9.5 (2008.07.18):
  * renamed goop.pd to surface_tension.pd
  * [#in quicktime]: "get" also produces messages "framerate", "height",
    "width", "depth", "codec".
- * 
- *
- *
- *
+ * added [#draw_hpgl], [#reinterval]
+ * [#color]: added bang
+ * [#inner]: fixed infinite loop bug with large right-inlet grids.
  *
  *
  *
