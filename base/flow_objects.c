@@ -389,7 +389,7 @@ GRID_INLET(0) {
 	}
 	\decl 0 bang ();
 	\decl 1 reassign ();
-	\decl 1 put_at (Grid *index);
+	\decl 1 put_at (...);
 	\grin 0 int
 	\grin 1
 	template <class T> void compute_indices(T *v, long nc, long nd);
@@ -545,7 +545,14 @@ GRID_INLET(1) {
 	pd_list((t_pd *)bself,&s_list,2,a);
 }
 \def 1 reassign () {put_at=0;}
-\def 1 put_at (Grid *index) {put_at=index;}
+\def 1 put_at (...) {
+	if (argv[0].a_type==A_LIST) put_at=convert(argv[0],(Grid **)0);
+	else {
+		put_at=new Grid(new Dim(argc),int32_e);
+		int32 *v = (int32 *)*put_at;
+		for (int i=0; i<argc; i++) v[i]=convert(argv[i],(int32 *)0);
+	}
+}
 \end class {install("#store",2,1); add_creator("@store");}
 
 //****************************************************************
