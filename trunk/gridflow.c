@@ -833,6 +833,7 @@ int handle_braces(int ac, t_atom *av) {
 
 void startup_number();
 void startup_flow_objects();
+void startup_flow_objects2();
 void startup_format();
 STARTUP_LIST(void)
 
@@ -889,6 +890,7 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	\startall
 	startup_flow_objects();
+	startup_flow_objects2();
 	startup_format();
 	STARTUP_LIST()
 	//sys_gui("bind . <Motion> {puts %W}\n");

@@ -15,7 +15,7 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = base/grid.o base/flow_objects.o base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
+OBJS2 = base/grid.o base/flow_objects.o base/flow_objects2.o base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 FILT = $(RUBY) -w base/source_filter.rb
 ifeq ($(OS),darwin)
