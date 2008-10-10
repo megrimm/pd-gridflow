@@ -1181,7 +1181,7 @@ GRID_INLET(0) {
 	} else {
 		nd = in->dim->prod(1+max(d1,d2));
 		nc = in->dim->v[max(d1,d2)];
-		nb = in->dim->prod(1+min(d1,d2))/nc/nd;
+		nb = nc&&nd ? in->dim->prod(1+min(d1,d2))/nc/nd : 0;
 		na = in->dim->v[min(d1,d2)];
 		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
 		in->set_chunk(min(d1,d2));
