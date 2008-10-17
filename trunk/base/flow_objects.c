@@ -493,8 +493,9 @@ GRID_INLET(1) {
 		else           r      = new Grid(in->dim,nt);
 		return;
 	}
-	SAME_TYPE(in,r);
 	// put_at ( ... )
+	snap_backstore(r);
+	SAME_TYPE(in,r);
 	//!@#$ should check types. if (r->nt!=in->nt) RAISE("shoo");
 	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
 	int32 sizeb[nn];
@@ -514,8 +515,9 @@ GRID_INLET(1) {
 			fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
-	in->set_chunk(     lsd-nn+in->dim->n);
-	cs = in->dim->prod(lsd-nn+in->dim->n);
+	long chunk = lsd-nn+in->dim->n;
+	in->set_chunk(     chunk);
+	cs = in->dim->prod(chunk);
 } GRID_FLOW {
 	//fprintf(stderr,"d=%d\n",d);
 	if (!put_at) { // reassign
