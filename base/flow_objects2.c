@@ -65,6 +65,7 @@ static void expect_min_one_dim (P<Dim> d) {
 };
 
 GRID_INLET(0) {
+	NOTEMPTY(r);
 	int32 v[r->dim->n];
 	COPY(v,r->dim->v,r->dim->n-1);
 	v[r->dim->n-1]=1;
