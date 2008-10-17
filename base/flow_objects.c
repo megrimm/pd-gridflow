@@ -2251,6 +2251,8 @@ TYPESWITCH(a->nt,FOO,);
 	\grin 0
 };
 GRID_INLET(0) {
+	if (in->dim->n!=1) RAISE("expect one dimension");
+	if (in->dim->v[0]!=this->n) RAISE("expecting dim(%ld), got dim(%ld)",this->n,in->dim->v[0]);
 	in->set_chunk(0);
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) outlet_float(bself->outlets[i],(t_float)data[i]);
