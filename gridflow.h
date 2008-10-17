@@ -827,7 +827,7 @@ extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[null]")
-#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",ARGS(this), #_a_);
+#define NOTEMPTY(_a_) if (!(_a_)) RAISE("'%s' is empty",#_a_);
 #define SAME_TYPE(_a_,_b_) if ((_a_)->nt != (_b_)->nt) RAISE("same type please (%s has %s; %s has %s)", \
 	#_a_, number_type_table[(_a_)->nt].name, \
 	#_b_, number_type_table[(_b_)->nt].name);
