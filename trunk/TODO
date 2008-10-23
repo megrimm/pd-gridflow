@@ -1,6 +1,8 @@
 /* $Id$ */
 
 0.9.5
+[ ] put_at is lacking some checks for number-of-dims, causing segfault.
+[ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] reintroduce set_mode(0)
 [ ] get rid of architecture.html
 [ ] support "get" in abstractions
