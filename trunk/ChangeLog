@@ -11,7 +11,7 @@ version 0.9.5 (2008.10...):
  * [#color]: added bang
  * [#inner]: fixed infinite loop bug with large right-inlet grids.
  * [#transpose]: fixed crash with zero-sized grids.
- *
+ * added [cv.HarrisCorner]
 
 version 0.9.4 (2008.07.04):
 
