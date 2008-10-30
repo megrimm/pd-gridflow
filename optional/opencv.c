@@ -524,6 +524,35 @@ GRID_INLET(0) {
 
 \end class {install("cv.KMeans",2,1);}
 
+
+
+\class CvCornerHarris < CvOp1 {
+	\attr int block_size;
+	\attr int aperture_size;
+	\attr double k;
+	\constructor () {
+		block_size = 3;
+		aperture_size = 3;
+		k = 0.04;
+	}
+	\grin 0
+};
+
+GRID_INLET(0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	CvArr *a = (CvMat *)cvGrid(l,mode,2);
+	PtrGrid o = new Grid(in->dim,float32_e);
+	CvArr *c = (CvMat *)cvGrid(o,mode);
+	cvCornerHarris(a,c,block_size,aperture_size,k);
+	cvRelease(&a);
+	cvRelease(&c);
+	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o->dim->prod(),(T *)o->data);
+} GRID_END
+
+\end class {install("cv.CornerHarris",1,1);}
+
 /* **************************************************************** */
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
