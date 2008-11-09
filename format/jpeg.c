@@ -43,6 +43,7 @@ extern "C" {
 		Format::_0_open(0,0,mode,filename);
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 		bit_packing = new BitPacking(is_le(),3,3,mask);
+		quality = 75;
 	}
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
