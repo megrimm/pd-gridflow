@@ -844,6 +844,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 } GRID_FLOW {
 	long b_prod = r->dim->prod();
+	if (!b_prod) return; /* nothing to do... and avoid deadly divisions by zero */
 	if (b_prod > 4) {
 		T buf[b_prod];
 		while (n) {
