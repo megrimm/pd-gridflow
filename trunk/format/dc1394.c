@@ -23,7 +23,6 @@
 
 #define DC1394_INCLUDE_HERE
 #include <libraw1394/raw1394.h>
-#include <libdc1394/dc1394_control.h>
 #include "../gridflow.h.fcs"
 
 /* speeds are numbered 0 to 5, worth 100<<speednum */
