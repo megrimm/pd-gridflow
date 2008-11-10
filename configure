@@ -473,11 +473,11 @@ Feature.add {
 	tag :dc1394
 	name "DC1394 for Linux"
 	uses_so ["-ldc1394_control"]
-	uses_h ["libdc1394/dc1394_control.h"]
+	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
 	uses_o ["format/dc1394.o"]
 	options ["HAVE_DC1394"]
-	test proc {
-		c_test "
+	test proc {|f|
+		f.c_test "
 		#include#
 		int main () {return dc1394_get_camera_port==0;}"}}
 Feature.add {
@@ -842,6 +842,7 @@ def include_here(f,a,b)
   end
   f.puts "\#endif"
 end
+include_here f,"DC1394", :dc1394
 include_here f,"LIBMPEG", :mpeg3
 include_here f,"QUICKTIMEHW",:quicktimehw
 
