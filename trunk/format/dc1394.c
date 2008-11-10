@@ -21,6 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#define DC1394_INCLUDE_HERE
 #include <libraw1394/raw1394.h>
 #include <libdc1394/dc1394_control.h>
 #include "../gridflow.h.fcs"
