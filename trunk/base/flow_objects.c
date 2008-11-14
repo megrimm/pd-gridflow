@@ -2974,7 +2974,7 @@ t_class *ReceivesProxy_class;
 	t_symbol *prefix;
 	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
 	\constructor (t_symbol *prefix, ...) {
-		this->prefix = prefix;
+		this->prefix = prefix==gensym("empty") ? &s_ : prefix;
 		ac = argc-1;
 		av = new ReceivesProxy *[argc-1];
 		for (int i=0; i<ac; i++) {
