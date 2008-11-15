@@ -138,8 +138,9 @@ Format::~Format () {if (f) fclose(f); /*if (fd>=0) close(fd);*/}
 /* This is the Grid format I defined: */
 struct GridHeader {
 	char magic[5]; // = "\x7fgrid" on little endian, "\x7fGRID" on big endian
-	uint8 type; // number of bits.
-		   // the original doc said: "plus one of: 1:unsigned 2:float" but i don't recall what this means.
+	uint8 type; // supported: 8=int8 9=uint8 16=int16 32=int32
+		    // unsupported: 34=float32 64=int64 66=float64
+		   // (number of bits is multiple of 8; add 1 for unsigned; add 2 for float)
 	uint8 reserved; // set this to 0 all of the time.
 	uint8 dimn; // number of dimensions supported: at least 0..4)
 	// int32 dimv[dimn]; // number of elements in each dimension. (in the file's endianness!)
@@ -154,8 +155,6 @@ struct GridHeader {
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		nt = int32_e;
-		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
-		head.type = 32;
 		_0_open(0,0,mode,filename);
 	}
 	\decl 0 bang ();
@@ -178,11 +177,17 @@ struct GridHeader {
 		fread(&head,1,8,f);
 		uint8 *m = (uint8 *)head.magic;
 		if (strncmp((char *)m,"\x7fgrid",5)==0) endian=1; else
-		if (strncmp((char *)m,"\x7fGRID",5)==0) endian=1; else
+		if (strncmp((char *)m,"\x7fGRID",5)==0) endian=0; else
 		RAISE("unknown header, can't read grid from file: "
 			"%02x %02x %02x %02x %02x %02x %02x %02x",
 			m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7]);
-		if (head.type!=32) RAISE("unsupported grid type %d in file",head.type);
+		switch (head.type) {
+		case 8: nt=uint8_e; break; // sorry, was supposed to be signed.
+		case 9: nt=uint8_e; break;
+		case 16: nt=int16_e; break;
+		case 32: nt=int32_e; break;
+		default: RAISE("unsupported grid type %d in file",head.type);
+		}
 		// apparently, head.type 8 and 16 worked too.
 		if (head.reserved!=0) RAISE("unsupported grid reserved field %d in file",head.reserved);
 		if (head.dimn>16) RAISE("unsupported grid number of dimensions %d in file",head.dimn);
@@ -201,8 +206,17 @@ TYPESWITCH(nt,FOO,)
 
 GRID_INLET(0) {
 	if (!headerless_dim) {
+		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
+		switch (nt) {
+		case uint8_e: head.type = 9; break;
+		case int16_e: head.type = 16; break;
+		case int32_e: head.type = 32; break;
+		default: RAISE("can't write that type of number to a file");
+		}
+		head.reserved = 0;
+		head.dimn = in->dim->n;
 		fwrite(&head,1,8,f);
-		fwrite(in->dim->v,in->dim->n,4,f); // forgot the endian here
+		fwrite(in->dim->v,in->dim->n,4,f);
 	}
 } GRID_FLOW {
 #define FOO(T) {T data2[n]; for(int i=0; i<n; i++) data2[i]=(T)data[i]; \
