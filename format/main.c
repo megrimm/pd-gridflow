@@ -155,6 +155,7 @@ struct GridHeader {
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		nt = int32_e;
+		endian = is_le();
 		_0_open(0,0,mode,filename);
 	}
 	\decl 0 bang ();
