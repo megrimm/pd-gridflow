@@ -223,7 +223,7 @@ GRID_INLET(0) {
 #define FOO(T) {T data2[n]; for(int i=0; i<n; i++) data2[i]=(T)data[i]; \
 		if (endian!=is_le()) swap_endian(n,data2); \
 		fwrite(data2,n,sizeof(T),f);}
-TYPESWITCH(nt,FOO,)
+TYPESWITCH(in->nt,FOO,)
 #undef FOO
 } GRID_FINISH {
 	fflush(f);
