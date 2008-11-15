@@ -208,7 +208,7 @@ TYPESWITCH(nt,FOO,)
 GRID_INLET(0) {
 	if (!headerless_dim) {
 		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
-		switch (nt) {
+		switch (in->nt) {
 		case uint8_e: head.type = 9; break;
 		case int16_e: head.type = 16; break;
 		case int32_e: head.type = 32; break;
