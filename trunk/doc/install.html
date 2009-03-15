@@ -78,10 +78,13 @@ the actual releases are more tested.</p>
 	<li>Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. Make sure it detects all the components
 	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: <kbd>ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</kbd> </li>
 
-	<li>In Debian (lenny), do <kbd><pre>
+	<li>In Debian (lenny) or Ubuntu (8.04), do <kbd><pre>
 		apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
-				libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev \
+				libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
 				ruby nasm libglib1.2-dev
+		</pre></kbd>
+	At least with Ubuntu you can add those, but haven't tried with Debian yet:<kbd><pre>
+		apt-get install libcv-dev libdc1394-13-dev
 	</pre></kbd></li>
 
 	<li>Note: you may have to set <kbd>CPLUS_INCLUDE_PATH</kbd> to indicate where to find *.h files, and you 
