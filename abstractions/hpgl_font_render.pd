@@ -37,8 +37,8 @@
 #X obj 81 491 #redim (4);
 #X obj 128 295 print x;
 #X msg 136 143 0;
-#X obj 51 600 hpgl_+;
-#X obj 51 619 route2 PA PU PD;
+#X obj 51 629 route2 PA PU PD;
+#X obj 51 610 hpgl_op +;
 #X connect 0 0 19 0;
 #X connect 2 0 3 0;
 #X connect 3 0 9 1;
@@ -74,7 +74,7 @@
 #X connect 21 4 10 0;
 #X connect 22 0 24 1;
 #X connect 23 0 24 1;
-#X connect 24 0 38 0;
+#X connect 24 0 39 0;
 #X connect 24 1 20 0;
 #X connect 25 0 12 0;
 #X connect 26 0 6 0;
@@ -87,7 +87,7 @@
 #X connect 29 0 36 0;
 #X connect 30 0 27 1;
 #X connect 30 1 31 1;
-#X connect 31 0 38 1;
+#X connect 31 0 39 1;
 #X connect 32 0 31 0;
 #X connect 33 0 34 0;
 #X connect 33 0 32 0;
@@ -95,7 +95,7 @@
 #X connect 34 0 29 1;
 #X connect 35 0 33 0;
 #X connect 37 0 29 1;
-#X connect 38 0 39 0;
-#X connect 39 0 1 0;
-#X connect 39 1 1 0;
-#X connect 39 2 1 0;
+#X connect 38 0 1 0;
+#X connect 38 1 1 0;
+#X connect 38 2 1 0;
+#X connect 39 0 38 0;
