@@ -113,6 +113,7 @@ GridHandler *stromgol; // remove this asap
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
 	\decl 0 to_ascii(...);
+	\decl 0 bang();
 	//\decl 0 list(...);
 	\decl 1 per_message();
 	\grin 0
@@ -151,6 +152,7 @@ GRID_INPUT(1,dim_grid) {
 	process(n,(uint8 *)s.data());
 }
 
+\def 0 bang() {_0_list(0,0);}
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
