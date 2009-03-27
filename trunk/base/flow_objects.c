@@ -130,7 +130,7 @@ GridHandler *stromgol; // remove this asap
 	}
 };
 
-GRID_INLET(0) {} GRID_FLOW { process(n,data); } GRID_END
+GRID_INLET(0) {} GRID_FLOW {process(n,data);} GRID_END
 GRID_INPUT(1,dim_grid) {
 	P<Dim> d = dim_grid->to_dim();
 	if (!d->prod()) RAISE("target grid size must not be zero");
@@ -156,7 +156,9 @@ GRID_INPUT(1,dim_grid) {
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
-	in[0]->from_list(argc,argv,cast);}
+	in[0]->from_list(argc,argv,cast);
+	if (!argc && !dim) out = new GridOutlet(this,0,new Dim(0),cast);
+}
 \def 1 per_message() {dim=0; dim_grid=0;}
 
 \def 0 reset() {int32 foo[1]={0}; if (out) while (out->dim) out->send(1,foo);}
