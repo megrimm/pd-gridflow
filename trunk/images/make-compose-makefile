@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+f = File.read("../compose-8859-1.pdd").split(/\s*;\s*/)
+g = File.open("Makefile","w")
+g.puts "default:: all", ""
+list = []
+
+f.each {|char|
+  a,b,c = char.split(/\s+/)
+  g.puts "#{a}.hpgl: #{b}.hpgl #{c}.hpgl", "\tcat #{b}.hpgl #{c}.hpgl > #{a}.hpgl", ""
+  list << "#{a}.hpgl"
+}
+
+g.puts "all:: "+list.join(" ")
