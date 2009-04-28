@@ -849,6 +849,20 @@ void blargh () {
 #endif
 }
 
+static t_gobj *canvas_last (t_canvas *self) {
+	t_gobj *g = self->gl_list;
+	while (g->g_next) g=g->g_next;
+	return g;
+}
+
+static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
+	t_gobj *g = canvas_last(self);
+	if (pd_newest()) return;
+	glist_delete(self,g);
+	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
+	pd_typedmess((t_pd *)self,argv[0].a_w.w_symbol,argc-1,argv+1);
+}
+
 // those are not really leaks but deleting them make them disappear from valgrind
 // however, there's still a problem doing it, so, we won't do it.
 static void gridflow_unsetup () {
@@ -902,4 +916,5 @@ BUILTIN_SYMBOLS(FOO)
     signal(SIGABRT,SIG_DFL);
     signal(SIGBUS, SIG_DFL);
     atexit(gridflow_unsetup);
+    class_addmethod(canvas_class,(t_method)canvas_else,gensym("else"),A_GIMME,0);
 }
