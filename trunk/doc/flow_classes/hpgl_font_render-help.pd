@@ -31,7 +31,7 @@
 #X obj 124 262 gf.oneshot;
 #X obj 147 179 t b b;
 #X obj 33 600 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10
--225271 -1 -1 10.3514 256;
+-225271 -1 -1 0 256;
 #X obj 33 252 gf.oneshot;
 #X obj 51 119 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
@@ -79,6 +79,8 @@
 #X obj 0 0 +;
 #X obj 0 20 zazou;
 #X msg 399 580;
+#X msg 402 165 PU 0 0 \, print_from_ascii 116 114 97 98 111 117 108
+105 100 111 110;
 #X connect 0 0 59 0;
 #X connect 1 0 0 0;
 #X connect 2 0 13 0;
@@ -147,3 +149,4 @@
 #X connect 59 1 2 0;
 #X connect 59 1 25 0;
 #X connect 60 0 27 2;
+#X connect 64 0 60 0;
