@@ -8,7 +8,8 @@ list = []
 
 [94,96,126,168,176,180,184].each {|a|
   g.puts "#{a}u.hpgl: #{a}.hpgl Makefile"
-  g.puts "\t../../bin/hpgl_move 0 100 < #{a}.hpgl > #{a}u.hpgl"
+  dy = (if a==184 then 0 else 100 end)
+  g.puts "\t../../bin/hpgl_move 0 #{dy} < #{a}.hpgl > #{a}u.hpgl"
   list << "#{a}u.hpgl"
 }
 
