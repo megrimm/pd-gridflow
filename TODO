@@ -1,6 +1,13 @@
 /* $Id$ */
 
+PFOAC/BNL 2009
+[ ] randomise positions and send offsetted text after choosing a position
+[ ] store bboxes
+[ ] [#interval_overlap]
+[ ] script python
+
 0.9.5
+[ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] reintroduce set_mode(0)
@@ -21,7 +28,7 @@
 [ ] compenser pour les ajustements progressifs ou soudains de luminosite
 [x] ajouter detection et correction d'interference par fft
 [ ] cvEllipse
-[ ] cvApproxPoly pour un seul poly `a la fois
+[ ] cvApproxPoly pour un seul poly à la fois
 [ ] cvMeanShift (?)
 [ ] cvCamShift (?)
        Ça s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.

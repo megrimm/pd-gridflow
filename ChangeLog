@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.5 (2008.10...):
+version 0.9.5 (2009.04....):
 
  * added [gf.print] (aliased to [print])
  * added [cv.Ellipse]
@@ -8,10 +8,13 @@ version 0.9.5 (2008.10...):
  * [#in quicktime]: "get" also produces messages "framerate", "height",
    "width", "depth", "codec".
  * added [#draw_hpgl], [#reinterval], [#cluster_avg]
+ * added [norecurse], [gf.error]
  * [#color]: added bang
  * [#inner]: fixed infinite loop bug with large right-inlet grids.
  * [#transpose]: fixed crash with zero-sized grids.
- * added [cv.HarrisCorner]
+ * added [cv.HarrisCorner], [cv.KMeans]
+ * [receives]: "empty" prefix automatically turned into "" (no prefix).
+ * [#in grid] and [#out grid]: fixed several bugs
 
 version 0.9.4 (2008.07.04):
 
