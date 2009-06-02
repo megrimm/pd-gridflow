@@ -2511,9 +2511,11 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 	switch (a.a_type) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
+		case A_DOLLSYM: self << a.a_symbol->s_name; break; // for real, it's the same thing as A_SYMBOL in pd >= 0.40
 		case A_POINTER: self << "\\p(0x" << std::hex << a.a_gpointer << std::dec << ")"; break;
 		case A_COMMA:   self << ","; break;
 		case A_SEMI:    self << ";"; break;
+		case A_DOLLAR:  self << "$" << a.a_w.w_index; break;
 		case A_LIST: {
 			t_list *b = (t_list *)a.a_gpointer;
 			int argc = binbuf_getnatom(b);
@@ -2960,7 +2962,8 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 };
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	pd_typedmess(this->dest->s_thing,sel,argc-1,argv+1);
+	if (this->dest->s_thing) pd_typedmess(this->dest->s_thing,sel,argc-1,argv+1);
+	else RAISE("send-symbol %s does not exist",this->dest->s_name);
 }
 \end class {install("send39",1,0);}
 
