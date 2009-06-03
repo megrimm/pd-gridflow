@@ -40,6 +40,17 @@
 #include "Base/GemPixDualObj.h"
 #endif
 
+#ifndef HAVE_DESIREDATA
+#include "bundled/g_canvas.h"
+#endif
+// from pd/src/g_canvas.c
+struct _canvasenvironment {
+    t_symbol *ce_dir;   /* directory patch lives in */
+    int ce_argc;        /* number of "$" arguments */
+    t_atom *ce_argv;    /* array of "$" arguments */
+    int ce_dollarzero;  /* value of "$0" */
+};
+
 /* for exception-handling in 0.9.0... Linux-only */
 #ifndef MACOSX
 #include <exception>
@@ -601,16 +612,6 @@ static void BFObject_delete (BFObject *bself) {
 
 //****************************************************************
 
-// from pd/src/g_canvas.c
-struct _canvasenvironment {
-    t_symbol *ce_dir;   /* directory patch lives in */
-    int ce_argc;        /* number of "$" arguments */
-    t_atom *ce_argv;    /* array of "$" arguments */
-    int ce_dollarzero;  /* value of "$0" */
-};
-
-#include "bundled/g_canvas.h"
-
 static void BFObject_undrawio (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
 	if (!bself->mom || !glist_isvisible(bself->mom)) return;
@@ -825,7 +826,7 @@ int handle_braces(int ac, t_atom *av) {
 	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name.data());
 	post(")");
 	post("methods (");
-	for (int i=0; i<fc->methodsn; i++) post("    %s",fc->methods[i]);
+	for (int i=0; i<fc->methodsn; i++) post("    %s",fc->methods[i].selector);
 	post(")");
 }
 \classinfo {}
@@ -852,13 +853,18 @@ void blargh () {
 static t_gobj *canvas_last (t_canvas *self) {
 #ifdef DESIRE
 	t_gobj *g = canvas_first(self);
-	while (g->g_next) g=gobj_next(g);
+	while (gobj_next(g)) g=gobj_next(g);
 #else
 	t_gobj *g = self->gl_list;
 	while (g->g_next) g=g->g_next;
 #endif
 	return g;
 }
+
+#ifdef DESIRE
+extern "C" void canvas_delete(t_canvas *, t_gobj *);
+#define glist_delete canvas_delete
+#endif
 
 static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	t_gobj *g = canvas_last(self);
@@ -922,5 +928,6 @@ BUILTIN_SYMBOLS(FOO)
     signal(SIGABRT,SIG_DFL);
     signal(SIGBUS, SIG_DFL);
     atexit(gridflow_unsetup);
+    extern t_class *canvas_class;
     class_addmethod(canvas_class,(t_method)canvas_else,gensym("else"),A_GIMME,0);
 }
