@@ -29,13 +29,14 @@
 #include <iomanip>
 #include <errno.h>
 #include "../gridflow.h.fcs"
-#ifndef DESIREDATA
+#ifdef DESIRE
+#include "desire.h"
+#else
 extern "C" {
 #include "bundled/g_canvas.h"
 };
-#endif
-
 extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
+#endif
 
 //using namespace std; // can't
 
@@ -2549,6 +2550,11 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
 #ifndef HAVE_DESIREDATA
+t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
+void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
+#endif
+
+//#ifdef HAVE_DESIREDATA
 static void display_update(void *x);
 \class Display : FObject {
 	bool selected;
@@ -2664,6 +2670,7 @@ static void display_update(void *x) {
 	for (int i=0; i<argc; i++) text << (char)INT(argv[i]);
 }
 \end class {
+#ifndef DESIRE
 	install("display",1,0);
 	t_class *qlass = fclass->bfclass;
 	t_widgetbehavior *wb = new t_widgetbehavior;
@@ -2689,18 +2696,24 @@ static void display_update(void *x) {
 		$canvas lower $self ${self}TEXT \n\
 		pd \"$self set_size $sy $sx;\" \n\
 	}\n");
+#endif
 }
-#endif // ndef HAVE_DESIREDATA
+//#endif // ndef HAVE_DESIREDATA
 
 //****************************************************************
 
 // from pd/src/g_canvas.c
+#ifdef DESIRE
+#define ce_argc argc
+#define ce_argv argv
+#else
 struct _canvasenvironment {
     t_symbol *ce_dir;   /* directory patch lives in */
     int ce_argc;        /* number of "$" arguments */
     t_atom *ce_argv;    /* array of "$" arguments */
     int ce_dollarzero;  /* value of "$0" */
 };
+#endif
 
 struct ArgSpec {
 	t_symbol *name;
