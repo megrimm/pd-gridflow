@@ -2549,7 +2549,7 @@ std::ostream &operator << (std::ostream &self, t_atom &a) {
 }
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
-#ifndef HAVE_DESIREDATA
+#ifdef HAVE_DESIREDATA
 t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
 void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #endif
