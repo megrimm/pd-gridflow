@@ -135,7 +135,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 	if (!n) return; // no data
 	long d = dex + bufi;
 	if (d+n > dim->prod()) {
-		post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), ARGS(sender->parent), 0);
+		post("grid input overflow: %ld of %ld from [%s] to [%s]", d+n, long(dim->prod()), ARGS(sender->parent), ARGS(parent));
 		n = dim->prod() - d;
 		if (n<=0) return;
 	}
@@ -166,7 +166,8 @@ template <class T> void GridInlet::flow(long n, T *data) {
 
 void GridInlet::finish() {
 	if (!dim) RAISE("inlet not busy");
-	if (dim->prod() != dex) post("%s: incomplete grid: %d of %d from [%s] to [%s]",ARGS(parent),dex,dim->prod(),ARGS(sender->parent));
+	if (dim->prod() != dex) post("%s: incomplete grid: %ld of %ld from [%s] to [%s]",
+	    ARGS(parent),dex,long(dim->prod()),ARGS(sender->parent),ARGS(parent));
 #define FOO(T) try {gh->flow(this,dex,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(sender->nt,FOO,)
 #undef FOO
