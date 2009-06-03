@@ -850,8 +850,13 @@ void blargh () {
 }
 
 static t_gobj *canvas_last (t_canvas *self) {
+#ifdef DESIRE
+	t_gobj *g = canvas_first(self);
+	while (g->g_next) g=gobj_next(g);
+#else
 	t_gobj *g = self->gl_list;
 	while (g->g_next) g=g->g_next;
+#endif
 	return g;
 }
 
@@ -888,7 +893,8 @@ extern "C" void gridflow_setup () {
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
-	if (getcwd(dirname,MAXPDSTRING)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
+	char *zz=getcwd(dirname,MAXPDSTRING); /* zz only exists because gcc 4.3.3 gives me a bogus warning otherwise. */
+	if (zz<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
 	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd>=0) close(fd); else post("%s was not found via the -path!","gridflow"PDSUF);
