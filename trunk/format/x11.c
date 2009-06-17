@@ -32,7 +32,7 @@
 #include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/StringDefs.h>
+//#include <X11/StringDefs.h>
 #ifdef HAVE_X11_SHARED_MEMORY
 #include <sys/ipc.h>
 #include <sys/shm.h>
