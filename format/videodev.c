@@ -574,7 +574,7 @@ GRID_INLET(0) {
 		dealloc_image();
 		use_mmap = true;
 		alloc_image();
-		queuemax=min(queuemax,vmbuf.frames);
+		queuemax=min(8,min(queuemax,vmbuf.frames));
 		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
 		this->queuemax=queuemax;
 	} else RAISE("don't know that transfer mode");
