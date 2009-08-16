@@ -1446,7 +1446,7 @@ void GridLabeling::initialize3() {
 	bself->noutlets_set(form_val ? 2 : 4);
 }
 
-\end class {install("#labeling",1,0);}
+\end class {install("#labelling",1,0); add_creator("#labeling");}
 
 //****************************************************************
 \class GridPerspective : FObject {
