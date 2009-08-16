@@ -2603,7 +2603,7 @@ static void display_update(void *x);
 		//return if not canvas or not @vis # can't show for now...
 		/* we're not using quoting for now because there's a bug in it. */
 		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier 12} .x%x.c {%s}\n",
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c {%s}\n",
 			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,ss.data());
 	}
 };
