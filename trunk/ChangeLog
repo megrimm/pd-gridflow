@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.5 (2009.04....):
+version 0.9.5 (2009.10....):
 
  * added [gf.print] (aliased to [print])
  * added [cv.Ellipse]
@@ -15,6 +15,8 @@ version 0.9.5 (2009.04....):
  * added [cv.HarrisCorner], [cv.KMeans]
  * [receives]: "empty" prefix automatically turned into "" (no prefix).
  * [#in grid] and [#out grid]: fixed several bugs
+ * [#make_cross] can make rectangular crosses
+ * [demux] alias removed (please use [shunt])
 
 version 0.9.4 (2008.07.04):
 
