@@ -2962,7 +2962,7 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	}
 }
 \def 1 float(int i) {index = mod(i,n);}
-\end class {install("shunt",2,0); add_creator("demux");}
+\end class {install("shunt",2,0);}
 
 \class Send39 : FObject {
 	\attr t_symbol *dest;
