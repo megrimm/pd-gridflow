@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-COMMON_DEPS = config.make Makefile base/source_filter.rb
+# COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -32,6 +32,12 @@ else
 endif
 PD_LIB = gridflow$(PDSUF)
 
+ifeq ($(CPLUS_INCLUDE_PATH),)
+  SNAFU =
+else
+  SNAFU = $(subst :, -I,:$(CPLUS_INCLUDE_PATH))
+endif
+
 all:: $(PD_LIB) deprecated
 
 .SUFFIXES:
@@ -55,7 +61,7 @@ H = gridflow.h.fcs
 %.4.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
+	$(CXX) $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 
 %.s: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -S $< -o $@
