@@ -82,7 +82,7 @@ typedef float   float32;
 typedef double  float64;
 
 // three-way comparison (T is assumed Comparable)
-template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
+template <class T> static inline T cmp(T a, T b) {return a<b ? -1 : a>b;}
 
 // a remainder function such that div2(a,b)*b+mod(a,b) = a and for which mod(a,b) is in [0;b) or (b;0].
 // in contrast to C-language builtin a%b, this one has uniform behaviour around zero,
@@ -789,7 +789,7 @@ struct GridOutlet : CObject {
 
 #define CHECK_ALIGN16(d,nt) \
 	{int bytes = 16; \
-	int align = ((ulong)(void*)d)%bytes; \
+	int align = ((unsigned long)(void*)d)%bytes; \
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
