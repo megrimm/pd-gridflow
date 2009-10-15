@@ -26,6 +26,14 @@
 #include <errno.h>
 
 #define cvRelease(euh) cvRelease((void **)(euh))
+#define binbuf_addv(SELF,FMT,ARGS...) binbuf_addv(SELF,const_cast<char *>(FMT),ARGS)
+#define USELIST \
+	if (a.a_type != A_LIST) RAISE("expected listatom"); \
+	t_list *b = (t_list *)a.a_gpointer; \
+	int argc = binbuf_getnatom(b); \
+	t_atom2 *argv = (t_atom2 *)binbuf_getvec(b);
+#define GETF(I)     atom_getfloatarg(I,argc,argv)
+#define GETI(I) int(atom_getfloatarg(I,argc,argv))
 
 int ipl_eltype(NumberTypeE e) {
   switch (e) {
@@ -78,14 +86,6 @@ NumberTypeE gf_cveltype(int e) {
     default: RAISE("unsupported CV type %d",e);
   }
 }
-
-#define USELIST \
-	if (a.a_type != A_LIST) RAISE("expected listatom"); \
-	t_list *b = (t_list *)a.a_gpointer; \
-	int argc = binbuf_getnatom(b); \
-	t_atom2 *argv = (t_atom2 *)binbuf_getvec(b);
-#define GETF(I)     atom_getfloatarg(I,argc,argv)
-#define GETI(I) int(atom_getfloatarg(I,argc,argv))
 
 enum CvMode {
 	cv_mode_auto,
@@ -172,8 +172,6 @@ void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim *dim=0) {
 		}
 	}
 }
-
-#define binbuf_addv(SELF,FMT,ARGS...) binbuf_addv(SELF,const_cast<char *>(FMT),ARGS)
 
 void set_atom (t_atom *a, CvPoint &v) {
 	t_binbuf *b = binbuf_new();
