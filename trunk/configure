@@ -565,9 +565,6 @@ Feature.add {
 	uses_o ["optional/gem.o"]
 	options ["HAVE_GEM","HAVE_HOLDNAME"]
 	test proc {
-		# hack
-		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
-		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 		c_test %`
 			#include "Base/GemBase.h"
 			int main () {CPPExtern::m_holdname; return 0;}`}}
@@ -579,9 +576,6 @@ Feature.add {
 	uses_o ["optional/gem.o"]
 	options ["HAVE_GEM"]
 	test proc {
-		# hack
-		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
-		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 		c_test %`
 			#include "Base/GemBase.h"
 			int main () {return 0;}`}}
@@ -653,7 +647,9 @@ while ARGV.length>0 do
 	when "--help"
 		usage; exit 0
 	when "--gem-include"
-		 $conf[:DEFINES][ :GEM_INCLUDE]=ARGV.shift
+		$conf[:DEFINES][ :GEM_INCLUDE]=ARGV.shift
+		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
+		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
