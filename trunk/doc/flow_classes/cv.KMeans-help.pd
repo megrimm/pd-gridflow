@@ -9,7 +9,7 @@
 #X obj 82 170 #print;
 #X obj 142 113 #out window;
 #X msg 265 106 mode channels;
-#X obj 60 141 cv.KMeans 8 \, termcrit (8 nil);
+#X obj 60 141 cv/#KMeans 8 \, termcrit (8 nil);
 #X connect 1 0 3 0;
 #X connect 1 0 7 0;
 #X connect 2 0 1 0;

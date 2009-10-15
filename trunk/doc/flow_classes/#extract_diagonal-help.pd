@@ -1,5 +1,5 @@
 #N canvas 0 0 450 471 10;
-#X obj 63 72 cv.SVD;
+#X obj 63 72 cv/#SVD;
 #X obj 80 94 display;
 #X obj 64 164 display;
 #X msg 63 53 2 2 f # 30 40 50 60;
