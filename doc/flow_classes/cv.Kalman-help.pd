@@ -10,7 +10,7 @@
 #X obj 116 110 t f f f;
 #X obj 116 177 #redim (2 1);
 #X obj 47 239 display;
-#X obj 46 213 cv.Kalman 2 1 1;
+#X obj 46 213 cv/#Kalman 2 1 1;
 #X text 132 21 This is a help file \, so \, HELP!;
 #X connect 0 0 9 0;
 #X connect 1 0 0 0;
