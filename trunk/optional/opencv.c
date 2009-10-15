@@ -231,19 +231,19 @@ GRID_INPUT2(1,r) {} GRID_END
 #define FUNC(CLASS) CLASS(BFObject *bself, MESSAGE):CvOp2(bself,MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
 
 \class CvAdd : CvOp2 {FUNC(CvAdd) {cvAdd(l,r,o,0);}};
-\end class {install("cv.Add",2,1);}
+\end class {install("cv/#Add",2,1);}
 \class CvSub : CvOp2 {FUNC(CvSub) {cvSub(l,r,o,0);}};
-\end class {install("cv.Sub",2,1);}
+\end class {install("cv/#Sub",2,1);}
 \class CvMul : CvOp2 {FUNC(CvMul) {cvMul(l,r,o,1);}};
-\end class {install("cv.Mul",2,1);}
+\end class {install("cv/#Mul",2,1);}
 \class CvDiv : CvOp2 {FUNC(CvDiv) {cvDiv(l,r,o,1);}};
-\end class {install("cv.Div",2,1);}
+\end class {install("cv/#Div",2,1);}
 \class CvAnd : CvOp2 {FUNC(CvAnd) {cvAnd(l,r,o,0);}};
-\end class {install("cv.And",2,1);}
+\end class {install("cv/#And",2,1);}
 \class CvOr  : CvOp2 {FUNC(CvOr ) {cvOr( l,r,o,0);}};
-\end class {install("cv.Or" ,2,1);}
+\end class {install("cv/#Or" ,2,1);}
 \class CvXor : CvOp2 {FUNC(CvXor) {cvXor(l,r,o,0);}};
-\end class {install("cv.Xor",2,1);}
+\end class {install("cv/#Xor",2,1);}
 
 \class CvInvert : CvOp1 {
 	\constructor () {}
@@ -266,7 +266,7 @@ GRID_INLET(0) {
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
-\end class {install("cv.Invert",1,1);}
+\end class {install("cv/#Invert",1,1);}
 
 \class CvSVD : CvOp1 {
 	\grin 0
@@ -294,7 +294,7 @@ GRID_INLET(0) {
 	out = new GridOutlet(this,1,in->dim,in->nt); out->send(o1->dim->prod(),(T *)o1->data);
 	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o0->dim->prod(),(T *)o0->data);
 } GRID_END
-\end class {install("cv.SVD",1,3);}
+\end class {install("cv/#SVD",1,3);}
 
 \class CvEllipse : FObject {
 	\grin 0
@@ -321,7 +321,7 @@ GRID_INLET(0) {
 	cvReleaseImageHeader(&img);
 	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in->dim->prod(),(T *)*l);
 } GRID_END
-\end class {install("cv.Ellipse",1,2);}
+\end class {install("cv/#Ellipse",1,2);}
 
 \class CvApproxPoly : CvOp1 {
 	\grin 0
@@ -338,7 +338,7 @@ GRID_INLET(0) {
 	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
 	seq=seq; //blah
 } GRID_END
-\end class {install("cv.ApproxPoly",1,1);}
+\end class {install("cv/#ApproxPoly",1,1);}
 
 \class CvCalcOpticalFlowHS : CvOp1 {
 	\grin 0
@@ -351,7 +351,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 //	cvCalcOpticalFlowHS(prev,curr,use_previous, CvArr* velx, CvArr* vely, lambda, CvTermCriteria criteria );
 } GRID_END
-\end class {install("cv.CalcOpticalFlowHS",1,1);}
+\end class {install("cv/#CalcOpticalFlowHS",1,1);}
 \class CvCalcOpticalFlowLK : CvOp1 {
 	\grin 0
 	\constructor () {}
@@ -360,7 +360,7 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 } GRID_END
-\end class {install("cv.CalcOpticalFlowLK",1,1);}
+\end class {install("cv/#CalcOpticalFlowLK",1,1);}
 \class CvCalcOpticalFlowBM : CvOp1 {
 	\grin 0
 	\constructor () {}
@@ -369,7 +369,7 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 } GRID_END
-\end class {install("cv.CalcOpticalFlowBM",1,1);}
+\end class {install("cv/#CalcOpticalFlowBM",1,1);}
 \class CvCalcOpticalFlowPyrLK : CvOp1 {
 	\grin 0
 	\constructor () {}
@@ -378,7 +378,7 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 } GRID_END
-\end class {install("cv.CalcOpticalFlowPyrLK",1,1);}
+\end class {install("cv/#CalcOpticalFlowPyrLK",1,1);}
 
 /*
 void cvCalcOpticalFlowLK(const CvArr* prev, const CvArr* curr, CvSize win_size, CvArr* velx, CvArr* vely);
@@ -446,7 +446,7 @@ GRID_INLET(0) {
 		out->send(4,duh);
 	}
 } GRID_END
-\end class {install("cv.HaarDetectObjects",2,1);}
+\end class {install("cv/#HaarDetectObjects",2,1);}
 
 \class CvKalmanWrapper : CvOp1 {
 	CvKalman *kal;
@@ -480,7 +480,7 @@ GRID_INLET(1) {
 	cvMatSend(r,this,0);
 	cvRelease(&r);
 } GRID_END
-\end class {install("cv.Kalman",2,1);}
+\end class {install("cv/#Kalman",2,1);}
 
 /* **************************************************************** */
 
@@ -520,7 +520,7 @@ GRID_INLET(0) {
 	cvRelease(&c);
 } GRID_END
 
-\end class {install("cv.KMeans",2,1);}
+\end class {install("cv/#KMeans",2,1);}
 
 
 
@@ -549,7 +549,7 @@ GRID_INLET(0) {
 	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
 
-\end class {install("cv.CornerHarris",1,1);}
+\end class {install("cv/#CornerHarris",1,1);}
 
 /* **************************************************************** */
 
