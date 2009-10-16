@@ -26,6 +26,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/resource.h>
+#include <errno.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -886,6 +888,17 @@ static void gridflow_unsetup () {
 */
 }
 
+void allow_big_stack () {
+  struct rlimit happy;
+  if (0>getrlimit(RLIMIT_STACK,&happy))
+    error("GF: getrlimit: %s",strerror(errno));
+  happy.rlim_cur = happy.rlim_max;
+  if (0>setrlimit(RLIMIT_STACK,&happy))
+    error("GF: setting stack size to %ld: %s",happy.rlim_cur,strerror(errno));
+  else
+    post( "GF: setting stack size to %ld",happy.rlim_cur);
+}
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -895,6 +908,7 @@ extern "C" void gridflow_setup () {
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
+    allow_big_stack();
     try {
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
