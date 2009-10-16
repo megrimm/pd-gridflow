@@ -151,7 +151,13 @@ foreach section $sections {
 	text 10 $y1 $desc
 }
 
-p {Hello World}
+p {
+	note: a centidegree is 0.01 degree. There are 36000 centidegrees in a circle.
+        Some angle operators use centidegrees, while some others use radians. To
+        convert degrees into centidegrees, multiply by 100.
+        To convert degrees into radians, divide by 57.2957 .
+        Thus, to convert centidegrees into radians, divide by 5729.57 .
+}
 
 close $fh
 set fh [open numtype.pd w]
