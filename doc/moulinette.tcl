@@ -26,7 +26,7 @@ set col4 1024
 set rowsize 32
 
 obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
-text 0 10 $y op name
+text 10 $y op name
 text $col1 $y description
 text $col2 $y "effect on pixels"
 text $col3 $y "effect on coords"
@@ -61,9 +61,8 @@ proc numbertype {op desc {extra1 ""} {extra2 ""}} {op $op $desc $extra1 $extra2}
 
 set sections {}
 proc section {desc} {
-	global y
-	lappend ::sections [list $y $desc]
-	incr ::y 16
+	lappend ::sections [list $::y $desc]
+	incr ::y 20
 }
 
 section {numops}
@@ -111,7 +110,7 @@ op {rand} { randomly produces a non-negative number below A }
 op {sqrt} { square root of A, rounded downwards }
 op {sq-} { (A-B) times (A-B) }
 op {avg} { (A+B)/2 }
-op {hypot} { square root of (A*A+B*B) }
+op {hypot} { distance function: square root of (A*A+B*B) }
 op {clip+} { like A+B but overflow causes clipping instead of wrapping around (coming soon) }
 op {clip-} { like A-B but overflow causes clipping instead of wrapping around (coming soon) }
 op {erf*} { integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) }
@@ -136,6 +135,10 @@ op {C.tanh } {tanh(A-B)}
 op {C.exp  } {exp(A-B)}
 op {C.log  } {log(A-B)}
 
+#section {vecops for other things}
+#op {cart2pol}
+#op {pol2cart}
+
 incr y 10
 set outletid $oid
 obj 10 $y outlet
@@ -147,7 +150,7 @@ draw_columns
 
 foreach section $sections {
 	mset {y1 desc} $section
-	obj 0 $y1 cnv 15 $::col4 14 empty empty empty 20 12 0 14 -248881 -66577 0
+	obj 0 $y1 cnv 15 $::col4 18 empty empty empty 20 12 0 14 -248881 -66577 0
 	text 10 $y1 $desc
 }
 
