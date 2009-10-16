@@ -12,10 +12,6 @@
 #X text 152 357 so use this [display] to view the true numbers;
 #X text 14 31 click on this object to select a numop to try out:;
 #X text 15 14 # applies a simple Numeric Operator (numop).;
-#X text 83 445 note: a centidegree is 0.01 degree. There are 36000
-degrees in a circle. Some angle operators use centidegrees \, while
-some others use radians. To convert degrees into centidegrees \, multiply
-by 100 To convert degrees into radians \, divide by 57.2957 .;
 #X text 531 23 GridFlow 0.9.4;
 #X obj 74 50 doc/numop;
 #X connect 0 0 5 0;
@@ -23,4 +19,4 @@ by 100 To convert degrees into radians \, divide by 57.2957 .;
 #X connect 5 0 8 0;
 #X connect 8 0 7 0;
 #X connect 8 1 6 0;
-#X connect 15 0 5 0;
+#X connect 14 0 5 0;
