@@ -1,7 +1,7 @@
 #!/usr/bin/env tclsh
 
 proc mset {vars list} {uplevel 1 "foreach {$vars} {$list} {break}"}
-
+proc p {text} {write [list #X text 10 $::y $text]; incr ::y 60}
 proc write {list} {
 	set v [join $list " "]
 	regsub -all "," $v " \\, " v
@@ -9,12 +9,15 @@ proc write {list} {
 	regsub -all "\\$" $v "\\$" v
 	puts $::fh "$v;"
 }
+set oid 0
+proc obj  {args} {write [concat [list #X obj ] $args]; incr ::oid}
+proc msg  {args} {write [concat [list #X msg ] $args]; incr ::oid}
+proc text {args} {write [concat [list #X text] $args]; incr ::oid}
 
 set fh [open numop.pd w]
 write [list #N canvas 0 0 1024 768 10]
 set y 0
 set row 0
-set oid 0
 set msgboxes {}
 set col1 96
 set col2 512
@@ -22,13 +25,12 @@ set col3 768
 set col4 1024
 set rowsize 32
 
-write [list #X obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0]
-write [list #X text 10 $y op name]
-write [list #X text $col1 $y description]
-write [list #X text $col2 $y "effect on pixels"]
-write [list #X text $col3 $y "effect on coords"]
+obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
+text 0 10 $y op name
+text $col1 $y description
+text $col2 $y "effect on pixels"
+text $col3 $y "effect on coords"
 incr y 32
-incr oid 5
 
 # onpixels = meaning in pixel context (pictures, palettes)
 # oncoords = meaning in spatial context (indexmaps, polygons)
@@ -39,21 +41,20 @@ incr oid 5
 proc op {op desc {extra1 ""} {extra2 ""}} {
 	global y
 	if {$::row&1} {set bg -233280} {set bg -249792}
-	write [list #X obj 0 $y cnv 15 $::col4 [expr $::rowsize-2] empty empty empty 20 12 0 14 $bg -66577 0]
-	write [list #X msg 10 $y op $op]
-	write [list #X text $::col1 $y $desc]
-	if {$extra1 != ""} {write [list #X text $::col2 $y $extra1]}
-	if {$extra2 != ""} {write [list #X text $::col3 $y $extra2]}
-	lappend msgboxes [expr $::oid+1]
+	obj 0 $y cnv 15 $::col4 [expr $::rowsize-2] empty empty empty 20 12 0 14 $bg -66577 0
+	lappend ::msgboxes $::oid
+	msg 10 $y op $op
+	text $::col1 $y $desc
+	if {$extra1 != ""} {text $::col2 $y $extra1}
+	if {$extra2 != ""} {text $::col3 $y $extra2}
 	incr ::row
 	incr ::y $::rowsize
-	incr ::oid 5
 }
 
 proc draw_columns {} {
-	write [list #X obj [expr $::col1-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0]
-	write [list #X obj [expr $::col2-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0]
-	write [list #X obj [expr $::col3-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0]
+	obj [expr $::col1-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
+	obj [expr $::col2-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
+	obj [expr $::col3-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
 }
 
 proc numbertype {op desc {extra1 ""} {extra2 ""}} {op $op $desc $extra1 $extra2}
@@ -135,22 +136,22 @@ op {C.tanh } {tanh(A-B)}
 op {C.exp  } {exp(A-B)}
 op {C.log  } {log(A-B)}
 
-write [list #X obj 10 $y outlet]
+incr y 10
 set outletid $oid
-incr oid
+obj 10 $y outlet
+incr y 20
 
-foreach msgbox $msgboxes {
-	write [list #X connect $msgbox 0 $outletid 0]
-}
+foreach msgbox $msgboxes {write [list #X connect $msgbox 0 $outletid 0]}
 
 draw_columns
 
 foreach section $sections {
-	mset {y desc} $section
-	write [list #X obj 0 $y cnv 15 $::col4 14 empty empty empty 20 12 0 14 -248881 -66577 0]
-	write [list #X text 10 $y $desc]
-	incr oid 2
+	mset {y1 desc} $section
+	obj 0 $y1 cnv 15 $::col4 14 empty empty empty 20 12 0 14 -248881 -66577 0
+	text 10 $y1 $desc
 }
+
+p {Hello World}
 
 close $fh
 set fh [open numtype.pd w]
@@ -164,13 +165,12 @@ set col3 608
 set col4 1024
 set rowsize 64
 
-write [list #X obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0]
-write [list #X text 10 $y op names]
-write [list #X text $col1 $y range]
-write [list #X text $col2 $y precision]
-write [list #X text $col3 $y description]
+obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
+text 10 $y op names
+text $col1 $y range
+text $col2 $y precision
+text $col3 $y description
 incr y 32
-incr oid 5
 
 numbertype {b  u8   uint8} {0 to 255} {1} {
 	unsigned 8-bit integer. this is the usual size of numbers taken from files and cameras, and
@@ -184,8 +184,6 @@ numbertype {f f32 float32} {-(1<<128) to (1<<128)} {23 bits or 0.000012%}
 numbertype {d f64 float64} {-(1<<2048) to (1<<2048)} {52 bits or 0.000000000000022%}
 
 draw_columns
-
-proc p {text} {write [list #X text 10 $::y $text]; incr ::y 60}
 
 p {High-performance computation requires precise and quite peculiar
 	definitions of numbers and their representation.}
