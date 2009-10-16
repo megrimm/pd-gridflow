@@ -407,8 +407,8 @@ Numop op_table4[] = {
 	DECL_VOP_NOFOLD_FLOAT(cx_tanh, "C.tanh", 0,2),
 	DECL_VOP_NOFOLD_FLOAT(cx_exp,  "C.exp",  0,2),
 	DECL_VOP_NOFOLD_FLOAT(cx_log,  "C.log",  0,2),
-	DECL_VOP_NOFOLD_FLOAT(c2p,     "c2p", 0,2),
-	DECL_VOP_NOFOLD_FLOAT(p2c,     "p2c", 0,2),
+	DECL_VOP_NOFOLD(      c2p,     "c2p", 0,2),
+	DECL_VOP_NOFOLD(      p2c,     "p2c", 0,2),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
