@@ -263,8 +263,17 @@ template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
 inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
 inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
 
-template <class T> inline Plex<T>  cx_sqsub(Plex<T>& a, Plex<T>& b) { Plex<T> v=a-b; return v*v; }
-template <class T> inline Plex<T> cx_abssub(Plex<T>& a, Plex<T>& b) { Plex<T> v=a-b; return norm(v); }
+template <class T> inline Plex<T>  cx_sqsub(const Plex<T>& a, const Plex<T>& b) { Plex<T> v=a-b; return v*v; }
+template <class T> inline Plex<T> cx_abssub(const Plex<T>& a, const Plex<T>& b) { Plex<T> v=a-b; return norm(v); }
+
+template <class T> inline Plex<T> gf_c2p(const Plex<T>& a) {
+  //return Plex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
+  return a;
+}
+template <class T> inline Plex<T> gf_p2c(const Plex<T>& a) {
+  return Plex<T>((float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)),
+                 (float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)));
+}
 /*
 template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
   if (b==0) return 0;
@@ -275,11 +284,11 @@ template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
 }
 */
 
-//!@#$ neutral,is_neutral,is_absorbent are WRONG here
-DEF_OP(cx_mul,     a*b,       1, x==1, x==0)
-DEF_OP(cx_mulconj, a*conj(b), 1, x==1, x==0)
-DEF_OP(cx_div,     a/b,       1, x==1, x==0)
-DEF_OP(cx_divconj, a/conj(b), 1, x==1, x==0)
+//!@#$ neutral,is_neutral,is_absorbent are impossible to use here
+DEF_OP(cx_mul,     a*b,       1, false, false)
+DEF_OP(cx_mulconj, a*conj(b), 1, false, false)
+DEF_OP(cx_div,     a/b,       1, false, false)
+DEF_OP(cx_divconj, a/conj(b), 1, false, false)
 DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
 DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
 DEF_OP(cx_sin,  sin(a-b),   0, false, false)
@@ -288,6 +297,8 @@ DEF_OP(cx_cos,  cos(a-b),   0, false, false)
 DEF_OP(cx_tanh, tanh(a-b),  0, false, false)
 DEF_OP(cx_exp,  exp(a-b),   0, false, false)
 DEF_OP(cx_log,  log(a-b),   0, false, false)
+DEF_OP(c2p,     gf_c2p(a-b), 0, false, false)
+DEF_OP(p2c,     gf_p2c(a)+b, 0, false, false)
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
@@ -396,6 +407,8 @@ Numop op_table4[] = {
 	DECL_VOP_NOFOLD_FLOAT(cx_tanh, "C.tanh", 0,2),
 	DECL_VOP_NOFOLD_FLOAT(cx_exp,  "C.exp",  0,2),
 	DECL_VOP_NOFOLD_FLOAT(cx_log,  "C.log",  0,2),
+	DECL_VOP_NOFOLD_FLOAT(c2p,     "c2p", 0,2),
+	DECL_VOP_NOFOLD_FLOAT(p2c,     "p2c", 0,2),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
