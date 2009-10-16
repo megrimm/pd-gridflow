@@ -318,4 +318,10 @@
 #X text 10 32 numops;
 #X obj 0 1808 cnv 15 1024 14 empty empty empty 20 12 0 14 -248881 -66577 0;
 #X text 10 1808 vecops for complex numbers;
-#X text 10 2206 Hello World;
+#X text 10 2206 
+	note: a centidegree is 0.01 degree. There are 36000 centidegrees in a circle.
+        Some angle operators use centidegrees \,  while some others use radians. To
+        convert degrees into centidegrees \,  multiply by 100.
+        To convert degrees into radians \,  divide by 57.2957 .
+        Thus \,  to convert centidegrees into radians \,  divide by 5729.57 .
+;
