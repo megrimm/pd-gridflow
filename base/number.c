@@ -267,8 +267,7 @@ template <class T> inline Plex<T>  cx_sqsub(const Plex<T>& a, const Plex<T>& b) 
 template <class T> inline Plex<T> cx_abssub(const Plex<T>& a, const Plex<T>& b) { Plex<T> v=a-b; return norm(v); }
 
 template <class T> inline Plex<T> gf_c2p(const Plex<T>& a) {
-  //return Plex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
-  return a;
+  return Plex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
 }
 template <class T> inline Plex<T> gf_p2c(const Plex<T>& a) {
   return Plex<T>((float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)),
