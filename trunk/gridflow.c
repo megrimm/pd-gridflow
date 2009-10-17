@@ -723,9 +723,15 @@ extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" t_namelist *namelist_append_files(t_namelist *, char *);
 static void add_to_path(char *dir) {
 	char bof[1024];
+	post("gridflow was found in %s",dir);
+	gf_data_path.push_back(string(dir)+"/images");
+	post("adding gf_data_path %s/images",dir);
 	sprintf(bof,"%s/abstractions",dir);        sys_searchpath = namelist_append_files(sys_searchpath,bof);
+	post("adding -path %s",bof);
 	sprintf(bof,"%s/deprecated",dir);          sys_searchpath = namelist_append_files(sys_searchpath,bof);
+	post("adding -path %s",bof);
 	sprintf(bof,"%s/doc/flow_classes",dir);    sys_helppath   = namelist_append_files(sys_helppath,  bof);
+	post("adding -helppath %s",bof);
 }
 
 //----------------------------------------------------------------
@@ -922,7 +928,6 @@ extern "C" void gridflow_setup () {
 	add_to_path(dirresult);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_anything);
-	gf_data_path.push_back(string(dirresult)+"/images");
         srandom(rdtsc());
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
