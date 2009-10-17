@@ -722,16 +722,17 @@ struct t_namelist;
 extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" t_namelist *namelist_append_files(t_namelist *, char *);
 static void add_to_path(char *dir) {
+	static bool debug = false;
 	char bof[1024];
-	post("gridflow was found in %s",dir);
+	if (debug) post("gridflow was found in %s",dir);
 	gf_data_path.push_back(string(dir)+"/images");
-	post("adding gf_data_path %s/images",dir);
+	if (debug) post("adding gf_data_path %s/images",dir);
 	sprintf(bof,"%s/abstractions",dir);        sys_searchpath = namelist_append_files(sys_searchpath,bof);
-	post("adding -path %s",bof);
+	if (debug) post("adding -path %s",bof);
 	sprintf(bof,"%s/deprecated",dir);          sys_searchpath = namelist_append_files(sys_searchpath,bof);
-	post("adding -path %s",bof);
+	if (debug) post("adding -path %s",bof);
 	sprintf(bof,"%s/doc/flow_classes",dir);    sys_helppath   = namelist_append_files(sys_helppath,  bof);
-	post("adding -helppath %s",bof);
+	if (debug) post("adding -helppath %s",bof);
 }
 
 //----------------------------------------------------------------
