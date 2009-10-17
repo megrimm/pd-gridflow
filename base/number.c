@@ -270,8 +270,8 @@ template <class T> inline Plex<T> gf_c2p(const Plex<T>& a) {
   return Plex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
 }
 template <class T> inline Plex<T> gf_p2c(const Plex<T>& a) {
-  return Plex<T>((float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)),
-                 (float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)));
+  return Plex<T>((float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)),
+                 (float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)));
 }
 /*
 template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
