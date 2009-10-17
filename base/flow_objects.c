@@ -1147,7 +1147,7 @@ GRID_INLET(0) {
 	T  bar[m];
 	for (; n; n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
-		qsort(foo,m,sizeof(T),(comparator_t)GradeFunction<T>::comparator);
+		qsort(foo,m,sizeof(T *),(comparator_t)GradeFunction<T>::comparator);
 		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
 		out->send(m,bar);
 	}
