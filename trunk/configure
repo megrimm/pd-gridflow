@@ -634,9 +634,6 @@ while ARGV.length>0 do
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "--force: assuming #{name} is there"
 		$features_h[name].test nil
-	when "--static" # experimental
-		$conf[:STATIC]=true
-		$conf[:LDSOFLAGS] << "-static"
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$debug=true
@@ -719,11 +716,6 @@ def try feature
 		begin tresult = feature.test.call(feature); rescue StandardError => e; end
 		if tresult
 			DUAL.puts Green+arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
-			if tresult == "static"
-				feature.uses_so.map! {|x|
-					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
-				} if feature.uses_so
-			end
 		else
 			DUAL.puts Red+arrow+"missing "+(if e
 				then (if $verbose
