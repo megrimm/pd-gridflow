@@ -413,10 +413,10 @@ Feature.add {
 	tag :netpbm
 	name "NetPBM 10 Library"
 	uses_so ["-lnetpbm"]
-	uses_h ["pam.h"]
+	uses_h Or[["pam.h"],["netpbm/pam.h"]]
 	uses_o ["format/netpbm.o"]
-	test proc {
-		c_test "
+	test proc {|f|
+		f.c_test "
 		#include#
 		int main () {return pm_init==0;}"}}
 Feature.add {
