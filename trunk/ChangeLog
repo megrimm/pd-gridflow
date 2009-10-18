@@ -1,9 +1,9 @@
 /* $Id$ */
 
-version 0.9.5 (2009.10....):
+version 0.9.5 (2009.10.18):
 
  * added [gf.print] (aliased to [print])
- * added [cv.Ellipse]
+ * added [cv/#Ellipse], [cv/#HarrisCorner], [cv/#KMeans]
  * renamed goop.pd to surface_tension.pd
  * [#in quicktime]: "get" also produces messages "framerate", "height",
    "width", "depth", "codec".
@@ -12,11 +12,20 @@ version 0.9.5 (2009.10....):
  * [#color]: added bang
  * [#inner]: fixed infinite loop bug with large right-inlet grids.
  * [#transpose]: fixed crash with zero-sized grids.
- * added [cv.HarrisCorner], [cv.KMeans]
  * [receives]: "empty" prefix automatically turned into "" (no prefix).
  * [#in grid] and [#out grid]: fixed several bugs
  * [#make_cross] can make rectangular crosses
  * [demux] alias removed (please use [shunt])
+ * renamed every [cv.Something] to [cv/#Something] to avoid any future
+   nameclashes with Loïc's library.
+ * automatically removes artificial stacksize limits of the OS that may
+   have caused segfaults in the last year or so, if you didn't use
+   ulimit -s unlimited or somesuch
+ * added [# c2p] and [# p2c] (polar transforms)
+ * added new examples: polar.pd, radial_blur.pd
+ * fixed more OSX bugs
+ * fixed [#grade] bug (thanks to mescalinum)
+ * removed support for gem 0.89 and some 0.90 versions
 
 version 0.9.4 (2008.07.04):
 
