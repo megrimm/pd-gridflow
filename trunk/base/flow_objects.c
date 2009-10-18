@@ -2508,7 +2508,7 @@ string ssprintf(const char *fmt, ...) {
 	\decl 0 grid(...);
 	\decl void anything (...);
 };
-std::ostream &operator << (std::ostream &self, t_atom &a) {
+std::ostream &operator << (std::ostream &self, const t_atom &a) {
 	switch (a.a_type) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...

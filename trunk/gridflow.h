@@ -905,6 +905,6 @@ static inline int oprintf(std::ostream &buf, const char *s, ...) {
     return n;
 }
 
-std::ostream &operator << (std::ostream &self, t_atom &a);
+std::ostream &operator << (std::ostream &self, const t_atom &a);
 
 #endif // __GF_GRID_H
