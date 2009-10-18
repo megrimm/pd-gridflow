@@ -22,6 +22,13 @@
 */
 
 #include "../gridflow.h.fcs"
+#ifdef DESIRE
+#include "desire.h"
+#else
+extern "C" {
+#include "bundled/g_canvas.h"
+};
+#endif
 #define OP(x) op_dict[string(#x)]
 
 static void expect_min_one_dim (P<Dim> d) {
@@ -85,6 +92,21 @@ GRID_INPUT(2,r) {
 } GRID_END
 
 \end class {install("#cluster_avg",3,2);}
+
+\class GFCanvasFileName : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {
+		mom = mom->gl_owner;
+		if (!mom) RAISE("no such canvas");
+	}
+	outlet_symbol(bself->outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));
+}
+\end class {install("gf/canvasfilename",1,1);}
 
 void startup_flow_objects2 () {
 	\startall
