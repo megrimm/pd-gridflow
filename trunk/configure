@@ -2,7 +2,7 @@
 # $Id$
 =begin
 	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -197,17 +197,9 @@ end
 
 def epath x; (ENV[x]||"").split(":") end
 
-$C_INCLUDE_PATH = (
-	epath("CPLUS_INCLUDE_PATH") +
-	epath("C_INCLUDE_PATH") +
-	["/usr/include"]).uniq
-$LIBRARY_PATH = (
-	epath("LIBRARY_PATH") +
-	["/usr/lib","/lib"]).uniq
-$LD_LIBRARY_PATH = (
-	epath("LD_LIBRARY_PATH") +
-	read_ld_so_conf +
-	["/usr/lib","/lib"]).uniq
+$C_INCLUDE_PATH  = (epath("CPLUS_INCLUDE_PATH") + epath("C_INCLUDE_PATH") + ["/usr/include"]).uniq
+$LIBRARY_PATH    = (epath("LIBRARY_PATH")                      + ["/usr/lib","/lib"]).uniq
+$LD_LIBRARY_PATH = (epath("LD_LIBRARY_PATH") + read_ld_so_conf + ["/usr/lib","/lib"]).uniq
 $LIBX11DIR = [
   "-L/usr/X11R6/lib",  "-L/opt/gnome/lib",
   "-L/usr/X11R6/lib64","-L/opt/gnome/lib64"]
