@@ -106,7 +106,27 @@ GRID_INPUT(2,r) {
 	}
 	outlet_symbol(bself->outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));
 }
-\end class {install("gf/canvasfilename",1,1);}
+\end class {install("gf/canvas_filename",1,1);}
+
+\class GFSearchAndReplace : FObject {
+	t_symbol *from;
+	t_symbol *to;
+	\constructor (t_symbol *from, t_symbol *to=&s_) {this->from=from; this->to=to;}
+	\decl 0 symbol (t_symbol *victim);
+};
+\def 0 symbol (t_symbol *victim) {
+	string a = string(victim->s_name);
+	string b = string(from->s_name);
+	string c = string(to->s_name);
+	for (size_t i=0;;) {
+	  i = a.find(b,i);
+	  if (i==string::npos) break;
+	  a = a.replace(i,b.length(),c);
+	  i += c.length();
+	}
+	outlet_symbol(bself->outlets[0],gensym(a.c_str()));
+}
+\end class {install("gf/string_replace",1,1);}
 
 void startup_flow_objects2 () {
 	\startall
