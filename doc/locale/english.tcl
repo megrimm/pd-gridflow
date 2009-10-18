@@ -56,7 +56,7 @@ say parallel_port    "send to and receive from a DB25 parallel port"
 say plotter_control  "make HPGL commands"
 
 category "Stuff"
-say #labeling        "tag connected pixels with region numbers in a two-tone single-channel image"
+say #labelling       "tag connected pixels with region numbers in a two-tone single-channel image"
 say #layer           "layer two same-sized images"
 say #moment          "find 1st or 2nd order moment (weighted average or variance) of the coordinates of a grid"
 say #noise_gate_yuvs "replaces dark pixels by black pixels in signed YUV images"
