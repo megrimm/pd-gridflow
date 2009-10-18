@@ -111,6 +111,10 @@ clean::
 	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs \
 		$(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
+distclean:: clean
+	rm -f config.make config.log config.h gridflow.c.fcs gridflow.h.fcs
+	rm -rf tmp
+
 #--------#--------#--------#--------#--------#--------#--------#--------
 
 help::
