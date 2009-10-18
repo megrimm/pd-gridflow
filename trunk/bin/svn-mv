@@ -1,5 +1,5 @@
 #!/bin/bash
 mv "$1" "$2"
-svn add "$1"
-svn remove "$2"
+svn remove "$1"
+svn add "$2"
 svn commit "$1" "$2"
