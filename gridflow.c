@@ -2,7 +2,7 @@
 	$Id: rubyext.c 3621 2008-04-19 01:47:38Z matju $
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -38,8 +38,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <limits.h>
+
 #ifdef HAVE_GEM
-#include "Base/GemPixDualObj.h"
+struct CPPExtern {
+  static t_object *m_holder;
+  static char *m_holdname;
+};
 #endif
 
 #ifndef HAVE_DESIREDATA
