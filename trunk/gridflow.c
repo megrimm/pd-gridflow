@@ -49,13 +49,6 @@ struct CPPExtern {
 #ifndef HAVE_DESIREDATA
 #include "bundled/g_canvas.h"
 #endif
-// from pd/src/g_canvas.c
-struct _canvasenvironment {
-    t_symbol *ce_dir;   /* directory patch lives in */
-    int ce_argc;        /* number of "$" arguments */
-    t_atom *ce_argv;    /* array of "$" arguments */
-    int ce_dollarzero;  /* value of "$0" */
-};
 
 /* for exception-handling in 0.9.0... Linux-only */
 #ifndef MACOSX
