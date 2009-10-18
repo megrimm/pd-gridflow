@@ -907,4 +907,17 @@ static inline int oprintf(std::ostream &buf, const char *s, ...) {
 
 std::ostream &operator << (std::ostream &self, const t_atom &a);
 
+// from pd/src/g_canvas.c
+#ifdef DESIRE
+#define ce_argc argc
+#define ce_argv argv
+#else
+struct _canvasenvironment {
+    t_symbol *ce_dir;   /* directory patch lives in */
+    int ce_argc;        /* number of "$" arguments */
+    t_atom *ce_argv;    /* array of "$" arguments */
+    int ce_dollarzero;  /* value of "$0" */
+};
+#endif
+
 #endif // __GF_GRID_H
