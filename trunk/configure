@@ -563,22 +563,11 @@ Feature.add {
 	name "PureData GEM (source code) with m_holdname"
 	uses_feature [:puredata]
 	uses_o ["optional/gem.o"]
-	options ["HAVE_GEM","HAVE_HOLDNAME"]
-	test proc {
-		c_test %`
-			#include "Base/GemBase.h"
-			int main () {CPPExtern::m_holdname; return 0;}`}}
-Feature.add {
-	tag :gem08
-	unless_feature:gem09
-	name "PureData GEM (source code) without m_holdname"
-	uses_feature [:puredata]
-	uses_o ["optional/gem.o"]
 	options ["HAVE_GEM"]
 	test proc {
 		c_test %`
 			#include "Base/GemBase.h"
-			int main () {return 0;}`}}
+			int main () {CPPExtern::m_holdname; return 0;}`}}
 Feature.add {
 	tag :opencv
 	name "Intel OpenCV"

@@ -570,9 +570,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	//pd_post(classsym->s_name,argc,argv);
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
-#ifdef HAVE_HOLDNAME
-	CPPExtern::m_holdname = const_cast<char *>("keep_gem_happy");
-#endif
+	CPPExtern::m_holdname = const_cast<char *>("juste_pour_que_gem_reste_content");
 #endif
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
