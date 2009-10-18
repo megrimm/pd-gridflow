@@ -1,5 +1,11 @@
 /* $Id$ */
 
+oct.2009
+[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
+[x] rename "cv." prefix to "cv/#"
+[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
+[ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
+
 PFOAC/BNL 2009
 [ ] randomise positions and send offsetted text after choosing a position
 [ ] store bboxes
