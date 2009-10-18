@@ -87,9 +87,10 @@ the actual releases are more tested.</p>
 		apt-get install libcv-dev libdc1394-13-dev
 	</pre></kbd></li>
 
-	<li>Note: you may have to set <kbd>CPLUS_INCLUDE_PATH</kbd> to indicate where to find *.h files, and you 
+	<li>Note: you may have to set <kbd>CPLUS_INCLUDE_PATH</kbd> and <kbd>C_INCLUDE_PATH</kbd>
+to indicate where to find *.h files, and you 
 may have to set both <kbd>LIBRARY_PATH</kbd> and <kbd>LD_LIBRARY_PATH</kbd> to indicate where to find 
-*.so  or *.aor *.dylib or *.bundle or *.dll or *.lib files.</li>
+*.so or *.a or *.dylib or *.bundle or *.dll or *.lib files.</li>
 	<li>Note: you can do <kbd>./configure --help</kbd> to get a list of supported 
 options. You can use them to ignore the presence of troublesome libraries 
 and select debugging level. With <kbd>--use-compiler</kbd> you should use a version of <kbd>g++</kbd>, not 
