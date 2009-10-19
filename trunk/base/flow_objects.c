@@ -2980,25 +2980,34 @@ t_class *ReceivesProxy_class;
 	ReceivesProxy **av;
 	t_symbol *prefix;
 	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
-	\constructor (t_symbol *prefix, ...) {
+	\constructor (t_symbol *prefix=&s_, ...) {
 		this->prefix = prefix==gensym("empty") ? &s_ : prefix;
-		ac = argc-1;
-		av = new ReceivesProxy *[argc-1];
+		do_bind(argc-1,argv+1);
+	}
+	\decl 0 list (...);
+	void do_bind (int argc, t_atom2 *argv) {
+		ac = argc;
+		av = new ReceivesProxy *[argc];
 		for (int i=0; i<ac; i++) {
 			av[i] = (ReceivesProxy *)pd_new(ReceivesProxy_class);
 			av[i]->parent = this;
-			av[i]->suffix = argv[i+1];
+			av[i]->suffix = argv[i];
 			pd_bind(  (t_pd *)av[i],local(av[i]->suffix));
 		}
 	}
-	~Receives () {
+	void do_unbind () {
 		for (int i=0; i<ac; i++) {
 			pd_unbind((t_pd *)av[i],local(av[i]->suffix));
 			pd_free((t_pd *)av[i]);
 		}
 		delete[] av;
 	}
+	~Receives () {do_unbind();}
 };
+\def 0 list (...) {
+	do_unbind();
+	do_bind(argc,argv);
+}
 void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
 	outlet_symbol(  self->parent->bself->outlets[1],self->suffix);
 	outlet_anything(self->parent->bself->outlets[0],s,argc,argv);
