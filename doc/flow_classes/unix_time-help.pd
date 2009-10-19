@@ -1,4 +1,4 @@
-#N canvas 134 38 639 312 10;
+#N canvas 134 38 557 464 10;
 #X obj 91 113 unix_time;
 #X obj 91 82 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
@@ -13,6 +13,9 @@
 #X obj 307 195 display;
 #X obj 306 170 sprintf %04d%02d%02d-%02d%02d%02d;
 #X obj 0 0 doc_h;
+#X obj 3 273 doc_c 0;
+#X obj 3 302 doc_i 1;
+#X obj 3 339 doc_o 3;
 #X connect 0 0 2 0;
 #X connect 0 1 8 0;
 #X connect 0 2 7 0;
