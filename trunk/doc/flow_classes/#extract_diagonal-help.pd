@@ -1,19 +1,23 @@
-#N canvas 0 0 450 471 10;
-#X obj 63 72 cv/#SVD;
-#X obj 80 94 display;
-#X obj 64 164 display;
-#X msg 63 53 2 2 f # 30 40 50 60;
-#X text 63 33 numbers coming from the equation of an ellipse;
-#X text 111 75 eigenvectors show the direction of axes of the ellipse
+#N canvas 0 0 556 484 10;
+#X obj 53 82 cv/#SVD;
+#X obj 70 104 display;
+#X obj 54 174 display;
+#X msg 53 63 2 2 f # 30 40 50 60;
+#X text 53 43 numbers coming from the equation of an ellipse;
+#X text 101 85 eigenvectors show the direction of axes of the ellipse
 ;
-#X text 74 145 eigenvalues show the square of the length of the axes
+#X text 64 155 eigenvalues show the square of the length of the axes
 ;
-#X obj 33 223 #extract_diagonal;
-#X obj 46 247 display;
-#X text 140 222 just keep the diagonal of the matrix;
-#X obj 34 314 display;
-#X text 109 294 just the radiuses;
-#X obj 33 294 # sqrt (f #);
+#X obj 23 233 #extract_diagonal;
+#X obj 36 257 display;
+#X text 130 232 just keep the diagonal of the matrix;
+#X obj 24 324 display;
+#X text 99 304 just the radiuses;
+#X obj 23 304 # sqrt (f #);
+#X obj 0 0 doc_h;
+#X obj 3 358 doc_c 0;
+#X obj 3 398 doc_i 1;
+#X obj 3 420 doc_o 1;
 #X connect 0 0 2 0;
 #X connect 0 0 7 0;
 #X connect 0 1 1 0;
