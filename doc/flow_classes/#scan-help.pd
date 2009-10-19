@@ -1,4 +1,4 @@
-#N canvas 140 0 557 358 10;
+#N canvas 140 0 557 406 10;
 #X text 69 35 computes subtotals;
 #X floatatom 17 76 5 0 0 0 - - -;
 #X floatatom 62 76 5 0 0 0 - - -;
@@ -9,9 +9,12 @@
 #X obj 17 116 #pack 3;
 #X obj 17 147 #scan +;
 #X obj 17 206 #unpack 3;
-#X obj 98 324 #fold +;
+#X obj 98 364 #fold +;
 #X obj 0 0 doc_h;
-#X obj 3 324 doc_also;
+#X obj 3 364 doc_also;
+#X obj 3 274 doc_c 1;
+#X obj 3 295 doc_i 1;
+#X obj 3 329 doc_o 1;
 #X connect 1 0 7 0;
 #X connect 2 0 7 1;
 #X connect 3 0 7 2;

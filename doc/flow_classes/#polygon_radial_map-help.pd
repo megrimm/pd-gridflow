@@ -1,4 +1,4 @@
-#N canvas 412 64 630 462 10;
+#N canvas 486 64 556 580 10;
 #X obj 274 276 #polygon_radial_map;
 #X text 70 40 makes a 1-D panoramic (polar) rendering of a polygon.
 ;
@@ -21,6 +21,10 @@ thereof) from the polygon.;
 #X obj 274 295 t a a;
 #X obj 274 314 #finished;
 #X obj 274 352 #outer <;
+#X obj 0 0 doc_h;
+#X obj 3 424 doc_c 0;
+#X obj 3 465 doc_i 1;
+#X obj 3 507 doc_o 1;
 #X connect 0 0 16 0;
 #X connect 3 0 4 0;
 #X connect 5 0 7 0;
