@@ -1,90 +1,93 @@
-#N canvas 604 0 618 654 10;
-#X obj 215 33 until;
-#X obj 215 16 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
+#N canvas 604 0 631 717 10;
+#X obj 215 53 until;
+#X obj 215 36 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
-#X obj 148 16 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
+#X obj 148 36 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
 ;
-#X msg 222 57 rewind;
-#X obj 321 174 print bogus;
-#X obj 215 245 loadbang;
-#X obj 226 174 print command;
-#X obj 147 235 #store;
-#X obj 229 203 loadbang;
-#X obj 226 155 spigot;
-#X obj 272 156 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
+#X msg 222 77 rewind;
+#X obj 321 194 print bogus;
+#X obj 215 265 loadbang;
+#X obj 226 194 print command;
+#X obj 147 255 #store;
+#X obj 229 223 loadbang;
+#X obj 226 175 spigot;
+#X obj 272 176 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
 1;
-#X obj 33 591 fps;
-#X obj 306 18 bng 15 250 50 0 empty empty empty 17 7 0 10 -258699 -1
+#X obj 33 611 fps;
+#X obj 306 38 bng 15 250 50 0 empty empty empty 17 7 0 10 -258699 -1
 -1;
-#X obj 148 33 metro 1;
-#X obj 206 442 #pack;
-#X obj 236 426 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+#X obj 148 53 metro 1;
+#X obj 206 462 #pack;
+#X obj 236 446 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 0 256;
-#X obj 206 410 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+#X obj 206 430 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 0 256;
-#X obj 262 442 #pack;
-#X obj 292 426 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+#X obj 262 462 #pack;
+#X obj 292 446 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 750 256;
-#X obj 262 410 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+#X obj 262 430 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 1000 256;
-#X obj 124 262 gf.oneshot;
-#X obj 147 179 t b b;
-#X obj 33 610 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10
+#X obj 124 282 gf.oneshot;
+#X obj 147 199 t b b;
+#X obj 33 630 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10
 -225271 -1 -1 0 256;
-#X obj 33 252 gf.oneshot;
-#X obj 51 119 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
+#X obj 33 272 gf.oneshot;
+#X obj 51 139 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
-#X obj 51 136 t b b;
-#X obj 109 420 #draw_hpgl;
-#X obj 33 572 #out window;
-#X obj 145 136 f;
-#X obj 170 136 + 1;
-#X obj 145 155 sel;
-#X text 362 15 TODO: look for bug in [#in grid] code...;
-#X obj 215 131 plotter_parser;
-#X obj 321 155 spigot;
-#X obj 367 156 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
+#X obj 51 156 t b b;
+#X obj 109 440 #draw_hpgl;
+#X obj 33 592 #out window;
+#X obj 145 156 f;
+#X obj 170 156 + 1;
+#X obj 145 175 sel;
+#X text 362 35 TODO: look for bug in [#in grid] code...;
+#X obj 215 151 plotter_parser;
+#X obj 321 175 spigot;
+#X obj 367 176 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
 1;
-#X obj 128 520 # >> 4;
-#X msg 215 264 3 # 255 255 255;
-#X msg 229 222 480 640 3 #;
-#X obj 63 543 #gamma;
-#X obj 109 545 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+#X obj 128 540 # >> 4;
+#X msg 215 284 3 # 255 255 255;
+#X msg 229 242 480 640 3 #;
+#X obj 63 563 #gamma;
+#X obj 109 565 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 350 256;
-#X obj 128 482 #convolve (3 3 # 0 1 0 1 12 1);
-#X msg 369 112 PU 0 0 \, LB world;
-#X obj 128 501 # + 7;
-#X obj 98 520 t a;
-#X obj 137 464 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
+#X obj 128 502 #convolve (3 3 # 0 1 0 1 12 1);
+#X msg 369 132 PU 0 0 \, LB world;
+#X obj 128 521 # + 7;
+#X obj 98 540 t a;
+#X obj 137 484 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
 1;
-#X obj 158 208 t a a;
-#X msg 232 288 PU 0 10 \, PD 1000 10;
-#X obj 33 524 shunt;
-#X obj 72 525 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
+#X obj 158 228 t a a;
+#X msg 232 308 PU 0 10 \, PD 1000 10;
+#X obj 33 544 shunt;
+#X obj 72 545 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 0
 1;
-#X obj 98 463 shunt;
-#X obj 359 480 namecanvas foo;
-#X msg 358 416 \; foo obj 0 0 + \, else obj 0 0 zazou;
-#X msg 206 346 PU 0 0 \, print_from_ascii 116 114 97 98 111 117 108
+#X obj 98 483 shunt;
+#X obj 359 500 namecanvas foo;
+#X msg 358 436 \; foo obj 0 0 + \, else obj 0 0 zazou;
+#X msg 206 366 PU 0 0 \, print_from_ascii 116 114 97 98 111 117 108
 105 100 111 110;
-#X msg 358 448 \; foo obj 0 20 ++ \, else obj 0 20 zazou;
-#X msg 203 381 PU 50 550 \, print_from_ascii 97 13 10 108 13 10 108
+#X msg 358 468 \; foo obj 0 20 ++ \, else obj 0 20 zazou;
+#X msg 203 401 PU 50 550 \, print_from_ascii 97 13 10 108 13 10 108
 13 10 244;
-#X obj 252 526 hpgl_find_bbox;
-#X obj 345 509 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+#X obj 252 546 hpgl_find_bbox;
+#X obj 345 529 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 252 545 #to_list;
-#X msg 219 627 PU \$1 \$2 \, PD \$3 \$2 \$3 \$4 \$1 \$4 \$1 \$2;
-#X obj 355 580 print;
-#X obj 215 79 #in grid lots_of_text.hpgl \, headerless \, type b;
-#X obj 148 52 t b b b b;
-#X obj 199 312 hpgl_font_render images/hershey \, spacing 10 \, scaling
+#X obj 252 565 #to_list;
+#X msg 252 587 PU \$1 \$2 \, PD \$3 \$2 \$3 \$4 \$1 \$4 \$1 \$2;
+#X obj 215 99 #in grid lots_of_text.hpgl \, headerless \, type b;
+#X obj 148 72 t b b b b;
+#X obj 199 332 hpgl_font_render images/hershey \, spacing 10 \, scaling
 0.12 \, rowheight 54 \, wrap 666;
-#X obj 170 155 % 16;
-#X connect 0 0 60 0;
+#X obj 170 175 % 16;
+#X obj 0 0 doc_h;
+#X obj 3 650 doc_c 1;
+#X obj 3 670 doc_i 2;
+#X obj 3 693 doc_o 1;
+#X connect 0 0 59 0;
 #X connect 1 0 0 0;
 #X connect 2 0 13 0;
-#X connect 3 0 60 0;
+#X connect 3 0 59 0;
 #X connect 5 0 36 0;
 #X connect 7 0 20 0;
 #X connect 8 0 37 0;
@@ -93,7 +96,7 @@
 #X connect 11 0 22 0;
 #X connect 12 0 3 0;
 #X connect 12 0 37 0;
-#X connect 13 0 61 0;
+#X connect 13 0 60 0;
 #X connect 14 0 26 3;
 #X connect 15 0 14 1;
 #X connect 16 0 14 0;
@@ -113,10 +116,10 @@
 #X connect 27 0 11 0;
 #X connect 28 0 29 0;
 #X connect 28 0 30 0;
-#X connect 29 0 63 0;
+#X connect 29 0 62 0;
 #X connect 30 0 24 0;
 #X connect 32 0 9 0;
-#X connect 32 0 62 0;
+#X connect 32 0 61 0;
 #X connect 32 1 33 0;
 #X connect 33 0 4 0;
 #X connect 34 0 33 1;
@@ -126,31 +129,31 @@
 #X connect 38 0 27 0;
 #X connect 39 0 38 1;
 #X connect 40 0 42 0;
-#X connect 41 0 62 0;
+#X connect 41 0 61 0;
 #X connect 42 0 35 0;
 #X connect 43 0 45 0;
 #X connect 44 0 49 1;
 #X connect 45 0 23 0;
 #X connect 45 1 7 1;
-#X connect 46 0 62 0;
+#X connect 46 0 61 0;
 #X connect 47 0 27 0;
 #X connect 47 1 38 0;
 #X connect 48 0 47 1;
 #X connect 49 0 43 0;
 #X connect 49 1 40 0;
-#X connect 52 0 62 0;
-#X connect 54 0 62 0;
+#X connect 52 0 61 0;
+#X connect 54 0 61 0;
 #X connect 55 0 57 0;
 #X connect 56 0 55 1;
 #X connect 57 0 58 0;
-#X connect 60 0 32 0;
-#X connect 60 1 0 1;
-#X connect 60 1 2 0;
-#X connect 60 1 24 0;
-#X connect 61 0 60 0;
-#X connect 61 1 60 0;
-#X connect 61 2 60 0;
-#X connect 61 3 60 0;
-#X connect 62 0 26 2;
-#X connect 62 0 55 0;
-#X connect 63 0 28 1;
+#X connect 59 0 32 0;
+#X connect 59 1 0 1;
+#X connect 59 1 2 0;
+#X connect 59 1 24 0;
+#X connect 60 0 59 0;
+#X connect 60 1 59 0;
+#X connect 60 2 59 0;
+#X connect 60 3 59 0;
+#X connect 61 0 26 2;
+#X connect 61 0 55 0;
+#X connect 62 0 28 1;
