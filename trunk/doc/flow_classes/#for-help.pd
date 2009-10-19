@@ -1,13 +1,9 @@
-#N canvas 694 0 506 928 10;
+#N canvas 645 0 555 704 10;
 #X floatatom 13 227 5 0 0 0 - - -;
 #X floatatom 45 249 5 0 0 0 - - -;
 #X floatatom 78 270 5 0 0 0 - - -;
 #X obj 13 365 #print;
-#X obj 0 2 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X obj 10 659 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 8 415 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 8 438 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
@@ -19,9 +15,7 @@
 #X obj 10 680 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 15 704 GRID;
-#X obj 7 3 #for 0 320 1;
 #X obj 33 332 display;
-#X text 210 417 Inlets (3);
 #X text 213 758 Arguments (3);
 #X obj 9 586 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
@@ -37,16 +31,12 @@
 0;
 #X text 12 853 Argument 1;
 #X text 12 909 Argument 2;
-#X obj 15 297 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
 #X text 119 270 <-- step value;
 #X text 90 247 <-- upper bound;
 #X text 60 224 <-- lower bound;
 #X obj 13 297 #for 0 8 1;
 #X obj 264 364 #print;
 #X obj 284 334 display;
-#X obj 266 303 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
 #X msg 264 228 0 0;
 #X msg 329 276 1 1;
 #X obj 264 303 #for 0 8 1;
@@ -73,24 +63,23 @@ in the proper order.;
 #X text 303 196 vector bounds;
 #X text 9 465 INTEGER;
 #X text 74 466 Sets the lower bound;
-#X text 11 558 LIST;
 #X text 9 535 INTEGER;
 #X text 74 536 Sets the upper bound;
-#X text 11 634 LIST;
 #X text 9 611 INTEGER;
 #X text 74 612 Sets the step value;
 #X text 76 707 The result of the operation is a single dimension grid
 in the case of scalar values and variable dimensions for vectors.;
 #X text 27 137 Syntax: #for <from> <to> <step> outlet: grid dim(size)
 where size = floor(to-from+1)/step.;
-#X text 391 3 GridFlow 0.9.0;
-#X connect 0 0 31 0;
-#X connect 1 0 31 1;
-#X connect 2 0 31 2;
-#X connect 31 0 14 0;
-#X connect 31 0 3 0;
-#X connect 35 0 37 0;
-#X connect 36 0 37 2;
-#X connect 37 0 33 0;
-#X connect 37 0 32 0;
-#X connect 38 0 37 1;
+#X obj 0 0 doc_h;
+#X obj 0 401 doc_i 3;
+#X connect 0 0 26 0;
+#X connect 1 0 26 1;
+#X connect 2 0 26 2;
+#X connect 26 0 11 0;
+#X connect 26 0 3 0;
+#X connect 29 0 31 0;
+#X connect 30 0 31 2;
+#X connect 31 0 28 0;
+#X connect 31 0 27 0;
+#X connect 32 0 31 1;
