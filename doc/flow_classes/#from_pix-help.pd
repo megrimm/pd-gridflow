@@ -1,76 +1,36 @@
-#N canvas 751 44 507 754 10;
-#X obj -40 -45 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 679 0 568 717 10;
+#X obj 9 435 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 357 -44 GridFlow 0.9.3;
-#X obj -41 683 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 10 436 Inlet 0;
+#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -41 683 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 10 562 Outlet 0;
+#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -41 683 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 10 562 Outlet 0;
+#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -41 683 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 10 562 Outlet 0;
+#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -35 682 see also :;
-#X obj -41 357 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 10 562 Outlet 0;
+#X obj 9 621 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -41 385 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text -40 386 Inlet 0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 513 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text -40 512 Outlet 0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 513 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text -40 512 Outlet 0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 513 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text -40 512 Outlet 0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 170 485 Outlets (1);
-#X obj -41 513 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text -40 512 Outlet 0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 485 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 170 485 Outlets (1);
-#X obj -42 632 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -42 632 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -42 632 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -42 632 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj -41 571 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 102 681 \, game_of_life_gem.pd in the examples folder;
-#X text -33 534 GRID;
-#X text -36 593 gemlist;
-#X text 47 534 Grid with 4 channels;
-#X text 172 631 Arguments (0);
-#X text -37 434 yflip;
-#X text 41 435 With one boolean argument that selects the order in
+#X text 152 687 \, game_of_life_gem.pd in the examples folder;
+#X text 17 584 GRID;
+#X text 14 643 gemlist;
+#X text 97 584 Grid with 4 channels;
+#X text 13 484 yflip;
+#X text 91 485 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '1';
-#X text -39 -46 [#import_pix];
-#X text 48 681 [#to_pix];
-#X obj -28 251 #import_pix;
-#X obj -13 176 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
-1;
-#X msg -13 195 yflip \$1;
-#X msg -6 217 help;
-#X obj -28 -11 gemhead;
-#X obj -28 147 pix_image;
+#X text 98 687 [#to_pix];
+#X obj 22 301 #import_pix;
+#X obj 37 226 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+;
+#X msg 37 245 yflip \$1;
+#X msg 44 267 help;
+#X obj 22 39 gemhead;
+#X obj 22 197 pix_image;
 #N canvas 0 0 450 300 openpanel 0;
 #X obj 114 62 inlet;
 #X obj 121 254 outlet;
@@ -82,35 +42,38 @@ which the y dimension of the Grid will be read \, defaults to '1';
 #X connect 3 0 4 0;
 #X connect 4 0 1 0;
 #X connect 4 1 1 0;
-#X restore -10 64 pd openpanel;
-#X msg -10 85 open /home/alx/Documents/src/pd-0.40-2/extra/svn_GridFlow/trunk/images/babbage.jpg
+#X restore 40 114 pd openpanel;
+#X msg 40 135 open /home/alx/Documents/src/pd-0.40-2/extra/svn_GridFlow/trunk/images/babbage.jpg
 ;
-#X obj -10 42 bng 15 250 50 0 empty empty empty 17 7 0 10 -4034 -1
--1;
-#X msg 341 5 create \, 1;
-#X obj 341 -14 loadbang;
-#X msg 405 6 destroy;
-#X text 12 40 <-- load image;
-#X obj -28 293 #out window \, title imported_pix;
-#X text -13 328 Note : The fps is dependent on the gemwin framerate
+#X obj 40 92 bng 15 250 50 0 empty empty empty 17 7 0 10 -4034 -1 -1
 ;
-#X obj 341 34 gemwin 30;
-#X text -38 404 gemlist;
-#X text 50 251 <-- imports gemlist into Grids;
-#X text 40 404 Has to be a 'pix' gemlist;
-#X text 175 357 Inlet (1);
-#X text 36 537;
-#X text -38 572 Outlet 1;
-#X text 43 593 Passthrough outlet for gem chain;
-#X connect 41 0 54 0;
-#X connect 42 0 43 0;
-#X connect 43 0 41 0;
-#X connect 44 0 41 0;
-#X connect 45 0 46 0;
-#X connect 46 0 41 0;
-#X connect 47 0 48 0;
-#X connect 48 0 46 0;
-#X connect 49 0 47 0;
-#X connect 50 0 56 0;
-#X connect 51 0 50 0;
-#X connect 52 0 56 0;
+#X msg 391 55 create \, 1;
+#X obj 391 36 loadbang;
+#X msg 455 56 destroy;
+#X text 62 90 <-- load image;
+#X obj 22 343 #out window \, title imported_pix;
+#X text 37 361 Note : The fps is dependent on the gemwin framerate
+;
+#X obj 391 84 gemwin 30;
+#X text 12 454 gemlist;
+#X text 100 301 <-- imports gemlist into Grids;
+#X text 90 454 Has to be a 'pix' gemlist;
+#X text 12 622 Outlet 1;
+#X text 93 643 Passthrough outlet for gem chain;
+#X obj 0 0 doc_h;
+#X obj 3 383 doc_c 0;
+#X obj 3 408 doc_i 1;
+#X obj 3 536 doc_o 2;
+#X obj 3 689 doc_also;
+#X connect 18 0 31 0;
+#X connect 19 0 20 0;
+#X connect 20 0 18 0;
+#X connect 21 0 18 0;
+#X connect 22 0 23 0;
+#X connect 23 0 18 0;
+#X connect 24 0 25 0;
+#X connect 25 0 23 0;
+#X connect 26 0 24 0;
+#X connect 27 0 33 0;
+#X connect 28 0 27 0;
+#X connect 29 0 33 0;

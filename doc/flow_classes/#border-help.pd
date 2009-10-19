@@ -1,57 +1,46 @@
-#N canvas 597 51 505 631 10;
-#X obj 20 104 #in;
-#X obj 20 167 #out window;
-#X obj 2 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 597 51 559 644 10;
+#X obj 20 84 #in;
+#X obj 20 127 #out window;
+#X obj 2 336 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 389 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 389 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 203 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 520 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 226 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 3 337 Inlet 0;
+#X text 3 390 Inlet 1;
+#X text 3 521 Outlet 0;
+#X text 18 361 GRID;
+#X obj 2 441 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 216 391 Outlets (1);
-#X obj 2 486 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 211 485 Arguments (1);
-#X obj 2 279 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 410 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 3 227 Inlet 0;
-#X text 3 280 Inlet 1;
-#X text 3 411 Outlet 0;
-#X obj 19 137 cnv 15 185 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
-#X obj 16 0 #border;
-#X text 18 251 GRID;
-#X text 222 204 Inlets (3);
-#X obj 2 331 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 3 332 Inlet 2;
+#X text 3 442 Inlet 2;
 #X text 15 28 Creates a black border around an image.;
-#X text 19 307 LIST;
-#X text 21 363 LIST;
-#X text 65 306 A list of three values in parentheses overides the argument.
+#X text 19 417 LIST;
+#X text 21 473 LIST;
+#X text 65 416 A list of three values in parentheses overides the argument.
 ;
-#X text 65 362 A list of three values in parentheses overides the argument.
+#X text 65 472 A list of three values in parentheses overides the argument.
 ;
-#X text 65 254 Receives an image.;
+#X text 65 364 Receives an image.;
 #X msg 20 62 load working.jpg;
-#X text 16 513 GRID(3);
-#X text 16 533 GRID(3);
-#X text 77 513 top padding and left padding. defaults to (1 1 0).;
-#X text 77 533 bottom and right padding. defaults to (1 1 0).;
-#X obj 20 137 #border (5 10 0) (15 20 0);
-#X text 209 118 5 at the top;
-#X text 208 132 10 at the left;
-#X text 208 146 15 at the bottom;
-#X text 208 159 20 at the right;
-#X text 75 554 both arguments must have 3 elements. The third element
+#X text 16 213 GRID(3);
+#X text 16 233 GRID(3);
+#X text 77 213 top padding and left padding. defaults to (1 1 0).;
+#X text 77 233 bottom and right padding. defaults to (1 1 0).;
+#X obj 20 105 #border (5 10 0) (15 20 0);
+#X text 209 98 5 at the top;
+#X text 208 112 10 at the left;
+#X text 208 126 15 at the bottom;
+#X text 208 139 20 at the right;
+#X text 75 254 both arguments must have 3 elements. The third element
 is reserved for future use.;
-#X text 16 438 GRID;
-#X text 67 438 The original image surrounded by zero padding \, which
+#X text 16 548 GRID;
+#X text 67 548 The original image surrounded by zero padding \, which
 usually means black pixels.;
-#X text 399 1 GridFlow 0.9.4;
-#X connect 0 0 31 0;
-#X connect 26 0 0 0;
-#X connect 31 0 1 0;
+#X obj 0 0 doc_h;
+#X obj 3 304 doc_i 3;
+#X obj 3 498 doc_o 1;
+#X obj 3 180 doc_c 2;
+#X connect 0 0 22 0;
+#X connect 17 0 0 0;
+#X connect 22 0 1 0;

@@ -1,16 +1,20 @@
-#N canvas 678 62 450 574 10;
-#X msg 21 103 240 320 3 #;
-#X obj 236 95 #outer + (0 9000);
-#X obj 236 114 # cos* 100;
-#X obj 236 133 # + 120;
-#X obj 236 57 #for 0 12 1;
-#X obj 236 40 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#N canvas 678 62 554 574 10;
+#X msg 21 163 240 320 3 #;
+#X obj 236 155 #outer + (0 9000);
+#X obj 236 174 # cos* 100;
+#X obj 236 193 # + 120;
+#X obj 236 117 #for 0 12 1;
+#X obj 236 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 236 76 # * 3000;
-#X obj 237 223 display;
-#X obj 21 123 #draw_points put (255 255 0);
-#X obj 21 143 #out window;
-#X text 26 17 [#draw_points] is not yet ready for use.;
+#X obj 236 136 # * 3000;
+#X obj 237 283 display;
+#X obj 21 183 #draw_points put (255 255 0);
+#X obj 21 203 #out window;
+#X text 26 77 [#draw_points] is not yet ready for use.;
+#X obj 0 0 doc_h;
+#X obj 3 355 doc_c 0..3;
+#X obj 3 406 doc_i 3;
+#X obj 3 447 doc_o 1;
 #X connect 0 0 8 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
