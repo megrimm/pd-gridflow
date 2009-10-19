@@ -19,6 +19,8 @@ OBJS2 = base/grid.o base/flow_objects.o base/flow_objects2.o base/number.1.o bas
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 FILT = $(RUBY) -w base/source_filter.rb
 ifeq ($(OS),darwin)
+  CFLAGS += -mmacosx-version-min=10.4
+  LDSOFLAGS += -headerpad_max_install_names
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
 else
