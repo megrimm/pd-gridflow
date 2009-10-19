@@ -1,4 +1,4 @@
-#N canvas 507 136 507 659 10;
+#N canvas 525 0 551 669 10;
 #X obj 79 121 #camera;
 #X obj 79 70 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 105 153 #out window;
@@ -13,56 +13,44 @@
 -1;
 #X obj 108 255 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 3 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 401 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 603 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 4 427 GRID;
+#X text 76 426 Accepts grids.;
+#X obj 2 458 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 348 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 517 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 371 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 576 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 636 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 204 350 Inlets (4);
-#X text 4 397 GRID;
-#X text 76 396 Accepts grids.;
-#X obj 2 428 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 487 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 546 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 455 BANG;
-#X text 4 519 BANG;
-#X text 4 578 BANG;
-#X text 5 373 Inlet 0;
-#X text 5 430 Inlet 1;
-#X text 5 494 Inlet 2;
-#X text 5 553 Inlet 3;
-#X obj 79 309 cnv 15 50 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
+#X text 4 485 BANG;
+#X text 4 549 BANG;
+#X text 4 608 BANG;
+#X text 5 403 Inlet 0;
+#X text 5 460 Inlet 1;
+#X text 5 524 Inlet 2;
+#X text 5 583 Inlet 3;
 #X obj 79 310 #record;
-#X text 76 519 Starts recording to the file.;
-#X text 76 578 Stops recording.;
-#X text 205 605 Outlets (0);
-#X text 206 637 Arguments (0);
-#X text 76 454 Opens a dialog window in which to type the filename
+#X text 76 549 Starts recording to the file.;
+#X text 76 608 Stops recording.;
+#X text 76 484 Opens a dialog window in which to type the filename
 to be recorded \, the defualt encoding is quicktime (raw).;
 #X text 22 33 Record a quicktime file with [#out];
 #X text 113 229 <-- 1 select filename;
 #X text 128 254 <-- 2 start recording;
 #X text 143 280 <-- 3 stop recording;
 #X text 142 309 <-- open for more options;
-#X text 39 39 comment;
-#X obj 13 0 #record;
-#X text 394 1 GridFlow 0.9.0;
+#X obj 0 0 doc_h;
+#X obj 3 371 doc_i 4;
+#X obj 3 642 doc_o 0;
+#X obj 3 352 doc_c 0;
 #X connect 0 0 2 0;
-#X connect 0 0 29 0;
+#X connect 0 0 23 0;
 #X connect 1 0 6 0;
 #X connect 2 0 4 0;
 #X connect 3 0 6 1;
 #X connect 4 0 5 0;
 #X connect 6 0 0 0;
-#X connect 7 0 29 1;
-#X connect 8 0 29 3;
-#X connect 9 0 29 2;
+#X connect 7 0 23 1;
+#X connect 8 0 23 3;
+#X connect 9 0 23 2;

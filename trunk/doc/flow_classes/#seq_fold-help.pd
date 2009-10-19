@@ -1,4 +1,4 @@
-#N canvas 679 317 400 300 10;
+#N canvas 690 0 557 404 10;
 #X obj 125 93 route end;
 #X obj 126 222 display;
 #X obj 125 166 #seq_fold;
@@ -7,6 +7,10 @@
 #X msg 228 135 0 0;
 #X obj 228 116 loadbang;
 #X obj 92 253 #print AAA;
+#X obj 0 0 doc_h;
+#X obj 3 287 doc_c;
+#X obj 3 314 doc_i 4;
+#X obj 3 340 doc_o 3;
 #X connect 0 0 2 0;
 #X connect 0 1 2 1;
 #X connect 2 0 1 0;
