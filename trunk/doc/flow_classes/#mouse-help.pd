@@ -1,36 +1,40 @@
-#N canvas 215 0 776 547 10;
-#X msg 147 123 setcursor 32;
-#X text 49 22 How to get the mouse coordinates and hide / change the
+#N canvas 432 0 559 547 10;
+#X msg 77 103 setcursor 32;
+#X text 19 32 How to get the mouse coordinates and hide / change the
 cursor?;
-#X msg 128 100 hidecursor;
-#X text 273 98 <-- removes the cursor;
-#X text 307 120 <-- accepts 0 - 63;
-#X obj 206 168 print xy_clicked;
-#X obj 207 214 print xy_unclicked;
-#X obj 107 341 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 127 341 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 147 341 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X floatatom 178 359 5 0 0 0 - - -;
-#X obj 178 333 +;
-#X obj 210 333 t a;
-#X obj 207 238 print xy_moved;
-#X obj 206 190 print xy_dragged;
-#X obj 380 376 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 400 376 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 420 376 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 380 431 @export_list;
-#X obj 440 352 loadbang;
-#X text 281 332 select buttons to be considered in click/drag/unclick
+#X msg 58 80 hidecursor;
+#X text 203 78 <-- removes the cursor;
+#X text 237 100 <-- accepts 0 - 63;
+#X obj 136 148 print xy_clicked;
+#X obj 137 194 print xy_unclicked;
+#X obj 37 321 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
-#X obj 110 165 #out window;
-#X obj 110 267 #mouse \, ...;
-#X obj 380 402 #pack 3;
+#X obj 57 321 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 77 321 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X floatatom 108 339 5 0 0 0 - - -;
+#X obj 108 313 +;
+#X obj 140 313 t a;
+#X obj 137 218 print xy_moved;
+#X obj 136 170 print xy_dragged;
+#X obj 340 286 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X obj 360 286 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X obj 380 286 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X obj 340 341 @export_list;
+#X obj 400 262 loadbang;
+#X text 214 239 select buttons to be considered in click/drag/unclick
+;
+#X obj 40 145 #out window;
+#X obj 40 247 #mouse \, ...;
+#X obj 340 312 #pack 3;
+#X obj 0 0 doc_h;
+#X obj 3 385 doc_c 0;
+#X obj 3 406 doc_i 2;
+#X obj 3 445 doc_o 8;
 #X connect 0 0 21 0;
 #X connect 2 0 21 0;
 #X connect 11 0 12 0;

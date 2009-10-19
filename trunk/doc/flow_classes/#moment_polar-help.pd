@@ -1,6 +1,4 @@
-#N canvas 387 219 527 300 10;
-#X obj 37 167 #moment-help;
-#X obj 40 30 #moment_polar;
+#N canvas 387 219 558 313 10;
 #X text 48 50 inlet 0: covariance matrix \, from [#moment 2] or compatible.
 ;
 #X text 112 65 must be a 2x2 symmetric matrix.;
@@ -9,3 +7,8 @@ as int;
 #X text 48 112 outlet 1: radiuses (from biggest to smallest) as float
 grid;
 #X text 30 151 please open this other help patch for a demo:;
+#X obj 37 167 #moment-help;
+#X obj 0 0 doc_h;
+#X obj 3 193 doc_c 0;
+#X obj 3 214 doc_i 1;
+#X obj 3 244 doc_o 2;

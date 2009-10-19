@@ -1,43 +1,37 @@
-#N canvas 172 0 512 689 10;
+#N canvas 172 0 554 702 10;
 #X obj 354 172 #out window;
-#X obj 7 9 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 17 10 #in;
 #X text 13 34 This object imports a grid \, usually an image \, video
 or live stream.;
 #X msg 362 126 open working.jpg;
 #X obj 354 106 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 55 181 <--click here;
-#X obj 8 352 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 8 422 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 13 353 Inlet_0;
-#X text 79 379 A bang sends a grid to [#out]. Since frames from videos
+#X text 13 423 Inlet_0;
+#X text 79 449 A bang sends a grid to [#out]. Since frames from videos
 and live streams are read as a series of individual grids \, successive
 bangs advance through the frames.;
-#X text 77 466 "set" - followed by a number will select the corresponding
+#X text 77 536 "set" - followed by a number will select the corresponding
 video frame. A bang must be sent to [#in] in order to display the frame.
 ;
-#X text 77 512 "close" - Closes the video input device. Only necessary
+#X text 77 582 "close" - Closes the video input device. Only necessary
 when you are using a live capture device.;
-#X text 76 546 "rewind" - Will rewind video to the beginning.;
-#X text 76 600 "loop 0" - turns off the loop option. The video stops
+#X text 76 616 "rewind" - Will rewind video to the beginning.;
+#X text 76 670 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
-#X text 81 862 Signals the end of a file and when a file is unreadable.
+#X text 81 932 Signals the end of a file and when a file is unreadable.
 ;
-#X obj 8 789 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 8 859 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 9 790 Outlet_0;
-#X text 82 814 Displays the resulting grid when connected to [#out
+#X text 9 860 Outlet_0;
+#X text 82 884 Displays the resulting grid when connected to [#out
 window];
-#X obj 10 839 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 10 909 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 10 840 Outlet_1;
-#X text 81 892 Displays the frame number of the frame currently being
+#X text 10 910 Outlet_1;
+#X text 81 962 Displays the frame number of the frame currently being
 viewed. Applies to formats that have frame numbers \, i.e. video.;
-#X obj 7 328 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 201 329 Inlets (1);
 #N canvas 82 93 663 454 quicktime 0;
 #X text 9 9 The following messages can be used to set parameters for
 video (.mov) files.;
@@ -85,12 +79,8 @@ codec parameters and after setting framerate and codec.;
 #X connect 11 0 9 0;
 #X connect 25 0 9 0;
 #X connect 26 0 9 0;
-#X restore 145 688 pd quicktime file messages;
-#X obj 353 151 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
-#X obj 354 151 #in;
-#X obj 15 228 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
+#X restore 145 758 pd quicktime file messages;
+#X obj 354 150 #in;
 #X floatatom 202 195 5 0 0 0 - - -;
 #X msg 202 151 set 2;
 #X msg 202 107 loop 0;
@@ -99,18 +89,16 @@ codec parameters and after setting framerate and codec.;
 #X msg 202 173 rewind;
 #X obj 41 267 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 16 228 #in;
+#X obj 17 227 #in;
 #X text 39 98 <--click here;
 #X obj 17 96 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 17 120 metro 33.3;
-#X obj 355 255 cnv 15 101 17 empty empty empty 20 12 0 14 -241291 -66577
-0;
 #X obj 356 234 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 356 280 #out window;
-#X obj 356 255 #in sewing.jpg;
+#X obj 356 258 #in sewing.jpg;
 #X text 378 234 <--click here;
-#X text 77 671 For info about messages specifically for quickTime files
+#X text 77 741 For info about messages specifically for quickTime files
 \, click on:;
 #N canvas 150 0 874 560 more 0;
 #X msg 191 388 open videodev \$1 \, get;
@@ -167,25 +155,17 @@ not mmap.;
 #X connect 11 0 14 0;
 #X connect 12 0 14 0;
 #X connect 13 0 14 0;
-#X restore 145 649 pd more info about video devices;
-#X text 77 632 For info about messages specifically for video devices
+#X restore 145 719 pd more info about video devices;
+#X text 77 702 For info about messages specifically for video devices
 \, click on:;
-#X text 8 813 GRID;
-#X text 10 863 BANG;
-#X text 9 890 INTEGER;
-#X text 7 962 FILE NAME;
-#X text 9 381 GRID;
-#X text 9 433 MESSAGE;
-#X text 8 727 INTEGER;
+#X text 8 883 GRID;
+#X text 10 933 BANG;
+#X text 9 960 INTEGER;
+#X text 9 451 GRID;
+#X text 9 503 MESSAGE;
+#X text 8 797 INTEGER;
 #X text 169 213 (and turn off the metro);
 #X text 244 195 <-- vary this;
-#X obj 7 765 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 197 766 Outlets (2);
-#X text 197 766 Outlets (2);
-#X obj 8 943 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 195 944 Arguments;
 #X text 352 74 IMAGE FILES:;
 #X text 12 72 VIDEO FILES:;
 #X obj 28 183 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
@@ -193,34 +173,38 @@ not mmap.;
 #X text 380 106 <-- click here;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
-#X obj 16 305 #out window \, title video;
-#X text 90 962 Including the file name of a grid into the [#in] object
+#X obj 17 305 #out window \, title video;
+#X text 90 352 Including the file name of a grid into the [#in] object
 eliminates the need for an "open" message but limits the action to
 one specified grid.;
-#X text 77 432 "open" - followed by the filename \, sends it as a resource
+#X text 77 502 "open" - followed by the filename \, sends it as a resource
 to [#out]. For example: "open sewing.jpg".;
-#X text 77 727 Outputs the frame that corresponds to the value. Applies
+#X text 77 797 Outputs the frame that corresponds to the value. Applies
 to formats that have frame numbers \, i.e. video.;
-#X text 76 566 "loop 1" - Restarts a video each time it reaches the
+#X text 76 636 "loop 1" - Restarts a video each time it reaches the
 end (default setting).;
 #X obj 41 248 route bang;
 #X msg 24 147 open violoncelle.mov;
-#X text 402 10 GridFlow 0.9.1;
-#X connect 4 0 25 0;
-#X connect 5 0 25 0;
-#X connect 25 0 0 0;
-#X connect 27 0 34 0;
-#X connect 28 0 34 0;
-#X connect 29 0 34 0;
-#X connect 30 0 34 0;
+#X obj 0 0 doc_h;
+#X obj 3 331 doc_c 1;
+#X text 7 352 FILENAME;
+#X obj 3 401 doc_i 1;
+#X obj 3 834 doc_o 2;
+#X connect 2 0 20 0;
+#X connect 3 0 20 0;
+#X connect 20 0 0 0;
+#X connect 21 0 28 0;
+#X connect 22 0 28 0;
+#X connect 23 0 28 0;
+#X connect 24 0 28 0;
+#X connect 26 0 28 0;
+#X connect 28 0 53 0;
+#X connect 28 1 25 0;
+#X connect 28 1 58 0;
+#X connect 30 0 31 0;
+#X connect 31 0 28 0;
 #X connect 32 0 34 0;
-#X connect 34 0 66 0;
-#X connect 34 1 31 0;
-#X connect 34 1 71 0;
-#X connect 36 0 37 0;
-#X connect 37 0 34 0;
-#X connect 39 0 41 0;
-#X connect 41 0 40 0;
-#X connect 62 0 34 0;
-#X connect 71 0 33 0;
-#X connect 72 0 34 0;
+#X connect 34 0 33 0;
+#X connect 49 0 28 0;
+#X connect 58 0 27 0;
+#X connect 59 0 28 0;
