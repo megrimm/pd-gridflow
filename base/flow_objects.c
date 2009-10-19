@@ -2982,8 +2982,11 @@ t_class *ReceivesProxy_class;
 	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
 	\constructor (t_symbol *prefix=&s_, ...) {
 		this->prefix = prefix==gensym("empty") ? &s_ : prefix;
-		do_bind(argc-1,argv+1);
+		int n = min(1,argc);
+		do_bind(argc-n,argv+n);
 	}
+	\decl 0 bang ();
+	\decl 0 symbol (t_symbol *s);
 	\decl 0 list (...);
 	void do_bind (int argc, t_atom2 *argv) {
 		ac = argc;
@@ -3004,6 +3007,8 @@ t_class *ReceivesProxy_class;
 	}
 	~Receives () {do_unbind();}
 };
+\def 0 bang () {_0_list(0,0);}
+\def 0 symbol (t_symbol *s) {t_atom2 a[1]; SETSYMBOL(a,s); _0_list(1,a);}
 \def 0 list (...) {
 	do_unbind();
 	do_bind(argc,argv);
