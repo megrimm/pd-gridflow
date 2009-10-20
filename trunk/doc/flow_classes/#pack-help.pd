@@ -1,8 +1,4 @@
 #N canvas 379 12 560 503 10;
-#X obj 2 323 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 421 cnv 15 65 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X obj 23 178 #color;
 #X floatatom 85 77 5 0 0 0 - - -;
 #X floatatom 107 96 5 0 0 0 - - -;
@@ -12,15 +8,12 @@
 #X obj 85 135 #pack 3;
 #X text 72 452 Outputs values from each individual inlet into a grid.
 ;
-#X text 6 422 Outlet 0;
 #X obj 0 0 doc_h;
-#X text 5 324 Inlet All;
 #X obj 3 303 doc_i n;
 #X obj 3 242 doc_c 0..2;
 #X text 6 262 \$1 INTEGER;
 #X text 14 28 Creates a one-dimensional grid (a Dim(N) vector) from
 individual integers.;
-#X obj 3 400 doc_o 1;
 #X text 10 455 GRID(n);
 #X text 4 356 FLOAT;
 #X text 76 355 every inlet is hot.;
@@ -29,8 +22,11 @@ individual integers.;
 #X text 7 279 \$2 NUMTYPE;
 #X text 83 261 number of dimensions (default: 2);
 #X text 82 279 default: int32;
-#X connect 3 0 8 0;
-#X connect 4 0 8 1;
-#X connect 5 0 8 2;
-#X connect 8 0 2 0;
-#X connect 8 0 6 0;
+#X obj 3 400 doc_o 1;
+#X obj 14 328 doc_ii any;
+#X obj 15 424 doc_oo 0;
+#X connect 1 0 6 0;
+#X connect 2 0 6 1;
+#X connect 3 0 6 2;
+#X connect 6 0 0 0;
+#X connect 6 0 4 0;

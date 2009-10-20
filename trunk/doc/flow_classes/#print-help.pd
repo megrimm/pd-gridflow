@@ -9,31 +9,22 @@ the grid has less than two dimensions it will display all grid data.
 #X obj 100 158 #import (3 3 3);
 #X msg 100 110 3 3 3 # 27;
 #X obj 100 134 # rand;
-#X obj 1 435 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 6 436 Inlet_0;
-#X obj 2 562 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X text 4 461 GRID;
 #X msg 71 88 load sewing.jpg;
 #X text 8 593 GRID;
 #X obj 71 251 #print paprika;
-#X obj 4 640 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X text 70 325 Adds a number as a prefix before the element printed
 in the console.;
 #X text 11 368 SYMBOL;
 #X text 68 367 Adds a symbol (text) as a prefix before the printed
 element in the console.;
-#X text 7 563 Outlet_0;
 #X text 67 462 Incoming grid.;
 #X text 63 593 Outputs the dimensions of a grid and the grid data to
 the console.;
-#X text 7 640 see also:;
-#X obj 82 641 #dim;
-#X obj 116 641 #export;
-#X obj 171 641 #export_list;
-#X obj 262 641 print;
+#X obj 102 641 #dim;
+#X obj 136 641 #export;
+#X obj 191 641 #export_list;
+#X obj 282 641 print;
 #X text 11 326 FLOAT;
 #X text 122 485 select between base 2 \, 8 \, 10 \, 16;
 #X text 9 499 maxrows INTEGER;
@@ -51,20 +42,23 @@ same line;
 #X msg 370 136 trunc 20;
 #X obj 0 0 doc_h;
 #X obj 3 416 doc_i 1;
-#X obj 3 541 doc_o 1;
 #X obj 3 295 doc_c 0..1;
-#X connect 1 0 34 0;
-#X connect 2 0 34 1;
-#X connect 3 0 34 2;
-#X connect 4 0 14 0;
-#X connect 5 0 14 0;
+#X obj 3 541 doc_o 1;
+#X obj 3 641 doc_also;
+#X obj 15 565 doc_oo 0;
+#X obj 14 440 doc_ii 0;
+#X connect 1 0 28 0;
+#X connect 2 0 28 1;
+#X connect 3 0 28 2;
+#X connect 4 0 11 0;
+#X connect 5 0 11 0;
 #X connect 6 0 7 0;
 #X connect 7 0 5 0;
-#X connect 12 0 4 0;
-#X connect 34 0 14 0;
-#X connect 35 0 14 0;
-#X connect 36 0 14 0;
-#X connect 37 0 14 0;
-#X connect 38 0 14 0;
-#X connect 39 0 14 0;
-#X connect 40 0 14 0;
+#X connect 9 0 4 0;
+#X connect 28 0 11 0;
+#X connect 29 0 11 0;
+#X connect 30 0 11 0;
+#X connect 31 0 11 0;
+#X connect 32 0 11 0;
+#X connect 33 0 11 0;
+#X connect 34 0 11 0;

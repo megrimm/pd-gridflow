@@ -1,4 +1,4 @@
-#N canvas 310 131 568 493 10;
+#N canvas 310 131 568 586 10;
 #N canvas 0 0 450 300 test 0;
 #X obj 264 137 # +;
 #X obj 23 58 #for (0 0) (5 5) (1 1);
@@ -47,7 +47,10 @@
 #X obj 0 0 doc_h;
 #X obj 3 424 doc_i 2;
 #X obj 3 401 doc_c 1;
-#X obj 3 449 doc_o 1;
+#X obj 3 509 doc_o 1;
+#X obj 15 533 doc_oo 0;
+#X obj 14 448 doc_ii 0;
+#X obj 14 472 doc_ii 1;
 #X connect 1 0 2 0;
 #X connect 2 0 13 0;
 #X connect 3 0 9 0;
