@@ -15,23 +15,26 @@ is active.;
 #X text 96 326 ANY;
 #X text 151 326 Incoming message can be Grids \, Symbols \, Integers
 \, Lists \, etc.;
-#X text 65 229 [shunt] accepts an integer as a creation argument which
+#X text 175 209 [shunt] accepts an integer as a creation argument which
 defines the number of outlets desired. If [shunt] is created without
 an argument \, it will have 2 outlets.;
-#X text 10 470 ANY;
-#X text 64 470 Outputs incoming message value according to the selector
+#X text 100 470 ANY;
+#X text 154 470 Outputs incoming message value according to the selector
 value.;
 #X text 96 380 INTEGER;
-#X text 10 228 INTEGER;
+#X text 120 208 INTEGER;
 #X text 7 29 The [shunt] routes any type of data to its active outlet.
 The number of outlets is defined by the argument at creation and the
 active outlet is defined by its right most inlet.;
 #X obj 0 0 doc_h;
-#X obj 3 192 doc_c;
 #X obj 3 291 doc_i 2;
 #X obj 3 429 doc_o n;
 #X obj 14 325 doc_ii 0;
 #X obj 14 379 doc_ii 1;
+#X obj 3 186 doc_c 2;
+#X obj 14 210 doc_cc 0;
+#X obj 14 264 doc_cc 1;
+#X obj 14 465 doc_oo any;
 #X connect 0 0 1 0;
 #X connect 0 1 2 0;
 #X connect 0 2 3 0;
