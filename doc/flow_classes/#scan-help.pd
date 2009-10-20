@@ -1,4 +1,4 @@
-#N canvas 140 0 557 406 10;
+#N canvas 140 0 570 436 10;
 #X text 69 35 computes subtotals;
 #X floatatom 17 76 5 0 0 0 - - -;
 #X floatatom 62 76 5 0 0 0 - - -;

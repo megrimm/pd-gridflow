@@ -1,10 +1,4 @@
 #N canvas 680 0 567 642 10;
-#X obj 0 441 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 0 529 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 1 442 Inlet 0;
-#X text 1 530 Outlet 0;
 #X obj 11 298 cnv 15 63 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X text 5 469 GRID;
@@ -37,9 +31,11 @@ are expected to be valid in the character encoding that you are using
 \, but no check will be performed for that \, and additionally \, no
 check will be made that the generated symbol only contains characters
 that can be put in a symbol.;
-#X connect 11 0 12 0;
-#X connect 12 0 6 0;
-#X connect 12 0 14 0;
-#X connect 14 0 7 0;
-#X connect 14 0 8 0;
-#X connect 14 0 15 0;
+#X obj 14 439 doc_ii 0;
+#X obj 15 527 doc_oo 0;
+#X connect 7 0 8 0;
+#X connect 8 0 2 0;
+#X connect 8 0 10 0;
+#X connect 10 0 3 0;
+#X connect 10 0 4 0;
+#X connect 10 0 11 0;

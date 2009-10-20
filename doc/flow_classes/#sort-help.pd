@@ -1,4 +1,4 @@
-#N canvas 484 136 557 433 10;
+#N canvas 484 136 557 530 10;
 #X obj 28 250 #sort;
 #X msg 28 45 0 1 1 2 3 5 8 13 21 34 55 89;
 #X msg 28 102 12 # 666;
@@ -15,9 +15,11 @@
 #X obj 0 0 doc_h;
 #X obj 3 311 doc_c 0;
 #X obj 3 334 doc_i 1;
-#X obj 3 363 doc_o 1;
-#X obj 3 396 doc_also;
-#X obj 99 396 #grade;
+#X obj 3 383 doc_o 1;
+#X obj 3 436 doc_also;
+#X obj 99 436 #grade;
+#X obj 15 407 doc_oo 0;
+#X obj 14 358 doc_ii 0;
 #X connect 0 0 11 0;
 #X connect 1 0 6 0;
 #X connect 2 0 3 0;

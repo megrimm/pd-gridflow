@@ -1,4 +1,4 @@
-#N canvas 184 260 559 313 10;
+#N canvas 184 260 572 368 10;
 #X obj 51 156 #draw_polygon put (255 255 255);
 #X obj 51 175 #out window;
 #X msg 51 137 240 320 3 #;
