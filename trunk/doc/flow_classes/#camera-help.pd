@@ -19,15 +19,16 @@ the quickcam pro 4000;
 #X text 115 145 <-- open the abstraction and configure for your camera
 before sending it a bang.;
 #X obj 50 146 #camera;
-#X text 13 373 INT;
-#X text 73 372 Corresponds to the video for linux device on you system
+#X text 113 373 INT;
+#X text 173 372 Corresponds to the video for linux device on you system
 (0-8);
 #X obj 0 0 doc_h;
 #X obj 3 490 doc_o 1;
 #X obj 3 414 doc_i 1;
 #X obj 3 353 doc_c 1;
-#X obj 15 514 doc_oo 0;
+#X obj 14 514 doc_oo 0;
 #X obj 14 438 doc_ii 0;
+#X obj 14 377 doc_cc 0;
 #X connect 0 0 3 0;
 #X connect 1 0 13 0;
 #X connect 2 0 5 0;

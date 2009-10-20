@@ -6,8 +6,8 @@
 #X obj 13 100 until;
 #X msg 13 79 230400;
 #X obj 13 177 #out window;
-#X text 7 248 GRID;
-#X text 74 247 The argument establishes grid dimensions in parentheses
+#X text 97 248 GRID;
+#X text 164 247 The argument establishes grid dimensions in parentheses
 in the order of columns \, rows and grid dimensions.;
 #X text 4 374 INTEGER;
 #X text 5 438 SYMBOL;
@@ -54,11 +54,13 @@ other than int32.;
 #X obj 13 149 #import (240 320 3);
 #X obj 3 699 doc_o 1;
 #X obj 3 220 doc_c 2;
-#X text 10 285 NUMTYPE;
-#X text 74 283 default: i;
+#X text 100 285 NUMTYPE;
+#X text 164 283 default: i;
 #X obj 14 339 doc_ii 0;
 #X obj 14 602 doc_ii 1;
-#X obj 15 727 doc_oo 0;
+#X obj 14 727 doc_oo 0;
+#X obj 14 249 doc_cc 0;
+#X obj 14 287 doc_cc 1;
 #X connect 0 0 33 0;
 #X connect 1 0 4 0;
 #X connect 2 0 33 0;

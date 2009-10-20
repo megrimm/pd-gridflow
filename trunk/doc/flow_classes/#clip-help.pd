@@ -1,4 +1,4 @@
-#N canvas 673 19 555 698 10;
+#N canvas 673 6 555 698 10;
 #X obj 51 163 #in;
 #X obj 51 189 # + 42;
 #X floatatom 88 166 5 0 0 0 - - -;
@@ -17,9 +17,9 @@ saturating the colours of your grid.;
 in the object;
 #X text 2 489 INTEGER;
 #X text 3 549 INTEGER;
-#X text 4 317 [#clip] accepts two integers as creation arguments that
-initialize the first values to be stored in the object. The first integer
-corresponds to the inlet 1 \, the second to inlet 2;
+#X text 169 315 [#clip] accepts two integers as creation arguments
+that initialize the first values to be stored in the object. The first
+integer corresponds to the inlet 1 \, the second to inlet 2;
 #X text 3 430 GRID;
 #X text 4 623 GRID;
 #X text 63 623 Outputs the modified grid;
@@ -43,7 +43,9 @@ the range.;
 #X obj 14 406 doc_ii 0;
 #X obj 14 467 doc_ii 1;
 #X obj 14 520 doc_ii 2;
-#X obj 15 604 doc_oo 0;
+#X obj 14 604 doc_oo 0;
+#X obj 14 320 doc_cc 0;
+#X obj 14 344 doc_cc 1;
 #X connect 0 0 1 0;
 #X connect 1 0 24 0;
 #X connect 2 0 1 1;

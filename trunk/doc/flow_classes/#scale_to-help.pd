@@ -14,33 +14,34 @@
 #X obj 300 183 #print;
 #X msg 284 75 2 # 500 500;
 #X obj 412 97 #print;
-#X text 7 353 GRID;
+#X text 87 333 GRID;
 #X msg 284 94 2 # 100 500;
 #X msg 285 115 2 # 500 100;
 #X text 460 133 height;
 #X text 460 145 width;
-#X text 62 427 A height width value pair in pixels.;
-#X text 3 514 GRID;
-#X text 64 514 Outputs the resulting scaled image.;
-#X text 3 266 INT INT;
-#X text 65 264 A (height width) pair of integers indicating the size
+#X text 144 389 A height width value pair in pixels.;
+#X text 93 484 GRID;
+#X text 154 484 Outputs the resulting scaled image.;
+#X text 133 266 INT INT;
+#X text 195 264 A (height width) pair of integers indicating the size
 to scale to image to. This initial argument is required.;
-#X text 62 354 The Grid passed at inlet 0 will be the image on which
+#X text 142 334 The Grid passed at inlet 0 will be the image on which
 the scale_to will be performed.;
 #X text 284 58 2 grid size values y=500 x=500;
 #X obj 103 541 #scale_by;
 #X text 9 22 The [#scale_to] scales the image received to the x and
 y values passed. Initial creation arguments are mandatory (0 0) otherwise.
 ;
-#X text 3 428 INT INT;
+#X text 85 390 INT INT;
 #X obj 0 0 doc_h;
 #X obj 3 306 doc_i 2;
 #X obj 3 240 doc_c 1;
 #X obj 3 541 doc_also;
 #X obj 3 460 doc_o 1;
-#X obj 15 484 doc_oo 0;
+#X obj 14 484 doc_oo 0;
 #X obj 14 330 doc_ii 0;
 #X obj 14 392 doc_ii 1;
+#X obj 14 264 doc_cc 0;
 #X connect 0 0 1 0;
 #X connect 1 0 3 0;
 #X connect 2 0 7 0;

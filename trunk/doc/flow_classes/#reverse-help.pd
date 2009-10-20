@@ -1,38 +1,39 @@
 #N canvas 615 26 566 676 10;
-#X obj 258 207 #color;
-#X obj 288 391 #color;
-#X obj 259 456 display;
-#X obj 258 359 t a a;
+#X obj 258 177 #color;
+#X obj 288 361 #color;
+#X obj 259 426 display;
+#X obj 258 329 t a a;
 #X text 15 57 Swaps the values of incoming grids while preserving the
 number of Dimensions between incoming and outgoing grids.;
-#X obj 22 287 #in;
-#X obj 22 206 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 22 257 #in;
+#X obj 22 176 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X msg 52 256 open b001.jpg;
-#X obj 22 401 #out window;
-#X obj 87 289 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
+#X msg 52 226 open b001.jpg;
+#X obj 22 371 #out window;
+#X obj 87 259 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
 -1 0;
-#X obj 87 307 - 3;
-#X floatatom 87 327 5 0 0 0 - - -;
+#X obj 87 277 - 3;
+#X floatatom 87 297 5 0 0 0 - - -;
 #X text 16 107 0 vertical;
 #X text 16 122 1 horizontal;
 #X text 16 135 2 rgb <-> bgr;
 #X text 16 150 -1 \, -2 \, -3 \, swaps the specicied dimensions;
 #X text 16 92 An int argument changes the behavior in this way :;
-#X obj 22 228 t b b;
-#X obj 22 344 #reverse 0;
-#X obj 258 330 #reverse 0;
-#X obj 323 275 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
+#X obj 22 198 t b b;
+#X obj 22 314 #reverse 0;
+#X obj 258 300 #reverse 0;
+#X obj 323 245 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
 -1 0;
-#X obj 323 293 - 3;
-#X floatatom 323 313 5 0 0 0 - - -;
+#X obj 323 263 - 3;
+#X floatatom 323 283 5 0 0 0 - - -;
 #X obj 0 0 doc_h;
-#X obj 3 496 doc_c 1;
+#X obj 3 466 doc_c 1;
 #X obj 3 518 doc_i 2;
 #X obj 3 599 doc_o 1;
-#X obj 15 623 doc_oo 0;
+#X obj 14 623 doc_oo 0;
 #X obj 14 542 doc_ii 0;
 #X obj 14 566 doc_ii 1;
+#X obj 14 490 doc_cc 0;
 #X connect 0 0 19 0;
 #X connect 3 0 2 0;
 #X connect 3 1 1 0;

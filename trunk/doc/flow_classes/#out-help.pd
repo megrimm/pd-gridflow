@@ -13,7 +13,7 @@ overwrite previous data.;
 time and the time since the last frame. Message "timelog 0" will hide
 this information. The default is "timelog 0".;
 #X text 8 673 MESSAGE;
-#X text 31 394 window [#out window] opens a window in which the grid
+#X text 81 394 window [#out window] opens a window in which the grid
 will be displayed.;
 #X text 7 802 BANG;
 #X msg 45 150 open working.jpg;
@@ -120,7 +120,7 @@ sockets \, files;
 #X restore 140 334 pd More info about this object class;
 #X obj 3 445 doc_i 1;
 #X obj 14 469 doc_ii 0;
-#X obj 15 759 doc_oo 0;
+#X obj 14 759 doc_oo 0;
 #X connect 12 0 14 0;
 #X connect 13 0 23 0;
 #X connect 14 0 21 0;

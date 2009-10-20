@@ -36,13 +36,14 @@ before production of the next grid starts.;
 #X obj 0 0 doc_h;
 #X obj 3 337 doc_i 2;
 #X obj 3 656 doc_o 1;
-#X obj 3 316 doc_c 0..1;
+#X obj 3 286 doc_c 0..1;
 #X obj 3 756 doc_also;
-#X obj 15 680 doc_oo 0;
+#X obj 14 680 doc_oo 0;
 #X obj 14 361 doc_ii 0;
 #X obj 14 526 doc_ii 1;
 #X text 128 216 here ^ is the parallel operator \, fold is indicated
 by + and 0 is its base (seed).;
+#X obj 14 313 doc_cc 0;
 #X connect 0 0 3 0;
 #X connect 1 0 4 0;
 #X connect 2 0 1 0;

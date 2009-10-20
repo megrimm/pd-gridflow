@@ -21,22 +21,22 @@
 ;
 #X text 9 25 Crossfade between two images.;
 #X obj 253 250 #fade;
-#X text 11 385 GRID;
-#X text 69 383 Accepts two grids that are blended into each other over
+#X text 11 425 GRID;
+#X text 69 423 Accepts two grids that are blended into each other over
 time.;
-#X text 8 457 INTEGER;
-#X text 73 456 An integer in the rightmost inlet will indicate the
+#X text 8 497 INTEGER;
+#X text 73 496 An integer in the rightmost inlet will indicate the
 amount of one image being blended with the other. (ex: Integer 5 will
 take 20% (one fifth) of the first image and blend it with 80% of the
 next image.;
-#X text 76 587 Outputs the fading images.;
-#X text 13 584 GRID;
+#X text 76 627 Outputs the fading images.;
+#X text 13 624 GRID;
 #X obj 0 0 doc_h;
-#X obj 3 325 doc_i 2;
-#X obj 3 524 doc_o 1;
-#X obj 15 548 doc_oo 0;
-#X obj 14 349 doc_ii 0;
-#X obj 14 433 doc_ii 1;
+#X obj 3 365 doc_i 2;
+#X obj 3 564 doc_o 1;
+#X obj 14 588 doc_oo 0;
+#X obj 14 389 doc_ii 0;
+#X obj 14 473 doc_ii 1;
 #X obj 3 302 doc_c 1;
 #X connect 1 0 3 0;
 #X connect 2 0 4 0;

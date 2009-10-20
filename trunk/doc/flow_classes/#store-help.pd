@@ -1,5 +1,5 @@
 #N canvas 670 44 554 638 10;
-#X text 9 385 BANG;
+#X text 99 365 BANG;
 #X floatatom 132 89 5 0 0 0 - - -;
 #X floatatom 177 89 5 0 0 0 - - -;
 #X floatatom 20 160 5 0 0 0 - - -;
@@ -18,27 +18,27 @@
 #X obj 20 131 #unpack;
 #X obj 132 175 #unpack 3;
 #X obj 134 150 #store;
-#X text 60 384 A bang at the left inlet will force [#store] to send
+#X text 150 364 A bang at the left inlet will force [#store] to send
 its value to the outlet.;
-#X text 7 352 GRID;
+#X text 97 332 GRID;
 #X text 129 54 this example allows you to select a single pixel from
 the loaded picture and view its rgb value.;
 #X text 8 24 The [#store] stores exactly one grid \, using the right
 inlet. You fetch it back \, or selected subparts using the left inlet.
 ;
-#X text 10 261 GRID;
-#X text 60 263 [#store] accepts a grid as a creation argument which
+#X text 100 261 GRID;
+#X text 150 263 [#store] accepts a grid as a creation argument which
 initializes the first value to be stored.;
 #X obj 296 181 display;
 #X obj 86 94 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 296 161 display;
-#X text 59 351 Accepts a grid.;
-#X text 7 451 GRID;
-#X text 60 451 Accepts a grid or a subpart of it.;
-#X text 62 481 Reassign;
-#X text 63 503 put_at;
-#X text 131 490 To be clarified;
+#X text 149 331 Accepts a grid.;
+#X text 97 431 GRID;
+#X text 150 431 Accepts a grid or a subpart of it.;
+#X text 152 461 Reassign;
+#X text 153 483 put_at;
+#X text 221 470 To be clarified;
 #X text 12 589 GRID;
 #X text 59 589 Outputs the grid as requested.;
 #X obj 296 96 loadbang;
@@ -48,7 +48,8 @@ initializes the first value to be stored.;
 #X obj 14 330 doc_ii 0;
 #X obj 14 419 doc_ii 1;
 #X obj 3 529 doc_o 1;
-#X obj 15 553 doc_oo 0;
+#X obj 14 553 doc_oo 0;
+#X obj 14 258 doc_cc 0;
 #X connect 1 0 13 0;
 #X connect 2 0 13 1;
 #X connect 13 0 16 0;
