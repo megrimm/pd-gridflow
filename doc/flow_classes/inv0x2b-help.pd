@@ -1,15 +1,6 @@
-#N canvas 652 0 556 655 10;
-#X text 7 329 FLOAT;
-#X obj 1 303 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 371 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 459 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 6 394 FLOAT;
-#X text 2 304 Inlet 0;
-#X text 2 373 Inlet 1;
-#X text 2 460 Outlet 0;
+#N canvas 652 22 556 655 10;
+#X text 88 396 FLOAT;
+#X text 88 455 FLOAT;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 288 163 negative;
@@ -27,15 +18,12 @@
 #X text 68 221 Outputs initial image;
 #X obj 331 192 hsl 128 8 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X text 10 548 FLOAT;
-#X text 62 396 A float in inlet 1 is stored as the value "b" to perform
+#X text 144 457 A float in inlet 1 is stored as the value "b" to perform
 the "b-a" operation.;
-#X text 62 330 A float in inlet 1 is stored as the value "a" to perform
+#X text 143 397 A float in inlet 1 is stored as the value "a" to perform
 the "b-a" operation.;
 #X obj 154 593 swap;
 #X obj 154 593 swap;
-#X text 62 548 [inv+] accepts a single float as a creation argument
-which initializes the first value to perform the operation with.;
 #X text 9 24 The [inv+] performs an inversion on the data passed to
 it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
 "b" \, [inv+] performs the operation "b-a" on the values passed to
@@ -50,33 +38,39 @@ it.;
 0;
 #X obj 34 144 inv+;
 #X obj 263 211 # inv+ 255;
-#X text 11 483 FLOAT;
-#X text 64 485 Outputs the result of the operation "b-a".;
+#X text 87 552 FLOAT;
+#X text 140 554 Outputs the result of the operation "b-a".;
 #X floatatom 105 104 5 0 0 0 - - -;
 #X floatatom 149 121 5 0 0 0 - - -;
 #X floatatom 105 178 5 0 0 0 - - -;
 #X obj 105 145 cnv 15 50 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 105 145 inv+ 10;
-#X obj 3 281 doc_i 2;
+#X obj 3 371 doc_i 2;
 #X obj 0 0 doc_h;
-#X obj 3 433 doc_o;
-#X obj 3 518 doc_c 1;
 #X obj 3 593 doc_also;
 #X text 261 75 also available as [# inv+]:;
-#X connect 8 0 15 0;
-#X connect 10 0 13 0;
-#X connect 11 0 13 1;
-#X connect 12 0 16 0;
-#X connect 13 0 17 0;
-#X connect 13 1 35 0;
-#X connect 15 0 10 0;
-#X connect 16 0 8 0;
-#X connect 20 0 35 1;
-#X connect 28 0 34 0;
-#X connect 29 0 34 1;
-#X connect 34 0 30 0;
-#X connect 35 0 17 0;
-#X connect 38 0 42 0;
-#X connect 39 0 42 1;
-#X connect 42 0 40 0;
+#X obj 14 395 doc_ii 0;
+#X obj 14 456 doc_ii 1;
+#X obj 3 528 doc_o 1;
+#X obj 15 552 doc_oo 0;
+#X text 90 308 FLOAT;
+#X text 142 308 [inv+] accepts a single float as a creation argument
+which initializes the first value to perform the operation with.;
+#X obj 3 278 doc_c 1;
+#X connect 2 0 9 0;
+#X connect 4 0 7 0;
+#X connect 5 0 7 1;
+#X connect 6 0 10 0;
+#X connect 7 0 11 0;
+#X connect 7 1 27 0;
+#X connect 9 0 4 0;
+#X connect 10 0 2 0;
+#X connect 14 0 27 1;
+#X connect 20 0 26 0;
+#X connect 21 0 26 1;
+#X connect 26 0 22 0;
+#X connect 27 0 11 0;
+#X connect 30 0 34 0;
+#X connect 31 0 34 1;
+#X connect 34 0 32 0;

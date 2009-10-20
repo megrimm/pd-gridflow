@@ -3,21 +3,17 @@
 #X floatatom 39 61 5 0 0 0 - - -;
 #X obj 39 124 print;
 #X msg 86 60 42;
-#X obj 1 199 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 200 Inlet 0;
-#X text 5 225 INT;
-#X obj 1 303 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 304 Outlet 0;
-#X text 8 332 FLOAT;
+#X text 15 215 INT;
+#X text 18 322 FLOAT;
 #X text 135 94 write integer as decimal in ascii codes;
-#X text 84 225 number to be converted into ascii codes;
-#X text 82 332 a sequence of floats corresponding to the ascii codes
+#X text 94 215 number to be converted into ascii codes;
+#X text 92 322 a sequence of floats corresponding to the ascii codes
 of the input integer;
 #X obj 0 0 doc_h;
 #X obj 3 267 doc_o 1;
 #X obj 3 164 doc_i 1;
+#X obj 14 188 doc_ii 0;
+#X obj 15 291 doc_oo 0;
 #X connect 0 0 2 0;
 #X connect 1 0 0 0;
 #X connect 3 0 0 0;
