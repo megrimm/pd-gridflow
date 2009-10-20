@@ -1,4 +1,4 @@
-#N canvas 688 232 559 458 10;
+#N canvas 675 72 559 537 10;
 #X obj 18 32 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 211 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
@@ -13,8 +13,8 @@ be the sum of the two corresponding;
 #X text 244 29 1 <--;
 #X text 45 31 2 <--;
 #X obj 18 242 #clip;
-#X obj 106 421 #fold +;
-#X obj 162 421 #scan +;
+#X obj 106 571 #fold +;
+#X obj 162 571 #scan +;
 #X obj 18 269 #out window;
 #X obj 18 96 #in;
 #X obj 237 96 #rgb_to_greyscale;
@@ -25,11 +25,16 @@ which the join will occur. for n-dimensional grids \, the dimensions
 are numbered from 0 to n-1. in addition \, negative numbers from -n
 to -1 may be used \, to which n will be added.;
 #X obj 0 0 doc_h;
-#X obj 3 422 doc_also;
+#X obj 3 572 doc_also;
 #X obj 3 330 doc_c 0..2;
-#X obj 3 353 doc_i 2;
-#X obj 3 375 doc_o 1;
+#X obj 3 423 doc_i 2;
+#X obj 3 495 doc_o 1;
 #X obj 18 161 #join 2;
+#X obj 14 354 doc_cc 0;
+#X obj 14 383 doc_cc 1;
+#X obj 14 447 doc_ii 0;
+#X obj 14 471 doc_ii 1;
+#X obj 14 519 doc_oo 0;
 #X connect 0 0 5 0;
 #X connect 1 0 6 0;
 #X connect 3 0 13 0;

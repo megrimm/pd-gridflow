@@ -19,8 +19,8 @@
 #X obj 306 133 #pack 3 float32;
 #X obj 14 161 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 73 282 Number types are: uint8 \, int16 \, int32 \, int64 \,
-float32 \, float64. see doc/architecture.html for more info.;
+#X text 153 282 Number types are: uint8 \, int16 \, int32 \, int64
+\, float32 \, float64. see doc/architecture.html for more info.;
 #X obj 126 157 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 12 26 Changes an entity of one data type into another. Returns
@@ -37,8 +37,9 @@ the same values after type conversion.;
 #X obj 3 335 doc_i 1;
 #X obj 3 422 doc_o 1;
 #X obj 3 253 doc_c 1;
-#X obj 15 446 doc_oo 0;
+#X obj 14 446 doc_oo 0;
 #X obj 14 359 doc_ii 0;
+#X obj 14 277 doc_cc 0;
 #X connect 1 0 0 0;
 #X connect 4 0 2 0;
 #X connect 5 0 3 0;

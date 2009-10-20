@@ -13,10 +13,10 @@ the grid has less than two dimensions it will display all grid data.
 #X msg 71 88 load sewing.jpg;
 #X text 98 563 GRID;
 #X obj 71 251 #print paprika;
-#X text 70 325 Adds a number as a prefix before the element printed
+#X text 160 325 Adds a number as a prefix before the element printed
 in the console.;
-#X text 11 368 SYMBOL;
-#X text 68 367 Adds a symbol (text) as a prefix before the printed
+#X text 101 368 SYMBOL;
+#X text 158 367 Adds a symbol (text) as a prefix before the printed
 element in the console.;
 #X text 147 442 Incoming grid.;
 #X text 153 563 Outputs the dimensions of a grid and the grid data
@@ -25,7 +25,7 @@ to the console.;
 #X obj 136 641 #export;
 #X obj 191 641 #export_list;
 #X obj 282 641 print;
-#X text 11 326 FLOAT;
+#X text 101 326 FLOAT;
 #X text 172 465 select between base 2 \, 8 \, 10 \, 16;
 #X text 59 479 maxrows INTEGER;
 #X text 58 465 base INTEGER;
@@ -44,10 +44,11 @@ same line;
 #X obj 3 416 doc_i 1;
 #X obj 3 295 doc_c 0..1;
 #X obj 3 641 doc_also;
-#X obj 15 565 doc_oo 0;
+#X obj 14 565 doc_oo 0;
 #X obj 14 440 doc_ii 0;
 #X obj 3 545 doc_o 2;
-#X obj 15 597 doc_oo 1;
+#X obj 14 597 doc_oo 1;
+#X obj 14 327 doc_cc 0;
 #X connect 1 0 28 0;
 #X connect 2 0 28 1;
 #X connect 3 0 28 2;

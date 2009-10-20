@@ -6,25 +6,27 @@
 #X obj 263 180 display;
 #X text 162 90 <--click and drag to place numbers in the grid.;
 #X obj 85 135 #pack 3;
-#X text 72 452 Outputs values from each individual inlet into a grid.
+#X text 72 482 Outputs values from each individual inlet into a grid.
 ;
 #X obj 0 0 doc_h;
-#X obj 3 303 doc_i n;
+#X obj 3 333 doc_i n;
 #X obj 3 242 doc_c 0..2;
-#X text 6 262 \$1 INTEGER;
+#X text 101 266 \$1 INTEGER;
 #X text 14 28 Creates a one-dimensional grid (a Dim(N) vector) from
 individual integers.;
-#X text 10 455 GRID(n);
-#X text 4 356 FLOAT;
-#X text 76 355 every inlet is hot.;
-#X text 76 368 inlet order corresponds to value order in the grid.
+#X text 10 485 GRID(n);
+#X text 4 386 FLOAT;
+#X text 76 385 every inlet is hot.;
+#X text 76 398 inlet order corresponds to value order in the grid.
 ;
-#X text 7 279 \$2 NUMTYPE;
-#X text 83 261 number of dimensions (default: 2);
-#X text 82 279 default: int32;
-#X obj 3 400 doc_o 1;
-#X obj 15 424 doc_oo 0;
-#X obj 14 328 doc_ii any;
+#X text 102 288 \$2 NUMTYPE;
+#X text 178 265 number of dimensions (default: 2);
+#X text 177 288 default: int32;
+#X obj 3 430 doc_o 1;
+#X obj 14 454 doc_oo 0;
+#X obj 14 358 doc_ii any;
+#X obj 14 268 doc_cc 0;
+#X obj 14 290 doc_cc 1;
 #X connect 1 0 6 0;
 #X connect 2 0 6 1;
 #X connect 3 0 6 2;

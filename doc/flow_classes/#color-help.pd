@@ -1,7 +1,7 @@
-#N canvas 526 103 559 548 10;
+#N canvas 653 126 559 548 10;
 #X obj 126 114 #color;
 #X text 308 126 <-- vary these;
-#X text 3 323 GRID;
+#X text 113 323 GRID;
 #X text 3 477 GRID;
 #X text 63 477 [#color] produces a three dimensional grid of RBG values
 ;
@@ -12,22 +12,22 @@ value selection on each channel.;
 #X msg 317 79 delegate steady 0;
 #X text 96 505 [hsl];
 #X obj 0 0 doc_h;
-#X obj 3 267 doc_i 1;
+#X obj 3 297 doc_i 1;
 #X obj 3 419 doc_o 1;
 #X obj 3 179 doc_c 3;
 #X obj 3 507 doc_also;
-#X text 5 200 \$1 FLOAT;
-#X text 5 215 \$2 FLOAT;
-#X text 5 230 \$3 BOOL;
-#X text 62 230 whether to remove the color preview;
-#X text 62 200 lower bound;
-#X text 62 215 upper bound;
-#X text 69 323 [#color] accepts grids of size (3) and allows for colour
+#X text 115 200 \$1 FLOAT;
+#X text 115 215 \$2 FLOAT;
+#X text 115 230 \$3 BOOL;
+#X text 172 230 whether to remove the color preview;
+#X text 172 200 lower bound;
+#X text 172 215 upper bound;
+#X text 179 323 [#color] accepts grids of size (3) and allows for colour
 value (RGB) changes on each channel.;
-#X text 3 365 delegate $*;
-#X text 81 365 "delegate" sends the rest of the message as a message
+#X text 113 365 delegate $*;
+#X text 191 365 "delegate" sends the rest of the message as a message
 to each of the sliders but not each of the numboxes.;
-#X obj 15 443 doc_oo 0;
-#X obj 14 291 doc_ii 0;
+#X obj 14 443 doc_oo 0;
+#X obj 14 321 doc_ii 0;
 #X connect 7 0 0 0;
 #X connect 8 0 0 0;

@@ -165,7 +165,7 @@ not mmap.;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
 #X obj 17 305 #out window \, title video;
-#X text 90 352 Including the file name of a grid into the [#in] object
+#X text 180 352 Including the file name of a grid into the [#in] object
 eliminates the need for an "open" message but limits the action to
 one specified grid.;
 #X text 77 502 "open" - followed by the filename \, sends it as a resource
@@ -178,12 +178,13 @@ end (default setting).;
 #X msg 24 147 open violoncelle.mov;
 #X obj 0 0 doc_h;
 #X obj 3 331 doc_c 1;
-#X text 7 352 FILENAME;
+#X text 97 352 FILENAME;
 #X obj 3 401 doc_i 1;
 #X obj 3 834 doc_o 2;
 #X obj 14 425 doc_ii 0;
-#X obj 15 858 doc_oo 0;
-#X obj 15 911 doc_oo 1;
+#X obj 14 858 doc_oo 0;
+#X obj 14 911 doc_oo 1;
+#X obj 14 355 doc_cc 0;
 #X connect 2 0 14 0;
 #X connect 3 0 14 0;
 #X connect 14 0 0 0;
