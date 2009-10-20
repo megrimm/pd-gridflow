@@ -1,26 +1,17 @@
 #N canvas 92 61 558 567 10;
-#X obj 4 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 9 310 Inlet_0;
-#X obj 5 371 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 6 464 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 372 Inlet_1;
 #X floatatom 262 142 5 0 0 0 - - -;
 #X floatatom 281 88 5 0 0 0 - - -;
 #X obj 195 140 print;
 #X msg 195 63 1 3 hello 8 13;
-#X text 7 466 Outlet_0;
-#X text 14 341 LIST;
+#X text 94 321 LIST;
 #X text 10 190 INTEGER;
 #X obj 195 111 listelement 0;
-#X text 78 341 Accepts a list of numbers or symbols.;
+#X text 158 321 Accepts a list of numbers or symbols.;
 #X text 10 25 Outputs one element from a list as selected by an integer.
 ;
-#X text 10 493 INTEGER;
-#X text 11 507 SYMBOL;
-#X text 75 493 The element selected by the index is sent to the outlet
+#X text 90 480 INTEGER;
+#X text 91 494 SYMBOL;
+#X text 155 480 The element selected by the index is sent to the outlet
 and can be viewed in the console using the print object or in a number
 box if displaying an integer.;
 #X text 75 190 An integer acts as an index \, it selects the position
@@ -28,14 +19,17 @@ of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
-#X text 77 399 Changes the value of the argument i.e. changes the index
-into the list to get a different element.;
-#X text 11 400 INTEGER;
+#X text 157 379 Changes the value of the argument i.e. changes the
+index into the list to get a different element.;
+#X text 91 380 INTEGER;
 #X obj 0 0 doc_h;
-#X obj 3 281 doc_i 2;
-#X obj 3 441 doc_o 1;
+#X obj 3 291 doc_i 2;
+#X obj 3 451 doc_o 1;
 #X obj 3 168 doc_c 1;
-#X connect 6 0 12 1;
-#X connect 8 0 12 0;
-#X connect 12 0 5 0;
-#X connect 12 0 7 0;
+#X obj 14 324 doc_ii 0;
+#X obj 14 379 doc_ii 1;
+#X obj 15 482 doc_oo 0;
+#X connect 1 0 6 1;
+#X connect 3 0 6 0;
+#X connect 6 0 0 0;
+#X connect 6 0 2 0;

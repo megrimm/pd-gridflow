@@ -1,16 +1,9 @@
 #N canvas 662 31 555 640 10;
-#X obj 2 316 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 550 cnv 15 80 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 3 317 Inlet 0;
 #X text 354 70 demo default args;
 #X text 354 90 demo rest of args;
 #X text 354 130 demo missing args;
 #X obj 12 89 args-demo pommes poires ananas biscuits-soda;
 #X text 18 341 BANG;
-#X text 4 551 Outlet last;
-#X text 16 578 MESSAGE;
 #X text 75 578 Any comma-arguments from the parent objectbox;
 #X text 18 506 there is one outlet per argument plus one outlet for
 the comma-messages.;
@@ -39,4 +32,6 @@ and all optionals must follow all mandatories.;
 #X obj 0 0 doc_h;
 #X obj 3 288 doc_i 1;
 #X obj 3 153 doc_c n;
-#X obj 3 473 doc_o 1..;
+#X obj 14 312 doc_ii 0;
+#X text 16 578 MESSAGE;
+#X obj 3 479 doc_o 1..;

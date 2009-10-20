@@ -1,11 +1,5 @@
 #N canvas 630 27 558 526 10;
-#X text 10 275 LIST;
-#X obj 1 248 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 343 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 249 Inlet 0;
-#X text 2 344 Outlet 0;
+#X text 90 275 LIST;
 #X obj 10 452 listappend;
 #X obj 99 452 listelement;
 #X obj 198 453 listfind;
@@ -17,19 +11,21 @@
 #X obj 103 104 cnv 15 79 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 104 137 display;
-#X text 8 368 LIST;
+#X text 88 368 LIST;
 #X obj 103 104 listflatten;
-#X text 64 368 Outputs the flattened list.;
+#X text 144 368 Outputs the flattened list.;
 #X msg 88 68 1 (2 (3 4 5) 6 7) 8;
 #X text 25 22 Takes nested lists and places their contents into a single
 list.;
 #X obj 89 171 display;
-#X text 65 275 Accepts a nested list.;
+#X text 145 275 Accepts a nested list.;
 #X obj 0 0 doc_h;
-#X obj 3 224 doc_i 1;
-#X obj 3 317 doc_o 1;
+#X obj 3 254 doc_i 1;
+#X obj 3 347 doc_o 1;
 #X obj 3 204 doc_c 0;
 #X obj 3 420 doc_also;
-#X connect 16 0 14 0;
-#X connect 18 0 16 0;
-#X connect 18 0 20 0;
+#X obj 14 278 doc_ii 0;
+#X obj 15 371 doc_oo 0;
+#X connect 12 0 10 0;
+#X connect 14 0 12 0;
+#X connect 14 0 16 0;
