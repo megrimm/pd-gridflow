@@ -17,8 +17,7 @@
 #X text 89 335 LIST;
 #X text 144 335 Accepts initial list to be appended to.;
 #X text 145 423 Outputs the resulting list.;
-#X text 7 221 ANY;
-#X text 62 222 This optional argument can contain the initial list
+#X text 202 222 This optional argument can contain the initial list
 ;
 #X text 8 25 The [listprepend] combines two lists together. It takes
 the initial list (List1)(passed as an argument or to inlet 1) and appends
@@ -31,7 +30,9 @@ by List0 in a new list.;
 #X obj 3 472 doc_also;
 #X obj 14 282 doc_ii 0;
 #X obj 14 336 doc_ii 1;
-#X obj 15 423 doc_oo 0;
+#X obj 14 423 doc_oo 0;
+#X text 129 224 ANY;
+#X obj 14 229 doc_cc any;
 #X connect 8 0 13 0;
 #X connect 9 0 13 1;
 #X connect 12 0 13 1;
