@@ -100,13 +100,60 @@ GRID_INPUT(2,r) {
 };
 \def 0 bang () {
 	t_canvas *mom = bself->mom;
-	for (int i=0; i<n; i++) {
-		mom = mom->gl_owner;
-		if (!mom) RAISE("no such canvas");
-	}
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
 	outlet_symbol(bself->outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));
 }
 \end class {install("gf/canvas_filename",1,1);}
+
+\class GFCanvasDollarZero : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	outlet_float(bself->outlets[0],canvas_getenv(mom)->ce_dollarzero);
+}
+\end class {install("gf/canvas_dollarzero",1,1);}
+
+\class GFCanvasGetPos : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	t_atom a[2];
+	SETFLOAT(a+0,mom->gl_obj.te_xpix);
+	SETFLOAT(a+1,mom->gl_obj.te_ypix);
+	outlet_list(bself->outlets[0],&s_list,2,a);
+}
+\end class {install("gf/canvas_getpos",1,1);}
+
+\class GFCanvasSetPos : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 list (...);
+};
+\def 0 list (...) {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	if (argc!=2) RAISE("wrong number of args");
+	mom->gl_obj.te_xpix = atom_getfloatarg(0,argc,argv);
+	mom->gl_obj.te_ypix = atom_getfloatarg(1,argc,argv);
+	t_canvas *granny = mom->gl_owner;
+	if (!granny) RAISE("no such canvas");
+#ifdef DESIREDATA
+	gobj_changed(mom);
+#else
+        gobj_vis((t_gobj *)mom,granny,0);
+        gobj_vis((t_gobj *)mom,granny,1);
+	canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)mom);
+#endif
+}
+\end class {install("gf/canvas_setpos",1,0);}
 
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
@@ -126,10 +173,8 @@ GRID_INPUT(2,r) {
 	}
 	outlet_symbol(bself->outlets[0],gensym(a.c_str()));
 }
-\end class {install("gf/string_replace",1,1);}
+\end class {install("gf/string_replace",1,1); add_creator("truc");}
 
 void startup_flow_objects2 () {
 	\startall
 }
-
-
