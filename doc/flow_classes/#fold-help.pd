@@ -1,14 +1,8 @@
 #N canvas 310 0 556 695 10;
-#X obj 3 441 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 5 530 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X text 6 554 GRID;
-#X text 8 442 Inlet 0;
 #X obj 4 352 cnv 15 80 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 8 353 Argument 0;
-#X text 9 531 Outlet 0;
 #X obj 98 184 display;
 #X obj 29 252 display;
 #X text 26 38 Treats the grid as a grid of one- dimensional grids such
@@ -59,9 +53,11 @@ operation> <starting value>;
 #X obj 3 415 doc_i 1;
 #X obj 3 502 doc_o 1;
 #X obj 0 0 doc_h;
-#X connect 10 0 11 0;
-#X connect 24 0 25 0;
-#X connect 25 0 7 0;
-#X connect 25 0 26 0;
-#X connect 26 0 8 0;
-#X connect 26 0 10 0;
+#X obj 15 526 doc_oo 0;
+#X obj 14 439 doc_ii 0;
+#X connect 6 0 7 0;
+#X connect 20 0 21 0;
+#X connect 21 0 3 0;
+#X connect 21 0 22 0;
+#X connect 22 0 4 0;
+#X connect 22 0 6 0;

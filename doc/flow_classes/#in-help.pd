@@ -6,9 +6,6 @@ or live stream.;
 #X obj 354 106 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 55 181 <--click here;
-#X obj 8 422 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 13 423 Inlet_0;
 #X text 79 449 A bang sends a grid to [#out]. Since frames from videos
 and live streams are read as a series of individual grids \, successive
 bangs advance through the frames.;
@@ -22,14 +19,8 @@ when you are using a live capture device.;
 once it reaches the end.;
 #X text 81 932 Signals the end of a file and when a file is unreadable.
 ;
-#X obj 8 859 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 9 860 Outlet_0;
 #X text 82 884 Displays the resulting grid when connected to [#out
 window];
-#X obj 10 909 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 910 Outlet_1;
 #X text 81 962 Displays the frame number of the frame currently being
 viewed. Applies to formats that have frame numbers \, i.e. video.;
 #N canvas 82 93 663 454 quicktime 0;
@@ -190,21 +181,24 @@ end (default setting).;
 #X text 7 352 FILENAME;
 #X obj 3 401 doc_i 1;
 #X obj 3 834 doc_o 2;
-#X connect 2 0 20 0;
-#X connect 3 0 20 0;
-#X connect 20 0 0 0;
-#X connect 21 0 28 0;
-#X connect 22 0 28 0;
-#X connect 23 0 28 0;
-#X connect 24 0 28 0;
+#X obj 14 425 doc_ii 0;
+#X obj 15 858 doc_oo 0;
+#X obj 15 911 doc_oo 1;
+#X connect 2 0 14 0;
+#X connect 3 0 14 0;
+#X connect 14 0 0 0;
+#X connect 15 0 22 0;
+#X connect 16 0 22 0;
+#X connect 17 0 22 0;
+#X connect 18 0 22 0;
+#X connect 20 0 22 0;
+#X connect 22 0 47 0;
+#X connect 22 1 19 0;
+#X connect 22 1 52 0;
+#X connect 24 0 25 0;
+#X connect 25 0 22 0;
 #X connect 26 0 28 0;
-#X connect 28 0 53 0;
-#X connect 28 1 25 0;
-#X connect 28 1 58 0;
-#X connect 30 0 31 0;
-#X connect 31 0 28 0;
-#X connect 32 0 34 0;
-#X connect 34 0 33 0;
-#X connect 49 0 28 0;
-#X connect 58 0 27 0;
-#X connect 59 0 28 0;
+#X connect 28 0 27 0;
+#X connect 43 0 22 0;
+#X connect 52 0 21 0;
+#X connect 53 0 22 0;

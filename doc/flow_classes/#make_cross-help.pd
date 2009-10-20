@@ -16,7 +16,10 @@
 #X obj 0 0 doc_h;
 #X obj 3 214 doc_c 1;
 #X obj 3 247 doc_i 2;
-#X obj 3 269 doc_o 1;
+#X obj 14 271 doc_ii 0;
+#X obj 14 295 doc_ii 1;
+#X obj 3 315 doc_o 1;
+#X obj 15 339 doc_oo 0;
 #X connect 0 0 1 0;
 #X connect 1 0 10 0;
 #X connect 3 0 2 0;

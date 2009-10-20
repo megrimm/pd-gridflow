@@ -30,11 +30,9 @@
 -262144 -1 -1 0 256;
 #X obj 402 305 nbx 8 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 9
 -262144 -1 -1 0 256;
-#X text 11 426 inlet 1: a 2-D polygon as N by 2 grid;
-#X text 11 376 inlet 0: a 2-D polygon as N by 2 grid;
-#X text 65 390 or method "precision" for setting the size of the output
+#X text 85 390 or method "precision" for setting the size of the output
 grid.;
-#X text 73 440 in which the peak represents the amount of similarity
+#X text 93 440 in which the peak represents the amount of similarity
 between the two polygons \, and the position of the peak represents
 the optimal rotation for maximum overlapping of the polygons. The rotation
 origin is assumed to be the centroid (#moment 1);
@@ -45,9 +43,14 @@ origin is assumed to be the centroid (#moment 1);
 #X obj 0 0 doc_h;
 #X obj 3 328 doc_c;
 #X obj 3 349 doc_i 2;
-#X obj 3 512 doc_o 1;
 #X text 12 118 Comparisons are meant to be invariant to the following
 transformation:;
+#X obj 3 512 doc_o 1;
+#X text 91 426 a 2-D polygon as N by 2 grid;
+#X text 91 376 a 2-D polygon as N by 2 grid;
+#X obj 14 373 doc_ii 0;
+#X obj 14 425 doc_ii 1;
+#X obj 15 536 doc_oo 0;
 #X connect 0 0 19 0;
 #X connect 2 0 7 0;
 #X connect 3 0 10 0;

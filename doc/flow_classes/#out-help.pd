@@ -1,37 +1,58 @@
 #N canvas 512 0 560 717 10;
-#X obj 4 395 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 6 698 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X obj 15 325 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 10 71 Displaying a grid:;
 #X text 342 73 Saving a grid:;
-#X text 6 456 MESSAGE;
-#X text 8 424 GRID;
-#X text 7 493 MESSAGE;
-#X text 8 569 MESSAGE;
-#X text 75 569 "rewind" rewinds to the beginning of a video file. Will
+#X text 6 526 MESSAGE;
+#X text 8 494 GRID;
+#X text 7 563 MESSAGE;
+#X text 8 639 MESSAGE;
+#X text 75 639 "rewind" rewinds to the beginning of a video file. Will
 overwrite previous data.;
-#X text 79 606 "timelog 1" will display (in the console) the current
+#X text 79 676 "timelog 1" will display (in the console) the current
 time and the time since the last frame. Message "timelog 0" will hide
 this information. The default is "timelog 0".;
-#X text 8 603 MESSAGE;
-#X text 31 794 window [#out window] opens a window in which the grid
+#X text 8 673 MESSAGE;
+#X text 31 394 window [#out window] opens a window in which the grid
 will be displayed.;
-#X text 7 732 BANG;
+#X text 7 802 BANG;
 #X msg 45 150 open working.jpg;
 #X obj 15 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 15 221 #in;
 #X msg 66 229 open window;
 #X msg 65 252 close;
-#X text 75 493 "close" closes the file and hides the display \, must
+#X text 75 563 "close" closes the file and hides the display \, must
 be accompanied by message "open window" to reopen the display.;
-#X text 9 396 Inlet 0;
-#X text 7 700 Outlet 0;
-#X text 75 732 A bang notifies when a complete grid has been received.
+#X text 75 802 A bang notifies when a complete grid has been received.
 ;
+#X text 77 496 Receives a grid.;
+#X text 12 32 Displays or saves an incoming grid (usually an image
+or a video).;
+#X obj 15 302 #out window \, title example;
+#X msg 207 145 open sewing.jpg;
+#X obj 15 126 t b b;
+#X obj 177 121 t b b;
+#X obj 177 97 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 101 841 #record;
+#X msg 366 228 open somefile.jpg;
+#X text 73 521 "open filename.format" (ex: "open somefile.jpg") sets
+the filename to write to.;
+#X msg 381 144 open sewing.jpg;
+#X obj 351 120 t b b;
+#X obj 351 96 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 351 190 #in;
+#X obj 351 266 #out;
+#X msg 127 262 hidecursor;
+#X text 205 261 <-- linux only;
+#X text 7 603 MESSAGE;
+#X text 75 603 "hidecursor" (linux only) hides the mouse cursor.;
+#X obj 0 0 doc_h;
+#X obj 3 369 doc_c n;
+#X obj 3 842 doc_also;
+#X obj 3 735 doc_o 1;
 #N canvas 140 137 570 631 More 0;
 #X obj 35 266 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
 ;
@@ -96,51 +117,26 @@ sockets \, files;
 #X connect 27 0 19 0;
 #X connect 29 0 19 0;
 #X connect 30 0 23 0;
-#X restore 140 334 pd More info about this object;
-#X text 77 426 Receives a grid.;
-#X text 12 32 Displays or saves an incoming grid (usually an image
-or a video).;
-#X obj 15 302 #out window \, title example;
-#X msg 207 145 open sewing.jpg;
-#X obj 15 126 t b b;
-#X obj 177 121 t b b;
-#X obj 177 97 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 101 841 #record;
-#X msg 366 228 open somefile.jpg;
-#X text 73 451 "open filename.format" (ex: "open somefile.jpg") sets
-the filename to write to.;
-#X msg 381 144 open sewing.jpg;
-#X obj 351 120 t b b;
-#X obj 351 96 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 351 190 #in;
-#X obj 351 266 #out;
-#X msg 127 262 hidecursor;
-#X text 205 261 <-- linux only;
-#X text 7 533 MESSAGE;
-#X text 75 533 "hidecursor" (linux only) hides the mouse cursor.;
-#X obj 0 0 doc_h;
-#X obj 3 365 doc_i;
-#X obj 3 665 doc_o 1;
-#X obj 3 769 doc_c n;
-#X obj 3 842 doc_also;
-#X connect 14 0 16 0;
-#X connect 15 0 28 0;
-#X connect 16 0 26 0;
-#X connect 17 0 26 0;
-#X connect 18 0 26 0;
-#X connect 26 0 2 0;
-#X connect 27 0 16 0;
-#X connect 28 0 16 0;
-#X connect 28 1 14 0;
-#X connect 29 0 16 0;
-#X connect 29 1 27 0;
-#X connect 30 0 29 0;
-#X connect 32 0 38 0;
-#X connect 34 0 37 0;
-#X connect 35 0 37 0;
-#X connect 35 1 34 0;
-#X connect 36 0 35 0;
-#X connect 37 0 38 0;
-#X connect 39 0 26 0;
+#X restore 140 334 pd More info about this object class;
+#X obj 3 445 doc_i 1;
+#X obj 14 469 doc_ii 0;
+#X obj 15 759 doc_oo 0;
+#X connect 12 0 14 0;
+#X connect 13 0 23 0;
+#X connect 14 0 21 0;
+#X connect 15 0 21 0;
+#X connect 16 0 21 0;
+#X connect 21 0 0 0;
+#X connect 22 0 14 0;
+#X connect 23 0 14 0;
+#X connect 23 1 12 0;
+#X connect 24 0 14 0;
+#X connect 24 1 22 0;
+#X connect 25 0 24 0;
+#X connect 27 0 33 0;
+#X connect 29 0 32 0;
+#X connect 30 0 32 0;
+#X connect 30 1 29 0;
+#X connect 31 0 30 0;
+#X connect 32 0 33 0;
+#X connect 34 0 21 0;

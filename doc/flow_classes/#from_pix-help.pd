@@ -1,21 +1,4 @@
 #N canvas 679 0 568 717 10;
-#X obj 9 435 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 436 Inlet 0;
-#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 562 Outlet 0;
-#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 562 Outlet 0;
-#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 562 Outlet 0;
-#X obj 9 563 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 10 562 Outlet 0;
-#X obj 9 621 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
 #X text 152 687 \, game_of_life_gem.pd in the examples folder;
 #X text 17 584 GRID;
 #X text 14 643 gemlist;
@@ -58,22 +41,24 @@ which the y dimension of the Grid will be read \, defaults to '1';
 #X text 12 454 gemlist;
 #X text 100 301 <-- imports gemlist into Grids;
 #X text 90 454 Has to be a 'pix' gemlist;
-#X text 12 622 Outlet 1;
 #X text 93 643 Passthrough outlet for gem chain;
 #X obj 0 0 doc_h;
 #X obj 3 383 doc_c 0;
 #X obj 3 408 doc_i 1;
 #X obj 3 536 doc_o 2;
 #X obj 3 689 doc_also;
-#X connect 18 0 31 0;
-#X connect 19 0 20 0;
-#X connect 20 0 18 0;
-#X connect 21 0 18 0;
-#X connect 22 0 23 0;
-#X connect 23 0 18 0;
-#X connect 24 0 25 0;
-#X connect 25 0 23 0;
-#X connect 26 0 24 0;
-#X connect 27 0 33 0;
-#X connect 28 0 27 0;
-#X connect 29 0 33 0;
+#X obj 14 432 doc_ii 0;
+#X obj 15 560 doc_oo 0;
+#X obj 15 619 doc_oo 1;
+#X connect 7 0 20 0;
+#X connect 8 0 9 0;
+#X connect 9 0 7 0;
+#X connect 10 0 7 0;
+#X connect 11 0 12 0;
+#X connect 12 0 7 0;
+#X connect 13 0 14 0;
+#X connect 14 0 12 0;
+#X connect 15 0 13 0;
+#X connect 16 0 22 0;
+#X connect 17 0 16 0;
+#X connect 18 0 22 0;
