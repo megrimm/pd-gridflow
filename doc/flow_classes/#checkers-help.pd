@@ -1,10 +1,4 @@
 #N canvas 40 127 555 417 10;
-#X obj 1 201 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 290 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 202 Inlet 0;
-#X text 2 291 Outlet 0;
 #X obj 156 63 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 156 85 #for (0 0) (128 128) (1 1);
@@ -21,6 +15,8 @@
 #X obj 3 183 doc_i 1;
 #X obj 3 266 doc_o 1;
 #X obj 3 161 doc_c 0;
-#X connect 4 0 5 0;
-#X connect 5 0 9 0;
-#X connect 9 0 6 0;
+#X obj 15 290 doc_oo 0;
+#X obj 14 207 doc_ii 0;
+#X connect 0 0 1 0;
+#X connect 1 0 5 0;
+#X connect 5 0 2 0;

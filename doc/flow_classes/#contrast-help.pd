@@ -14,19 +14,7 @@
 #X obj 171 216 #out window;
 #X obj 40 164 #in;
 #X text 14 24 Adjusts the intensity of an image.;
-#X obj 1 283 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 343 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 557 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 284 Inlet 0;
-#X text 2 344 Inlet 1;
-#X text 2 558 Outlet 0;
 #X obj 171 191 #contrast;
-#X obj 0 434 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 1 435 Inlet 2;
 #X text 26 316 GRID;
 #X text 79 317 Receives a grid.;
 #X text 4 378 INTEGER;
@@ -49,13 +37,17 @@ The default value is 256 and it has no effect.;
 #X obj 3 251 doc_i 3;
 #X obj 3 523 doc_o 1;
 #X obj 3 622 doc_also;
+#X obj 15 547 doc_oo 0;
+#X obj 14 275 doc_ii 0;
+#X obj 14 345 doc_ii 1;
+#X obj 14 438 doc_ii 2;
 #X connect 0 0 9 0;
 #X connect 1 0 9 0;
 #X connect 2 0 1 0;
 #X connect 3 0 5 0;
 #X connect 4 0 6 0;
-#X connect 5 0 17 1;
-#X connect 6 0 17 2;
+#X connect 5 0 11 1;
+#X connect 6 0 11 2;
 #X connect 7 0 9 0;
-#X connect 9 0 17 0;
-#X connect 17 0 8 0;
+#X connect 9 0 11 0;
+#X connect 11 0 8 0;

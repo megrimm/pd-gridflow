@@ -1,10 +1,4 @@
 #N canvas 683 0 551 717 10;
-#X obj 1 345 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 723 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 346 Inlet 0;
-#X text 2 724 Outlet 0;
 #X msg 55 123 reset;
 #X obj 13 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
@@ -25,9 +19,6 @@ in a single message.;
 #X text 7 499 MESSAGE;
 #X text 76 496 "reset" aborts the current grid if there is one.;
 #X text 6 551 GRID;
-#X obj 1 608 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 609 Inlet 1;
 #X text 8 751 GRID;
 #X text 80 751 The grid resulting from the incoming integers and/or
 grids is output from the outlet.;
@@ -65,14 +56,17 @@ other than int32.;
 #X obj 3 220 doc_c 2;
 #X text 10 285 NUMTYPE;
 #X text 74 283 default: i;
-#X connect 4 0 39 0;
-#X connect 5 0 8 0;
-#X connect 6 0 39 0;
-#X connect 7 0 6 0;
-#X connect 8 0 7 0;
-#X connect 26 0 39 1;
-#X connect 27 0 39 1;
-#X connect 33 0 36 0;
-#X connect 34 0 33 0;
-#X connect 35 0 34 0;
-#X connect 39 0 9 0;
+#X obj 3 339 doc_ii 0;
+#X obj 3 602 doc_ii 1;
+#X obj 3 727 doc_oo 0;
+#X connect 0 0 33 0;
+#X connect 1 0 4 0;
+#X connect 2 0 33 0;
+#X connect 3 0 2 0;
+#X connect 4 0 3 0;
+#X connect 20 0 33 1;
+#X connect 21 0 33 1;
+#X connect 27 0 30 0;
+#X connect 28 0 27 0;
+#X connect 29 0 28 0;
+#X connect 33 0 5 0;

@@ -1,4 +1,4 @@
-#N canvas 519 317 560 400 10;
+#N canvas 536 114 560 590 10;
 #X obj 125 166 seq_fold;
 #X msg 125 65 2 \, 3 \, 5 \, 7 \, end;
 #X obj 125 93 route end;
@@ -6,8 +6,15 @@
 #X obj 126 239 display;
 #X obj 0 0 doc_h;
 #X obj 3 273 doc_c 0;
-#X obj 3 315 doc_i 4;
-#X obj 3 350 doc_o 3;
+#X obj 3 318 doc_i 4;
+#X obj 14 342 doc_ii 0;
+#X obj 14 366 doc_ii 1;
+#X obj 14 390 doc_ii 2;
+#X obj 14 414 doc_ii 3;
+#X obj 3 450 doc_o 3;
+#X obj 15 474 doc_oo 0;
+#X obj 15 498 doc_oo 1;
+#X obj 15 522 doc_oo 2;
 #X connect 0 0 4 0;
 #X connect 0 1 3 0;
 #X connect 0 2 3 1;
