@@ -1,10 +1,4 @@
 #N canvas 544 108 557 485 10;
-#X obj 0 290 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 0 373 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 1 291 Inlet 0;
-#X text 1 374 Outlet 0;
 #X obj 15 164 cnv 15 52 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X text 5 318 GRID;
@@ -26,8 +20,10 @@ into the rest of PureData.;
 #X obj 3 244 doc_c 0;
 #X text 56 399 The grid is transformed into a single message containing
 a sequence of floats.;
-#X connect 7 0 15 0;
-#X connect 13 0 8 0;
-#X connect 13 0 14 0;
-#X connect 15 0 6 0;
-#X connect 15 0 13 0;
+#X obj 14 289 doc_ii 0;
+#X obj 15 379 doc_oo 0;
+#X connect 3 0 11 0;
+#X connect 9 0 4 0;
+#X connect 9 0 10 0;
+#X connect 11 0 2 0;
+#X connect 11 0 9 0;

@@ -37,6 +37,7 @@ next image.;
 #X obj 15 548 doc_oo 0;
 #X obj 14 349 doc_ii 0;
 #X obj 14 433 doc_ii 1;
+#X obj 3 302 doc_c 1;
 #X connect 1 0 3 0;
 #X connect 2 0 4 0;
 #X connect 3 0 16 0;

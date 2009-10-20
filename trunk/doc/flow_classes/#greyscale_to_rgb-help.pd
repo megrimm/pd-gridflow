@@ -10,6 +10,8 @@
 #X obj 3 292 doc_c 0;
 #X obj 3 321 doc_i 1;
 #X obj 3 366 doc_o 1;
+#X obj 14 345 doc_ii 0;
+#X obj 15 390 doc_oo 0;
 #X connect 1 0 4 0;
 #X connect 2 0 3 0;
 #X connect 3 0 0 0;
