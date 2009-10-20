@@ -1,19 +1,7 @@
 #N canvas 597 51 559 644 10;
 #X obj 20 84 #in;
 #X obj 20 127 #out window;
-#X obj 2 336 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 389 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 2 520 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 3 337 Inlet 0;
-#X text 3 390 Inlet 1;
-#X text 3 521 Outlet 0;
 #X text 18 361 GRID;
-#X obj 2 441 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 3 442 Inlet 2;
 #X text 15 28 Creates a black border around an image.;
 #X text 19 417 LIST;
 #X text 21 473 LIST;
@@ -41,6 +29,10 @@ usually means black pixels.;
 #X obj 3 304 doc_i 3;
 #X obj 3 498 doc_o 1;
 #X obj 3 180 doc_c 2;
-#X connect 0 0 22 0;
-#X connect 17 0 0 0;
-#X connect 22 0 1 0;
+#X obj 15 522 doc_oo 0;
+#X obj 14 339 doc_ii 0;
+#X obj 14 390 doc_ii 1;
+#X obj 14 443 doc_ii 2;
+#X connect 0 0 14 0;
+#X connect 9 0 0 0;
+#X connect 14 0 1 0;

@@ -1,4 +1,4 @@
-#N canvas 0 0 558 657 10;
+#N canvas 176 0 558 657 10;
 #X obj 181 115 metro 10;
 #X obj 181 96 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
@@ -6,43 +6,36 @@
 #X obj 165 144 #in;
 #X msg 165 70 open bluemarble.jpg \, bang;
 #X floatatom 295 143 5 0 0 0 - - -;
-#X obj 1 281 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 342 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 482 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 282 Inlet 0;
-#X text 2 343 Inlet 1;
-#X text 2 483 Outlet 0;
 #X obj 251 162 #pack 2;
 #X obj 165 186 #downscale_by;
 #X obj 165 212 #out window;
-#X text 29 309 GRID;
-#X text 9 372 INTEGER;
+#X text 29 369 GRID;
+#X text 9 432 INTEGER;
 #X text 9 24 Scales down a picture by a specified amount.;
-#X text 79 311 Receives a grid.;
+#X text 79 371 Receives a grid.;
 #X obj 100 624 #scale_to;
 #X obj 171 624 #scale_by;
-#X text 81 371 The value defines the scale factor. A pack object allows
+#X text 81 431 The value defines the scale factor. A pack object allows
 you to vary the horizontal and vertical values idenpendently. Inlet
 0 of [#pack] varies the image on a vertical axis \, inlet 1 of [#pack]
 varies the image on a horizontal axis.;
-#X text 26 512 GRID;
-#X text 82 512 Outputs the resulting grid.;
-#X text 10 571 INTEGER;
-#X text 78 572 The value downscales the image according to the specified
+#X text 82 572 Outputs the resulting grid.;
+#X text 10 271 INTEGER;
+#X text 78 272 The value downscales the image according to the specified
 value.;
 #X obj 0 0 doc_h;
-#X obj 3 253 doc_i;
-#X obj 3 454 doc_o;
-#X obj 3 551 doc_c 1;
+#X obj 3 251 doc_c 1;
 #X obj 3 625 doc_also;
+#X obj 3 540 doc_o 1;
+#X obj 15 564 doc_oo 0;
+#X obj 3 318 doc_i 2;
+#X obj 14 342 doc_ii 0;
+#X obj 14 402 doc_ii 1;
 #X connect 0 0 3 0;
 #X connect 1 0 0 0;
-#X connect 2 0 12 0;
-#X connect 3 0 13 0;
+#X connect 2 0 6 0;
+#X connect 3 0 7 0;
 #X connect 4 0 3 0;
-#X connect 5 0 12 1;
-#X connect 12 0 13 1;
-#X connect 13 0 14 0;
+#X connect 5 0 6 1;
+#X connect 6 0 7 1;
+#X connect 7 0 8 0;

@@ -1,4 +1,4 @@
-#N canvas 328 52 558 614 10;
+#N canvas 327 52 546 614 10;
 #X obj 58 104 #camera;
 #X obj 58 50 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 194 162 tgl 15 0 empty empty binaryFlag 0 -6 0 8 -24198 -1 -1
@@ -27,7 +27,14 @@
 #X obj 0 0 doc_h;
 #X obj 3 483 doc_c 4;
 #X obj 3 511 doc_i 4;
-#X obj 3 537 doc_o 3;
+#X obj 3 647 doc_o 3;
+#X obj 15 671 doc_oo 0;
+#X obj 15 695 doc_oo 1;
+#X obj 15 719 doc_oo 2;
+#X obj 14 535 doc_ii 0;
+#X obj 14 559 doc_ii 1;
+#X obj 14 583 doc_ii 2;
+#X obj 14 607 doc_ii 3;
 #X connect 0 0 19 0;
 #X connect 1 0 18 0;
 #X connect 2 0 19 2;

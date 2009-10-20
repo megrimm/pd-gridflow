@@ -1,15 +1,6 @@
 #N canvas 92 0 557 553 10;
 #X obj 25 173 #in;
 #X obj 25 222 #out window;
-#X obj 0 324 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 5 325 Inlet_0;
-#X obj 0 394 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 0 488 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 489 Inlet_0;
-#X text 5 395 Inlet_1;
 #X text 3 350 GRID;
 #X text 2 422 GRID;
 #X text 5 512 GRID;
@@ -35,15 +26,18 @@ and constructs a new pixel from that.;
 #X obj 3 263 doc_c 0;
 #X obj 3 290 doc_i 2;
 #X obj 3 461 doc_o 1;
-#X connect 0 0 22 0;
-#X connect 15 0 16 0;
-#X connect 16 0 22 1;
-#X connect 17 0 0 0;
+#X obj 14 323 doc_ii 0;
+#X obj 14 384 doc_ii 1;
+#X obj 15 488 doc_oo 0;
+#X connect 0 0 16 0;
+#X connect 9 0 10 0;
+#X connect 10 0 16 1;
+#X connect 11 0 0 0;
+#X connect 12 0 11 0;
+#X connect 12 1 9 0;
+#X connect 13 0 10 1;
+#X connect 14 0 13 0;
+#X connect 15 0 14 0;
+#X connect 16 0 1 0;
+#X connect 17 0 12 0;
 #X connect 18 0 17 0;
-#X connect 18 1 15 0;
-#X connect 19 0 16 1;
-#X connect 20 0 19 0;
-#X connect 21 0 20 0;
-#X connect 22 0 1 0;
-#X connect 23 0 18 0;
-#X connect 24 0 23 0;

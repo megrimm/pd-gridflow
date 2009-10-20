@@ -1,20 +1,5 @@
 #N canvas 526 103 559 548 10;
 #X obj 126 114 #color;
-#X obj 5 295 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 6 296 Inlet 0;
-#X obj 3 446 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 447 Outlet 0;
-#X obj 3 446 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 447 Outlet 0;
-#X obj 3 446 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 447 Outlet 0;
-#X obj 3 446 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 4 447 Outlet 0;
 #X text 308 126 <-- vary these;
 #X text 3 323 GRID;
 #X text 3 477 GRID;
@@ -42,5 +27,7 @@ value (RGB) changes on each channel.;
 #X text 3 365 delegate $*;
 #X text 81 365 "delegate" sends the rest of the message as a message
 to each of the sliders but not each of the numboxes.;
-#X connect 17 0 0 0;
-#X connect 18 0 0 0;
+#X obj 15 443 doc_oo 0;
+#X obj 14 291 doc_ii 0;
+#X connect 7 0 0 0;
+#X connect 8 0 0 0;

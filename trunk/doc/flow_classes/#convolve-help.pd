@@ -1,19 +1,8 @@
 #N canvas 412 9 556 717 10;
-#X obj 1 319 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 0 484 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 1 628 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 2 320 Inlet 0;
-#X text 1 485 Inlet 1;
-#X text 2 629 Outlet 0;
 #X obj 16 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
 #X msg 228 135 1 1 1 1 1 1 1 1 1;
 #X obj 228 113 loadbang;
-#X text 27 718 here ^ is the parallel operator \, fold is indicated
-by + and 0 is its base.;
 #X obj 16 112 fork;
 #X obj 228 157 #redim (3 3);
 #X obj 16 158 #in;
@@ -26,16 +15,16 @@ by + and 0 is its base.;
 #X text 14 27 [#convolve] is used to perform various transformations
 on images such as blurring \, sharpening \, finding edges \, embossing
 \, cellular automata and many others.;
-#X text 29 346 GRID;
-#X text 28 660 GRID;
-#X text 23 512 GRID;
-#X text 70 514 This is the convolution grid and it gets stored in the
+#X text 29 396 GRID;
+#X text 28 710 GRID;
+#X text 23 562 GRID;
+#X text 70 564 This is the convolution grid and it gets stored in the
 other object. If rows2 and/or columns 2 are odd numbers \, then the
 centre of convolution is the middle of the convolution grid. If they
 are even numbers \, then the chosen centre will be slightly more to
 the left and/or to the top \, because the actual middle is between
 celle of the grid.;
-#X text 73 347 splits the incoming grid into dim(rest...) parts \,
+#X text 73 397 splits the incoming grid into dim(rest...) parts \,
 for each of those parts at (xy \, x). a rectangle of such parts \,
 centered around (y \, x) is combined with the convolution grid like
 a [#] of operation op_para. then each such result is folded like [#fold]
@@ -45,16 +34,21 @@ into a grid that is sent to the outlet. near the borders of the grid
 before production of the next grid starts.;
 #X msg 39 135 open scissors.jpg;
 #X obj 0 0 doc_h;
-#X obj 3 287 doc_i 2;
-#X obj 3 606 doc_o 1;
-#X obj 3 691 doc_c 0..1;
+#X obj 3 337 doc_i 2;
+#X obj 3 656 doc_o 1;
+#X obj 3 316 doc_c 0..1;
 #X obj 3 756 doc_also;
-#X connect 6 0 10 0;
-#X connect 7 0 11 0;
-#X connect 8 0 7 0;
-#X connect 10 0 12 0;
-#X connect 10 1 25 0;
-#X connect 11 0 18 1;
-#X connect 12 0 18 0;
-#X connect 18 0 13 0;
-#X connect 25 0 12 0;
+#X obj 15 680 doc_oo 0;
+#X obj 14 361 doc_ii 0;
+#X obj 14 526 doc_ii 1;
+#X text 128 216 here ^ is the parallel operator \, fold is indicated
+by + and 0 is its base (seed).;
+#X connect 0 0 3 0;
+#X connect 1 0 4 0;
+#X connect 2 0 1 0;
+#X connect 3 0 5 0;
+#X connect 3 1 18 0;
+#X connect 4 0 11 1;
+#X connect 5 0 11 0;
+#X connect 11 0 6 0;
+#X connect 18 0 5 0;
