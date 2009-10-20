@@ -1,7 +1,7 @@
-#N canvas 59 155 741 486 10;
+#N canvas 592 228 741 486 10;
 #X obj 228 23 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#N canvas 199 246 450 453 heat 1;
+#N canvas 199 246 450 453 heat 0;
 #X obj 129 23 inlet mask;
 #X obj 22 42 t a a;
 #X obj 22 224 # +;
@@ -35,7 +35,7 @@
 #X restore 27 81 pd heat;
 #X obj 27 61 #store;
 #X obj 94 42 loadbang;
-#X obj 27 16 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+#X obj 27 16 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
 #X obj 27 363 #out window;
 #X obj 227 157 #greyscale_to_rgb;
@@ -126,9 +126,9 @@
 #X text 542 3 heat propagation simulation;
 #X text 396 43 use a greyscale image here;
 #X text 493 17 Copyright 2005 by Mathieu Bouchard;
-#X obj 227 43 #in ../images/pmask.png;
 #X text 396 57 as a heat conduction map;
-#X connect 0 0 39 0;
+#X obj 227 43 #in pmask.png;
+#X connect 0 0 40 0;
 #X connect 1 0 19 0;
 #X connect 2 0 1 0;
 #X connect 3 0 12 0;
@@ -159,7 +159,7 @@
 #X connect 23 0 24 0;
 #X connect 24 0 31 0;
 #X connect 25 0 32 0;
-#X connect 26 0 39 0;
+#X connect 26 0 40 0;
 #X connect 27 0 29 0;
 #X connect 28 0 27 0;
 #X connect 29 0 1 1;
@@ -170,4 +170,4 @@
 #X connect 33 0 34 0;
 #X connect 35 0 2 0;
 #X connect 35 0 8 0;
-#X connect 39 0 30 0;
+#X connect 40 0 30 0;
