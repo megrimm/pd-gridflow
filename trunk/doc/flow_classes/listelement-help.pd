@@ -1,35 +1,35 @@
-#N canvas 92 61 558 567 10;
-#X floatatom 262 142 5 0 0 0 - - -;
-#X floatatom 281 88 5 0 0 0 - - -;
-#X obj 195 140 print;
-#X msg 195 63 1 3 hello 8 13;
-#X text 94 321 LIST;
-#X text 100 194 INTEGER;
-#X obj 195 111 listelement 0;
-#X text 158 321 Accepts a list of numbers or symbols.;
-#X text 10 25 Outputs one element from a list as selected by an integer.
+#N canvas 604 22 558 567 10;
+#X floatatom 262 160 5 0 0 0 - - -;
+#X floatatom 281 106 5 0 0 0 - - -;
+#X obj 195 158 print;
+#X msg 195 81 1 3 hello 8 13;
+#X text 110 371 LIST;
+#X text 110 234 INTEGER;
+#X obj 195 129 listelement 0;
+#X text 175 371 Accepts a list of numbers or symbols.;
+#X text 10 32 Outputs one element from a list as selected by an integer.
 ;
-#X text 90 480 INTEGER;
-#X text 91 494 SYMBOL;
-#X text 155 480 The element selected by the index is sent to the outlet
+#X text 107 482 INTEGER;
+#X text 108 496 SYMBOL;
+#X text 174 482 The element selected by the index is sent to the outlet
 and can be viewed in the console using the print object or in a number
 box if displaying an integer.;
-#X text 165 194 An integer acts as an index \, it selects the position
+#X text 175 234 An integer acts as an index \, it selects the position
 of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
-#X text 157 379 Changes the value of the argument i.e. changes the
+#X text 174 404 Changes the value of the argument i.e. changes the
 index into the list to get a different element.;
-#X text 91 380 INTEGER;
+#X text 107 405 INTEGER;
 #X obj 0 0 doc_h;
-#X obj 3 291 doc_i 2;
-#X obj 3 451 doc_o 1;
-#X obj 14 324 doc_ii 0;
-#X obj 14 379 doc_ii 1;
-#X obj 14 482 doc_oo 0;
-#X obj 3 168 doc_c 1;
-#X obj 14 196 doc_cc 0;
+#X obj 3 339 doc_i 2;
+#X obj 3 456 doc_o 1;
+#X obj 14 372 doc_ii 0;
+#X obj 14 405 doc_ii 1;
+#X obj 14 488 doc_oo 0;
+#X obj 3 208 doc_c 1;
+#X obj 14 236 doc_cc 0;
 #X connect 1 0 6 1;
 #X connect 3 0 6 0;
 #X connect 6 0 0 0;
