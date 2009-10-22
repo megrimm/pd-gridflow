@@ -21,18 +21,16 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#define NETPBM_INCLUDE_HERE
 #include "../gridflow.h.fcs"
-extern "C" {
-#include <pam.h>
-};
 
 \class FormatNetPBM : Format {
 	struct pam inpam, outpam;
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		Format::_0_open(0,0,mode,filename);
-		memset(& inpam,sizeof(pam),0);
-		memset(&outpam,sizeof(pam),0);
+		memset(& inpam,0,sizeof(pam));
+		memset(&outpam,0,sizeof(pam));
 	}
 	\decl 0 bang ();
 };
