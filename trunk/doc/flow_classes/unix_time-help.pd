@@ -1,25 +1,39 @@
-#N canvas 134 38 561 477 10;
-#X obj 91 113 unix_time;
-#X obj 91 82 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#N canvas 679 22 560 644 10;
+#X obj 109 184 unix_time;
+#X obj 109 153 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 8 172 #export_list;
-#X obj 91 40 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
-;
-#X obj 9 246 display;
-#X obj 91 58 metro 500;
-#X text 60 243 <-- Ascii format for the date;
-#X obj 308 221 display;
-#X obj 123 171 display;
-#X obj 307 195 display;
-#X obj 306 170 sprintf %04d%02d%02d-%02d%02d%02d;
+#X obj 26 243 #export_list;
+#X obj 109 111 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 27 317 display;
+#X obj 109 129 metro 500;
+#X text 78 314 <-- Ascii format for the date;
+#X obj 326 292 display;
+#X obj 141 242 display;
+#X obj 325 266 display;
+#X obj 324 241 sprintf %04d%02d%02d-%02d%02d%02d;
 #X obj 0 0 doc_h;
-#X obj 3 273 doc_c 0;
-#X obj 3 322 doc_i 1;
-#X obj 3 369 doc_o 3;
-#X obj 14 346 doc_ii 0;
-#X obj 15 393 doc_oo 0;
-#X obj 15 417 doc_oo 1;
-#X obj 15 441 doc_oo 2;
+#X obj 3 377 doc_c 0;
+#X obj 3 422 doc_i 1;
+#X obj 3 503 doc_o 3;
+#X obj 14 454 doc_ii 0;
+#X obj 14 535 doc_oo 0;
+#X obj 14 565 doc_oo 1;
+#X obj 14 595 doc_oo 2;
+#X text 9 32 This object returns the Unix timestamp. The first outlet
+does so with ASCII \, the second in seconds and the third outlet outputs
+the fractions of seconds up to 1/100 0 th of a second which is useful
+for creating filenames.;
+#X text 100 453 BANG;
+#X text 159 453 A bang at the left inlet will tell [unix_time] to get
+the current Unix timestamp and send it to the outlets.;
+#X text 100 534 LIST;
+#X text 100 564 LIST;
+#X text 100 594 LIST;
+#X text 159 534 Outputs the time and date in ASCII format.;
+#X text 159 564 Outputs the Unix timestamp in seconds.;
+#X text 159 594 Outputs the fractions of a second up to 10 microseconds
+(?) (actual precision is probably platform-dependent...);
 #X connect 0 0 2 0;
 #X connect 0 1 8 0;
 #X connect 0 2 7 0;

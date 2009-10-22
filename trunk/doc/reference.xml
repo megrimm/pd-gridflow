@@ -1010,27 +1010,6 @@
 			</method>
 		</outlet>
 	</class>
-	<class name="unix_time">
-		<p>
-		This object returns the Unix timestamp. The first 
-		outlet does so with ASCII, the second in seconds and the third outlet 
-		outputs the fractions of seconds up to 1/100 000 th of a second which is useful for creating 
-		filenames.
-		</p>
-		<inlet id="0"><method name="bang"/></inlet>
-		<outlet id="0"><method name="symbol"/>Outputs the time and date in ASCII format</outlet>
-		<outlet id="1"><method name="float"/>Outputs the Unix timestamp in seconds</outlet>
-		<outlet id="2"><method name="float"/>Outputs the fractions of a second up to 10 microseconds (?) (actual precision is platform-dependent afaik)</outlet>
-	</class>
-	<class name="plotter_control">
-		<p>
-		This object produces HPGL instructions in ASCII form 
-		that can be sent to the comport object in order to control an HPGL 
-		compatible plotter.
-		</p>
-		<inlet id="0"><method name="symbol"/></inlet>
-		<outlet id="0"><method name="symbol"/>Outputs the HPGL commands in ASCII format</outlet>
-	</class>
 	<class name="fork">
 		<p>Every incoming message is sent to inlet 1 and then sent to
 		inlet 0 as well. Messages remain completely unaltered. Contrast
