@@ -1139,19 +1139,6 @@
 		</inlet>
 		<inlet id="1" attr="list"/>
 	</class>
-	<class name="shunt">
-		Compatible with jMax's [demux].
-		<method name="init">
-			<arg name="n">number of outlets</arg>
-			<arg name="i" default="0">initial selected outlet</arg>
-		</method>
-		<inlet id="0"><method name="&lt;any&gt;"><rest/>
-			Routes a message to the active outlet.
-		</method></inlet>
-		<inlet id="1"><method name="int"><arg name="i" type="int"/>
-			Selects which outlet is active.
-		</method></inlet>
-	</class>
 	<class name="range">
 		<method name="init">
 			<rest name="separators" type="float"></rest>
