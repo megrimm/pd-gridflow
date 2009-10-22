@@ -1100,28 +1100,6 @@
 			Outputs the incoming list, from last element to first element.
 		</method></inlet>
 	</class>
-	<class name="oneshot">
-		Like [spigot], but turns itself off after each message, so you have to turn it on
-		again to making it pass another message.
-	</class>
-	<class name="inv+">
-		<method name="init">
-			<arg name="b" type="float" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="float"><arg name="a" type="float"/>
-			outputs b-a
-		</method></inlet>
-		<inlet id="1" attr="b"/>
-	</class>
-	<class name="inv*">
-		<method name="init">
-			<arg name="b" type="float" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="float"><arg name="a" type="float"/>
-			outputs b/a
-		</method></inlet>
-		<inlet id="1" attr="b"/>
-	</class>
 	<class name="messageprepend">
 		(This is not in jMax, but is there to help port $* messageboxes)
 		<method name="init"><rest name="list" isattr="yes"/></method>
