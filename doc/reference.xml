@@ -1046,55 +1046,6 @@
 			Outputs N messages, one per list element, in order.
 		</method></inlet>
 	</class>
-	<class name="listflatten">
-		<inlet id="0"><method name="list"><rest/>
-		</method></inlet>
-	</class>
-	<class name="listlength">
-		<inlet id="0"><method name="list">
-			outputs the number of elements in the incoming list.
-		</method></inlet>
-	</class>
-	<class name="listelement">
-		<method name="init">
-			<arg name="index" type="int" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="list"><rest/>
-			Outputs one element of the list, as selected by "index".
-			Also accepts negative indices (e.g.: -1 means "last"), unlike jMax.
-		</method></inlet>
-		<inlet id="1" attr="index"/>
-	</class>
-	<class name="listsublist">
-		<method name="init">
-			<arg name="index" type="int" isattr="yes"/>
-			<arg name="length" type="int" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="list"><rest/>
-			Outputs consecutive elements of the list, as selected by "index" and "length".
-			Also accepts negative indices (e.g.: -1 means "last"), but unlike jMax.
-		</method></inlet>
-		<inlet id="1" attr="index"/>
-		<inlet id="2" attr="length"/>
-	</class>
-	<class name="listprepend">
-		<method name="init">
-			<rest name="list" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="list"><rest/>
-			Outputs the stored list followed by the incoming list, all in one message.
-		</method></inlet>
-		<inlet id="1" attr="list"/>
-	</class>
-	<class name="listappend">
-		<method name="init">
-			<rest name="list" isattr="yes"/>
-		</method>
-		<inlet id="0"><method name="list"><rest/>
-			Outputs the incoming list followed by the stored list, all in one message.
-		</method></inlet>
-		<inlet id="1" attr="list"/>
-	</class>
 	<class name="listreverse">
 		<inlet id="0"><method name="list"><rest/>
 			Outputs the incoming list, from last element to first element.

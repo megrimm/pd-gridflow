@@ -1,30 +1,30 @@
-#N canvas 687 22 560 509 10;
-#X text 90 268 LIST;
-#X text 8 26 The [listlength] outputs the number of elements in the
+#N canvas 637 22 560 509 10;
+#X text 106 296 LIST;
+#X text 10 33 The [listlength] outputs the number of elements in the
 incoming list.;
-#X text 143 364 Outputs the number of elements in the list.;
-#X obj 100 417 listappend;
-#X obj 170 417 listelement;
-#X obj 247 417 listfind;
-#X obj 306 417 listflatten;
-#X obj 99 440 listprepend;
-#X obj 175 440 listreverse;
-#X obj 252 440 listsublist;
-#X floatatom 206 142 5 0 0 0 - - -;
-#X obj 139 140 print;
-#X msg 139 63 1 3 hello 8 13;
-#X obj 139 102 listlength;
-#X msg 246 78 1 12 a b c d e f g h i j k l;
-#X text 138 268 The length of the list passed to the left inlet will
+#X text 170 393 Outputs the number of elements in the list.;
+#X obj 100 447 listappend;
+#X obj 183 447 listelement;
+#X obj 268 447 listfind;
+#X obj 352 447 listflatten;
+#X obj 99 470 listprepend;
+#X obj 183 470 listreverse;
+#X obj 268 470 listsublist;
+#X floatatom 206 160 5 0 0 0 - - -;
+#X obj 139 158 print;
+#X msg 139 81 1 3 hello 8 13;
+#X obj 139 120 listlength;
+#X msg 246 96 1 12 a b c d e f g h i j k l;
+#X text 168 296 The length of the list passed to the left inlet will
 be returned in the outlet.;
 #X obj 0 0 doc_h;
-#X obj 3 186 doc_c 0;
-#X obj 3 244 doc_i 1;
-#X obj 3 341 doc_o 1;
-#X obj 3 417 doc_also 1;
-#X obj 14 268 doc_ii 0;
-#X obj 14 365 doc_oo 0;
-#X text 87 365 INTEGER;
+#X obj 3 206 doc_c 0;
+#X obj 3 264 doc_i 1;
+#X obj 3 361 doc_o 1;
+#X obj 3 447 doc_also 1;
+#X obj 14 296 doc_ii 0;
+#X obj 14 392 doc_oo 0;
+#X text 103 392 INTEGER;
 #X connect 12 0 13 0;
 #X connect 13 0 10 0;
 #X connect 13 0 11 0;
