@@ -1,136 +1,3 @@
-<?xml version="1.0" standalone="no" ?>
-<!DOCTYPE documentation SYSTEM 'gridflow.dtd'>
-<documentation title="Reference Manual: Flow Classes" indexcols="3">
-<!-- $Id$ -->
-<!--
-	GridFlow Reference Manual: Class Reference
-	Copyright (c) 2001-2007
-	by Mathieu Bouchard and Alexandre Castonguay
--->
-
-<section name="Objects for making grids and breaking them down">
-
-	<class name="#to_float,#export">
-		<p>this object is the opposite of #import.</p>
-		<method name="init">
-			this object is not configurable because there isn't
-			anything that could possibly be configured here.
-		</method>
-		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/>
-				transforms this grid into a sequence of integer messages.
-			</method>
-		</inlet>
-		<outlet id="0">
-			<method name="int">
-				elements of the incoming grid.
-			</method>
-		</outlet>
-	</class>
-
-	<class name="#to_list,#export_list">
-		<p>this object is another opposite of <k>[#import]</k>, which puts
-		all of its values in a list.</p>
-		<method name="init" />
-		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/>
-				transforms this grid into a single message containing
-				a list of integers.
-			</method>
-		</inlet>
-		<outlet id="0">
-			<method name="list">
-				elements of the incoming grid.
-			</method>
-		</outlet>
-	</class>
-
-	<class name="#to_symbol,#export_symbol">
-		<p>this object is another opposite of #import, which constructs a symbol
-		from its input. The values are expected to be valid ASCII codes, but no check
-		will be performed for that, and additionally, no check will be made that the generated
-		symbol only contains characters that can be put in a symbol.</p>
-		<method name="init" />
-		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/>
-				transforms this grid into a single message containing
-				a list of integers.
-			</method>
-		</inlet>
-		<outlet id="0"><method name="symbol">generated symbol</method></outlet>
-	</class>
-
-	<class name="#pack">
-		<p>Similar to <k>[#join]</k>, but takes individual integers, and builds a Dim(N) vector out of it.
-		</p>
-
-		<attr name="trigger_by" type="TriggerBy" default="any">
-			The value "any" (and the only available value for now) causes an output
-			to produced when an integer is received thru any inlet, contrary to most
-			other object classes, that only act upon reception of a value thru inlet 0.
-		</attr>
-
-		<method name="init">
-			<arg name="inputs" type="integer">how many inlets the object should have.</arg>
-		</method>
-		<inlet id="*"><method name="int"/></inlet>
-		<outlet id="0"><method name="grid">
-			combination of inputs given in all inlets.
-			this is produced according to the value of the trigger attribute.
-		</method></outlet>
-	</class>
-	
-	<class name="#color">
-		<p>Triple slider for the selection of RGB values.</p>
-		<method name="init">
-			<arg name="min" type="float"></arg>
-			<arg name="max" type="float"></arg>
-			<arg name="hidepreview" type="0,1"></arg>
-		</method>
-		<inlet id="0"><method name="grid">
-			changes all three values (R,G,B). The grid must
-			be a Dim(3).
-		</method>
-		<method name="delegate">
-			sends the rest of the message to each of the three sliders.
-			this relies on the fact that [#color] is implemented using
-			three [hsl] and this might not still work in the far future.
-		</method></inlet>
-		<outlet id="0"><method name="grid">
-			Produces a Dim(3) grid of RGB values.
-		</method></outlet>
-	</class>
-
-	<class name="#unpack">
-		<method name="init">
-			<arg name="outputs" type="integer">
-				how many outlets the object should have.
-				(depending on the version of the software, the number of visible outlets
-				may have been frozen to 4. If it is so, then the value of this argument
-				must not exceed 4; and if it is below 4, then don't use the extraneous outlets.)
-			</arg>
-		</method>
-		<inlet id="0"><method name="grid(N)">
-			the input vector is split in N parts containing one number each.
-			numbers are sent left-to-right, that is, outlet 0 is triggered first, then outlet 1, etc.
-		</method></inlet>
-		<outlet id="*"><method name="int">
-		</method></outlet>
-	</class>
-
-	<class name="#centroid">
-		<method name="init"/>
-		<inlet id="0"><method name="grid(rows,columns,1)">
-			will compute the centroid of the given grid, which
-			is a weighted average, namely, the average position weighted
-			by the pixel values.
-		</method></inlet>
-		<outlet id="0">
-			<method name="grid(2)">
-			result
-			</method>
-		</outlet>
-	</class>
 
 	<class name="#for">
 		<p>when given scalar bounds, works like a regular <k>[for]</k> object plugged
@@ -166,9 +33,6 @@
 			</method>
 		</outlet>
 	</class>
-</section>
-
-<section name="Objects for Computing">
 	<class name="#">
 		<attr name="op" type="grid"/>
 		<attr name="right_hand" type="grid" default="0">
@@ -517,9 +381,6 @@
 			which N will be added.
 		</method>
 	</class>
-</section>
-
-<section name="Objects for Coordinate Transforms">
 	<class name="#redim">
 		<method name="init">
 			<arg name="dims" type="dim_list"/>
@@ -734,9 +595,6 @@
 		<outlet id="0"/>
 		<outlet id="1"/>
 	</class>
-</section>
-
-<section name="Objects for Reporting">
 	<class name="#dim">
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 		<k>[#dim]</k> will return a grid like Dim(3), whose values are 240, 320, 4. </p>
@@ -769,9 +627,6 @@
 		Displays the received message in the box, resizing the box so that the message fits exactly.
 		</method>
 	</class>
-</section>
-
-<section name="Objects for Color Conversion">
 	<class name="#apply_colormap_channelwise">
 		<p>This object is useful for color correction. For each pixel
 		it takes it apart, looks up each part separately in the colormap,
@@ -835,9 +690,6 @@
 			<arg name="grid" type="grid(rows columns {y u v})"/>
 		</method></outlet>
 	</class>
-</section>
-
-<section name="Objects for Miscellaneous Picture Processing">
 	<class name="#convolve">
 		<p>this is the object for blurring, sharpening, finding edges,
 		embossing, cellular automata, and many other uses.</p>
@@ -1101,9 +953,6 @@
 		<p>inlet 1 receives an angle (0..36000)</p>
 		<p>inlet 0 receives a RGB picture that gets hueshifted by a rotation in the colorwheel by the specified angle; it gets sent to outlet 0.</p>
 	</class>
-</section>
-
-<section name="Other Objects">
 	<class name="pingpong">
 		Transforms linear counting (0, 1, 2, 3, 4, ...)  into a back-and-forth counting (0, 1, 2, 1, 0, ...)
 		from 0 to a specified upper bound.
@@ -1182,11 +1031,6 @@
 		<inlet id="0"><method name="symbol"/></inlet>
 		<outlet id="0"><method name="symbol"/>Outputs the HPGL commands in ASCII format</outlet>
 	</class>
-</section>
-
-<section name="jMax emulation">
-	<p>those classes emulate jMax functionality, for use within PureData.</p>
-	
 	<class name="fork">
 		<p>Every incoming message is sent to inlet 1 and then sent to
 		inlet 0 as well. Messages remain completely unaltered. Contrast
@@ -1308,9 +1152,6 @@
 			Selects which outlet is active.
 		</method></inlet>
 	</class>
-	<class name="demux">
-		please use shunt instead (name conflict with another Pd external)
-	</class>
 	<class name="range">
 		<method name="init">
 			<rest name="separators" type="float"></rest>
@@ -1325,5 +1166,16 @@
 			sets the corresponding separator in the separator list.
 		</method></inlet>
 	</class>
-</section>
-</documentation>
+	<class name="#centroid">
+		<method name="init"/>
+		<inlet id="0"><method name="grid(rows,columns,1)">
+			will compute the centroid of the given grid, which
+			is a weighted average, namely, the average position weighted
+			by the pixel values.
+		</method></inlet>
+		<outlet id="0">
+			<method name="grid(2)">
+			result
+			</method>
+		</outlet>
+	</class>
