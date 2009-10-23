@@ -2,9 +2,15 @@
 
 oct.2009
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
-[x] rename "cv." prefix to "cv/#"
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
+[ ] [pack] trigger_by (choose which inlets are hot)
+[ ] doc&abs: remove [fork] and other oldisms.
+[ ] <BLINK> MAKE REFERENCE.XML OBSOLETE </BLINK>
+[ ] GF objects don't have default methods like bang and list, unlike pd itself.
+[ ] [#in libv4l] !!!
+[ ] [#in unicap] !!!
+<matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 
 PFOAC/BNL 2009
 [ ] randomise positions and send offsetted text after choosing a position
@@ -29,10 +35,8 @@ PFOAC/BNL 2009
 [ ] irregular dc1394 options: white_shading, white_balance
     trigger_mode? trigger, trigger_delay
 [ ] Accumulation of Background Statistics
-[x] correction/détection de translations dans l'image (avec fft et #remap_image).
 [ ] cvEstimateRigidTransform
 [ ] compenser pour les ajustements progressifs ou soudains de luminosite
-[x] ajouter detection et correction d'interference par fft
 [ ] cvEllipse
 [ ] cvApproxPoly pour un seul poly à la fois
 [ ] cvMeanShift (?)
@@ -324,23 +328,9 @@ d'un GUI qui saurait en tirer avantage.
 
 <alx1> matju: détecter les formes; détecter les couleurs; support mpeg4; hotspots
 
-ClaudiusMaximus reports that allocating a 197M grid causes a crash (turns out C++
-throws exception, can't allocate, signal ABRT)
-
 ClaudiusMaximus says: I want to be able to send output from Pd+Gridflow to a video4linux
 loopback device so that other v4l programs can access the stream.
 I found the video loopback device here: http://motion.sourceforge.net/vloopback/
-
-<alx2>
-iSight on linux : http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
-needs something called 'coriander'. the person who got it working mentions libdc1394.
-http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html:
-I learn that the iSight is compliant with version 1.30 of IIDC.
-the docs for coriander mention that the author needed to create a major and minor device for the camera.
-retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
-raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
-any useful info?
-having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
 
 -mfpmath=sse2
 
@@ -367,21 +357,16 @@ very old bookmarks:
 
 FObject.subclass("rubyarray",2,2) {
   def initialize() @a=[]; @i=0; end
-  def _0_get(s=nil)
-    case s
-    when :size; send_out 1,:size,@a.size
-    when nil; _0_get :size
-    end
-  end
+  def _0_get(s=nil) case s when :size; send_out 1,:size,@a.size; when nil; _0_get :size end end
   def _0_clear; @a.clear end
   def _0_float i; @i=i; send_out 0, *@a[@i] if @a[@i]!=nil; end
   def _1_list(*l) @a[@i]=l; end
   def _0_save(filename,format=nil)
-    f=File.open(filename.to_s,"w")
-    if format then @a.each {|x| f.puts(format.to_s % x) }
-    else           @a.each {|x| f.puts(x.join(",")) }
-    end
-    f.close
+    File.open(filename.to_s,"w") {|f|
+      if format then @a.each {|x| f.puts(format.to_s % x) }
+      else           @a.each {|x| f.puts(x.join(",")) }
+      end
+    }
   end
   def _0_load(filename)
     f=File.open(filename.to_s,"r")
@@ -391,17 +376,11 @@ FObject.subclass("rubyarray",2,2) {
   end
 }
 
-
-
 FObject.subclass("regsub",3,1) {
   def initialize(from,to) _1_symbol(from); _2_symbol(to) end
   def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
   def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
   def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
-  #doc:_0_symbol,"a string to transform"
-  #doc:_1_symbol,"a regexp pattern to be found inside of the string"
-  #doc:_2_symbol,"a replacement for the found pattern"
-  #doc_out:_0_symbol,"the transformed string"
 }
 
 FObject.subclass("memstat",1,1) {
@@ -442,6 +421,3 @@ game_of_life.pd 397             507
 sand.pd         27              30
 cellular_1d.pd  475             730
 wave_1d.pd      107             173
-
-
-
