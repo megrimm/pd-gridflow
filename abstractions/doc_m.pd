@@ -1,7 +1,7 @@
-#N canvas 0 0 450 300 10;
+#N canvas 61 32 463 431 10;
 #X obj 12 117 doc_pos;
 #X msg 76 118 100 \$2;
-#X obj 0 0 cnv 15 80 16 \$0-rect_s \$0-rect int 4 8 1 9 -261615 -1
+#X obj 0 0 cnv 15 80 16 \$0-rect_s \$0-rect float 4 8 1 9 -261615 -1
 0;
 #X obj 12 88 s \$0-rect;
 #X obj 12 29 loadbang;
@@ -15,6 +15,22 @@
 ;
 #X obj 182 29 metro 100;
 #X msg 181 53;
+#X obj 280 190 gf/canvas_dollarzero 1;
+#X obj 280 143 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 297 142 loadbang;
+#X obj 280 285 receives;
+#X obj 280 171 t b b;
+#X obj 325 171 symbol \$1;
+#X obj 280 209 pack 0 s;
+#X obj 280 342 gf/canvas_getpos 0;
+#X msg 280 228 symbol \$1-doc_\$2;
+#X obj 280 247 t a a;
+#X msg 280 266 symbol \$1_sub;
+#X obj 280 361 s;
+#X obj 280 304 route ping;
+#X obj 280 323 b;
+#X obj 323 373 print zzz;
 #X connect 0 1 1 0;
 #X connect 1 0 0 1;
 #X connect 4 0 6 0;
@@ -23,4 +39,20 @@
 #X connect 7 0 3 0;
 #X connect 8 0 9 0;
 #X connect 10 0 11 0;
+#X connect 13 0 19 0;
+#X connect 14 0 17 0;
+#X connect 15 0 17 0;
+#X connect 16 0 25 0;
+#X connect 17 0 13 0;
+#X connect 17 1 18 0;
+#X connect 18 0 19 1;
+#X connect 19 0 21 0;
+#X connect 20 0 24 0;
+#X connect 20 0 27 0;
+#X connect 21 0 22 0;
+#X connect 22 0 23 0;
+#X connect 22 1 24 1;
+#X connect 23 0 16 0;
+#X connect 25 0 26 0;
+#X connect 26 0 20 0;
 #X coords 0 0 1 1 80 16 0;
