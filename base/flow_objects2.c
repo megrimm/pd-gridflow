@@ -155,6 +155,27 @@ GRID_INPUT(2,r) {
 }
 \end class {install("gf/canvas_setpos",1,0);}
 
+/*
+struct GFCanvasEditModeProxy {
+	t_pd x_pd;
+	GFCanvasEditMode *parent;
+};
+t_class *GFCanvasEditModeProxy_class;
+*/
+
+\class GFCanvasEditMode : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	t_atom a[1]; SETFLOAT(a+0,0);
+	outlet_float(bself->outlets[0],mom->gl_edit);
+}
+\end class {install("gf/canvas_edit_mode",1,1);}
+
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
@@ -173,7 +194,7 @@ GRID_INPUT(2,r) {
 	}
 	outlet_symbol(bself->outlets[0],gensym(a.c_str()));
 }
-\end class {install("gf/string_replace",1,1); add_creator("truc");}
+\end class {install("gf/string_replace",1,1);}
 
 void startup_flow_objects2 () {
 	\startall
