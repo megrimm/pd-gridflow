@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -46,7 +46,8 @@ static std::map<string,string> fourccs;
 	int jpeg_quality; // in theory we shouldn't need this, but...
 	~FormatQuickTimeHW() {if (anim) quicktime_close(anim);}
 	\constructor (t_symbol *mode, string filename) {
-		track=0; dim=0; codec=QUICKTIME_RAW; started=false; force=0; framerate=29.97; bit_packing=0; jpeg_quality=75;
+		track=0; dim=0; codec=const_cast<char *>(QUICKTIME_RAW);
+		started=false; force=0; framerate=29.97; bit_packing=0; jpeg_quality=75;
 // libquicktime may be nice, but it won't take a filehandle, only filename
 		filename = gf_find_file(filename);
 		anim = quicktime_open((char *)filename.data(),mode==gensym("in"),mode==gensym("out"));
