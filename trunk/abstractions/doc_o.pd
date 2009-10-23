@@ -12,8 +12,8 @@
 #X obj 387 230 receives;
 #X obj 358 174 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 0 0 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1 -1
-;
+#X obj 0 0 bng 15 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+-1 -1;
 #X obj 54 127 gf/canvas_filename 1;
 #X obj 157 147 loadbang;
 #X obj 27 402 s;
@@ -31,6 +31,7 @@
 #X msg 27 333 obj 3 \$1 doc_oo \$2;
 #X msg 387 211 symbol \$1-doc_o;
 #X obj 318 87 doc_pos;
+#X obj 200 283 doc_editmodebang;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
 #X connect 4 0 27 1;

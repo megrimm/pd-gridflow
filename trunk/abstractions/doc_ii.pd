@@ -1,18 +1,27 @@
-#N canvas 662 315 560 322 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 0: 12 8 1 9 -175159
+#N canvas 76 95 560 322 10;
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 1: 12 8 1 9 -175159
 -1 0;
-#X obj 165 47 loadbang;
-#X obj 134 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 45 47 loadbang;
+#X obj 14 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 165 107 s \$0-rect;
-#X obj 165 67 list append \$1;
-#X msg 165 87 label Inlet \$1:;
-#X msg 387 81 14 \$2;
-#X obj 339 81 doc_pos;
+#X obj 45 107 s \$0-rect;
+#X obj 45 67 list append \$1;
+#X msg 45 87 label Inlet \$1:;
+#X msg 267 81 14 \$2;
+#X obj 219 81 doc_pos;
+#X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+-1 -1;
+#X obj 212 122 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 212 215 display;
+#X obj 212 145 gf/canvas_dollarzero 1;
+#X msg 211 170 symbol \$1-;
+#X obj 287 219 doc_editmodebang 52;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
 #X connect 5 0 3 0;
 #X connect 6 0 7 1;
 #X connect 7 1 6 0;
+#X connect 9 0 11 0;
 #X coords 0 -1 1 1 64 16 2 0 0;

@@ -7,6 +7,9 @@
 #X msg 0 61 label Outlet \$1:;
 #X msg 63 116 14 \$2;
 #X obj 7 116 doc_pos;
+#X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+-1 -1;
+#X obj 297 229 doc_editmodebang 52;
 #X connect 1 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;
