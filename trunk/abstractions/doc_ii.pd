@@ -1,27 +1,45 @@
 #N canvas 76 95 560 322 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 1: 12 8 1 9 -175159
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 0: 12 8 1 9 -175159
 -1 0;
-#X obj 45 47 loadbang;
-#X obj 14 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X obj 45 107 s \$0-rect;
-#X obj 45 67 list append \$1;
-#X msg 45 87 label Inlet \$1:;
+#X obj 245 117 loadbang;
+#X obj 214 126 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 245 177 s \$0-rect;
+#X obj 245 137 list append \$1;
+#X msg 245 157 label Inlet \$1:;
 #X msg 267 81 14 \$2;
 #X obj 219 81 doc_pos;
 #X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
-#X obj 212 122 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
--1 -1;
-#X obj 212 215 display;
-#X obj 212 145 gf/canvas_dollarzero 1;
-#X msg 211 170 symbol \$1-;
-#X obj 287 219 doc_editmodebang 52;
+#X obj 218 53 doc_editmodebang 52;
+#X obj 2 32 t b b;
+#X obj 38 32 gf/canvas_dollarzero 1;
+#X obj 38 51 pack 0 \$1;
+#X msg 38 70 \; \$1-doc_i\$2_sub ping;
+#X obj 404 151 print gotit;
+#X obj 404 132 receives;
+#X obj 404 75 gf/canvas_dollarzero 1;
+#X obj 404 28 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 421 27 loadbang;
+#X msg 404 113 symbol \$1-doc_i\$2;
+#X obj 404 94 pack 0 \$1;
+#X obj 404 56 t b;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
 #X connect 5 0 3 0;
 #X connect 6 0 7 1;
 #X connect 7 1 6 0;
-#X connect 9 0 11 0;
+#X connect 8 0 10 0;
+#X connect 10 1 11 0;
+#X connect 11 0 12 0;
+#X connect 12 0 13 0;
+#X connect 15 0 14 0;
+#X connect 16 0 20 0;
+#X connect 17 0 21 0;
+#X connect 18 0 21 0;
+#X connect 19 0 15 0;
+#X connect 20 0 19 0;
+#X connect 21 0 16 0;
 #X coords 0 -1 1 1 64 16 2 0 0;
