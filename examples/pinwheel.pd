@@ -1,16 +1,16 @@
-#N canvas 495 370 643 604 10;
-#X obj 39 122 #for (0 0) (256 256) (1 1);
-#X obj 65 511 #outer * (255 255 255);
-#X obj 74 549 #out window;
-#X obj 76 76 metro 33;
-#X obj 79 51 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
-#X obj 164 172 f;
-#X obj 77 101 t b b;
-#X obj 54 197 #t;
-#X obj 325 278 #inner (1 0);
-#X obj 331 352 # % 256;
-#X obj 330 375 # > 128;
-#X obj 325 318 # *;
+#N canvas 495 370 643 518 10;
+#X obj 33 135 #for (0 0) (256 256) (1 1);
+#X obj 33 371 #outer * (255 255 255);
+#X obj 33 391 #out window;
+#X obj 33 95 metro 33;
+#X obj 33 70 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1;
+#X obj 154 155 f;
+#X obj 33 115 t b b;
+#X obj 33 195 #t;
+#X obj 295 212 #inner (1 0);
+#X obj 295 269 # % 256;
+#X obj 295 289 # > 128;
+#X obj 295 249 # *;
 #N canvas 2 71 450 475 pinwheel 0;
 #X obj 46 102 #inner (0 1);
 #X obj 46 138 # + 18000;
@@ -42,8 +42,8 @@
 #X connect 11 0 8 1;
 #X connect 12 0 4 0;
 #X connect 14 0 2 1;
-#X restore 63 360 pd pinwheel;
-#X obj 265 338 * -1;
+#X restore 33 291 pd pinwheel;
+#X obj 235 249 * -1;
 #N canvas 2 71 450 475 pinwheel 0;
 #X obj 46 102 #inner (0 1);
 #X obj 46 138 # + 18000;
@@ -75,30 +75,39 @@
 #X connect 11 0 8 1;
 #X connect 12 0 4 0;
 #X connect 14 0 2 1;
-#X restore 160 360 pd pinwheel;
-#X obj 61 280 #t;
-#X obj 61 449 # &;
-#X obj 157 447 # &;
-#X obj 192 448 # ^ 1;
-#X obj 62 480 # |;
-#X obj 197 172 + 250;
-#X obj 174 296 * 1;
-#X obj 221 289 nbx 3 14 1 32 0 1 empty empty empty 0 -8 0 10 -233217
--1 -1 10 256;
-#X obj 265 290 nbx 3 14 1 512 0 1 empty empty empty 0 -8 0 10 -233217
--1 -1 280 256;
-#X obj 445 250 nbx 3 14 1 8 0 1 empty empty empty 0 -8 0 10 -233217
--1 -1 2 256;
-#X obj 47 169 # c2p (128 128);
+#X restore 130 291 pd pinwheel;
+#X obj 33 215 #t;
+#X obj 33 331 # &;
+#X obj 130 331 # &;
+#X obj 160 331 # ^ 1;
+#X obj 33 351 # |;
+#X obj 187 155 + 250;
+#X obj 179 232 nbx 3 14 1 32 0 1 empty A empty 0 -8 0 10 -241291 -1
+-1 24 256;
+#X obj 235 232 nbx 3 14 0 512 0 1 empty B empty 0 -8 0 10 -241291 -1
+-1 175 256;
+#X obj 313 232 nbx 3 14 1 8 0 1 empty C empty 0 -8 0 10 -241291 -1
+-1 3 256;
+#X obj 33 155 # c2p (128 128);
+#X obj 295 26 cnv 15 220 160 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X msg 442 125 \; A 2 \; B 15 \; C 8;
+#X msg 442 59 \; A 8 \; B 141 \; C 8;
+#X msg 378 59 \; A 1 \; B 512 \; C 1;
+#X msg 314 125 \; A 31 \; B 74 \; C 8;
+#X msg 378 125 \; A 3 \; B 23 \; C 1;
+#X msg 314 59 \; A 24 \; B 175 \; C 3;
+#X text 320 29 Presets:;
+#X obj 154 175 * 1;
 #X text 24 26 Copyright 2009 by Federico Ferri;
-#X text 24 578 GridFlow 0.9.5;
-#X connect 0 0 25 0;
+#X text 24 438 GridFlow 0.9.5;
+#X connect 0 0 24 0;
 #X connect 1 0 2 0;
 #X connect 3 0 6 0;
 #X connect 4 0 3 0;
 #X connect 5 0 12 1;
 #X connect 5 0 20 0;
-#X connect 5 0 21 0;
+#X connect 5 0 33 0;
 #X connect 6 0 0 0;
 #X connect 6 1 5 0;
 #X connect 7 0 15 0;
@@ -118,10 +127,10 @@
 #X connect 18 0 17 1;
 #X connect 19 0 1 0;
 #X connect 20 0 5 1;
-#X connect 21 0 14 1;
-#X connect 22 0 14 2;
-#X connect 22 0 12 2;
-#X connect 23 0 13 0;
-#X connect 23 0 12 3;
-#X connect 24 0 11 1;
-#X connect 25 0 7 0;
+#X connect 21 0 14 2;
+#X connect 21 0 12 2;
+#X connect 22 0 13 0;
+#X connect 22 0 12 3;
+#X connect 23 0 11 1;
+#X connect 24 0 7 0;
+#X connect 33 0 14 1;
