@@ -1,18 +1,26 @@
 #N canvas 0 0 450 300 10;
 #X obj 12 117 doc_pos;
 #X msg 76 118 100 \$2;
-#X obj 0 0 cnv 15 100 16 empty \$0-rect Method \$2: 4 8 1 9 -261615
--1 0;
+#X obj 0 0 cnv 15 80 16 \$0-rect_s \$0-rect int 4 8 1 9 -261615 -1
+0;
 #X obj 12 88 s \$0-rect;
-#X obj 12 48 list append \$1;
 #X obj 12 29 loadbang;
 #X obj 74 28 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X msg 12 68 label Method \$2:;
+#X obj 12 48 list append \$1 \$2;
+#X msg 12 68 label \$2;
+#X obj 189 99 r \$0-rect_s;
+#X obj 192 123 display;
+#X obj 179 5 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
+;
+#X obj 182 29 metro 100;
+#X msg 181 53;
 #X connect 0 1 1 0;
 #X connect 1 0 0 1;
-#X connect 4 0 7 0;
-#X connect 5 0 4 0;
-#X connect 6 0 4 0;
+#X connect 4 0 6 0;
+#X connect 5 0 6 0;
+#X connect 6 0 7 0;
 #X connect 7 0 3 0;
-#X coords 0 -1 1 1 100 16 2 0 0;
+#X connect 8 0 9 0;
+#X connect 10 0 11 0;
+#X coords 0 0 1 1 80 16 0;
