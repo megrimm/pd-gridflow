@@ -1,0 +1,43 @@
+#N canvas 692 0 555 717 10;
+#X obj 0 0 doc_h;
+#X obj 27 52 fps;
+#X obj 3 127 doc_c 1;
+#X obj 14 151 doc_cc 0;
+#X obj 100 151 doc_m c0 symbol;
+#X text 205 169 "detailed":;
+#X text 205 150 "terse":;
+#X obj 3 244 doc_i 1;
+#X obj 14 268 doc_ii 0;
+#X obj 100 268 doc_m i0 bang;
+#X obj 100 338 doc_m i0 detailed;
+#X obj 100 358 doc_m i0 mode;
+#X obj 100 508 doc_m i0 period;
+#X obj 3 557 doc_o 1;
+#X obj 14 581 doc_oo 0;
+#X obj 100 581 doc_m o0 float;
+#X obj 100 601 doc_m o0 list;
+#X text 171 472 "logical" uses [timer];
+#X text 174 487 "process" uses [cputime];
+#X text 169 457 "cpu" uses [tsctime];
+#X text 169 407 "real" uses [realtime];
+#X text 171 422 "user" uses [usertime];
+#X text 174 437 "system" uses [systemtime];
+#X obj 3 682 doc_also;
+#X obj 100 679 realtime;
+#X obj 157 678 usertime;
+#X obj 215 679 systemtime;
+#X obj 285 679 tsctime;
+#X obj 339 679 timer;
+#X obj 378 677 cputime;
+#X text 198 267 Times at which bangs are received are stored until
+a large enough sample of those is accumulated. Large enough is defined
+to be whenever the timespan exceeds one second. Then a report is made
+through the outlet.;
+#X obj 100 528 doc_m i0 ANY;
+#X text 185 529 exceptionally \, anything else gets ignored.;
+#X text 192 579 (terse) this is the messages-per-second rating.;
+#X text 193 599 (detailed) this is: messages-per-second \, followed
+by five values of milliseconds-per-message: minimum \, median \, maximum
+\, average \, standard deviation.;
+#X text 193 643 (the average happens to be simply 1000 divided by the
+messages-per-second \, but it is convenient to have it anyway);
