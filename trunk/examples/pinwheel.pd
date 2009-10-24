@@ -2,7 +2,7 @@
 #X obj 33 489 #outer * (255 255 255);
 #X obj 33 509 #out window;
 #X obj 33 95 metro 33;
-#X obj 33 70 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1;
+#X obj 33 70 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
 #X obj 65 195 f;
 #X obj 33 115 t b b;
 #X obj 95 195 + 250;
@@ -40,10 +40,7 @@
 #X obj 143 232 shunt 2;
 #X obj 243 217 hradio 15 1 0 2 empty E empty 0 -8 0 10 -241291 -1 -1
 0;
-#X obj 143 252 # % 512;
-#X obj 143 272 # > 256;
-#X obj 143 292 # * 2;
-#X obj 143 312 # - 1;
+#X obj 143 291 # - 1;
 #X obj 279 226 nbx 3 14 0 512 0 1 empty D empty 0 -8 0 10 -241291 -1
 -1 0 256;
 #X obj 505 41 r P;
@@ -59,6 +56,8 @@
 #X msg 361 372 \; P 16 1 1500 10 1;
 #X msg 361 412 \; P 5 5 275 11 1;
 #X msg 253 412 2 # \$1 \$1;
+#X obj 143 252 # >> 7;
+#X obj 143 272 # & 2;
 #X connect 0 0 1 0;
 #X connect 1 0 17 0;
 #X connect 2 0 5 0;
@@ -68,7 +67,7 @@
 #X connect 5 0 15 0;
 #X connect 5 1 4 0;
 #X connect 6 0 4 1;
-#X connect 7 0 53 0;
+#X connect 7 0 50 0;
 #X connect 8 0 32 1;
 #X connect 9 0 29 1;
 #X connect 10 0 27 0;
@@ -91,13 +90,12 @@
 #X connect 31 0 26 1;
 #X connect 32 0 31 0;
 #X connect 33 0 30 0;
-#X connect 34 0 36 0;
+#X connect 34 0 51 0;
 #X connect 34 1 33 0;
 #X connect 35 0 34 1;
-#X connect 36 0 37 0;
-#X connect 37 0 38 0;
+#X connect 36 0 30 0;
+#X connect 37 0 33 1;
 #X connect 38 0 39 0;
-#X connect 39 0 30 0;
-#X connect 40 0 33 1;
-#X connect 41 0 42 0;
-#X connect 53 0 25 1;
+#X connect 50 0 25 1;
+#X connect 51 0 52 0;
+#X connect 52 0 36 0;
