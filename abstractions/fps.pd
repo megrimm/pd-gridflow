@@ -67,7 +67,7 @@
 #X obj 113 367 shunt;
 #X obj 143 428 list append;
 #X obj 280 232 list prepend;
-#N canvas 207 253 585 366 min.med.max 1;
+#N canvas 207 253 585 366 min.med.max 0;
 #X obj 39 51 #sort;
 #X obj 39 32 #import per_message f;
 #X obj 39 70 t a a;
