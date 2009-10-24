@@ -74,7 +74,7 @@ say #store           "store image in RAM, in-place picture-in-picture, and make 
 say #transpose       "swap two dimensions out of any, in a grid"
 say #type            "get a symbol representing the number type of a grid"
 say #unpack          "split a grid into floats on separate outlets"
-say @join            "join two grids together along any dimension"
+say #join            "join two grids together along any dimension"
 
 category "Lists"
 say foreach          "convert a list to a sequence of atom messages"
