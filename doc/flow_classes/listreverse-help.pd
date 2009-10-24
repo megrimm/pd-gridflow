@@ -1,0 +1,12 @@
+#N canvas 659 137 558 359 10;
+#X obj 40 40 listreverse;
+#X obj 0 0 doc_h;
+#X obj 3 73 doc_c 0;
+#X obj 3 108 doc_i 1;
+#X obj 3 156 doc_o 1;
+#X obj 14 132 doc_ii 0;
+#X obj 14 180 doc_oo 0;
+#X obj 100 132 doc_m i0 list;
+#X obj 100 180 doc_m o0 list;
+#X text 119 34 Outputs the incoming list \, from last element to first
+element.;
