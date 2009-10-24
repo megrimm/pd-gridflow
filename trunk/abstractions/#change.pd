@@ -8,6 +8,8 @@
 #X obj 123 145 outlet;
 #X obj 64 57 t a a a;
 #X obj 64 172 sel 1;
+#X obj 188 25 loadbang;
+#X obj 188 44 args initial;
 #X connect 0 0 7 0;
 #X connect 1 0 4 0;
 #X connect 2 0 5 0;
@@ -18,3 +20,5 @@
 #X connect 7 1 1 0;
 #X connect 7 2 3 1;
 #X connect 8 0 3 0;
+#X connect 9 0 10 0;
+#X connect 10 0 3 1;
