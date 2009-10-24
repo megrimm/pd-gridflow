@@ -1,4 +1,4 @@
-#N canvas 306 100 561 544 10;
+#N canvas 673 0 561 544 10;
 #X text 1 25 makes noise;
 #X obj 207 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
@@ -29,15 +29,31 @@ range;
 #X obj 148 124 #in;
 #X obj 249 247 shunt;
 #X obj 0 0 doc_h;
-#X obj 3 371 doc_c 1;
-#X obj 3 491 doc_o 1;
-#X obj 3 419 doc_i 2;
+#X obj 3 491 doc_c 1;
+#X obj 3 611 doc_o 1;
+#X obj 3 539 doc_i 2;
 #X text 210 147 switch displays \, use this to get an image into the
 #store;
-#X obj 14 515 doc_oo 0;
-#X obj 14 443 doc_ii 0;
-#X obj 14 467 doc_ii 1;
-#X obj 14 395 doc_cc 0;
+#X obj 14 635 doc_oo 0;
+#X obj 14 563 doc_ii 0;
+#X obj 14 587 doc_ii 1;
+#X obj 14 515 doc_cc 0;
+#X obj 100 587 doc_m i1;
+#X obj 100 563 doc_m i0 grid;
+#X obj 100 635 doc_m o0 grid;
+#X text 326 33 typically you plug a [#for] into this object \, and
+you plug this object into the left side of a [#store]. it will scatter
+pixels around \, giving an "unpolished glass" effec.t;
+#X text 326 89 if you put a picture in it \, however \, it will add
+noise. The resulting values may be out of range \, so you may need
+to clip them using min/max.;
+#X obj 100 515 doc_m c0 float;
+#X text 54 364 [#spread] scatters the pixels in an image. Not all original
+pixels will appear \, and some may get duplicated (triplicated \, etc)
+randomly. Some wrap-around effect will occur close to the edges.;
+#X text 52 425 Sending an integer to inlet 1 sets the amount of spreading
+in maximum number of pixels + 1 even values translate the whole image
+by half a pixel due to rounding .;
 #X connect 1 0 12 0;
 #X connect 2 0 23 1;
 #X connect 3 0 21 1;
