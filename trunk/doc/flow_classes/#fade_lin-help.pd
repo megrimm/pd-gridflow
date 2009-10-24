@@ -1,0 +1,26 @@
+#N canvas 684 0 563 717 10;
+#X obj 0 0 doc_h;
+#X obj 3 212 doc_c 2;
+#X obj 52 110 #fade_lin;
+#X obj 3 296 doc_i 3;
+#X obj 3 517 doc_o 1;
+#X obj 14 320 doc_ii 0;
+#X obj 14 464 doc_ii 1;
+#X obj 14 488 doc_ii 2;
+#X obj 14 541 doc_oo 0;
+#X obj 14 236 doc_cc 0;
+#X obj 14 260 doc_cc 1;
+#X obj 100 236 doc_m c0 grid;
+#X obj 100 260 doc_m c1 grid;
+#X text 197 234 maxraise;
+#X text 198 257 maxdrop;
+#X obj 100 320 doc_m i0 grid;
+#X text 187 314 produces on outlet 0 a piecewise-linear nonrecurrent
+fading according to the flow of incoming messages. For example \, if
+maxraise=2 and maxdrop=4 \, then with each new message an output is
+produced that is at most 2 more or 4 less than the previous output.
+;
+#X obj 100 464 doc_m i1 grid;
+#X obj 100 488 doc_m i2 grid;
+#X text 193 463 same as arg 0;
+#X text 194 486 same as arg 1;
