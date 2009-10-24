@@ -1,4 +1,4 @@
-#N canvas 176 0 558 657 10;
+#N canvas 676 0 558 657 10;
 #X obj 181 115 metro 10;
 #X obj 181 96 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
@@ -9,29 +9,39 @@
 #X obj 251 162 #pack 2;
 #X obj 165 186 #downscale_by;
 #X obj 165 212 #out window;
-#X text 99 349 GRID;
-#X text 89 402 INTEGER;
 #X text 9 24 Scales down a picture by a specified amount.;
-#X text 149 351 Receives a grid.;
-#X obj 100 624 #scale_to;
-#X obj 171 624 #scale_by;
-#X text 161 401 The value defines the scale factor. A pack object allows
-you to vary the horizontal and vertical values idenpendently. Inlet
-0 of [#pack] varies the image on a vertical axis \, inlet 1 of [#pack]
-varies the image on a horizontal axis.;
-#X text 82 572 Outputs the resulting grid.;
-#X text 100 281 INTEGER;
-#X text 168 282 The value downscales the image according to the specified
-value.;
+#X obj 100 684 #scale_to;
+#X obj 171 684 #scale_by;
 #X obj 0 0 doc_h;
-#X obj 3 251 doc_c 1;
-#X obj 3 625 doc_also;
-#X obj 3 540 doc_o 1;
-#X obj 14 564 doc_oo 0;
-#X obj 3 318 doc_i 2;
-#X obj 14 352 doc_ii 0;
-#X obj 14 402 doc_ii 1;
+#X obj 3 685 doc_also;
+#X obj 3 600 doc_o 1;
+#X obj 14 624 doc_oo 0;
+#X obj 3 478 doc_i 2;
+#X obj 14 512 doc_ii 0;
+#X obj 14 542 doc_ii 1;
 #X obj 14 278 doc_cc 0;
+#X obj 100 278 doc_m c0 grid;
+#X obj 3 250 doc_c 1..2;
+#X obj 100 509 doc_m i0 grid;
+#X text 191 277 The value defines the scale factor. A pack object allows
+you to vary the horizontal and vertical values idenpendently. In the
+example above \, inlet 0 of [#pack] varies the image on a vertical
+axis \, inlet 1 of [#pack] varies the image on a horizontal axis.;
+#X obj 100 542 doc_m i1 grid;
+#X text 193 542 same as arg 0;
+#X text 196 508 Scales down picture by specified amount. (See scale
+factor above);
+#X text 202 622 grid((factor/y) (factor/x) channels);
+#X text 193 348 factor is optional (default is 2).;
+#X text 193 370 if it's a single value \, then that factor is to be
+used for both rows and column.s;
+#X obj 100 623 doc_m o0 grid;
+#X obj 14 409 doc_cc 1;
+#X obj 100 409 doc_m c1 symbol;
+#X text 199 407 "smoothly": does the downscale by averaging each block
+of pixels.;
+#X text 201 436 omitted: does the downscale by keeping only the top
+right pixel in the block.;
 #X connect 0 0 3 0;
 #X connect 1 0 0 0;
 #X connect 2 0 6 0;
