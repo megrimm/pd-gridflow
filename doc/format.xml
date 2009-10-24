@@ -1,11 +1,4 @@
-<?xml version="1.0" standalone="no" ?>
 <documentation title="Reference Manual: Format Classes">
-<!-- $Id$ -->
-<!--
-	GridFlow Reference Manual: Format Handler Reference
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
--->
-
 <section name="Objects for Input/Output">
 	<class name="#in">
 		<method name="init" min="0">
@@ -13,10 +6,10 @@
 				<rest name="format_specific_part"/>
 
 			If no arguments given, creates an input object for an unspecified
-			format. You then need to use the <k>"open"</k> command to link
+			format. You then need to use the "open" command to link
 			a format handler to it.
 
-			If arguments given, the <k>"open"</k> command is immediately called
+			If arguments given, the "open" command is immediately called
 			with those arguments.
 
 			Remember that most formats produce Dim[rows,columns,3] grids with
@@ -28,7 +21,7 @@
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 				This is the command that gives a particular resource
-				to a <k>[#out]</k> object. This is done through a "format"
+				to a [#out] object. This is done through a "format"
 				(there is a list of formats in this manual). The other
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
@@ -38,11 +31,11 @@
 			</method>
 			<method name="open">
 				<arg name="filename"/>
-				This is a shortcut for <k>"open file"</k> followed by a filename.
+				This is a shortcut for "open file" followed by a filename.
 				The filename must contain a dot, else it will be seen as a handler name.
 			</method>
 			<method name="close">
-				close may be necessary if you operate on <k>"/dev/video"</k>,
+				close may be necessary if you operate on "/dev/video",
 				which can only be read by one at a time. otherwise it's
 				usually not necessary.
 			</method>
@@ -105,10 +98,10 @@
 				<rest name="format_specific_part"/>
 
 			If no arguments given, creates an output object for an unspecified
-			format. You then need to use the <k>"open"</k> command to link
+			format. You then need to use the "open" command to link
 			a format handler to it.
 
-			If arguments given, the <k>"open"</k> command is immediately called
+			If arguments given, the "open" command is immediately called
 			with those arguments.
 
 			Remember that most formats expect dim(rows,columns,3) grids with
@@ -118,15 +111,15 @@
 			<arg name="rows" type="integer"/>
 			<arg name="columns" type="integer"/>
 
-			This alternate way to create an <k>[#out]</k> automatically calls
-			<k>"open window"</k> and <k>"out_size <i>rows columns</i>"</k>.
+			This alternate way to create an [#out] automatically calls
+			"open window" and "out_size <i>rows columns</i>".
 		</method>
 		<inlet id="0">
 			<method name="open" min="1">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 				This is the command that gives a particular resource
-				to a <k>[#out]</k> object. This is done through a "format"
+				to a [#out] object. This is done through a "format"
 				(there is a list of formats in this manual). The other
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
@@ -179,23 +172,23 @@
 	</class>
 	
 	<class name="#peephole">
-		<p>
+		
 		This object class only works with a X11-based version of Pd.
 		(e.g. on Linux, BSD, but not MacOS X).
-		</p>
-		<p>Similar to <k>[#out window]</k>, except it creates an inset in the patch you put it
+		
+		Similar to [#out window], except it creates an inset in the patch you put it
 		in, and a scaled version of the picture appears in the inset. It also emits the same messages
-		as <k>[#out window]</k> and automatically scales cursor position according to the current scale factor.
+		as [#out window] and automatically scales cursor position according to the current scale factor.
 		The scale factor is decided automatically.
-		</p>
+		
 		<method name="init">
 			<arg name="height" type="int"/>
 			<arg name="width" type="int"/>
 		</method>
-		<p>All other methods are as in <k>[#out window]</k>.</p>
+		All other methods are as in [#out window].
 	</class>
 	<class name="#mouse">
-		This will process the "position" messages emitted by <k>[#out]</k> or <k>[#peephole]</k> in
+		This will process the "position" messages emitted by [#out] or [#peephole] in
 		useful ways.
 		<outlet id="0"><method name="list">
 			y,x coords of a click
@@ -217,7 +210,7 @@
 		</method></outlet>
 	</class>
 	<class name="#camera">
-		Works about like <k>[#in videodev]</k> except you can right-click-open it to access all of the
+		Works about like [#in videodev] except you can right-click-open it to access all of the
 		camera settings visually.
 	</class>
 </section>
@@ -225,9 +218,9 @@
 <section name="Picture/Movie Formats">
 
 	<class name="format ppm #in/#out">
-		<p>Subformat P6 only.
+		Subformat P6 only.
 		Max-number can only be 255 (24-bit RGB).
-		</p>
+		
 
 		<method name="open ppm file">
 			<arg name="filename" type="symbol"/>
@@ -247,7 +240,7 @@
 	</class>
 
 	<class name="format jpeg #in/#out">
-		<p>Support for RGB non-progressive</p>
+		Support for RGB non-progressive
 		
 		<method name="open jpeg file">
 			<arg name="filename" type="symbol"/>
@@ -261,7 +254,7 @@
 	</class>
 
 	<class name="format png #in">
-		<p>Support for RGB non-progressive</p>
+		Support for RGB non-progressive
 		
 		<method name="open png file">
 			<arg name="filename" type="symbol"/>
@@ -276,15 +269,15 @@
 	</class>
 
 	<class name="format quicktime #in/#out">
-		<p>Support for .mov files.</p>
-		<p>This format supports frame-seek and frame-tell.</p>
-		<p>Uses the HW-QuickTime library aka QuickTime4Linux
+		Support for .mov files.
+		This format supports frame-seek and frame-tell.
+		Uses the HW-QuickTime library aka QuickTime4Linux
 		(libquicktime.so). There is also a variant on the same library and that project
-		is just called LibQuickTime.</p>
-		<p>Some versions of those libraries may include support for different codecs,
-		and some also may support entirely different wrapper formats such as AVI.</p>
-		<p>On Macintosh, Apple QuickTime is used instead, but several of the following
-		messages may not be available.</p>
+		is just called LibQuickTime.
+		Some versions of those libraries may include support for different codecs,
+		and some also may support entirely different wrapper formats such as AVI.
+		On Macintosh, Apple QuickTime is used instead, but several of the following
+		messages may not be available.
 
 		<method name="open quicktime file">
 			<arg name="filename" type="symbol" />
@@ -295,7 +288,7 @@
 			Some other values may allowed, depending on the version of the library
 			and which codec plugins are installed.
 			Must be set before the first frame is written.
-			only applies to <k>[#out]</k>. Choosing a codec is important
+			only applies to [#out]. Choosing a codec is important
 			because codecs influence greatly the speed of
 			encoding, the speed of decoding,
 			the size of the written file, and its fidelity to the
@@ -306,7 +299,7 @@
 			<arg name="key" type="symbol"/>
 			<arg name="value" type="int"/>
 			Sets special codec-specific settings.
-			For example: <k>"parameter jpeg_quality 75"</k>
+			For example: "parameter jpeg_quality 75"
 		</method>
 		<method name="framerate">
 			<arg name="fps" type="int"/>
@@ -336,20 +329,20 @@
 	</class>
 
 	<class name="format mpeg #in">
-		<p>support for .mpeg files</p>
-		<p>this format supports frame-seek and frame-tell.</p>
-		<p>Two different libraries are available for dealing with
-		MPEG files. Those have different details, capabilities and quirks.</p>
-		<p>In any case, GridFlow does not support importing audio from
-		those files.</p>
-		<p>If you use the HeroineWarrior library, you may open several
-		mpeg files at once, but not with the GregWard library.</p>
-		<p>Libraries may scream error messages in a rude way.</p>
-		<p>By opposition to PPM and TARGA, this format driver only
+		support for .mpeg files
+		this format supports frame-seek and frame-tell.
+		Two different libraries are available for dealing with
+		MPEG files. Those have different details, capabilities and quirks.
+		In any case, GridFlow does not support importing audio from
+		those files.
+		If you use the HeroineWarrior library, you may open several
+		mpeg files at once, but not with the GregWard library.
+		Libraries may scream error messages in a rude way.
+		By opposition to PPM and TARGA, this format driver only
 		allows a single MPEG stream per file (you cannot "cat"
 		several MPEG files together).
-		</p>
-		<p>Supports Rewind and Frame Select.</p>
+		
+		Supports Rewind and Frame Select.
 		<method name="open mpeg file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
@@ -358,14 +351,14 @@
 	</class>
 
 	<class name="format grid #in/#out">
-		<p>
+		
 		This is GridFlow's special file format. This is the only I/O
-		format that can hold anything that the <k>[#store]</k> object can.
-		</p>
-		<p>
+		format that can hold anything that the [#store] object can.
+		
+		
 		This is the picture format that would support TCP connections
 		if that feature actually worked. More on this later.
-		</p>
+		
 
 		<method name="open grid file">
 			<arg name="filename" type="symbol"/>
@@ -390,10 +383,10 @@
 			instead of reading .grid files with header, will read raw data,
 			faking a .grid header to itself. It will use the hereby specified
 			dimension list, as well as two other settings:
-			<k>type</k> and <k>endian</k>.
+			type and endian.
 		</method>
 
-		<p>When writing "raw" data, a file may be considered a long string of
+		When writing "raw" data, a file may be considered a long string of
 		base 256 digits (called bytes), but different computers have different
 		conventions for dealing with them:
 
@@ -413,7 +406,7 @@
 			</li>
 			</list>
 		</method>
-		</p>
+		
 	</class>
 </section>
 
@@ -423,30 +416,30 @@
 			<arg name="device"/>
 		</method>
 
-		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.</p>
+		Video4Linux-1 devices, RGB-24 only. Variable picture size.
 		
-		<p>We have been testing it using cards of the BT-848 family,
-		such as Miro DC10plus and Hauppauge WinTV, using the <k>bttv.o</k> linux driver.
+		We have been testing it using cards of the BT-848 family,
+		such as Miro DC10plus and Hauppauge WinTV, using the bttv.o linux driver.
 		Also we have been testing using Logitech QuickCam (and similar Labtec hardware),
-		but don't use the <k>qce-ga</k> driver, which is buggy and obsolete: the <k>qc-usb</k>
-		works better.</p>
+		but don't use the qce-ga driver, which is buggy and obsolete: the qc-usb
+		works better.
 
-		<p>Some hardware doesn't support RGB, so you may have to select a YUV colorspace
-		(see below) and then use <k>[#yuv_to_rgb]</k>. Don't forget to also do
-		<k>[# min 255]</k> and <k>[# max 0]</k>.
-		</p>
+		Some hardware doesn't support RGB, so you may have to select a YUV colorspace
+		(see below) and then use [#yuv_to_rgb]. Don't forget to also do
+		[# min 255] and [# max 0].
+		
 
-		<p>If for some reason there's a bug that causes a driver to produce BGR instead of RGB,
+		If for some reason there's a bug that causes a driver to produce BGR instead of RGB,
 		so that red and blue are swapped, you can swap them back by filtering through a RGB-BGR
-		converter, such as <k>[#inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</k>.</p>
+		converter, such as [#inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}].
 
-		<p>color adjustments:
+		color adjustments:
 		<method name="brightness"><arg name="level" type="0-65535"/></method>
 		<method name="hue"       ><arg name="level" type="0-65535"/></method>
 		<method name="colour"    ><arg name="level" type="0-65535"/></method>
 		<method name="contrast"  ><arg name="level" type="0-65535"/></method>
 		<method name="whiteness" ><arg name="level" type="0-65535"/></method>
-		</p>
+		
 		<method name="get">
 			<arg name="attr" type="symbol"/>
 			gets a specific attribute. a message is sent through right outlet.
@@ -456,7 +449,7 @@
 			gets all attributes.
 		</method>
 		
-		<p>other options:
+		other options:
 		<method name="channel"   ><arg type="integer"/></method>
 		<method name="tuner"     ><arg type="integer"/></method>
 		<method name="norm"      ><arg type="integer"/></method>
@@ -489,28 +482,28 @@
 			sets the input size, especially when using a video digitalizer
 			device.
 		</method>
-		</p>
+		
 	</class>
 </section>
 
 <section name="Window Output">
 
 	<class name="format x11 #in/#out">
-		<p>supports 15,16,24,32-bit truecolor displays</p>
+		supports 15,16,24,32-bit truecolor displays
 
-		<p>now also support 8-bit indexed displays, using a private colormap
+		now also support 8-bit indexed displays, using a private colormap
 		configured as 3:3:2 RGB. When using 8-bit you can specify the
 		"use_stripes" option to use a completely different color scheme
 		involving R,G,B diagonal stripes, a kind of 6:6:6 RGB spread over three
-		pixels.</p>
+		pixels.
 
-		<p>If you are using Windows or MacOS 10: you will have to install
+		If you are using Windows or MacOS 10: you will have to install
 		a X11 server. This will emulate Unix display on your OS. (note:
 		Unix systems also need a X11 server, but it's built-in and handles
 		the video driver directly). In the case of MacOS 10 and QNX that both
 		use non-X11 display technology on top of a basically Unix OS, the
 		OS comes with a X11 server, but it may be on a "bundled software"
-		CD.</p>
+		CD.
 	
 		<method name="open x11">
 			synonym of "open x11 here".
@@ -544,25 +537,25 @@
 			or else they will be "wrapped".
 		</method>
 
-		<p>
+		
 		Destroying the object (or sending "close") should close the window.
-		</p>
+		
 
-		<p>because of the design of Xlib, or if any of the connections
+		because of the design of Xlib, or if any of the connections
 		involved crashes, then the whole program has to be terminated.
 		(don't you love xlib). Something similar happens if you close any
-		of the windows yourself, but IIRC this could be fixed.</p>
+		of the windows yourself, but IIRC this could be fixed.
 
-		<p>only one window may be used per connection (to simplify matters;
-		this doesn't reduce flexibility).</p>
+		only one window may be used per connection (to simplify matters;
+		this doesn't reduce flexibility).
 
-		<p>there is an additional argument that may be added to every
-		<k>"open"</k> message; if you don't put it, a new toplevel window is created.
+		there is an additional argument that may be added to every
+		"open" message; if you don't put it, a new toplevel window is created.
 		if you put "root" then the screen's wallpaper will be used instead
 		(it may fail to work with some popular window managers). You can also
-		put a window number, e.g. <k>0x28003ff</k>, you may connect to
+		put a window number, e.g. 0x28003ff, you may connect to
 		an existing window; you can find out the number of a window by using
-		a tool like <k>xwininfo</k>, part of X11 standard tools.</p>
+		a tool like xwininfo, part of X11 standard tools.
 
 		<method name="out_size">
 			<arg name="height" type="integer"/>
@@ -591,12 +584,12 @@
 				<arg name="x" type="integer"/>
 				<arg name="buttons" type="integer"/>
 				
-				<p>This is emitted every time the cursor moves inside
+				This is emitted every time the cursor moves inside
 				the window connected to this format handler. This is also
 				emitted when the cursor is dragging from inside to outside
-				the window. This is also emitted when a mouse button is pressed.</p>
+				the window. This is also emitted when a mouse button is pressed.
 
-				<p>The y and x coordinates are relative to the upper
+				The y and x coordinates are relative to the upper
 				right corner of the window. Specific button states may be
 				extracted from the button value by applying [&gt;&gt;
 				buttonnumber] and then checking whether the result is odd.
@@ -615,20 +608,20 @@
 				<li>Right Button</li>
 				<li>Wheel Up</li>
 				<li>Wheel Down</li>
-				</list></p>
-				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
+				</list>
+				NOTE: This message form may become longer in the future, but the already defined parts will stay the same.
 			</method>
 			<method name="keypress">
 				<arg name="y" type="integer"/>
 				<arg name="x" type="integer"/>
 				<arg name="buttons" type="integer"/>
 				<arg name="keyname" type="symbol"/>
-				<p>Similar to <k>position</k> above, but this is emitted when a
+				Similar to position above, but this is emitted when a
 				keyboard key is pressed while this format handler's window
 				is active. Keynames follow the X11 standard, similarly to PureData's [keyname] object.
 				The only exception is that keynames that are digits get prefixed by a capital D so that
-				they don't get mistaken for actual numbers.</p>
-				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
+				they don't get mistaken for actual numbers.
+				NOTE: This message form may become longer in the future, but the already defined parts will stay the same.
 			</method>
 			<method name="keyrelease">
 				<arg name="y" type="integer"/>
@@ -636,7 +629,7 @@
 				<arg name="buttons" type="integer"/>
 				<arg name="keyname" type="symbol"/>
 				Same as keypress but when a key gets released instead.
-				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
+				NOTE: This message form may become longer in the future, but the already defined parts will stay the same.
 			</method>
 		</outlet>
 	</class>
@@ -705,7 +698,7 @@
 	<class name="format window #out">
 		<method name="open window">
 			Equivalent to "open x11", but this can be set by putting a line like
-			this in the config file: <k>GridFlow.formats[:window] = GridFlow.formats[:x11]</k>
+			this in the config file: GridFlow.formats[:window] = GridFlow.formats[:x11]
 			(and similarly other aliases can be created too)
 		</method>
 	</class>
