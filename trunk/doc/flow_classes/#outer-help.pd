@@ -1,4 +1,4 @@
-#N canvas 23 44 566 519 10;
+#N canvas 668 0 579 717 10;
 #X obj 19 39 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 19 130 spigot;
@@ -17,13 +17,12 @@ g \, b);
 #X obj 212 90 float 1;
 #X obj 267 90 + 1;
 #X msg 171 69 4;
-#X obj 156 520 @join;
-#X obj 198 520 #finished;
-#X obj 103 520 #scan +;
-#X obj 268 520 #cast;
-#X obj 310 520 #ravel;
-#X obj 358 520 #grade;
-#X obj 407 520 #perspective;
+#X obj 198 680 #finished;
+#X obj 103 680 #scan +;
+#X obj 268 680 #cast;
+#X obj 310 680 #ravel;
+#X obj 358 680 #grade;
+#X obj 407 680 #perspective;
 #X obj 171 111 #import (3);
 #X obj 171 132 # * 128;
 #X obj 19 109 #import (128);
@@ -31,46 +30,62 @@ g \, b);
 #X obj 100 161 #outer ^;
 #X obj 100 181 # * 2;
 #X obj 19 255 #outer gamma;
-#X obj 3 520 doc_also;
+#X obj 3 680 doc_also;
 #X obj 0 0 doc_h;
 #X obj 3 320 doc_c 1;
-#X obj 3 372 doc_i 2;
-#X obj 14 396 doc_ii 0;
-#X obj 14 420 doc_ii 1;
-#X obj 3 444 doc_o 1;
-#X obj 14 468 doc_oo 0;
+#X obj 3 412 doc_i 2;
+#X obj 14 436 doc_ii 0;
+#X obj 14 530 doc_ii 1;
+#X obj 3 584 doc_o 1;
+#X obj 14 608 doc_oo 0;
 #X obj 19 277 #out window;
-#X text 171 178 #outer does the same two-input operation between every
-possible pair of the left-side grid and the right side grid. #inner
-treats both input grids like #fold does \, then does a #outer on the
-other dimensions \, such that every two-input operation is like a @fold.
-this is a very powerful operation that can be used to do rotations
-\, rgb->yuv \, color conversions \, etc.;
-#X obj 14 344 doc_cc 0;
+#X obj 14 343 doc_cc 0;
+#X obj 100 436 doc_m i0 grid;
+#X obj 100 506 doc_m i0 op;
+#X obj 100 343 doc_m c0 op;
+#X obj 100 530 doc_m i1 grid;
+#X obj 100 608 doc_m o0 grid;
+#X obj 100 363 doc_m c0 grid;
+#X obj 156 680 #join;
+#X text 171 250 #outer does the same two-input operation between every
+possible pair of the left-side grid and the right side grid.;
+#X obj 392 102 display;
+#X text 387 32 Multiplication table:;
+#X obj 391 79 #outer * (1 2 3 4 5 6 7);
+#X msg 391 56 1 2 3 4 5;
+#X text 188 433 produces a grid of size Dim(anyA... \, anyB...) \,
+where numbers are the results of the operation on every element of
+A and every element of B. the resulting array can be very big. Don't
+try this on two pictures (the result will have 6 dimensions);
+#X text 192 507 same as arg 0;
+#X text 193 529 same as arg 1;
+#X text 190 363 grid B (see below);
 #X connect 0 0 8 0;
 #X connect 0 0 14 0;
-#X connect 1 0 25 0;
-#X connect 1 0 25 1;
-#X connect 2 0 26 0;
-#X connect 2 0 26 1;
+#X connect 1 0 24 0;
+#X connect 1 0 24 1;
+#X connect 2 0 25 0;
+#X connect 2 0 25 1;
 #X connect 3 0 2 1;
 #X connect 4 0 1 1;
 #X connect 4 0 3 0;
 #X connect 7 0 9 0;
 #X connect 8 0 7 0;
 #X connect 9 0 10 0;
-#X connect 9 0 24 0;
+#X connect 9 0 23 0;
 #X connect 10 0 9 1;
 #X connect 11 0 12 0;
 #X connect 12 0 13 0;
-#X connect 12 0 22 0;
+#X connect 12 0 21 0;
 #X connect 13 0 12 1;
 #X connect 14 0 11 0;
-#X connect 22 0 23 0;
-#X connect 23 0 28 1;
-#X connect 24 0 1 0;
-#X connect 24 0 2 0;
-#X connect 25 0 28 0;
+#X connect 21 0 22 0;
+#X connect 22 0 27 1;
+#X connect 23 0 1 0;
+#X connect 23 0 2 0;
+#X connect 24 0 27 0;
+#X connect 25 0 26 0;
 #X connect 26 0 27 0;
-#X connect 27 0 28 0;
-#X connect 28 0 37 0;
+#X connect 27 0 36 0;
+#X connect 48 0 46 0;
+#X connect 49 0 48 0;
