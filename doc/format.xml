@@ -170,23 +170,7 @@
 			</method>
 		</outlet>
 	</class>
-	
-	<class name="#peephole">
-		
-		This object class only works with a X11-based version of Pd.
-		(e.g. on Linux, BSD, but not MacOS X).
-		
-		Similar to [#out window], except it creates an inset in the patch you put it
-		in, and a scaled version of the picture appears in the inset. It also emits the same messages
-		as [#out window] and automatically scales cursor position according to the current scale factor.
-		The scale factor is decided automatically.
-		
-		<method name="init">
-			<arg name="height" type="int"/>
-			<arg name="width" type="int"/>
-		</method>
-		All other methods are as in [#out window].
-	</class>
+
 	<class name="#mouse">
 		This will process the "position" messages emitted by [#out] or [#peephole] in
 		useful ways.
