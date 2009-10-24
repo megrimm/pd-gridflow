@@ -271,52 +271,6 @@
 			<arg name="grid" type="grid(rows columns {y u v})"/>
 		</method></outlet>
 	</class>
-	<class name="#convolve">
-		this is the object for blurring, sharpening, finding edges,
-		embossing, cellular automata, and many other uses.
-<!--NYI
-		<attr name="seed">
-		
-		</attr>
--->
-		<method name="init">
-			<arg name="op_para" type="numop2"/>
-			<arg name="op_fold" type="numop2"/>
-			<arg name="seed"   type="grid"/>
-			<arg name="right_hand" type="grid" default="none"/>
-		</method>
-		<inlet id="0">
-			<method name="grid">
-				<arg name="grid" type="grid(rows columns rest...)"/>
-				splits the incoming grid into dim(rest...) parts.
-				for each of those parts at (y,x), a rectangle of such
-				parts, centered around (y,x), is combined with the
-				convolution grid like a [#] of operation op_para. Then
-				each such result is folded like [#fold] of operation
-				op_fold and specified base. the results are assembled
-				into a grid that is sent to the outlet. near the borders of
-				the grid, coordinates wrap around. this means the whole grid
-				has to be received before production of the next grid
-				starts.
-			</method>
-		</inlet>
-		<inlet id="1">
-			<method name="grid">
-				<arg name="grid" type="grid(rows2 columns2)"/>
-				this is the convolution grid and it gets stored in
-				the object. if rows2 and/or columns2 are odd numbers,
-				then the centre of convolution is the middle of the convolution
-				grid. if they are even numbers, then the chosen centre will
-				be slightly more to the left and/or to the top, because the
-				actual middle is between cells of the grid.
-			</method>
-		</inlet>
-		<outlet id="0">
-			<method name="grid">
-				<arg name="grid" type="grid(rows columns rest...)"/>
-			</method>
-		</outlet>
-	</class>
 
 	<class name="#text_to_image">
 		inlet 2 receives a font grid, for example, [#in grid file lucida-typewriter-12.grid.gz]
