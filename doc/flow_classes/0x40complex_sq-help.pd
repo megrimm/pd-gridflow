@@ -1,4 +1,4 @@
-#N canvas 301 131 570 506 10;
+#N canvas 677 0 570 506 10;
 #X obj 21 109 @complex_sq;
 #X text 136 65 this object computes the square of complex numbers.
 if seeing imaginary as Y and real as X \, then this operation squares
@@ -14,16 +14,23 @@ rest of GridFlow because it puts Imaginary before Real. [#fft] puts
 the Real part first.;
 #X obj 114 185 #print;
 #X obj 21 159 #unpack;
-#X obj 125 399 # +;
-#X obj 158 399 # abs-;
-#X obj 3 399 doc_also;
-#X obj 209 399 # C.sq-;
-#X obj 3 210 doc_c 0;
-#X obj 3 241 doc_i 1;
-#X obj 3 292 doc_o 1;
+#X obj 125 459 # +;
+#X obj 158 459 # abs-;
+#X obj 3 459 doc_also;
+#X obj 209 459 # C.sq-;
+#X obj 3 300 doc_c 0;
+#X obj 3 331 doc_i 1;
+#X obj 3 382 doc_o 1;
 #X obj 0 0 doc_h;
-#X obj 14 316 doc_oo 0;
-#X obj 14 265 doc_ii 0;
+#X obj 14 406 doc_oo 0;
+#X obj 14 355 doc_ii 0;
+#X obj 100 355 doc_m i0 grid;
+#X obj 100 406 doc_m o0 grid;
+#X text 189 353 grid of size (... \, 2);
+#X text 189 407 grid of same size;
+#X text 178 200 used on an indexmap (#remap_image) \, this makes each
+thing appear twice \, each appearance spanning half of the original
+angle. straight lines become hyperbolic \, etc.;
 #X connect 0 0 8 0;
 #X connect 0 0 9 0;
 #X connect 2 0 6 0;
