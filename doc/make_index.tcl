@@ -1,7 +1,7 @@
 proc say {k v} {set ::say($k) $v}
 proc category {k} {}
 source locale/english.tcl
-puts "#N canvas 0 0 600 480 10 ;"
+puts "#N canvas 0 0 560 480 10 ;"
 set y 50
 foreach k [lsort [array names ::say *]] {
 	set v $::say($k)
@@ -23,7 +23,7 @@ foreach k [lsort [array names ::say *]] {
 	regsub "," $v " \\, " v
 	regsub ";" $v " \\; " v
 	regsub "\\$" $v "\\$" v
-	puts "#X text 200 $y $v;"
+	puts "#X text 180 $y $v;"
 	if {$k == "#color"} {incr y 40}
 	incr y 32
 }
