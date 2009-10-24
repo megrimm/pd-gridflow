@@ -52,10 +52,12 @@
 #X connect 9 5 5 0;
 #X connect 10 0 11 0;
 #X connect 10 1 11 1;
+#X connect 11 0 16 0;
 #X connect 12 0 15 0;
 #X connect 12 1 15 1;
 #X connect 13 0 14 0;
 #X connect 13 1 14 1;
+#X connect 15 0 16 0;
 #X restore 18 66 pd timer;
 #X obj 256 40 args (detailed s terse);
 #X obj 256 59 listfind terse detailed;
