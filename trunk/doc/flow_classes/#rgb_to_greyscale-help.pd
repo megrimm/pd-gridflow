@@ -1,4 +1,4 @@
-#N canvas 113 134 558 444 10;
+#N canvas 689 0 558 444 10;
 #X obj 166 183 #out window;
 #X obj 166 112 #in;
 #X obj 166 137 #rgb_to_greyscale;
@@ -6,18 +6,17 @@
 -1;
 #X msg 166 68 open working.jpg;
 #X obj 166 160 #greyscale_to_rgb;
-#X text 7 299 GRID;
-#X text 8 386 GRID;
-#X text 87 300 A color grid at the left inlet is accepted.;
-#X text 15 27 Creates a greyscale image from a color image.;
-#X text 84 389 A grid equivalent to the original one is output in greyscale.
-;
 #X obj 0 0 doc_h;
 #X obj 3 208 doc_c 0;
 #X obj 3 239 doc_i 1;
 #X obj 3 336 doc_o 1;
-#X obj 15 360 doc_oo 0;
+#X obj 14 360 doc_oo 0;
 #X obj 14 263 doc_ii 0;
+#X text 15 27 Creates a greyscale image from a rgb color image.;
+#X obj 100 263 doc_m i0 grid;
+#X text 190 263 presumed to be an RGB image;
+#X obj 100 360 doc_m o0 grid;
+#X text 192 358 the image converted to greyscale.;
 #X connect 1 0 2 0;
 #X connect 2 0 5 0;
 #X connect 3 0 1 0;

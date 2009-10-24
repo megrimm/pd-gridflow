@@ -1,4 +1,4 @@
-#N canvas 721 21 557 523 10;
+#N canvas 690 0 557 523 10;
 #X obj 170 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
 -1;
 #X msg 193 167 open bluemarble.jpg;
@@ -22,10 +22,8 @@ is linear. It's like a 200% contrast \, except that overflows are mirrored
 instead of clipped or wrapped.;
 #X obj 247 225 #out window \, title original;
 #X obj 170 250 #out window \, title modified;
-#X text 89 370 GRID;
-#X text 139 370 Receives a grid (original image);
-#X text 89 431 GRID;
-#X text 139 431 Outputs a grid (modified image);
+#X obj 100 431 doc_m o0 grid;
+#X obj 100 372 doc_m i0 grid;
 #X connect 0 0 2 0;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;

@@ -1,49 +1,53 @@
-#N canvas 614 21 559 609 10;
-#X obj 172 97 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1 -1
-;
-#X text 268 213 2 - 255;
-#X msg 211 140 open bluemarble.jpg;
-#X obj 191 162 #in;
-#X obj 172 186 #store;
-#X obj 172 234 #posterize;
+#N canvas 674 0 559 704 10;
+#X obj 178 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
+-1;
+#X text 274 230 2 - 255;
+#X msg 217 157 open bluemarble.jpg;
+#X obj 197 179 #in;
+#X obj 178 203 #store;
+#X obj 178 251 #posterize;
 #X obj 102 576 #convolve;
 #X obj 171 576 #contrast;
 #X obj 240 576 #solarize;
 #X obj 309 576 #layer;
 #X obj 0 0 doc_h;
 #X obj 3 576 doc_also;
-#X obj 3 326 doc_c 0;
-#X obj 3 369 doc_i 2;
+#X obj 3 399 doc_i 2;
 #X obj 3 489 doc_o 1;
 #X obj 14 513 doc_oo 0;
-#X obj 14 395 doc_ii 0;
-#X obj 14 422 doc_ii 1;
+#X obj 14 425 doc_ii 0;
+#X obj 14 452 doc_ii 1;
 #X text 10 35 Reduces the number of possible intensities in an image:
 it rounds the color values. The effect is mostly apparent with a low
 number of levels.;
-#X obj 196 254 #out window \, title original;
-#X text 91 393 GRID;
-#X text 149 393 Receives a grid (original image);
-#X text 99 511 GRID;
-#X obj 172 274 #out window \, title modified;
-#X obj 172 119 t b b b;
-#X floatatom 229 213 5 0 0 0 - - -;
-#X text 91 421 INTEGER;
-#X msg 229 193 2;
-#X obj 229 173 loadbang;
-#X text 148 421 Number of possible levels per channel.The levels are
+#X obj 202 271 #out window \, title original;
+#X text 213 423 Receives a grid (original image);
+#X obj 178 291 #out window \, title modified;
+#X obj 178 136 t b b b;
+#X floatatom 235 230 5 0 0 0 - - -;
+#X msg 235 210 2;
+#X obj 235 190 loadbang;
+#X obj 100 425 doc_m i0 grid;
+#X obj 100 452 doc_m i1 float int;
+#X obj 100 513 doc_m o0 grid;
+#X text 205 511 posterised image;
+#X obj 3 323 doc_c 1;
+#X obj 14 347 doc_cc 0;
+#X obj 100 347 doc_m c0 float/int;
+#X text 11 75 example: simulate the 216-color "web" palette using 6
+levels. simulate a 15-bit display using 32 levels .;
+#X text 207 340 Number of possible levels per channel. The levels are
 equally spaced \, with the lowest at 0 and the highest at 255 the minimum
 number of levels is 2 and the default value is also 2;
-#X text 149 511 Outputs a grid (posterized image);
-#X connect 0 0 24 0;
+#X connect 0 0 21 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 1;
 #X connect 4 0 5 0;
-#X connect 4 0 19 0;
-#X connect 5 0 23 0;
-#X connect 24 0 4 0;
-#X connect 24 1 3 0;
-#X connect 24 2 2 0;
-#X connect 25 0 5 1;
-#X connect 27 0 25 0;
-#X connect 28 0 27 0;
+#X connect 4 0 18 0;
+#X connect 5 0 20 0;
+#X connect 21 0 4 0;
+#X connect 21 1 3 0;
+#X connect 21 2 2 0;
+#X connect 22 0 5 1;
+#X connect 23 0 22 0;
+#X connect 24 0 23 0;
