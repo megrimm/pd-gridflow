@@ -1,41 +1,49 @@
-#N canvas 384 100 571 528 10;
-#X obj 20 52 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X floatatom 84 151 5 2 255 0 - - -;
-#X obj 84 167 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
--1;
-#X text 132 151 2 - 255;
-#X text 157 177 number of possible levels per channel. the levels are
+#N canvas 614 21 559 609 10;
+#X obj 172 97 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1 -1
+;
+#X text 268 213 2 - 255;
+#X msg 211 140 open bluemarble.jpg;
+#X obj 191 162 #in;
+#X obj 172 186 #store;
+#X obj 172 234 #posterize;
+#X obj 102 576 #convolve;
+#X obj 171 576 #contrast;
+#X obj 240 576 #solarize;
+#X obj 309 576 #layer;
+#X obj 0 0 doc_h;
+#X obj 3 576 doc_also;
+#X obj 3 326 doc_c 0;
+#X obj 3 369 doc_i 2;
+#X obj 3 489 doc_o 1;
+#X obj 14 513 doc_oo 0;
+#X obj 14 395 doc_ii 0;
+#X obj 14 422 doc_ii 1;
+#X text 10 35 Reduces the number of possible intensities in an image:
+it rounds the color values. The effect is mostly apparent with a low
+number of levels.;
+#X obj 196 254 #out window \, title original;
+#X text 91 393 GRID;
+#X text 149 393 Receives a grid (original image);
+#X text 99 511 GRID;
+#X obj 172 274 #out window \, title modified;
+#X obj 172 119 t b b b;
+#X floatatom 229 213 5 0 0 0 - - -;
+#X text 91 421 INTEGER;
+#X msg 229 193 2;
+#X obj 229 173 loadbang;
+#X text 148 421 Number of possible levels per channel.The levels are
 equally spaced \, with the lowest at 0 and the highest at 255 the minimum
 number of levels is 2 and the default value is also 2;
-#X obj 20 79 fork;
-#X msg 43 99 open bluemarble.jpg;
-#X text 98 27 reduces the number of possible intensities in an image:
-it rounds the color values. the effect is mostly apparent with a low
-number of levels;
-#X obj 20 120 #in;
-#X obj 19 147 #store;
-#X obj 19 195 #posterize;
-#X obj 19 233 #out window;
-#X obj 102 446 #convolve;
-#X obj 171 446 #contrast;
-#X obj 240 446 #solarize;
-#X obj 309 446 #layer;
-#X obj 0 0 doc_h;
-#X obj 3 446 doc_also;
-#X obj 3 293 doc_c 0;
-#X obj 3 315 doc_i 2;
-#X obj 3 393 doc_o 1;
-#X obj 14 417 doc_oo 0;
-#X obj 14 339 doc_ii 0;
-#X obj 14 363 doc_ii 1;
-#X connect 0 0 5 0;
-#X connect 1 0 2 0;
-#X connect 1 0 10 1;
-#X connect 2 0 9 0;
-#X connect 5 0 8 0;
-#X connect 5 1 6 0;
-#X connect 6 0 8 0;
-#X connect 8 0 9 1;
-#X connect 9 0 10 0;
-#X connect 10 0 11 0;
+#X text 149 511 Outputs a grid (posterized image);
+#X connect 0 0 24 0;
+#X connect 2 0 3 0;
+#X connect 3 0 4 1;
+#X connect 4 0 5 0;
+#X connect 4 0 19 0;
+#X connect 5 0 23 0;
+#X connect 24 0 4 0;
+#X connect 24 1 3 0;
+#X connect 24 2 2 0;
+#X connect 25 0 5 1;
+#X connect 27 0 25 0;
+#X connect 28 0 27 0;

@@ -1,29 +1,35 @@
-#N canvas 411 100 613 339 10;
-#X obj 20 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#N canvas 721 21 557 523 10;
+#X obj 170 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
 -1;
-#X text 98 47 makes medium intensities brightest. formerly brightest
-colors become darkest \, formerly darkest stays darkest. this filter
-is linear. it's like a 200% contrast \, except that overflows are mirrored
-instead of clipped or wrapped.;
-#X msg 43 112 open bluemarble.jpg;
-#X obj 20 83 fork;
-#X obj 20 174 #solarize;
-#X obj 20 195 #out window;
-#X obj 20 138 #in;
-#X obj 103 375 #convolve;
-#X obj 172 375 #contrast;
-#X obj 241 375 #posterize;
-#X obj 317 375 #layer;
+#X msg 193 167 open bluemarble.jpg;
+#X obj 170 138 fork;
+#X obj 170 229 #solarize;
+#X obj 170 193 #in;
+#X obj 103 489 #convolve;
+#X obj 172 489 #contrast;
+#X obj 241 489 #posterize;
+#X obj 317 489 #layer;
 #X obj 0 0 doc_h;
-#X obj 3 375 doc_also;
-#X obj 3 223 doc_c;
-#X obj 3 297 doc_o 1;
-#X obj 3 249 doc_i 1;
-#X obj 15 321 doc_oo 0;
-#X obj 14 273 doc_ii 0;
-#X connect 0 0 3 0;
-#X connect 2 0 6 0;
-#X connect 3 0 6 0;
-#X connect 3 1 2 0;
-#X connect 4 0 5 0;
-#X connect 6 0 4 0;
+#X obj 3 489 doc_also;
+#X obj 3 299 doc_c;
+#X obj 3 407 doc_o 1;
+#X obj 3 347 doc_i 1;
+#X obj 14 431 doc_oo 0;
+#X obj 14 372 doc_ii 0;
+#X text 12 36 Makes medium intensities brightest. Formerly brightest
+colors become darkest \, formerly darkest stays darkest. This filter
+is linear. It's like a 200% contrast \, except that overflows are mirrored
+instead of clipped or wrapped.;
+#X obj 247 225 #out window \, title original;
+#X obj 170 250 #out window \, title modified;
+#X text 89 370 GRID;
+#X text 139 370 Receives a grid (original image);
+#X text 89 431 GRID;
+#X text 139 431 Outputs a grid (modified image);
+#X connect 0 0 2 0;
+#X connect 1 0 4 0;
+#X connect 2 0 4 0;
+#X connect 2 1 1 0;
+#X connect 3 0 18 0;
+#X connect 4 0 3 0;
+#X connect 4 0 17 0;
