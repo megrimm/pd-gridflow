@@ -1,4 +1,4 @@
-#N canvas 551 311 569 347 10;
+#N canvas 665 0 569 347 10;
 #X text 22 53 a bang is emitted every time a grid transmission ends
 ;
 #X obj 24 175 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
@@ -13,6 +13,10 @@
 #X obj 3 201 doc_c 0;
 #X obj 14 308 doc_oo 0;
 #X obj 14 250 doc_ii 0;
+#X obj 100 250 doc_m i0 grid;
+#X obj 100 308 doc_m o0 bang;
+#X text 193 250 a bang is emitted every time a grid transmission ends.
+;
 #X connect 2 0 5 0;
 #X connect 3 0 5 1;
 #X connect 4 0 1 0;
