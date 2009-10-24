@@ -1,11 +1,10 @@
-#N canvas 30 36 558 546 10;
+#N canvas 689 0 558 717 10;
 #X obj 14 219 #print;
 #X obj 14 199 #cast float64;
 #X obj 269 218 #print;
 #X obj 126 218 #print;
 #X obj 269 198 #cast uint8;
 #X obj 126 198 #cast int32;
-#X text 16 385 GRID;
 #X floatatom 14 181 5 0 0 0 - - -;
 #X msg 126 177 9.8764 9 -32 0.3;
 #X obj 269 158 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
@@ -19,7 +18,7 @@
 #X obj 306 133 #pack 3 float32;
 #X obj 14 161 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 153 282 Number types are: uint8 \, int16 \, int32 \, int64
+#X text 202 294 Number types are: uint8 \, int16 \, int32 \, int64
 \, float32 \, float64. see doc/architecture.html for more info.;
 #X obj 126 157 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
@@ -27,12 +26,9 @@
 a grid of the same dimensions containing all the same values after
 type conversion. While casting to a smaller type \, overflowing values
 will be truncated.;
-#X text 75 478 Returns a grid of the same dimensions containing all
-the same values after type conversion.;
 #X obj 406 113 nbx 8 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0 10
 -262144 -1 -1 45 256;
-#X text 74 385 Any grid;
-#X text 16 479 GRID;
+#X text 200 360 Any grid;
 #X obj 0 0 doc_h;
 #X obj 3 335 doc_i 1;
 #X obj 3 422 doc_o 1;
@@ -40,17 +36,26 @@ the same values after type conversion.;
 #X obj 14 446 doc_oo 0;
 #X obj 14 359 doc_ii 0;
 #X obj 14 277 doc_cc 0;
+#X obj 100 277 doc_m c0 symbol/numbertype;
+#X obj 100 359 doc_m i0 grid;
+#X obj 100 446 doc_m o0 grid;
+#X text 189 447 Produces a grid of the same dimensions containing all
+the same values after type conversion.;
+#X text 188 474 conversion from float truncates fractional part (rounds
+towards zero);
+#X text 187 506 conversion to an int type may wrap (same as some #
+& or some # %);
 #X connect 1 0 0 0;
 #X connect 4 0 2 0;
 #X connect 5 0 3 0;
-#X connect 7 0 1 0;
-#X connect 8 0 5 0;
+#X connect 6 0 1 0;
+#X connect 7 0 5 0;
+#X connect 8 0 12 0;
 #X connect 9 0 13 0;
-#X connect 10 0 14 0;
-#X connect 11 0 14 1;
-#X connect 12 0 13 1;
-#X connect 13 0 4 0;
-#X connect 14 0 12 0;
-#X connect 15 0 7 0;
-#X connect 17 0 8 0;
-#X connect 20 0 14 2;
+#X connect 10 0 13 1;
+#X connect 11 0 12 1;
+#X connect 12 0 4 0;
+#X connect 13 0 11 0;
+#X connect 14 0 6 0;
+#X connect 16 0 7 0;
+#X connect 18 0 13 2;

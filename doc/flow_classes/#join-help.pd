@@ -1,4 +1,4 @@
-#N canvas 675 72 559 537 10;
+#N canvas 675 0 559 537 10;
 #X obj 18 32 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 211 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
@@ -13,8 +13,8 @@ be the sum of the two corresponding;
 #X text 244 29 1 <--;
 #X text 45 31 2 <--;
 #X obj 18 242 #clip;
-#X obj 106 571 #fold +;
-#X obj 162 571 #scan +;
+#X obj 109 748 #fold +;
+#X obj 161 749 #scan +;
 #X obj 18 269 #out window;
 #X obj 18 96 #in;
 #X obj 237 96 #rgb_to_greyscale;
@@ -25,16 +25,35 @@ which the join will occur. for n-dimensional grids \, the dimensions
 are numbered from 0 to n-1. in addition \, negative numbers from -n
 to -1 may be used \, to which n will be added.;
 #X obj 0 0 doc_h;
-#X obj 3 572 doc_also;
+#X obj 3 752 doc_also;
 #X obj 3 330 doc_c 0..2;
-#X obj 3 423 doc_i 2;
-#X obj 3 495 doc_o 1;
+#X obj 3 453 doc_i 2;
+#X obj 3 675 doc_o 1;
 #X obj 18 161 #join 2;
 #X obj 14 354 doc_cc 0;
-#X obj 14 383 doc_cc 1;
-#X obj 14 447 doc_ii 0;
-#X obj 14 471 doc_ii 1;
-#X obj 14 519 doc_oo 0;
+#X obj 14 423 doc_cc 1;
+#X obj 14 477 doc_ii 0;
+#X obj 14 651 doc_ii 1;
+#X obj 14 699 doc_oo 0;
+#X obj 100 354 doc_m c0 float;
+#X obj 100 423 doc_m c1 grid;
+#X obj 100 477 doc_m i0;
+#X text 201 353 Which_dim is the number of the dimension by which the
+join will occur. For N-dimensional grids \, the dimensions are numbered
+from 0 to N-1. In addition \, negative numbers from -N to -1 may be
+used \, to which N will be added.;
+#X text 196 471 The left grid and right grid must have the same number
+of elements in all dimensions except the one specified. The result
+will have the same number of elements in all dimensions except the
+one specified \, which will be the sum of the two corresponding one.
+;
+#X text 197 548 For example \, joining a RGB picture Dim[y \, x \,
+3] and a greyscale picture Dim[y \, x \, 1] on dimension 2 (or -1)
+could make a RGBA picture Dim[y \, x \, 4] in which the greyscale image
+becomes the opacity channel.;
+#X text 201 650 same as arg 1;
+#X obj 100 651 doc_m i1 grid;
+#X obj 100 700 doc_m o0 grid;
 #X connect 0 0 5 0;
 #X connect 1 0 6 0;
 #X connect 3 0 13 0;
