@@ -1,14 +1,12 @@
-#N canvas 300 33 557 684 10;
+#N canvas 690 0 557 684 10;
 #X text 19 26 Transforms a grid by displacing pixels.;
 #X obj 27 154 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 46 179 #in;
 #X floatatom 156 201 5 0 0 0 - - -;
-#X text 7 398 GRID;
 #X obj 140 229 # +;
 #X msg 61 153 open sewing.jpg;
 #X text 201 199 <-- Modify value to see transformation.;
-#X text 54 397 Accepts a grid.;
 #X text 178 152 <-- open image;
 #X obj 46 281 #out window \, title remapped;
 #X obj 46 97 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
@@ -16,17 +14,9 @@
 #X text 19 45 If you chain indexmap (coordinate) transformations from
 outlet 1 to inlet 1 \, then sending an image in inlet 0 will emit its
 deformation out of outlet 0;
-#X text 8 524 GRID;
-#X text 55 523 The deformed grid.;
 #X obj 46 229 #remap_image;
-#X text 8 578 GRID;
 #X text 187 229 <-- change the numop to change the transformation;
-#X text 6 457 GRID;
 #X obj 100 619 #rotate;
-#X text 53 456 Receives a grid that is to be used as the transformation
-map;
-#X text 60 578 The deformed grid that has received the last transformation.
-;
 #X obj 0 0 doc_h;
 #X obj 3 329 doc_c 0;
 #X obj 3 349 doc_i 2;
@@ -36,12 +26,22 @@ map;
 #X obj 14 426 doc_ii 1;
 #X obj 14 502 doc_oo 0;
 #X obj 14 557 doc_oo 1;
+#X obj 100 373 doc_m i0 grid;
+#X text 193 373 grid to be remapped;
+#X obj 100 557 doc_m o1 grid;
+#X text 189 556 indexmap of dummy coordinates \, to be deformed;
+#X obj 100 426 doc_m i1 grid;
+#X text 192 425 modified version of what came out of outlet 1 \, which
+will determine the remapping;
+#X obj 100 502 doc_m o0 grid;
+#X text 193 500 the grid from inlet 0 after being remapped using the
+grid from inlet 1;
 #X connect 1 0 2 0;
-#X connect 2 0 16 0;
-#X connect 3 0 5 1;
-#X connect 5 0 16 1;
-#X connect 6 0 2 0;
-#X connect 11 0 12 0;
-#X connect 12 0 2 0;
-#X connect 16 0 10 0;
-#X connect 16 1 5 0;
+#X connect 2 0 12 0;
+#X connect 3 0 4 1;
+#X connect 4 0 12 1;
+#X connect 5 0 2 0;
+#X connect 9 0 10 0;
+#X connect 10 0 2 0;
+#X connect 12 0 8 0;
+#X connect 12 1 4 0;
