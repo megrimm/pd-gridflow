@@ -164,7 +164,7 @@
 #X obj 116 2682 #rotate;
 #X text 180 2682 rotate points through two axes (or rotate pixels as points in a colorspace);
 #X obj 74 2714 #rotatificator;
-#X text 180 2714 make rotation matrix for any two dimensions chosen from manyou;
+#X text 180 2714 make rotation matrix for any two dimensions chosen from a space of any number of dimensions;
 #X obj 92 2746 #saturation;
 #X text 180 2746 multiply chroma by some value;
 #X obj 104 2778 #scale_by;
