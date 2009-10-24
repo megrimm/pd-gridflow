@@ -1,4 +1,4 @@
-#N canvas 615 26 566 676 10;
+#N canvas 668 0 566 676 10;
 #X obj 258 177 #color;
 #X obj 288 361 #color;
 #X obj 259 426 display;
@@ -28,12 +28,21 @@ number of Dimensions between incoming and outgoing grids.;
 #X floatatom 323 283 5 0 0 0 - - -;
 #X obj 0 0 doc_h;
 #X obj 3 466 doc_c 1;
-#X obj 3 518 doc_i 2;
-#X obj 3 599 doc_o 1;
-#X obj 14 623 doc_oo 0;
-#X obj 14 542 doc_ii 0;
-#X obj 14 566 doc_ii 1;
+#X obj 3 568 doc_i 2;
+#X obj 3 649 doc_o 1;
+#X obj 14 673 doc_oo 0;
+#X obj 14 592 doc_ii 0;
+#X obj 14 616 doc_ii 1;
 #X obj 14 490 doc_cc 0;
+#X obj 100 673 doc_m o0 grid;
+#X obj 100 592 doc_m i0 grid;
+#X obj 100 490 doc_m c0 float;
+#X obj 100 616 doc_m i1 float;
+#X text 200 614 same as arg 0;
+#X text 198 487 dimension number of the dimension by which the reverse
+will occur. For N-dimensional grids \, the dimensions are numbered
+from 0 to N-1. In addition \, negative numbers from -N to -1 may be
+used \, to which N will be added.;
 #X connect 0 0 19 0;
 #X connect 3 0 2 0;
 #X connect 3 1 1 0;
