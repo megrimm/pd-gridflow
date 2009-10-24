@@ -1,4 +1,4 @@
-#N canvas 342 57 660 613 10;
+#N canvas 0 0 660 613 10;
 #X obj 18 11 inlet;
 #X obj 113 543 outlet;
 #X obj 18 261 +;
@@ -13,7 +13,7 @@
 #X obj 83 299 t b a;
 #X msg 83 318 0;
 #X obj 126 49 symbol;
-#N canvas 173 324 450 300 timer 0;
+#N canvas 173 324 450 300 timer 1;
 #X obj 18 32 inlet bang;
 #X obj 92 32 inlet mode;
 #X obj 92 51 listfind real user system cpu logical process;
@@ -31,11 +31,9 @@
 #X obj 212 175 tsctime;
 #X obj 138 175 systemtime;
 #X obj 18 236 outlet;
-#X obj 221 90 print mode;
 #X connect 0 0 9 0;
 #X connect 1 0 2 0;
 #X connect 2 0 9 1;
-#X connect 2 0 17 0;
 #X connect 3 0 16 0;
 #X connect 4 0 3 0;
 #X connect 4 1 3 1;
