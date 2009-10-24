@@ -1,15 +1,15 @@
-#N canvas 45 53 572 290 10;
+#N canvas 45 53 572 306 10;
 #X obj 3 3 cnv 15 544 18 empty \$0-rect ♯for 2 9 1 13 -1 -262144
 0;
 #X obj 166 48 loadbang;
 #X obj 135 57 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X symbolatom 166 88 20 0 0 0 - - -;
-#X msg 166 217 label \$1;
-#X obj 166 237 s \$0-rect;
+#X msg 166 206 label \$1;
+#X obj 166 226 s \$0-rect;
 #X obj 166 68 gf/canvas_filename 1;
 #X obj 166 107 gf/string_replace # ♯;
-#X obj 166 197 gf/string_replace -help.pd;
+#X obj 166 186 gf/string_replace -help.pd;
 #X obj 447 3 cnv 15 100 18 empty \$0-rect2 GridFlow 1.0 2 9 1 12
 -1 -262144 0;
 #X obj 166 127 gf/string_replace 0x40 @;
@@ -17,6 +17,19 @@
 #X obj 166 167 gf/string_replace 0x2b +;
 #X obj 391 52 doc_pos;
 #X msg 447 52 0 0;
+#X obj 394 153 receives;
+#X obj 394 115 gf/canvas_dollarzero 1;
+#X obj 394 88 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 411 87 loadbang;
+#X msg 394 134 symbol \$1-doc_h;
+#X obj 394 172 route redraw;
+#X obj 420 248 gf/canvas_filename 1;
+#X obj 420 229 loadbang;
+#X obj 394 267 s;
+#X msg 420 267 symbol pd-\$1;
+#X msg 394 210 map 0 \, map 1;
+#X obj 394 191 delay 50;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
@@ -29,4 +42,15 @@
 #X connect 12 0 8 0;
 #X connect 13 1 14 0;
 #X connect 14 0 13 1;
+#X connect 15 0 20 0;
+#X connect 16 0 19 0;
+#X connect 17 0 16 0;
+#X connect 18 0 16 0;
+#X connect 19 0 15 0;
+#X connect 20 0 26 0;
+#X connect 21 0 24 0;
+#X connect 22 0 21 0;
+#X connect 24 0 23 1;
+#X connect 25 0 23 0;
+#X connect 26 0 25 0;
 #X coords 0 -1 1 1 550 24 2 0 0;
