@@ -1,55 +1,56 @@
-#N canvas 412 9 556 717 10;
-#X obj 16 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+#N canvas 678 21 556 687 10;
+#X obj 43 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X msg 228 135 1 1 1 1 1 1 1 1 1;
-#X obj 228 113 loadbang;
-#X obj 16 112 fork;
-#X obj 228 157 #redim (3 3);
-#X obj 16 158 #in;
-#X obj 16 241 #out window;
-#X obj 103 756 #contrast;
-#X obj 172 756 #posterize;
-#X obj 248 756 #solarize;
-#X obj 317 756 #layer;
-#X obj 16 183 #convolve \, op ^ \, fold + \, seed 0;
-#X text 14 27 [#convolve] is used to perform various transformations
+#X msg 255 135 1 1 1 1 1 1 1 1 1;
+#X obj 255 113 loadbang;
+#X obj 43 112 fork;
+#X obj 255 157 #redim (3 3);
+#X obj 43 158 #in;
+#X obj 43 241 #out window;
+#X obj 103 650 #contrast;
+#X obj 172 650 #posterize;
+#X obj 248 650 #solarize;
+#X obj 317 650 #layer;
+#X obj 43 183 #convolve \, op ^ \, fold + \, seed 0;
+#X text 14 28 [#convolve] is used to perform various transformations
 on images such as blurring \, sharpening \, finding edges \, embossing
 \, cellular automata and many others.;
-#X text 29 396 GRID;
-#X text 28 710 GRID;
-#X text 23 562 GRID;
-#X text 70 564 This is the convolution grid and it gets stored in the
-other object. If rows2 and/or columns 2 are odd numbers \, then the
-centre of convolution is the middle of the convolution grid. If they
-are even numbers \, then the chosen centre will be slightly more to
-the left and/or to the top \, because the actual middle is between
+#X text 88 369 GRID;
+#X text 88 481 GRID;
+#X text 132 482 This is the convolution grid and it gets stored in
+the other object. If rows2 and/or columns 2 are odd numbers \, then
+the centre of convolution is the middle of the convolution grid. If
+they are even numbers \, then the chosen centre will be slightly more
+to the left and/or to the top \, because the actual middle is between
 celle of the grid.;
-#X text 73 397 splits the incoming grid into dim(rest...) parts \,
-for each of those parts at (xy \, x). a rectangle of such parts \,
+#X msg 66 135 open scissors.jpg;
+#X obj 0 0 doc_h;
+#X obj 3 345 doc_i 2;
+#X obj 3 571 doc_o 1;
+#X obj 3 286 doc_c 0..1;
+#X obj 3 650 doc_also;
+#X obj 14 595 doc_oo 0;
+#X obj 14 369 doc_ii 0;
+#X obj 14 482 doc_ii 1;
+#X text 155 216 here ^ is the parallel operator \, fold is indicated
+by + and 0 is its base (seed).;
+#X obj 14 309 doc_cc 0;
+#X text 133 370 Splits the incoming grid into dim(rest...) parts \,
+for each of those parts at (xy \, x). A rectangle of such parts \,
 centered around (y \, x) is combined with the convolution grid like
-a [#] of operation op_para. then each such result is folded like [#fold]
-of operation op_fold and specified base. the results are assembled
-into a grid that is sent to the outlet. near the borders of the grid
+a [#] of operation op_para. Then each such result is folded like [#fold]
+of operation op_fold and specified base. The results are assembled
+into a grid that is sent to the outlet. Near the borders of the grid
 \, coordinates wrap around. this means the whole grid has to be received
 before production of the next grid starts.;
-#X msg 39 135 open scissors.jpg;
-#X obj 0 0 doc_h;
-#X obj 3 337 doc_i 2;
-#X obj 3 656 doc_o 1;
-#X obj 3 286 doc_c 0..1;
-#X obj 3 756 doc_also;
-#X obj 14 680 doc_oo 0;
-#X obj 14 361 doc_ii 0;
-#X obj 14 526 doc_ii 1;
-#X text 128 216 here ^ is the parallel operator \, fold is indicated
-by + and 0 is its base (seed).;
-#X obj 14 313 doc_cc 0;
+#X text 88 595 GRID;
+#X text 132 595 Resulting image.;
 #X connect 0 0 3 0;
 #X connect 1 0 4 0;
 #X connect 2 0 1 0;
 #X connect 3 0 5 0;
-#X connect 3 1 18 0;
+#X connect 3 1 16 0;
 #X connect 4 0 11 1;
 #X connect 5 0 11 0;
 #X connect 11 0 6 0;
-#X connect 18 0 5 0;
+#X connect 16 0 5 0;
