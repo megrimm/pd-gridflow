@@ -24,16 +24,16 @@
 does so with ASCII \, the second in seconds and the third outlet outputs
 the fractions of seconds up to 1/100 0 th of a second which is useful
 for creating filenames.;
-#X text 100 453 BANG;
-#X text 159 453 A bang at the left inlet will tell [unix_time] to get
+#X text 199 453 A bang at the left inlet will tell [unix_time] to get
 the current Unix timestamp and send it to the outlets.;
-#X text 100 534 LIST;
-#X text 100 564 LIST;
-#X text 100 594 LIST;
-#X text 159 534 Outputs the time and date in ASCII format.;
-#X text 159 564 Outputs the Unix timestamp in seconds.;
-#X text 159 594 Outputs the fractions of a second up to 10 microseconds
+#X text 199 534 Outputs the time and date in ASCII format.;
+#X text 199 564 Outputs the Unix timestamp in seconds.;
+#X text 199 594 Outputs the fractions of a second up to 10 microseconds
 (?) (actual precision is probably platform-dependent...);
+#X obj 100 454 doc_m i0 bang;
+#X obj 100 535 doc_m o0 list;
+#X obj 100 565 doc_m o1 list;
+#X obj 100 595 doc_m o2 list;
 #X connect 0 0 2 0;
 #X connect 0 1 8 0;
 #X connect 0 2 7 0;

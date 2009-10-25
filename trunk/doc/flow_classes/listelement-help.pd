@@ -3,25 +3,17 @@
 #X floatatom 281 106 5 0 0 0 - - -;
 #X obj 195 158 print;
 #X msg 195 81 1 3 hello 8 13;
-#X text 110 371 LIST;
-#X text 110 234 INTEGER;
 #X obj 195 129 listelement 0;
-#X text 175 371 Accepts a list of numbers or symbols.;
+#X text 215 371 Accepts a list of numbers or symbols.;
 #X text 10 32 Outputs one element from a list as selected by an integer.
 ;
-#X text 107 482 INTEGER;
-#X text 108 496 SYMBOL;
-#X text 174 482 The element selected by the index is sent to the outlet
-and can be viewed in the console using the print object or in a number
-box if displaying an integer.;
-#X text 175 234 An integer acts as an index \, it selects the position
+#X text 195 231 An integer acts as an index \, it selects the position
 of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
-#X text 174 404 Changes the value of the argument i.e. changes the
+#X text 214 404 Changes the value of the argument i.e. changes the
 index into the list to get a different element.;
-#X text 107 405 INTEGER;
 #X obj 0 0 doc_h;
 #X obj 3 339 doc_i 2;
 #X obj 3 456 doc_o 1;
@@ -30,7 +22,13 @@ index into the list to get a different element.;
 #X obj 14 488 doc_oo 0;
 #X obj 3 208 doc_c 1;
 #X obj 14 236 doc_cc 0;
-#X connect 1 0 6 1;
-#X connect 3 0 6 0;
-#X connect 6 0 0 0;
-#X connect 6 0 2 0;
+#X obj 100 236 doc_m c0 float/int;
+#X obj 100 372 doc_m i0 list;
+#X obj 100 405 doc_m i1 float/int;
+#X obj 100 488 doc_m o0 ANY;
+#X text 186 487 The element selected by the index is sent to the outlet
+;
+#X connect 1 0 4 1;
+#X connect 3 0 4 0;
+#X connect 4 0 0 0;
+#X connect 4 0 2 0;
