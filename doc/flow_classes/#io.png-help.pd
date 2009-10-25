@@ -1,0 +1,11 @@
+#N canvas 674 0 561 717 10;
+#X obj 0 0 doc_h;
+#X obj 3 90 doc_i 1;
+#X obj 14 114 doc_ii 0;
+#X obj 100 114 doc_m i0 grid;
+#X text 187 112 1-channel is taken as Y 8 (greyscale);
+#X text 186 132 2-channel is taken as YA 8:8 (greyscale and transparency)
+;
+#X text 187 152 3-channel is taken as RGB 8:8:8;
+#X text 187 172 4-channel is taken as RGBA 8:8:8 (colour with transparency)
+;

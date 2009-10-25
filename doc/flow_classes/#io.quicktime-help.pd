@@ -1,0 +1,43 @@
+#N canvas 668 0 566 717 10;
+#X obj 0 0 doc_h;
+#X obj 3 269 doc_i 1;
+#X obj 14 293 doc_ii 0;
+#X text 194 33 Support for .mov files. This format supports frame-seek
+and frame-tell. Uses the HW-QuickTime library aka QuickTime4Linux (libquicktime.so).
+There is also a variant on the same library and that project is just
+called LibQuickTime. Some versions of those libraries may include support
+for different codecs \, and some also may support entirely different
+wrapper formats such as AVI. On Macintosh \, Apple QuickTime is used
+instead \, but several of the following messages may not be available.
+;
+#X obj 100 293 doc_m i0 codec;
+#X text 195 293 Allowed values are at least: raw \, jpeg \, png \,
+mjpa \, yuv2 \, yuv4. Some other values may allowed \, depending on
+the version of the library and which codec plugins are installed. Must
+be set before the first frame is written. only applies to [#out]. Choosing
+a codec is important because codecs influence greatly the speed of
+encoding \, the speed of decoding \, the size of the written file \,
+and its fidelity to the original content. Note that there exist other
+Apple-QuickTime codecs that are not supported by HW-QuickTime.;
+#X obj 100 463 doc_m i0 parameter;
+#X text 219 461 \$1=symbol \$2=int;
+#X text 219 477 Sets special codec-specific settings. For example:
+"parameter jpeg_quality 75";
+#X obj 100 513 doc_m i0 framerate;
+#X text 222 511 \$1=int;
+#X text 198 533 Sets the framerate of the file. This is not used by
+GridFlow when reading a file \, but other programs usually care.;
+#X obj 100 583 doc_m i0 colorspace;
+#X text 228 578 Allowed values are rgb \, rgba \, bgr \, bgra \, yuv
+\, yuva. Normally you don't need this.;
+#X obj 100 623 doc_m i0 size;
+#X text 187 624 \$1=height \$2=width;
+#X obj 3 755 doc_o 1;
+#X obj 3 794 doc_also;
+#X text 199 642 Forces a window size when writing. Usually this has
+to be used _after_ setting the framerate and codec and _before_ setting
+the codec-parameters. (Strange. Sorry.);
+#X obj 100 699 doc_m io force_size;
+#X text 224 700 \$1=height \$2=width;
+#X text 196 717 forces a window size when reading. this is a workaround
+for a problem in HW-QuickTime.;
