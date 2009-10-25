@@ -1,4 +1,4 @@
-#N canvas 9 21 617 701 10;
+#N canvas 295 10 617 701 10;
 #X obj 172 147 #in;
 #X obj 135 181 #store;
 #X obj 135 46 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
@@ -27,29 +27,21 @@
 #X text 135 331 Move mouse cursor to change layer position;
 #X obj 0 0 doc_h;
 #X obj 3 450 doc_i 3;
-#X obj 3 745 doc_o 1;
-#X obj 14 770 doc_oo 0;
+#X obj 3 695 doc_o 1;
+#X obj 14 720 doc_oo 0;
 #X obj 14 474 doc_ii 0;
 #X obj 14 617 doc_ii 1;
 #X obj 14 647 doc_ii 2;
-#X text 105 397 NUMOP;
-#X text 165 397 Normally \, you would use the "put" operator \; but
+#X text 209 396 Normally \, you would use the "put" operator \; but
 others (like + and ^) can be interesting for color effects.;
 #X obj 135 258 #draw_image *>>8;
 #X obj 3 367 doc_c 1;
 #X obj 14 398 doc_cc 0;
-#X text 105 473 GRID;
-#X text 165 473 Background image.;
+#X text 195 473 Background image.;
 #X msg 321 197 tile;
-#X text 105 616 GRID;
-#X text 165 616 Foreground image.;
-#X text 105 645 LIST;
-#X text 105 496 MESSAGE;
-#X text 165 496 "tile flag";
+#X text 225 616 Foreground image.;
 #X text 245 496 If 1 \, foreground image will be repeated to cover
 the background image.;
-#X text 105 527 MESSAGE;
-#X text 165 527 "alpha flag";
 #X text 245 527 If 1 \, foreground image (inlet 1) will be combined
 with background image (inlet 0) \, and then blended with background
 image according to transparency of foreground image \, and then inserted
@@ -57,18 +49,26 @@ in the result. If 0 \, the blending doesn't occur \, as the transparency
 level is considered "opaque". Note that with alpha enabled \, the last
 channel of foreground image is cnsidered to represent transparency.
 ;
-#X text 165 645 Initial foreground image position (y x) \, corresponding
+#X text 225 645 Initial foreground image position (y x) \, corresponding
 to top-left corner of foreground picture.;
-#X text 105 770 GRID;
-#X text 165 770 Resulting image.;
+#X text 225 720 Resulting image.;
+#X obj 100 398 doc_m c0 numop;
+#X obj 100 474 doc_m i0 grid;
+#X obj 100 494 doc_m i0 tile;
+#X obj 100 514 doc_m i0 alpha;
+#X text 194 513 \$1=flag;
+#X text 190 496 \$1=flag;
+#X obj 100 617 doc_m i1 grid;
+#X obj 100 647 doc_m i2 (y x);
+#X obj 100 720 doc_m o0 grid;
 #X connect 0 0 1 1;
-#X connect 1 0 32 0;
+#X connect 1 0 31 0;
 #X connect 2 0 3 0;
 #X connect 3 0 1 0;
 #X connect 4 0 16 0;
 #X connect 5 0 19 0;
 #X connect 6 0 10 0;
-#X connect 6 0 32 1;
+#X connect 6 0 31 1;
 #X connect 7 0 18 0;
 #X connect 10 0 11 0;
 #X connect 11 0 12 0;
@@ -76,14 +76,14 @@ to top-left corner of foreground picture.;
 #X connect 12 1 13 1;
 #X connect 13 0 14 0;
 #X connect 14 0 15 1;
-#X connect 15 0 32 2;
+#X connect 15 0 31 2;
 #X connect 16 0 15 0;
 #X connect 16 1 15 0;
 #X connect 16 2 15 0;
 #X connect 16 3 15 0;
 #X connect 18 0 6 0;
 #X connect 19 0 0 0;
-#X connect 20 0 32 2;
+#X connect 20 0 31 2;
 #X connect 21 0 20 0;
-#X connect 32 0 4 0;
-#X connect 37 0 32 0;
+#X connect 31 0 4 0;
+#X connect 35 0 31 0;
