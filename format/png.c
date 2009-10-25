@@ -69,16 +69,21 @@ GRID_INLET(0) {
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
 	while (n) {
+	  post("n=%ld",long(n));
 		bit_packing->pack(in->dim->get(1),data,row);
 		png_write_row(png,row);
 		n-=rowsize; data+=rowsize;
 	}
 // this would have been the GRID_FINISH section
+  post("GRID FINISH 1");
   png_write_end(png,info);
+  post("GRID FINISH 2");
   png_write_destroy(png);
-	fflush(stdout);
+  post("GRID FINISH 3");
+	fflush(f);
   free(png);
   free(info);
+	fclose(f);
 } GRID_FINISH {
 } GRID_END
 
