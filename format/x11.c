@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -136,7 +136,7 @@ void FormatX11_call(FormatX11 *p);
 		for(;i<argc;i++) {
 			if (argv[i]==gensym("override_redirect")) override_redirect = true;
 			else if (argv[i]==gensym("use_stripes"))  use_stripes = true;
-			else RAISE("argument '%s' not recognized",string(argv[i]).data());
+			else break; /*RAISE("argument '%s' not recognized",string(argv[i]).data());*/
 		}
 		pos[1]=pos[0]=0;
 		parent = root_window;
@@ -187,7 +187,7 @@ void FormatX11_call(FormatX11 *p);
 			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 		} break;
 		case PseudoColor: {
-			uint32 masks[3] = { 0x07, 0x38, 0xC0 };
+			uint32 masks[3] = { 0x07, 0x38, 0xC0 }; // BBGGGRRR
 			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 		} break;
 		default: RAISE("huh?");
@@ -195,7 +195,13 @@ void FormatX11_call(FormatX11 *p);
 		clock = clock_new(this,(t_method)FormatX11_call);
 		clock_delay(clock,0);
 		show_section(0,0,sx,sy);
-	}
+		if ((mode&4)!=0) {
+		  Window root; int x,y; unsigned sx,sy,sb,depth;
+		  XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
+			post("sx=%d sy=%d",sx,sy);
+      _0_out_size(argc,argv,sy,sx);
+		}
+  }
 
 	\decl 0 bang ();
 	void call ();
@@ -214,6 +220,7 @@ void FormatX11_call(FormatX11 *p);
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
+  if ((mode&2)==0) return;
 	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
