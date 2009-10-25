@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -248,7 +248,7 @@ static void gfpost(VideoMmap *self) {
 	\decl 0 transfer (string sym, int queuemax=2);
 
 	\attr t_symbol *colorspace;
-	\attr long   frequency();
+	\attr int32  frequency();
 	\attr uint16 brightness();
 	\attr uint16 hue();
 	\attr uint16 colour();
@@ -600,14 +600,15 @@ GRID_INLET(0) {
 \def 0      contrast   (uint16 contrast)  {PICTURE_ATTR(   contrast)}
 \def uint16 whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
 \def 0      whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
-\def long frequency  () {
-	long value;
+\def int32 frequency  () {
+	int32 value;
 	//if (ioctl(fd, VIDIOCGFREQ, &value)<0) {has_frequency=false; return 0;}
 	WIOCTL(fd, VIDIOCGFREQ, &value);
 	return value;
 }
-\def 0 frequency (long frequency) {
-	WIOCTL(fd, VIDIOCSFREQ, &frequency);
+\def 0 frequency (int32 frequency) {
+    long frequency_ = frequency;
+	WIOCTL(fd, VIDIOCSFREQ, &frequency_);
 }
 
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb magic */
