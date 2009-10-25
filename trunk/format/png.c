@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -44,17 +44,41 @@ extern "C" {
 
 GRID_INLET(0) {
 	if (in->dim->n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)!=3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-	in->set_chunk(1);
-	RAISE("bother, said pooh, as the PNG encoding was found unimplemented");
+	int c = in->dim->get(2);
+	if (c!=3)               RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	in->set_chunk(0);
 } GRID_FLOW {
-	int rowsize = in->dim->get(1)*in->dim->get(2);
+	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png) RAISE("!png");
+	info = png_create_info_struct(png);
+	if (!info) {if (png) png_destroy_write_struct(&png, NULL); RAISE("!info");}
+	if (setjmp(png_jmpbuf(png))) {png_destroy_write_struct(&png, &info);     RAISE("png write error");}
+  if (setjmp(png->jmpbuf)) {png_write_destroy(png); free(png); free(info); RAISE("png write error");}
+  png_init_io(png, f);
+  info->width  = in->dim->get(1);
+  info->height = in->dim->get(0);
+  info->bit_depth = 8;
+//  info->color_type = channels==3 ?  PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_GRAY;
+  info->color_type = PNG_COLOR_TYPE_RGB;
+//    info->color_type |= PNG_COLOR_MASK_ALPHA;
+  info->interlace_type = 1;
+  png_write_info(png,info);
+	png_set_packing(png);
+// this would have been the GRID_FLOW section
+  int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
 	while (n) {
 		bit_packing->pack(in->dim->get(1),data,row);
+		png_write_row(png,row);
 		n-=rowsize; data+=rowsize;
 	}
+// this would have been the GRID_FINISH section
+  png_write_end(png,info);
+  png_write_destroy(png);
+	fflush(stdout);
+  free(png);
+  free(info);
 } GRID_FINISH {
 } GRID_END
 
