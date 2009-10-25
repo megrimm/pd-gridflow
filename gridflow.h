@@ -908,6 +908,20 @@ static inline int oprintf(std::ostream &buf, const char *s, ...) {
     return n;
 }
 
+/* this function was copied from desiredata */
+#ifndef DESIRE
+inline t_symbol *symprintf(const char *s, ...) {
+    char *buf;
+    va_list args;
+    va_start(args,s);
+    if (vasprintf(&buf,s,args)<0) {/*rien*/}
+    va_end(args);
+    t_symbol *r = gensym(buf);
+    free(buf);
+    return r;
+}
+#endif
+
 std::ostream &operator << (std::ostream &self, const t_atom &a);
 
 // from pd/src/g_canvas.c
