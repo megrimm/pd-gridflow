@@ -1,0 +1,19 @@
+a=[]
+`grep -nriw install ../*.[ch] ../*/*.[chm]`.each {|line|
+  m=/install\(\"([^"]+)/.match(line)
+  a<<m[1] if m
+}
+
+b=Dir["../abstractions/*.pd"].map{|x|
+  x.gsub(/^\.\.\/abstractions\//,"").gsub(/\.pd$/,"")
+}
+
+c=Dir["flow_classes/*.pd"].map{|x|
+  x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"")
+}
+
+ab=a+b
+
+puts (ab-c).sort.join" "
+
+puts (c-ab).sort.join" "
