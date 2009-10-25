@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -45,13 +45,13 @@
 	#endif
 		if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
 	}
-	\decl 0 seek (long frame);
+	\decl 0 seek (int32 frame);
 	\decl 0 rewind ();
 	\decl 0 bang ();
 };
 
-\def 0 seek (long frame) {
-	mpeg3_set_frame(mpeg,clip(frame,0L,mpeg3_video_frames(mpeg,track)-1),track);
+\def 0 seek (int32 frame) {
+	mpeg3_set_frame(mpeg,clip(frame,int32(0),int32(mpeg3_video_frames(mpeg,track)-1)),track);
 }
 \def 0 rewind () {_0_seek(0,0,0);}
 

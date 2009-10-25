@@ -66,7 +66,7 @@ static std::map<string,string> fourccs;
 		bit_packing = new BitPacking(is_le(),3,3,mask);
 	}
 	\decl 0 bang ();
-	\decl 0 seek (long frame);
+	\decl 0 seek (int32 frame);
 	\decl 0 rewind ();
 	\decl 0 force_size (int32 height, int32 width);
 	\decl 0 codec (string c);
@@ -79,8 +79,8 @@ static std::map<string,string> fourccs;
 };
 
 \def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
-\def 0 seek (long frame) {
-	quicktime_set_video_position(anim,clip(frame,0L,quicktime_video_length(anim,track)-1),track);
+\def 0 seek (int32 frame) {
+	quicktime_set_video_position(anim,clip(frame,int32(0),int32(quicktime_video_length(anim,track)-1)),track);
 }
 \def 0 rewind () {_0_seek(0,0,0);}
 

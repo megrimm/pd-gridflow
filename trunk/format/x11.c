@@ -117,12 +117,12 @@ void FormatX11_call(FormatX11 *p);
 			i=1;
 		} else if (domain==gensym("local")) {
 			if (argc<2) RAISE("open x11 local: not enough args");
-			sprintf(host,":%ld",long(argv[1]));
+			sprintf(host,":%d",int32(argv[1]));
 			open_display(host);
 			i=2;
 		} else if (domain==gensym("remote")) {
 			if (argc<3) RAISE("open x11 remote: not enough args");
-			sprintf(host,"%s:%ld",string(argv[1]).data(),long(argv[2]));
+			sprintf(host,"%s:%d",string(argv[1]).data(),int32(argv[2]));
 			open_display(host);
 			i=3;
 		} else if (domain==gensym("display")) {
