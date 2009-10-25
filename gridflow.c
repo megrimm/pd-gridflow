@@ -121,17 +121,17 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 		  case 'f':
 			if (!argc) RAISE("not enough args");
 			if (argv[i].a_type != A_FLOAT) RAISE("expected float");
-			o << argv[i].a_float;
+			o << argv[i++].a_float;
 		  break;
 		  case 's':
 			if (!argc) RAISE("not enough args");
 			if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
-			o << argv[i].a_symbol->s_name;
+			o << argv[i++].a_symbol->s_name;
 		  break;
 		  case '_':
 			if (!argc) RAISE("not enough args");
 			char buf[MAXPDSTRING];
-			atom_string(&argv[i],buf,MAXPDSTRING);
+			atom_string(&argv[i++],buf,MAXPDSTRING);
 			o << buf;
 		  break;
 		  case '%':
