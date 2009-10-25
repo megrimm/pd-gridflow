@@ -1,8 +1,7 @@
 #N canvas 637 22 560 509 10;
-#X text 106 296 LIST;
 #X text 10 33 The [listlength] outputs the number of elements in the
 incoming list.;
-#X text 170 393 Outputs the number of elements in the list.;
+#X text 210 393 Outputs the number of elements in the list.;
 #X obj 100 447 listappend;
 #X obj 183 447 listelement;
 #X obj 268 447 listfind;
@@ -15,7 +14,7 @@ incoming list.;
 #X msg 139 81 1 3 hello 8 13;
 #X obj 139 120 listlength;
 #X msg 246 96 1 12 a b c d e f g h i j k l;
-#X text 168 296 The length of the list passed to the left inlet will
+#X text 208 296 The length of the list passed to the left inlet will
 be returned in the outlet.;
 #X obj 0 0 doc_h;
 #X obj 3 206 doc_c 0;
@@ -24,8 +23,9 @@ be returned in the outlet.;
 #X obj 3 447 doc_also 1;
 #X obj 14 296 doc_ii 0;
 #X obj 14 392 doc_oo 0;
-#X text 103 392 INTEGER;
-#X connect 12 0 13 0;
-#X connect 13 0 10 0;
-#X connect 13 0 11 0;
-#X connect 14 0 13 0;
+#X obj 100 296 doc_m i0 list;
+#X obj 100 392 doc_m o0 float int;
+#X connect 11 0 12 0;
+#X connect 12 0 9 0;
+#X connect 12 0 10 0;
+#X connect 13 0 12 0;
