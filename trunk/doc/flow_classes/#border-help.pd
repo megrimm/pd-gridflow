@@ -1,30 +1,19 @@
 #N canvas 597 51 559 644 10;
 #X obj 20 84 #in;
 #X obj 20 127 #out window;
-#X text 18 361 GRID;
 #X text 15 28 Creates a black border around an image.;
-#X text 19 417 LIST;
-#X text 21 473 LIST;
-#X text 65 416 A list of three values in parentheses overides the argument.
-;
-#X text 65 472 A list of three values in parentheses overides the argument.
-;
-#X text 65 364 Receives an image.;
 #X msg 20 62 load working.jpg;
-#X text 116 213 GRID(3);
-#X text 116 233 GRID(3);
-#X text 177 213 top padding and left padding. defaults to (1 1 0).
+#X text 207 213 top padding and left padding. defaults to (1 1 0).
 ;
-#X text 177 233 bottom and right padding. defaults to (1 1 0).;
+#X text 207 233 bottom and right padding. defaults to (1 1 0).;
 #X obj 20 105 #border (5 10 0) (15 20 0);
 #X text 209 98 5 at the top;
 #X text 208 112 10 at the left;
 #X text 208 126 15 at the bottom;
 #X text 208 139 20 at the right;
-#X text 175 254 both arguments must have 3 elements. The third element
+#X text 205 254 both arguments must have 3 elements. The third element
 is reserved for future use.;
-#X text 16 548 GRID;
-#X text 67 548 The original image surrounded by zero padding \, which
+#X text 205 524 The original image surrounded by zero padding \, which
 usually means black pixels.;
 #X obj 0 0 doc_h;
 #X obj 3 304 doc_i 3;
@@ -36,6 +25,14 @@ usually means black pixels.;
 #X obj 14 443 doc_ii 2;
 #X obj 14 213 doc_cc 0;
 #X obj 14 237 doc_cc 1;
-#X connect 0 0 14 0;
-#X connect 9 0 0 0;
-#X connect 14 0 1 0;
+#X obj 100 213 doc_m c0 grid[3];
+#X obj 100 237 doc_m c1 grid[3];
+#X obj 100 339 doc_m i0 grid;
+#X obj 100 390 doc_m i1 list;
+#X obj 100 443 doc_m i2 list;
+#X text 186 389 same as arg 0;
+#X text 186 443 same as arg 1;
+#X obj 100 522 doc_m o0 grid;
+#X connect 0 0 6 0;
+#X connect 3 0 0 0;
+#X connect 6 0 1 0;

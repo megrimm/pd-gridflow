@@ -8,10 +8,8 @@
 #X obj 50 105 metro 20;
 #X text 14 27 Is an abstraction that provides a preset for bttv cards
 as well as discrete controls of other cameras.;
-#X text 13 464 BANG;
-#X text 73 543 Returns a grid from the video capture device for every
+#X text 190 513 Returns a grid from the video capture device for every
 bang.;
-#X text 13 543 GRID;
 #X obj 50 189 #scale_by;
 #X text 20 300 * for webcams \, please note that you need to have the
 pwc module loaded. The driver from http://www.saillard.org worked for
@@ -19,8 +17,7 @@ the quickcam pro 4000;
 #X text 115 145 <-- open the abstraction and configure for your camera
 before sending it a bang.;
 #X obj 50 146 #camera;
-#X text 113 373 INT;
-#X text 173 372 Corresponds to the video for linux device on you system
+#X text 212 374 Corresponds to the video for linux device on you system
 (0-8);
 #X obj 0 0 doc_h;
 #X obj 3 490 doc_o 1;
@@ -29,10 +26,13 @@ before sending it a bang.;
 #X obj 14 514 doc_oo 0;
 #X obj 14 438 doc_ii 0;
 #X obj 14 377 doc_cc 0;
+#X obj 100 377 doc_m c0 float/int;
+#X obj 100 438 doc_m i0 bang;
+#X obj 100 514 doc_m o0 grid;
 #X connect 0 0 3 0;
-#X connect 1 0 13 0;
+#X connect 1 0 11 0;
 #X connect 2 0 5 0;
 #X connect 3 0 4 0;
-#X connect 5 0 13 0;
-#X connect 10 0 0 0;
-#X connect 13 0 10 0;
+#X connect 5 0 11 0;
+#X connect 8 0 0 0;
+#X connect 11 0 8 0;
