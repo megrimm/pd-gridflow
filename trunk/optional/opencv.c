@@ -22,10 +22,7 @@
 */
 
 #include "../gridflow.h.fcs"
-namespace opencv {
 #include <opencv/cv.h>
-};
-using namespace opencv;
 #include <errno.h>
 
 #define cvRelease(euh) cvRelease((void **)(euh))
