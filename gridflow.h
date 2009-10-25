@@ -238,25 +238,27 @@ struct t_atom2 : t_atom {
 	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
 	operator float32 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return a_float;}
-#define FFF float f = round(float32(*this));
-	operator   bool () const {FFF; if (f<0 || f>=2)                        RAISE("value %f is out of range",f); return (bool)f;}
-	operator  uint8 () const {FFF; if (f<0 || f>=0x100)                    RAISE("value %f is out of range",f); return (uint8)f;}
-	operator  int16 () const {FFF; if (f<-0x8000 || f>=0x8000)             RAISE("value %f is out of range",f); return (int16)f;}
-	operator uint16 () const {FFF; if (f<0 || f>=0x10000)                  RAISE("value %f is out of range",f); return (uint16)f;}
-	operator  int32 () const {FFF; if (f<-0x80000000LL || f>=0x80000000LL) RAISE("value %f is out of range",f); return (int32)f;}
-	operator uint32 () const {FFF; if (f<0 || f>=0x100000000LL)            RAISE("value %f is out of range",f); return (uint32)f;}
-#undef FFF
-	operator long () const {return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
+#define TYPECASTER(T,A,B) operator T () const { \
+  float f = round(float32(*this)); if (f<A || f>=B) RAISE("value %f is out of range",f); return (T)f;}
+	TYPECASTER(   bool,           0  ,          2  )
+	TYPECASTER(  uint8,           0  ,      0x100  )
+	TYPECASTER(  int16,     -0x8000  ,     0x8000  )
+	TYPECASTER( uint16,           0  ,    0x10000  )
+	TYPECASTER(  int32, -0x80000000LL, 0x80000000LL)
+	TYPECASTER( uint32,           0  ,0x100000000LL)
+#undef TYPECASTER
 	operator  uint64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return (uint64)round(a_float);}
 	operator   int64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return  (int64)round(a_float);}
 	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return               a_float ;}
 
-	operator std::string  () const {if (a_type!=A_SYMBOL)  RAISE("expected symbol");      return std::string(a_symbol->s_name);}
-	operator t_symbol   * () const {if (a_type!=A_SYMBOL)  RAISE("expected symbol");      return             a_symbol         ;}
-	operator void       * () const {if (a_type!=A_POINTER) RAISE("expected pointer");     return               a_gpointer;}
-	operator t_binbuf   * () const {if (a_type!=A_LIST)    RAISE("expected nested list"); return   (t_binbuf *)a_gpointer;}
-	operator Grid       * () const {if (a_type!=A_GRID)    RAISE("expected grid");        return       (Grid *)a_gpointer;}
-	operator GridOutlet * () const {if (a_type!=A_GRIDOUT) RAISE("expected grid outlet"); return (GridOutlet *)a_gpointer;}
+#define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
+	TYPECASTER2(std::string ,A_SYMBOL ,"symbol"     ,std::string(a_symbol->s_name))
+	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,            a_symbol         )
+	TYPECASTER2(void       *,A_POINTER,"pointer"    ,               a_gpointer)
+	TYPECASTER2(t_binbuf   *,A_LIST   ,"nested list",   (t_binbuf *)a_gpointer)
+	TYPECASTER2(Grid       *,A_GRID   ,"grid"       ,       (Grid *)a_gpointer)
+	TYPECASTER2(GridOutlet *,A_GRIDOUT,"grid outlet", (GridOutlet *)a_gpointer)
+#undef TYPECASTER2
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
