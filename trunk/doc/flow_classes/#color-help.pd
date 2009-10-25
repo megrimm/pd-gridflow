@@ -1,7 +1,6 @@
 #N canvas 653 126 559 548 10;
 #X obj 126 114 #color;
 #X text 308 126 <-- vary these;
-#X text 3 477 GRID;
 #X text 10 27 The [#color] object contains a triple slider for RGB
 value selection on each channel.;
 #X text 198 68 <-- click here;
@@ -33,5 +32,5 @@ including sliders and numboxes.;
 #X obj 100 443 doc_m o0 grid;
 #X text 188 444 of size (3) representing a rgb colour or any other
 rgb-related settings you want to control with [#color].;
+#X connect 4 0 0 0;
 #X connect 5 0 0 0;
-#X connect 6 0 0 0;

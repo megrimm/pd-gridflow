@@ -1,4 +1,4 @@
-#N canvas 525 0 551 669 10;
+#N canvas 525 0 556 614 10;
 #X obj 79 121 #camera;
 #X obj 79 70 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 105 153 #out window;
@@ -13,14 +13,10 @@
 -1;
 #X obj 108 255 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 84 397 GRID;
-#X text 84 455 BANG;
-#X text 84 519 BANG;
-#X text 84 578 BANG;
 #X obj 79 310 #record;
-#X text 116 519 Starts recording to the file.;
-#X text 116 578 Stops recording.;
-#X text 116 454 Opens a dialog window in which to type the filename
+#X text 206 459 Starts recording to the file.;
+#X text 206 498 Stops recording.;
+#X text 206 424 Opens a dialog window in which to type the filename
 to be recorded \, the defualt encoding is quicktime (raw).;
 #X text 22 33 Record a quicktime file with [#out];
 #X text 113 229 <-- 1 select filename;
@@ -30,19 +26,23 @@ to be recorded \, the defualt encoding is quicktime (raw).;
 #X obj 0 0 doc_h;
 #X obj 3 371 doc_i 4;
 #X obj 3 352 doc_c 0;
-#X obj 3 602 doc_o 0;
+#X obj 3 532 doc_o 0;
 #X obj 14 395 doc_ii 0;
-#X obj 14 459 doc_ii 1;
-#X obj 14 523 doc_ii 2;
-#X obj 14 577 doc_ii 3;
-#X text 116 396 Accepts grids.;
+#X obj 14 429 doc_ii 1;
+#X obj 14 463 doc_ii 2;
+#X obj 14 497 doc_ii 3;
+#X text 206 396 Accepts grids.;
+#X obj 100 395 doc_m i0 grid;
+#X obj 100 429 doc_m i1 bang;
+#X obj 100 463 doc_m i2 bang;
+#X obj 100 497 doc_m i3 bang;
 #X connect 0 0 2 0;
-#X connect 0 0 14 0;
+#X connect 0 0 10 0;
 #X connect 1 0 6 0;
 #X connect 2 0 4 0;
 #X connect 3 0 6 1;
 #X connect 4 0 5 0;
 #X connect 6 0 0 0;
-#X connect 7 0 14 1;
-#X connect 8 0 14 3;
-#X connect 9 0 14 2;
+#X connect 7 0 10 1;
+#X connect 8 0 10 3;
+#X connect 9 0 10 2;
