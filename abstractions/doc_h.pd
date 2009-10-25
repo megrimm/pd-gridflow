@@ -1,5 +1,5 @@
-#N canvas 45 53 572 306 10;
-#X obj 3 3 cnv 15 544 18 empty \$0-rect ♯for 2 9 1 13 -1 -262144
+#N canvas 50 44 572 627 10;
+#X obj 3 3 cnv 15 544 18 empty \$0-rect ♯fade 2 9 1 13 -1 -262144
 0;
 #X obj 166 48 loadbang;
 #X obj 135 57 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -30,6 +30,24 @@
 #X msg 420 267 symbol pd-\$1;
 #X msg 394 210 map 0 \, map 1;
 #X obj 394 191 delay 50;
+#X obj 257 442 #in;
+#X msg 257 423 open x11 here \$1 \, bang;
+#X obj 266 586 #out;
+#X msg 306 541 open \$1;
+#X obj 216 300 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 306 503 gf/canvas_filename 1;
+#X obj 313 571 display;
+#X obj 259 358 t b b;
+#X obj 239 467 t a a;
+#X obj 183 510 #finished;
+#X obj 257 404 gf/canvas_xid 1;
+#X obj 258 335 route bang float;
+#X obj 304 373 delay;
+#X obj 304 354 t b f;
+#X obj 306 522 gf/string_replace -help.pd -help.ppm;
+#X obj 257 314 r justscreenshot;
+#X msg 183 529 close \; pd quit;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
@@ -53,4 +71,24 @@
 #X connect 24 0 23 1;
 #X connect 25 0 23 0;
 #X connect 26 0 25 0;
+#X connect 27 0 35 0;
+#X connect 28 0 27 0;
+#X connect 30 0 29 0;
+#X connect 30 0 33 0;
+#X connect 31 0 38 0;
+#X connect 32 0 41 0;
+#X connect 34 0 37 0;
+#X connect 34 1 32 0;
+#X connect 35 0 36 0;
+#X connect 35 1 29 0;
+#X connect 36 0 43 0;
+#X connect 37 0 28 0;
+#X connect 38 0 34 0;
+#X connect 38 1 40 0;
+#X connect 39 0 34 0;
+#X connect 40 0 39 0;
+#X connect 40 1 39 1;
+#X connect 41 0 30 0;
+#X connect 42 0 38 0;
+#X connect 43 0 29 0;
 #X coords 0 -1 1 1 550 24 2 0 0;
