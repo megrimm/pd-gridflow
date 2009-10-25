@@ -176,6 +176,40 @@ t_class *GFCanvasEditModeProxy_class;
 }
 \end class {install("gf/canvas_edit_mode",1,1);}
 
+extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
+\class GFCanvasSetGOP : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 float (float gop);
+};
+\def 0 float (float gop) {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	t_atom a[1]; SETFLOAT(a+0,0);
+	canvas_setgraph(mom,gop,0);
+}
+\end class {install("gf/canvas_setgop",1,0);}
+
+\class GFCanvasXID : FObject {
+  int n;
+	t_symbol *name;
+	\constructor (int n_) {
+		n=n_;
+		name=symprintf("gf/canvas_xid:%lx",bself);
+		pd_bind((t_pd *)bself,name);
+	}
+	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
+	\decl 0 bang ();
+	\decl 0 xid (t_symbol *t);
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+  sys_vgui("pd %s xid [winfo id .x%lx.c] \\;\n",name->s_name,long(mom));
+}
+\def 0 xid (t_symbol *t) {outlet_symbol(bself->outlets[0],t);}
+\end class {install("gf/canvas_xid",1,1);}
+
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
