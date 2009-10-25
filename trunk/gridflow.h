@@ -77,9 +77,7 @@ void list_free (t_list *self);
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
 typedef int       int32; typedef unsigned int       uint32;
-#ifndef _CV_H_
 typedef long long int64; typedef unsigned long long uint64;
-#endif
 typedef float   float32;
 typedef double  float64;
 

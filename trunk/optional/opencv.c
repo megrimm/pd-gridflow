@@ -21,8 +21,11 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <opencv/cv.h>
 #include "../gridflow.h.fcs"
+namespace opencv {
+#include <opencv/cv.h>
+};
+using namespace opencv;
 #include <errno.h>
 
 #define cvRelease(euh) cvRelease((void **)(euh))
