@@ -393,8 +393,7 @@ number_type_table_end
 };
 
 #define FOO(_type_) \
-inline NumberTypeE NumberTypeE_type_of(_type_ *x) { \
-	return _type_##_e; }
+inline NumberTypeE NumberTypeE_type_of(_type_ *x) {return _type_##_e;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
@@ -746,7 +745,10 @@ struct GridOutlet : CObject {
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
-	template <class T> void send(long n, T *data);
+	#define FOO(T) void send(long n, T *data) {send_2(n,data);}
+	EACH_NUMBER_TYPE(FOO)
+	#undef FOO
+	template <class T> void send_2(long n, T *data);
 	void flush(); // goes with send();
 	PtrGrid buf; // temporary buffer
 	long bufi; // number of bytes used in the buffer
