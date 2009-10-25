@@ -1,6 +1,4 @@
 #N canvas 652 22 556 655 10;
-#X text 111 406 FLOAT;
-#X text 111 465 FLOAT;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 288 163 negative;
@@ -18,9 +16,9 @@
 #X text 68 221 Outputs initial image;
 #X obj 331 192 hsl 128 8 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X text 167 467 A float in inlet 1 is stored as the value "b" to perform
+#X text 197 467 A float in inlet 1 is stored as the value "b" to perform
 the "b-a" operation.;
-#X text 166 407 A float in inlet 1 is stored as the value "a" to perform
+#X text 196 407 A float in inlet 1 is stored as the value "a" to perform
 the "b-a" operation.;
 #X obj 154 613 swap;
 #X obj 154 613 swap;
@@ -34,8 +32,7 @@ it.;
 #X obj 105 613 # inv+;
 #X obj 34 146 inv+;
 #X obj 263 211 # inv+ 255;
-#X text 112 552 FLOAT;
-#X text 165 554 Outputs the result of the operation "b-a".;
+#X text 197 552 Outputs the result of the operation "b-a".;
 #X floatatom 105 104 5 0 0 0 - - -;
 #X floatatom 149 121 5 0 0 0 - - -;
 #X floatatom 105 178 5 0 0 0 - - -;
@@ -47,24 +44,27 @@ it.;
 #X obj 14 466 doc_ii 1;
 #X obj 3 520 doc_o 1;
 #X obj 14 552 doc_oo 0;
-#X text 110 305 FLOAT;
-#X text 162 305 [inv+] accepts a single float as a creation argument
+#X text 192 305 [inv+] accepts a single float as a creation argument
 which initializes the first value to perform the operation with.;
 #X obj 3 278 doc_c 1;
 #X obj 14 309 doc_cc 0;
-#X connect 2 0 9 0;
-#X connect 4 0 7 0;
-#X connect 5 0 7 1;
-#X connect 6 0 10 0;
-#X connect 7 0 11 0;
-#X connect 7 1 25 0;
-#X connect 9 0 4 0;
-#X connect 10 0 2 0;
-#X connect 14 0 25 1;
-#X connect 20 0 24 0;
-#X connect 21 0 24 1;
-#X connect 24 0 22 0;
-#X connect 25 0 11 0;
-#X connect 28 0 31 0;
-#X connect 29 0 31 1;
-#X connect 31 0 30 0;
+#X obj 100 309 doc_m c0 float;
+#X obj 100 405 doc_m i0 float;
+#X obj 100 466 doc_m i1 float;
+#X obj 100 552 doc_m o0 float;
+#X connect 0 0 7 0;
+#X connect 2 0 5 0;
+#X connect 3 0 5 1;
+#X connect 4 0 8 0;
+#X connect 5 0 9 0;
+#X connect 5 1 23 0;
+#X connect 7 0 2 0;
+#X connect 8 0 0 0;
+#X connect 12 0 23 1;
+#X connect 18 0 22 0;
+#X connect 19 0 22 1;
+#X connect 22 0 20 0;
+#X connect 23 0 9 0;
+#X connect 25 0 28 0;
+#X connect 26 0 28 1;
+#X connect 28 0 27 0;

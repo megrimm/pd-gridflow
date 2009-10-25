@@ -27,19 +27,15 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X text 230 188 <-- only temporarily necessary;
 #X text 117 253 <-- imports gridflow grids into GEM;
 #X text 181 720 \, game_of_life_gem.pd in the examples folder;
-#X text 15 571 GRID;
 #X obj 45 253 #to_pix;
-#X text 16 654 gemlist;
-#X text 16 481 gem_state;
-#X text 96 570 Grid with 4 channels;
-#X text 91 655 Modified gemstate so that the pix is equal to the Grid
+#X text 204 530 Grid with 4 channels;
+#X text 203 629 Modified gemstate so that the pix is equal to the Grid
 of inlet 1;
-#X text 93 481 Something coming from [gemhead];
+#X text 217 455 Something coming from [gemhead];
 #X msg 57 217 yflip \$1;
 #X obj 57 197 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X text 17 510 yflip;
-#X text 95 511 With one boolean argument that selects the order in
+#X text 203 471 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '1';
 #N canvas 0 22 458 308 channel_test 0;
 #X obj 130 221 #rgb_to_rgba;
@@ -67,18 +63,22 @@ which the y dimension of the Grid will be read \, defaults to '1';
 #X obj 3 402 doc_c 0;
 #X obj 14 455 doc_ii 0;
 #X obj 14 543 doc_ii 1;
-#X obj 15 631 doc_oo 0;
+#X obj 14 631 doc_oo 0;
+#X obj 100 455 doc_m i0 gem_state;
+#X obj 100 475 doc_m i0 yflip;
+#X obj 100 543 doc_m i1 grid;
+#X obj 100 631 doc_m o0 gem_state;
 #X connect 0 0 15 0;
 #X connect 1 0 0 0;
-#X connect 2 0 33 0;
+#X connect 2 0 29 0;
 #X connect 3 0 2 0;
 #X connect 4 0 14 0;
-#X connect 5 0 23 0;
-#X connect 6 0 34 0;
+#X connect 5 0 22 0;
+#X connect 6 0 30 0;
 #X connect 13 0 15 0;
 #X connect 14 0 2 0;
 #X connect 16 0 3 0;
-#X connect 23 0 6 0;
-#X connect 29 0 23 0;
-#X connect 30 0 29 0;
-#X connect 33 0 23 1;
+#X connect 22 0 6 0;
+#X connect 26 0 22 0;
+#X connect 27 0 26 0;
+#X connect 29 0 22 1;
