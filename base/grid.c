@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -82,7 +82,10 @@ void Grid::init_from_atom(const t_atom &x) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN(this->data,nt);
 		((int32 *)*this)[0] = (int32)a.a_float;
-	} else RAISE("can't convert to grid");
+	} else {
+		std::ostringstream s; s << x;
+		RAISE("can't convert to grid: %s",s.str().data());
+	}
 }
 
 // **************** GridInlet *************************************
@@ -243,7 +246,7 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 //!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(long n, T *data) {
+void GridOutlet::send_2(long n, T *data) {
 	//if (inlets.size()==1 && inlets[0]->buf) post("GridOutlet::send(%ld), bufsize %ld",long(n),long(inlets[0]->buf->dim->prod()));
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data,nt);
