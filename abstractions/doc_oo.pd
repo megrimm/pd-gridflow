@@ -1,5 +1,5 @@
 #N canvas 113 292 560 322 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Outlet 0: 8 8 1 9 -175159
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Outlet 1: 8 8 1 9 -175159
 -1 0;
 #X obj 318 75 loadbang;
 #X obj 318 135 s \$0-rect;
@@ -12,16 +12,26 @@
 #X obj 52 133 doc_add o\$1;
 #X obj 83 95 loadbang;
 #X obj 83 114 gf/canvas_dollarzero 1;
-#X obj 66 0 doc_layout o/\$1;
 #X obj 287 41 doc_below o;
+#X obj 359 3 loadbang;
+#X obj 359 22 float \$1;
+#X obj 359 41 moses 1;
+#X obj 407 41 - 1;
+#X obj 66 0 doc_layout o/\$1 80 20;
+#X msg 407 60 symbol o/\$1;
 #X connect 1 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;
-#X connect 5 0 12 0;
+#X connect 5 0 11 0;
 #X connect 6 0 8 0;
 #X connect 9 0 10 0;
 #X connect 10 0 8 1;
-#X connect 11 2 5 0;
-#X connect 11 2 8 2;
-#X connect 12 0 11 1;
+#X connect 11 0 16 1;
+#X connect 12 0 13 0;
+#X connect 13 0 14 0;
+#X connect 14 1 15 0;
+#X connect 15 0 17 0;
+#X connect 16 2 5 0;
+#X connect 16 2 8 2;
+#X connect 17 0 11 1;
 #X coords 0 -1 1 1 64 16 2 0 0;
