@@ -224,7 +224,6 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \def 0 bang () {
 	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	post("x1=%ld x2=%ld",long(mom->gl_screenx1),long(mom->gl_screenx2));
 	mom->gl_screenx2 = mom->gl_screenx1 + 560;
 }
 \end class {install("gf/canvas_hehehe",1,1);}
