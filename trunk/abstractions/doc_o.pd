@@ -12,25 +12,27 @@
 #X obj 387 230 receives;
 #X obj 358 174 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 0 0 bng 15 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 0 20 bng 15 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X msg 370 77 \$2;
 #X msg 427 130 label Outlets (\$1);
 #X msg 387 211 symbol \$1-doc_o;
 #X obj 200 283 doc_editmodebang;
-#X obj 177 18 doc_layout o;
 #X obj 0 94 doc_make oo \$1;
+#X obj 407 57 doc_below i;
+#X obj 177 18 doc_layout o 542 30;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
-#X connect 4 0 15 1;
+#X connect 4 0 16 0;
 #X connect 5 0 12 0;
 #X connect 6 0 13 0;
 #X connect 7 0 6 0;
 #X connect 9 0 6 0;
-#X connect 10 0 16 0;
-#X connect 11 0 16 1;
+#X connect 10 0 15 0;
+#X connect 11 0 15 1;
 #X connect 12 0 3 0;
 #X connect 13 0 8 0;
-#X connect 15 2 4 0;
-#X connect 15 2 11 0;
+#X connect 16 0 17 1;
+#X connect 17 2 4 0;
+#X connect 17 2 11 0;
 #X coords 0 -1 1 1 542 16 2 0 0;
