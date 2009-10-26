@@ -1,18 +1,18 @@
 #N canvas 91 65 567 335 10;
 #X obj 0 0 cnv 16 80 16 empty \$0-rect Argument 0: 4 8 1 9 -175159
 -1 0;
-#X obj 263 175 s \$0-rect;
-#X obj 263 135 list append \$1;
-#X msg 263 155 label Argument \$1:;
+#X obj 353 65 s \$0-rect;
+#X obj 353 25 list append \$1;
+#X msg 353 45 label Argument \$1:;
 #X obj 182 29 doc_pos;
 #X msg 234 30 14 \$2;
-#X obj 263 116 loadbang;
-#X obj 68 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 353 6 loadbang;
+#X obj 68 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X obj 182 5 doc_editmodebang 68;
-#X obj 68 145 doc_add c\$1;
-#X obj 99 107 loadbang;
-#X obj 99 126 gf/canvas_dollarzero 1;
+#X obj 68 75 doc_add c\$1;
+#X obj 99 37 loadbang;
+#X obj 99 56 gf/canvas_dollarzero 1;
 #X connect 2 0 3 0;
 #X connect 3 0 1 0;
 #X connect 4 1 5 0;
