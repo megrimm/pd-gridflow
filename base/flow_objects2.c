@@ -191,7 +191,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \end class {install("gf/canvas_setgop",1,0);}
 
 \class GFCanvasXID : FObject {
-  int n;
+	int n;
 	t_symbol *name;
 	\constructor (int n_) {
 		n=n_;
@@ -200,15 +200,34 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	}
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
 	\decl 0 bang ();
+	\decl 0 whole ();
 	\decl 0 xid (t_symbol *t);
 };
 \def 0 bang () {
 	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-  sys_vgui("pd %s xid [winfo id .x%lx.c] \\;\n",name->s_name,long(mom));
+	sys_vgui("pd %s xid [winfo id .x%lx.c] \\;\n",name->s_name,long(mom));
+}
+\def 0 whole () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	sys_vgui("pd %s xid [winfo id .x%lx] \\;\n",  name->s_name,long(mom));
 }
 \def 0 xid (t_symbol *t) {outlet_symbol(bself->outlets[0],t);}
 \end class {install("gf/canvas_xid",1,1);}
+
+\class GFCanvasHeHeHe : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	post("x1=%ld x2=%ld",long(mom->gl_screenx1),long(mom->gl_screenx2));
+	mom->gl_screenx2 = mom->gl_screenx1 + 560;
+}
+\end class {install("gf/canvas_hehehe",1,1);}
 
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
