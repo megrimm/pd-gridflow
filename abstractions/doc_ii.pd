@@ -1,5 +1,5 @@
-#N canvas 369 364 560 322 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 1: 12 8 1 9 -175159
+#N canvas 631 329 560 322 10;
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 2: 12 8 1 9 -175159
 -1 0;
 #X obj 318 3 loadbang;
 #X obj 299 20 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -9,7 +9,7 @@
 #X msg 318 43 label Inlet \$1:;
 #X msg 206 22 14 \$2;
 #X obj 158 22 doc_pos;
-#X obj 52 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X obj 158 3 doc_editmodebang 52;
 #X obj 52 72 doc_add i\$1;
@@ -55,7 +55,6 @@
 #X connect 17 0 13 0;
 #X connect 18 0 13 1;
 #X connect 19 0 21 0;
-#X connect 19 0 31 1;
 #X connect 20 0 22 0;
 #X connect 21 0 24 0;
 #X connect 21 1 24 2;
@@ -66,5 +65,4 @@
 #X connect 28 0 25 0;
 #X connect 29 0 28 1;
 #X connect 30 0 29 0;
-#X connect 31 1 20 0;
 #X coords 0 -1 1 1 64 16 2 0 0;
