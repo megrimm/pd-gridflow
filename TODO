@@ -1,6 +1,7 @@
 /* $Id$ */
 
 oct.2009
+[ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
@@ -11,12 +12,18 @@ oct.2009
 [ ] [#in libv4l] !!!
 [ ] [#in unicap] !!!
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
+[ ] [#fold] is slowwww
+[ ] doc attributes: [doc_a] [doc_aa] ?
+[ ] [doc_ii] links to [doc_cc]
+[ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
+[ ] [#fade_lin] doesn't use [args]
+[ ] use [args] everywhere it should
+[ ] distinguish messages vs atoms in this manual
+    e.g. [doc_aa] would contain something like [doc_m]
+		but wouldn't have [doc_m] as a subnode.
 
 PFOAC/BNL 2009
-[ ] randomise positions and send offsetted text after choosing a position
-[ ] store bboxes
 [ ] [#interval_overlap]
-[ ] script python
 
 0.9.5
 [ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
@@ -52,6 +59,7 @@ PFOAC/BNL 2009
 	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
 	être un edge-detect d'une image plus vieille).
 [ ] cvOpticalFlow
+[ ] added [#out png]
 
 whatever version
 [ ] [cv.split]

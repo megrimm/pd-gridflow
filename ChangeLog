@@ -2,11 +2,16 @@
 
 version 0.9.6 (2009.10...):
 
- * MAJOR revision of the manual
- * added [gf/canvas_filename], [gf/string_replace]
- * added [gf/canvas_getpos], [gf/canvas_setpos], [gf/canvas_edit_mode]
- * added [doc_h], [doc_c], [doc_i], [doc_o], [doc_also]
- * added examples/pinwheel.pd
+ * MAJOR revision of the manual (no more xml nor html: all helpfiles)
+ * added [gf/canvas_filename] [gf/string_replace]
+ * added [gf/canvas_getpos] [gf/canvas_setpos] [gf/canvas_edit_mode]
+ * added [gf/canvas_setgop] [gf/canvas_xid]
+ * added [doc_h] [doc_c] [doc_cc] [doc_i] [doc_ii] [doc_o] [doc_oo]
+ * added [doc_m] [doc_also] [doc_editmodebang] [doc_pos]
+ * added examples/pinwheel.pd, examples/radial_blur.pd
+ * [#change]: now takes an argument just like [change]
+ * [#in x11]: fixed some bugs and set out_size to a sensible default.
+ * removed [#camera_control], [#camera_old], [#centroid_in_pd]
 
 version 0.9.5 (2009.10.18):
 
