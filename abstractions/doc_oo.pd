@@ -13,13 +13,15 @@
 #X obj 83 95 loadbang;
 #X obj 83 114 gf/canvas_dollarzero 1;
 #X obj 66 0 doc_layout o/\$1;
+#X obj 287 41 doc_below o;
 #X connect 1 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;
-#X connect 5 0 11 1;
+#X connect 5 0 12 0;
 #X connect 6 0 8 0;
 #X connect 9 0 10 0;
 #X connect 10 0 8 1;
 #X connect 11 2 5 0;
 #X connect 11 2 8 2;
+#X connect 12 0 11 1;
 #X coords 0 -1 1 1 64 16 2 0 0;
