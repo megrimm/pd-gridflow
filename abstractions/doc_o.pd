@@ -1,18 +1,18 @@
 #N canvas 110 0 573 469 10;
-#X obj 0 0 cnv 15 542 16 empty \$0-rect Outlets (1) 240 8 1 9 -88239
+#X obj 0 0 cnv 15 542 16 empty \$0-rect Outlets (2) 240 8 1 9 -88239
 -262144 0;
-#X obj 165 47 loadbang;
-#X obj 134 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 427 30 loadbang;
+#X obj 396 39 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 165 107 s \$0-rect;
-#X msg 366 87 3 \$2;
-#X obj 165 67 list append \$1;
+#X obj 427 90 s \$0-rect;
+#X msg 156 207 3 \$2;
+#X obj 427 50 list append \$1;
 #X obj 387 192 gf/canvas_dollarzero 1;
 #X obj 387 171 loadbang;
 #X obj 387 230 receives;
 #X obj 358 174 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 0 0 bng 15 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 0 20 bng 15 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X obj 54 127 gf/canvas_filename 1;
 #X obj 157 147 loadbang;
@@ -20,18 +20,19 @@
 #X obj 27 183 for 0 \$1 1;
 #X obj 27 252 * 24;
 #X obj 27 271 +;
-#X msg 381 117 \$2;
+#X msg 147 226 \$2;
 #X msg 54 146 symbol pd-\$1;
 #X obj 27 202 t f f;
 #X obj 27 290 pack f f;
 #X obj 27 226 + 1;
 #X obj 15 100 t b b b;
 #X msg 15 367 loadbang;
-#X msg 165 87 label Outlets (\$1);
+#X msg 427 70 label Outlets (\$1);
 #X msg 27 333 obj 3 \$1 doc_oo \$2;
 #X msg 387 211 symbol \$1-doc_o;
-#X obj 318 87 doc_pos;
+#X obj 108 207 doc_pos;
 #X obj 200 283 doc_editmodebang;
+#X obj 177 18 doc_layout o;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
 #X connect 4 0 27 1;
