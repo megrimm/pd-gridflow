@@ -228,6 +228,24 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 }
 \end class {install("gf/canvas_hehehe",1,1);}
 
+\class GFCanvasHoHoHo : FObject {
+	int n;
+	t_canvas *last;
+	\constructor (int n) {this->n=n; last=0;}
+	void hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),bself);}
+	~GFCanvasHoHoHo () {hide();}
+	\decl 0 list (int x1, int y1, int x2, int y2);
+};
+\def 0 list (int x1, int y1, int x2, int y2) {
+	hide();
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	last = mom;
+	sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
+		long(last),x1,y1,x2,y2,bself);
+}
+\end class {install("gf/canvas_hohoho",1,0);}
+
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
