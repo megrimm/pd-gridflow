@@ -7,7 +7,7 @@
 #X obj 171 112 #checkers;
 #X text 194 321 Results in a checkered pattern of 50% / 75% greys in
 8 X 8 squares.;
-#X text 14 29 Displays a grid with a pattern of checkered squares.
+#X text 11 29 Displays a grid with a pattern of checkered squares.
 ;
 #X obj 0 0 doc_h;
 #X obj 3 226 doc_i 1;
@@ -15,9 +15,9 @@
 #X obj 3 186 doc_c 0;
 #X obj 14 324 doc_oo 0;
 #X obj 14 250 doc_ii 0;
-#X obj 171 88 #for (0 0) (768 1024) (1 1);
 #X obj 100 250 doc_m i0 grid;
 #X obj 100 324 doc_m o0 grid;
-#X connect 0 0 12 0;
+#X obj 171 88 #for (0 0) (128 128) (1 1);
+#X connect 0 0 14 0;
 #X connect 3 0 1 0;
-#X connect 12 0 3 0;
+#X connect 14 0 3 0;
