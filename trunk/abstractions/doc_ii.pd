@@ -1,5 +1,5 @@
-#N canvas 631 329 573 388 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 0: 12 8 1 9 -175159
+#N canvas 656 181 573 388 10;
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 1: 12 8 1 9 -175159
 -1 0;
 #X obj 318 73 loadbang;
 #X obj 299 90 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -24,30 +24,20 @@
 #X obj 130 184 route ping;
 #X obj 131 243 t b f;
 #X obj 130 203 b;
-#X obj 344 262 doc_bottom i;
+#X obj 344 192 doc_bottom i;
 #X obj 131 262 doc_bottom i\$1;
-#X msg 379 220 \; \$1-doc_i_sub ping;
-#X obj 379 182 f;
-#X obj 378 160 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
--1 -1;
-#X obj 379 201 pack 0 s;
-#X obj 433 201 symbol i\$1;
-#X obj 433 184 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
--1 -1;
-#X obj 7 203 doc_tellpos i\$1;
 #X obj 66 0 doc_layout i/\$1;
 #X obj 287 39 doc_below i;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
 #X connect 5 0 3 0;
-#X connect 6 0 32 0;
+#X connect 6 0 25 0;
 #X connect 7 0 9 0;
 #X connect 10 0 11 0;
 #X connect 11 0 9 1;
 #X connect 11 0 22 1;
 #X connect 11 0 23 1;
-#X connect 11 0 25 1;
 #X connect 13 0 17 0;
 #X connect 14 0 15 0;
 #X connect 15 0 13 1;
@@ -59,12 +49,7 @@
 #X connect 20 1 23 2;
 #X connect 21 0 18 0;
 #X connect 23 0 16 0;
-#X connect 25 0 27 0;
-#X connect 26 0 25 0;
-#X connect 27 0 24 0;
-#X connect 28 0 27 1;
-#X connect 29 0 28 0;
-#X connect 31 2 9 2;
-#X connect 31 2 6 0;
-#X connect 32 0 31 1;
+#X connect 24 2 9 2;
+#X connect 24 2 6 0;
+#X connect 25 0 24 1;
 #X coords 0 -1 1 1 64 16 2 0 0;
