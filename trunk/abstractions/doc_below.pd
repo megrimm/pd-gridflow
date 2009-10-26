@@ -12,6 +12,7 @@
 #X obj 45 234 pack 0 0;
 #X obj 102 212 max;
 #X msg 117 170 \$4;
+#X obj 204 27 inlet;
 #X connect 0 0 5 0;
 #X connect 2 0 3 0;
 #X connect 2 1 4 0;
@@ -26,3 +27,4 @@
 #X connect 10 0 1 0;
 #X connect 11 0 10 1;
 #X connect 12 0 11 1;
+#X connect 13 0 4 1;
