@@ -1,41 +1,42 @@
-#N canvas 631 329 560 322 10;
-#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 2: 12 8 1 9 -175159
+#N canvas 631 329 573 388 10;
+#X obj 0 0 cnv 16 64 16 empty \$0-rect Inlet 0: 12 8 1 9 -175159
 -1 0;
-#X obj 318 3 loadbang;
-#X obj 299 20 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 318 73 loadbang;
+#X obj 299 90 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 318 63 s \$0-rect;
-#X obj 318 23 list append \$1;
-#X msg 318 43 label Inlet \$1:;
-#X msg 206 22 14 \$2;
-#X obj 158 22 doc_pos;
+#X obj 318 133 s \$0-rect;
+#X obj 318 93 list append \$1;
+#X msg 318 113 label Inlet \$1:;
+#X msg 206 92 14 \$2;
+#X obj 158 92 doc_pos;
 #X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
-#X obj 158 3 doc_editmodebang 52;
-#X obj 52 72 doc_add i\$1;
-#X obj 83 34 loadbang;
-#X obj 83 53 gf/canvas_dollarzero 1;
-#X obj 131 287 s;
-#X obj 146 249 pack 0 s;
-#X obj 191 211 loadbang;
-#X obj 191 230 symbol \$1;
-#X obj 131 211 + 20;
-#X msg 146 268 symbol \$1-doc_i;
-#X obj 130 152 gf/canvas_getpos 0;
-#X obj 130 114 route ping;
-#X obj 131 173 t b f;
-#X obj 130 133 b;
-#X obj 344 192 doc_bottom i;
-#X obj 131 192 doc_bottom i\$1;
-#X msg 379 150 \; \$1-doc_i_sub ping;
-#X obj 379 112 f;
-#X obj 378 90 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X obj 379 131 pack 0 s;
-#X obj 433 131 symbol i\$1;
-#X obj 433 114 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+#X obj 158 73 doc_editmodebang 52;
+#X obj 52 142 doc_add i\$1;
+#X obj 83 104 loadbang;
+#X obj 83 123 gf/canvas_dollarzero 1;
+#X obj 131 357 s;
+#X obj 146 319 pack 0 s;
+#X obj 191 281 loadbang;
+#X obj 191 300 symbol \$1;
+#X obj 131 281 + 20;
+#X msg 146 338 symbol \$1-doc_i;
+#X obj 130 222 gf/canvas_getpos 0;
+#X obj 130 184 route ping;
+#X obj 131 243 t b f;
+#X obj 130 203 b;
+#X obj 344 262 doc_bottom i;
+#X obj 131 262 doc_bottom i\$1;
+#X msg 379 220 \; \$1-doc_i_sub ping;
+#X obj 379 182 f;
+#X obj 378 160 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 7 133 doc_tellpos i\$1;
+#X obj 379 201 pack 0 s;
+#X obj 433 201 symbol i\$1;
+#X obj 433 184 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 7 203 doc_tellpos i\$1;
+#X obj 66 0 doc_layout i/\$1;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
