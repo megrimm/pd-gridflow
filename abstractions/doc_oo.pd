@@ -11,11 +11,15 @@
 -1 -1;
 #X obj 121 1 doc_editmodebang 52;
 #X obj 30 113 doc_add o\$1;
+#X obj 59 36 loadbang;
+#X obj 59 55 gf/canvas_dollarzero 1;
 #X connect 1 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;
 #X connect 5 0 6 1;
 #X connect 6 1 5 0;
-#X connect 6 1 9 1;
+#X connect 6 1 9 2;
 #X connect 7 0 9 0;
+#X connect 10 0 11 0;
+#X connect 11 0 9 1;
 #X coords 0 -1 1 1 64 16 2 0 0;
