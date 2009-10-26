@@ -7,10 +7,8 @@ oct.2009
 [ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] doc&abs: remove [fork] and other oldisms.
-[ ] <BLINK> MAKE REFERENCE.XML OBSOLETE </BLINK>
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
-[ ] [#in libv4l] !!!
-[ ] [#in unicap] !!!
+[ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 [ ] [#fold] is slowwww
 [ ] doc attributes: [doc_a] [doc_aa] ?
@@ -72,10 +70,6 @@ whatever version
 [ ] fix SDL modifiers
 [ ] fix quoting in [display]
 
-soon:
- * remove reference.*ml
- * videodev.c should be upgraded to V4L2 asap.
-
 +-------+-------+-------+-------+-------+-------+-------+-------
 Common Video Framework :
 
@@ -93,11 +87,8 @@ Common Video Framework :
 [ ] threads for video?
 [ ] GEM geos vs 3DP: how do they compare?
 [ ] is there anything else deserving to be unified between the video plugins?
-[ ] videojack
-[ ] http://gstreamer.freedesktop.org/
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] make [#draw_points] [#draw_rect] [#edit_polygon]
-[ ] Salsaman recommends supporting Videojack because of unicap support which means getting DV support for free.
 [ ] look at camorama
 [ ] OpenCV
 [ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
@@ -198,7 +189,6 @@ Installation
 	http://rooster.stanford.edu/~ben/linux/cross.php
 
 Documentation
-[ ] make a short feature list as a promo
 [ ] add credits
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
@@ -207,8 +197,6 @@ Documentation
 [ ] describe indexmap in doc
 [ ] document backward compatibility issues
 [ ] architecture: class->type/shape->use->role
-[ ] heavily hyperlink documentation
-[ ] automate more parts of the documentation
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
 --- remember to keep doc/help/screenshots/examples up to date
@@ -249,10 +237,9 @@ Computation Objects
 [ ] #import~, #export~
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
-[ ] #matrix_inverse, #matrix_solve
+[ ] #matrix_solve, #replace_if, #random_select, #markov_chain, #splice
 [ ] #timeline (or rtmetro): sequencing of events from grid
-[ ] #replace_if, #random_select, #markov_chain, #sort, #slice, #splice
-[ ] #polygon_perimeter, #polygon_area, #draw_polygon smoothly
+[ ] #draw_polygon smoothly
 [ ] fuzzy #store (interpolate)
 [ ] write a complete benchmark script
 [ ] spatial biquads (ask Tom)
@@ -289,13 +276,12 @@ Input/Output
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format
-[ ] Gimp, GStreamer, ffmpeg, xine, mplayer, PDP, OSC
+[ ] Gimp, ffmpeg, xine, mplayer, PDP, OSC
 [ ] get subtitling of tv channels
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: double buffering using a Pixmap remote-object
-[ ] [serial_port]
 [ ] support for audio in the mpeg streams
 [ ] synchronized audio with the video when using mpeg1 & 2
 [ ] full screen mode (without the menu bars or frames)
@@ -303,11 +289,10 @@ Input/Output
 
 Format
 [ ] remaining number type support in formats
-[ ] fork: pseudoformat for launching format handler as separate process
+[ ] threaded [#in]/[#out]
 [ ] put_at/reassign in x11/sdl/quartz
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
-[ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
 [ ] AVI
 [ ] format grid: "headerless until 10" (text files)
 
@@ -322,7 +307,6 @@ User Interface
 
 Extra/Examples/Etc
 [ ] .pd: read; write better
-[ ] examples/generique.pd
 [ ] add examples from the workshop, etc
 
 <matju> alx:
@@ -333,12 +317,6 @@ possibles). je pense que le help de Pd est une bonne idée (le concept hands-on)
 mais ça pourrait aller plus loin. j'ai pensé intégrer le manuel de référence de
 gridflow directement dans le programme, disponible au runtime, dans l'éventualité
 d'un GUI qui saurait en tirer avantage.
-
-<alx1> matju: détecter les formes; détecter les couleurs; support mpeg4; hotspots
-
-ClaudiusMaximus says: I want to be able to send output from Pd+Gridflow to a video4linux
-loopback device so that other v4l programs can access the stream.
-I found the video loopback device here: http://motion.sourceforge.net/vloopback/
 
 -mfpmath=sse2
 
@@ -358,38 +336,8 @@ the same will be done for recording later.
 very old bookmarks:
 	http://pdl.perl.org/
 	http://www.opendragon.com/Pages/MaxObjects.shtml (not responding)
-	gstreamer
-	Arts Builder
 	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
 	http://freej.dyne.org/
-
-FObject.subclass("rubyarray",2,2) {
-  def initialize() @a=[]; @i=0; end
-  def _0_get(s=nil) case s when :size; send_out 1,:size,@a.size; when nil; _0_get :size end end
-  def _0_clear; @a.clear end
-  def _0_float i; @i=i; send_out 0, *@a[@i] if @a[@i]!=nil; end
-  def _1_list(*l) @a[@i]=l; end
-  def _0_save(filename,format=nil)
-    File.open(filename.to_s,"w") {|f|
-      if format then @a.each {|x| f.puts(format.to_s % x) }
-      else           @a.each {|x| f.puts(x.join(",")) }
-      end
-    }
-  end
-  def _0_load(filename)
-    f=File.open(filename.to_s,"r")
-    @a.clear
-    f.each {|x| @a.push x.split(",").map {|y| Float(y) rescue y.intern }}
-    f.close
-  end
-}
-
-FObject.subclass("regsub",3,1) {
-  def initialize(from,to) _1_symbol(from); _2_symbol(to) end
-  def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
-  def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
-  def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
-}
 
 FObject.subclass("memstat",1,1) {
   def _0_bang
@@ -401,6 +349,7 @@ FObject.subclass("memstat",1,1) {
   #doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
 }
 
+# see also: [gf.error]
 FObject.subclass("rubysprintf",2,1) {
   def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
