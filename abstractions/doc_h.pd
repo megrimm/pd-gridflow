@@ -55,6 +55,9 @@
 #X obj 383 360 loadbang;
 #X msg 383 379 1;
 #X obj 160 27 doc_layout h 550 30;
+#X obj 255 227 doc_exist c;
+#X obj 256 247 display;
+#X obj 255 208 loadbang;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
@@ -102,4 +105,6 @@
 #X connect 47 0 48 0;
 #X connect 48 0 46 0;
 #X connect 49 2 13 0;
+#X connect 50 0 51 0;
+#X connect 52 0 50 0;
 #X coords 0 -1 1 1 550 24 2 0 0;

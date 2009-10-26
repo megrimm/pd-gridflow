@@ -1,6 +1,6 @@
 #N canvas 472 60 684 502 10;
 #X msg 314 21 100 \$2;
-#X obj 2 0 cnv 15 80 16 \$0-rect_s \$0-rect float 4 8 1 9 -261615 -1
+#X obj 2 0 cnv 15 80 16 \$0-rect_s \$0-rect grid 4 8 1 9 -261615 -1
 0;
 #X obj 222 168 s \$0-rect;
 #X obj 222 69 loadbang;
@@ -30,7 +30,6 @@
 #X msg 370 372 3;
 #X obj 351 269 change -666;
 #X msg 351 186 0;
-#X obj 84 1 doc_layout;
 #X obj 7 80 loadbang;
 #X obj 7 99 symbol \$1;
 #X obj 7 118 gf/string_replace c c/;
@@ -41,9 +40,10 @@
 #X obj 7 197 pack s s;
 #X obj 222 88 args id (type a ...) *;
 #X msg 7 216 name \$1/\$2;
-#X connect 0 0 27 1;
-#X connect 3 0 36 0;
-#X connect 4 0 36 0;
+#X obj 84 1 doc_layout ... 80 20;
+#X connect 0 0 37 1;
+#X connect 3 0 35 0;
+#X connect 4 0 35 0;
 #X connect 5 0 2 0;
 #X connect 7 0 9 0;
 #X connect 8 0 25 0;
@@ -66,15 +66,15 @@
 #X connect 24 0 14 0;
 #X connect 25 0 22 0;
 #X connect 26 0 7 0;
-#X connect 27 2 0 0;
+#X connect 27 0 28 0;
 #X connect 28 0 29 0;
 #X connect 29 0 30 0;
 #X connect 30 0 31 0;
-#X connect 31 0 32 0;
-#X connect 32 0 35 0;
-#X connect 33 0 35 1;
-#X connect 34 0 33 0;
-#X connect 35 0 37 0;
-#X connect 36 1 5 0;
-#X connect 37 0 27 0;
+#X connect 31 0 34 0;
+#X connect 32 0 34 1;
+#X connect 33 0 32 0;
+#X connect 34 0 36 0;
+#X connect 35 1 5 0;
+#X connect 36 0 37 0;
+#X connect 37 2 0 0;
 #X coords 0 -1 1 1 80 16 0;
