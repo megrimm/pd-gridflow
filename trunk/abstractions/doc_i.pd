@@ -1,5 +1,5 @@
 #N canvas 110 0 573 469 10;
-#X obj 0 20 cnv 15 542 17 empty \$0-rect Inlets (3) 240 8 1 9 -88239
+#X obj 0 20 cnv 15 542 17 empty \$0-rect Inlets (0) 240 8 1 9 -88239
 -262144 0;
 #X obj 157 155 loadbang;
 #X obj 126 154 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
@@ -15,7 +15,7 @@
 #X obj 169 18 doc_layout i 542 30;
 #X obj 157 174 gf.oneshot;
 #X obj 139 292 doc_editmode 530 1;
-#X obj 399 57 doc_below c 1;
+#X obj 399 57 doc_below c 1 10;
 #X connect 1 0 11 0;
 #X connect 2 0 5 0;
 #X connect 4 0 13 0;
