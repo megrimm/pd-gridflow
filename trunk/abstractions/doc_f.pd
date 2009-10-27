@@ -1,10 +1,10 @@
 #N canvas 110 0 573 469 10;
-#X msg 417 38 3 \$2;
 #X obj 3 3 cnv 15 544 18 empty \$0-rect empty 2 9 1 13 -1 -262144 0
 ;
 #X obj 177 28 doc_layout f 550 24;
 #X obj 417 57 doc_below o 0 0;
-#X connect 0 0 3 0;
-#X connect 2 2 0 0;
-#X connect 3 0 2 1;
+#X msg 417 38 0 \$2;
+#X connect 1 2 3 0;
+#X connect 2 0 1 1;
+#X connect 3 0 2 0;
 #X coords 0 -1 1 1 550 24 2 0 0;
