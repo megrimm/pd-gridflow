@@ -14,12 +14,10 @@
 #X msg 64 131 \; \$1/\$2 getbounds \$3-r \$4;
 #X obj 117 259 + \$3;
 #X obj 154 112 inlet;
-#X obj 118 212 route bang;
-#X obj 197 244 gf.error bang?;
 #X connect 0 0 9 0;
 #X connect 2 0 11 0;
 #X connect 3 0 11 1;
-#X connect 4 0 15 0;
+#X connect 4 0 8 0;
 #X connect 5 0 6 0;
 #X connect 5 1 7 0;
 #X connect 6 0 1 0;
@@ -32,4 +30,3 @@
 #X connect 11 0 12 0;
 #X connect 13 0 7 1;
 #X connect 14 0 11 3;
-#X connect 15 0 16 0;
