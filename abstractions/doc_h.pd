@@ -49,7 +49,7 @@
 #X obj 27 474 gf/canvas_xid 1;
 #X msg 29 451 bang;
 #X obj 383 434 gf/canvas_hehehe 1;
-#X obj 383 415 metro 666;
+#X obj 383 415 metro 400;
 #X obj 383 398 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
 1;
 #X obj 383 360 loadbang;
@@ -69,7 +69,7 @@
 #X obj 211 196 t b b b b;
 #X obj 211 337 doc_exist f;
 #X msg 235 356 obj 0 0 doc_f;
-#X obj 175 177 delay 666;
+#X obj 175 177 delay 400;
 #X text 234 176 _sorry_.;
 #X obj 175 196 t b b;
 #X msg 175 391 loadbang;
