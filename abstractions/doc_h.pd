@@ -1,5 +1,5 @@
 #N canvas 307 90 572 627 10;
-#X obj 3 3 cnv 15 544 18 empty \$0-rect ♯hello 2 9 1 13 -1 -262144
+#X obj 3 3 cnv 15 544 18 empty \$0-rect Untitled-1 2 9 1 13 -1 -262144
 0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -55,20 +55,24 @@
 #X obj 383 360 loadbang;
 #X msg 383 379 1;
 #X obj 160 27 doc_layout h 550 30;
-#X obj 286 145 doc_exist c;
-#X obj 235 99 loadbang;
-#X msg 310 164 obj 0 0 doc_c;
-#X obj 286 164 sel;
-#X obj 269 202 sel;
-#X obj 269 183 doc_exist i;
-#X msg 293 202 obj 0 0 doc_i;
-#X obj 252 240 sel;
-#X msg 276 240 obj 0 0 doc_o;
-#X obj 252 221 doc_exist o;
-#X obj 235 278 sel;
-#X obj 235 118 t b b b b;
-#X obj 235 259 doc_exist f;
-#X msg 259 278 obj 0 0 doc_f;
+#X obj 262 164 doc_exist c;
+#X obj 175 99 loadbang;
+#X msg 286 183 obj 0 0 doc_c;
+#X obj 262 183 sel;
+#X obj 245 221 sel;
+#X obj 245 202 doc_exist i;
+#X msg 269 221 obj 0 0 doc_i;
+#X obj 228 259 sel;
+#X msg 252 259 obj 0 0 doc_o;
+#X obj 228 240 doc_exist o;
+#X obj 211 297 sel;
+#X obj 211 137 t b b b b;
+#X obj 211 278 doc_exist f;
+#X msg 235 297 obj 0 0 doc_f;
+#X obj 175 118 delay 666;
+#X text 234 117 _sorry_.;
+#X obj 175 137 t b b;
+#X msg 175 322 loadbang;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
@@ -117,7 +121,7 @@
 #X connect 48 0 46 0;
 #X connect 49 2 13 0;
 #X connect 50 0 53 0;
-#X connect 51 0 61 0;
+#X connect 51 0 64 0;
 #X connect 52 0 22 0;
 #X connect 53 0 52 0;
 #X connect 54 0 56 0;
@@ -133,4 +137,8 @@
 #X connect 61 3 50 0;
 #X connect 62 0 60 0;
 #X connect 63 0 22 0;
+#X connect 64 0 66 0;
+#X connect 66 0 67 0;
+#X connect 66 1 61 0;
+#X connect 67 0 22 0;
 #X coords 0 -1 1 1 550 24 2 0 0;
