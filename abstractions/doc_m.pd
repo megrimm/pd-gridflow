@@ -1,5 +1,5 @@
-#N canvas 606 187 684 502 10;
-#X obj 0 0 cnv 15 94 17 \$0-rect_s \$0-rect int 4 9 1 9 -261615 -1
+#N canvas 346 149 684 502 10;
+#X obj 0 0 cnv 15 94 17 \$0-rect_s \$0-rect ... 4 9 1 9 -261615 -1
 0;
 #X obj 222 168 s \$0-rect;
 #X obj 222 69 loadbang;
@@ -44,6 +44,7 @@
 #X obj 136 407 doc_editmode 42 1;
 #X obj 84 1 doc_layout ... 94 20;
 #X msg 314 21 97 \$2;
+#X obj 25 275 print;
 #X connect 2 0 34 0;
 #X connect 3 0 34 0;
 #X connect 4 0 1 0;
@@ -81,6 +82,7 @@
 #X connect 35 0 39 1;
 #X connect 36 0 27 0;
 #X connect 37 0 39 0;
+#X connect 37 0 41 0;
 #X connect 39 2 40 0;
 #X connect 40 0 35 0;
 #X coords 0 -1 1 1 94 17 1 0 0;
