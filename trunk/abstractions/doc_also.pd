@@ -8,7 +8,7 @@
 #X obj 409 116 gf/canvas_getpos 0;
 #X msg 409 136 3 \$2;
 #X msg 409 60 1;
-#X obj 409 96 metro 666;
+#X obj 409 96 metro 400;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
 #X connect 4 0 5 0;

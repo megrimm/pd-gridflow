@@ -14,7 +14,7 @@
 #X obj 120 267 s;
 #X obj 33 237 pack 0 \$1;
 #X msg 120 248 pos \$2 \$1;
-#X obj 16 73 metro 666;
+#X obj 16 73 metro 400;
 #X obj 43 354 gf/canvas_dollarzero 2;
 #X msg 43 373 symbol \$1-doc_h;
 #X msg 16 392 redraw;
