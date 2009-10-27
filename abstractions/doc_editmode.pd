@@ -18,11 +18,12 @@
 #X obj 43 354 gf/canvas_dollarzero 2;
 #X msg 43 373 symbol \$1-doc_h;
 #X msg 16 392 redraw;
-#X obj 261 222 s;
-#X msg 285 222 symbol \$1-rect;
-#X msg 261 203 pos 0 \$1;
+#X obj 261 204 s;
+#X msg 285 204 symbol \$1-rect;
+#X msg 261 185 pos 0 \$1;
 #X obj 16 130 t b a a b;
-#X obj 49 153 * 20;
+#X obj 50 168 * 20;
+#X obj 50 149 spigot \$2;
 #X connect 0 0 21 0;
 #X connect 1 0 14 0;
 #X connect 2 0 3 0;
@@ -45,6 +46,7 @@
 #X connect 20 0 18 0;
 #X connect 21 0 6 0;
 #X connect 21 1 5 0;
-#X connect 21 2 22 0;
+#X connect 21 2 23 0;
 #X connect 21 3 9 0;
 #X connect 22 0 20 0;
+#X connect 23 0 22 0;

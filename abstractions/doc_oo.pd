@@ -1,5 +1,5 @@
 #N canvas 113 292 560 322 10;
-#X obj 0 20 cnv 16 64 16 empty \$0-rect Outlet 1: 8 8 1 9 -175159
+#X obj 0 0 cnv 16 64 17 empty \$0-rect Outlet 0: 8 9 1 9 -175159
 -1 0;
 #X obj 318 75 loadbang;
 #X obj 318 135 s \$0-rect;
@@ -34,4 +34,4 @@
 #X connect 15 2 5 0;
 #X connect 15 2 7 2;
 #X connect 16 0 10 1;
-#X coords 0 -1 1 1 64 16 2 0 0;
+#X coords 0 -1 1 1 64 17 2 0 0;
