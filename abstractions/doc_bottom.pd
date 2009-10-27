@@ -1,4 +1,4 @@
-#N canvas 586 0 651 426 10;
+#N canvas 586 0 435 426 10;
 #X obj 33 72 pack f s;
 #X obj 33 53 \$0;
 #X msg 14 287 bang \, set;
@@ -36,6 +36,7 @@
 #X connect 7 1 4 1;
 #X connect 8 0 7 0;
 #X connect 10 0 11 0;
+#X connect 11 0 6 0;
 #X connect 12 0 2 0;
 #X connect 12 1 1 0;
 #X connect 12 2 13 0;
