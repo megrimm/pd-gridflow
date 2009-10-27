@@ -5,9 +5,11 @@
 .-o--------------------------------------------------------------
 | Directory layout
 
+  ./abstractions ..... Pd object classes written in Pd
   ./base ............. object classes written in C++
   ./bin .............. programs startable as applications
   ./bundled .......... files from other packages, bundled here for convenience
+  ./examples ......... more complex Pd programs showing off more practical uses.
   ./format ........... format handlers written in C++ (optional)
   ./doc .............. complete documentation in HTML, with XML source
   ./doc/flow_classes . help files (.pd)
@@ -17,8 +19,6 @@
                        (this will replace ./pd_examples in the future).
   ./images ........... sample images shared by ./samples, ./help, ./doc
   ./optional ......... optional classes but not format handlers
-  ./abstractions ..... Pd object classes written in Pd
-  ./examples ......... more complex Pd programs showing off more practical uses.
   ./tests ............ will contain Pd programs that test GridFlow itself.
                        (see also: the PureUnity project)
 
@@ -35,9 +35,3 @@ Legalese
   of the License, or (at your option) any later version.
 
   See file COPYING for further informations on licensing terms.
-
-
-
-CVS
-
-	$Id$
