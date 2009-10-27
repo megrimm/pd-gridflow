@@ -13,7 +13,6 @@
 #X msg 268 81 \$2;
 #X obj 268 100 - 20;
 #X obj 11 79 doc_bottom \$1 \$2;
-#X obj 121 18 inlet dollarzero;
 #X connect 0 0 6 0;
 #X connect 2 0 1 1;
 #X connect 3 0 2 0;
@@ -26,6 +25,4 @@
 #X connect 10 0 13 0;
 #X connect 10 1 3 0;
 #X connect 11 0 12 0;
-#X connect 12 0 13 2;
 #X connect 13 0 0 0;
-#X connect 14 0 13 1;
