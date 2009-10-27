@@ -13,6 +13,7 @@
 #X obj 64 112 pack 0 s \$0 \$2;
 #X msg 64 131 \; \$1/\$2 getbounds \$3-r \$4;
 #X obj 117 229 + \$3;
+#X obj 154 112 inlet;
 #X connect 0 0 9 0;
 #X connect 2 0 11 0;
 #X connect 3 0 11 1;
@@ -28,3 +29,4 @@
 #X connect 10 0 3 1;
 #X connect 11 0 12 0;
 #X connect 13 0 7 1;
+#X connect 14 0 11 3;
