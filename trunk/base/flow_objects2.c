@@ -219,12 +219,16 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasHeHeHe : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 float (float y);
 };
-\def 0 bang () {
+\def 0 float (float y) {
 	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	mom->gl_screenx2 = mom->gl_screenx1 + 560;
+	mom->gl_screenx2 = mom->gl_screenx1 + 568;
+	if (mom->gl_screeny2-mom->gl_screeny1 < y) mom->gl_screeny2 = mom->gl_screeny1+y;
+	sys_vgui("wm geometry .x%lx %dx%d\n",long(mom),
+	  int(mom->gl_screenx2-mom->gl_screenx1),
+	  int(mom->gl_screeny2-mom->gl_screeny1));
 }
 \end class {install("gf/canvas_hehehe",1,1);}
 
