@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -131,7 +131,7 @@ GRID_INLET(0) {
 			data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
 			out.send(2,data);
 		}
-	}		
+	}
 }
 
 \end class FormatAALib {
