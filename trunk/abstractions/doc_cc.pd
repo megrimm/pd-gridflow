@@ -9,8 +9,6 @@
 #X obj 68 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X obj 68 185 doc_add c\$1;
-#X obj 99 147 loadbang;
-#X obj 99 166 gf/canvas_dollarzero 1;
 #X obj 312 40 doc_below c;
 #X obj 384 2 loadbang;
 #X obj 384 21 float \$1;
@@ -21,16 +19,15 @@
 #X msg 432 59 symbol c/\$1;
 #X connect 2 0 3 0;
 #X connect 3 0 1 0;
-#X connect 4 0 10 0;
+#X connect 4 0 8 0;
 #X connect 5 0 2 0;
 #X connect 6 0 7 0;
-#X connect 8 0 9 0;
-#X connect 9 0 7 1;
-#X connect 10 0 16 1;
-#X connect 11 0 12 0;
-#X connect 12 0 13 0;
-#X connect 13 1 14 0;
-#X connect 14 0 17 0;
-#X connect 16 2 4 0;
-#X connect 17 0 10 1;
+#X connect 8 0 14 1;
+#X connect 9 0 10 0;
+#X connect 10 0 11 0;
+#X connect 11 1 12 0;
+#X connect 12 0 15 0;
+#X connect 14 2 4 0;
+#X connect 14 2 7 1;
+#X connect 15 0 8 1;
 #X coords 0 -1 1 1 80 17 2 0 0;
