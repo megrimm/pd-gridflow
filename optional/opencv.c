@@ -524,7 +524,7 @@ GRID_INLET(0) {
 
 
 
-\class CvCornerHarris < CvOp1 {
+\class CvCornerHarris : CvOp1 {
 	\attr int block_size;
 	\attr int aperture_size;
 	\attr double k;

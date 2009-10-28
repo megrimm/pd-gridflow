@@ -33,7 +33,7 @@ extern "C" {
 #include <jpeglib.h>
 };
 
-\class FormatJPEG < Format {
+\class FormatJPEG : Format {
 	P<BitPacking> bit_packing;
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
