@@ -8,7 +8,7 @@
 #X obj 328 123 list append \$1;
 #X msg 328 143 label Inlet \$1:;
 #X msg 287 20 14 \$2;
-#X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 52 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X obj 379 20 loadbang;
 #X obj 379 39 float \$1;
