@@ -250,6 +250,38 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 }
 \end class {install("gf/canvas_hohoho",1,0);}
 
+#define canvas_each(y,x) for (t_gobj *y=x->gl_list; y; y=y->g_next)
+\class GFCanvasCount : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	int k=0;
+	canvas_each(y,mom) k++;
+	outlet_float(bself->outlets[0],k);
+}
+\end class {install("gf/canvas_count",1,1);}
+
+\class GFCanvasLoadbang : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 float (float m);
+};
+\def 0 float (float m) {
+	t_canvas *mom = bself->mom;
+	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+	int k=0;
+	canvas_each(y,mom) {
+		k++;
+		if (k>=m && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
+	}
+	
+}
+\end class {install("gf/canvas_loadbang",1,0);}
+
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
