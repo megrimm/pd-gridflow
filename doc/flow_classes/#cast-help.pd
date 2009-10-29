@@ -1,4 +1,4 @@
-#N canvas 689 0 558 717 10;
+#N canvas 646 0 568 585 10;
 #X obj 14 219 #print;
 #X obj 14 199 #cast float64;
 #X obj 269 218 #print;
@@ -18,7 +18,7 @@
 #X obj 306 133 #pack 3 float32;
 #X obj 14 161 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 202 294 Number types are: uint8 \, int16 \, int32 \, int64
+#X text 210 303 Number types are: uint8 \, int16 \, int32 \, int64
 \, float32 \, float64. see doc/architecture.html for more info.;
 #X obj 126 157 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
@@ -33,18 +33,19 @@ will be truncated.;
 #X obj 3 335 doc_i 1;
 #X obj 3 422 doc_o 1;
 #X obj 3 253 doc_c 1;
-#X obj 14 446 doc_oo 0;
-#X obj 14 359 doc_ii 0;
-#X obj 14 277 doc_cc 0;
-#X obj 100 277 doc_m c0 symbol/numbertype;
-#X obj 100 359 doc_m i0 grid;
-#X obj 100 446 doc_m o0 grid;
-#X text 189 447 Produces a grid of the same dimensions containing all
+#X obj 14 452 doc_oo 0;
+#X obj 14 365 doc_ii 0;
+#X obj 14 283 doc_cc 0;
+#X obj 97 283 doc_m c0 symbol/numbertype;
+#X obj 97 365 doc_m i0 grid;
+#X obj 97 452 doc_m o0 grid;
+#X text 199 444 Produces a grid of the same dimensions containing all
 the same values after type conversion.;
 #X text 188 474 conversion from float truncates fractional part (rounds
 towards zero);
 #X text 187 506 conversion to an int type may wrap (same as some #
 & or some # %);
+#X obj 0 556 doc_f;
 #X connect 1 0 0 0;
 #X connect 4 0 2 0;
 #X connect 5 0 3 0;
@@ -59,3 +60,8 @@ towards zero);
 #X connect 14 0 6 0;
 #X connect 16 0 7 0;
 #X connect 18 0 13 2;
+#X connect 27 1 15 0;
+#X connect 28 1 19 0;
+#X connect 29 1 30 0;
+#X connect 29 1 31 0;
+#X connect 29 1 32 0;

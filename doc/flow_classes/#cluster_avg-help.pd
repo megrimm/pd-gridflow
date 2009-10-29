@@ -18,3 +18,5 @@
 #X obj 97 240 doc_m o1 grid;
 #X obj 97 140 doc_m i1 float int;
 #X obj 97 120 doc_m i0 grid i;
+#X connect 15 1 6 0;
+#X connect 16 1 5 0;
