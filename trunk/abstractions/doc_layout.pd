@@ -33,10 +33,10 @@
 #X obj 243 238 #pack 4;
 #X obj 243 276 #to_list;
 #X obj 67 74 + \$2;
-#X obj 152 290 list;
-#X obj 75 402 l2s;
-#X obj 75 421 gf.error unknown message '%s';
-#X obj 152 348 s;
+#X obj 152 390 list;
+#X obj 75 462 l2s;
+#X obj 75 481 gf.error unknown message '%s';
+#X obj 152 448 s;
 #X obj 152 251 t b a;
 #X obj 202 133 route2 getbounds ping;
 #X msg 263 152 symbol \$1;
@@ -50,11 +50,11 @@
 #X obj 413 357 t b s;
 #X obj 413 376 symbol;
 #X obj 152 270 shunt;
-#X obj 152 329 t a;
+#X obj 152 429 t a;
 #X obj 564 436 unpack f f f f;
 #X obj 566 456 pack f f f f;
 #X obj 413 221 loadbang;
-#X obj 182 294 list;
+#X obj 182 394 list;
 #X obj 409 501 spigot 1;
 #X text 3 350 (dummy);
 #X obj 409 520 list;
@@ -74,6 +74,9 @@
 #X obj 5 125 route2 name parent height;
 #X msg 9 201 float \$1;
 #X obj 10 220 t b f;
+#X obj 123 305 t b b;
+#X obj 138 327 gf/canvas_getpos 1;
+#X obj 137 350 unpack f f;
 #X connect 1 0 70 0;
 #X connect 3 0 7 0;
 #X connect 4 0 9 0;
@@ -130,7 +133,7 @@
 #X connect 47 0 48 0;
 #X connect 47 1 46 1;
 #X connect 48 0 46 0;
-#X connect 49 0 33 0;
+#X connect 49 0 73 0;
 #X connect 49 1 54 0;
 #X connect 50 0 36 0;
 #X connect 51 0 52 0;
@@ -164,4 +167,9 @@
 #X connect 71 0 72 0;
 #X connect 72 0 28 0;
 #X connect 72 1 28 1;
+#X connect 73 0 33 0;
+#X connect 73 1 74 0;
+#X connect 74 0 75 0;
+#X connect 75 0 30 0;
+#X connect 75 1 30 1;
 #X coords 0 -1 1 1 200 69 1 0 0;
