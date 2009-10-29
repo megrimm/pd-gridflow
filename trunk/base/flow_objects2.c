@@ -304,6 +304,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 wire_dotted (int r, int g, int b);
 	\decl 0 wire_hide ();
+	\decl 0  box_dotted (int r, int g, int b);
 };
 \def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
@@ -326,6 +327,24 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
 		sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
+	}
+#else
+	post("doesn't work with DesireData");
+#endif
+}
+\def 0 box_dotted (int r, int g, int b) {
+#ifndef DESIREDATA
+	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
+	t_canvas *can = bself->mom->gl_owner;
+	if (!can) RAISE("no such canvas");
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+		t_object *t = (t_object *)wire->to;
+		int x1=t->te_xpix,y1=t->te_ypix,x2=x1+15,y2=y1+15;
+		//pd_class((t_pd *)wire->to)->c_wb->w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
+		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(wire->to));
+		sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
+			long(can),x1,y1,x2,y2,long(wire->to));
 	}
 #else
 	post("doesn't work with DesireData");
