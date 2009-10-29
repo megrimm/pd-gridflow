@@ -1,5 +1,5 @@
 #N canvas 346 149 684 502 10;
-#X obj 0 20 cnv 15 94 17 \$0-rect_s \$0-rect ... 4 9 1 9 -261615 -1
+#X obj 0 20 cnv 15 94 17 \$0-rect_s \$0-rect grid 4 9 1 9 -261615 -1
 0;
 #X obj 265 127 s \$0-rect;
 #X obj 222 69 loadbang;
@@ -20,6 +20,8 @@
 #X obj 136 407 doc_editmode 42 1;
 #X obj 84 1 doc_layout ... 94 20;
 #X msg 314 21 97 \$2;
+#X obj 35 458 outlet dummy;
+#X obj 441 460 outlet to_comment;
 #X connect 2 0 13 0;
 #X connect 3 0 13 0;
 #X connect 4 0 1 0;
