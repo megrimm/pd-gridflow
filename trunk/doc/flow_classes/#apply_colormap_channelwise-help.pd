@@ -1,4 +1,4 @@
-#N canvas 690 0 557 684 10;
+#N canvas 651 0 568 670 10;
 #X obj 25 313 #in;
 #X obj 25 362 #out window;
 #X text 192 608 Outputs the modified data as a grid.;
@@ -22,15 +22,15 @@ and constructs a new pixel from that.;
 #X text 357 264 vary this:;
 #X obj 0 0 doc_h;
 #X obj 3 383 doc_c 0;
-#X obj 3 410 doc_i 2;
+#X obj 3 423 doc_i 2;
 #X obj 3 581 doc_o 1;
-#X obj 14 443 doc_ii 0;
+#X obj 14 453 doc_ii 0;
 #X obj 14 504 doc_ii 1;
-#X obj 14 608 doc_oo 0;
-#X obj 100 443 doc_m i0 grid;
-#X obj 100 504 doc_m i1 grid;
-#X obj 100 608 doc_m o0 grid;
-#X text 192 521 aka palette;
+#X obj 14 611 doc_oo 0;
+#X obj 97 453 doc_m i0 grid;
+#X obj 97 504 doc_m i1 grid;
+#X obj 97 611 doc_m o0 grid;
+#X text 197 528 aka palette;
 #X text 12 70 currently works only with 3 channels at a time!;
 #X text 15 89 it also works on non-images \, for example on colormaps
 themselves \, but the last dimension must be channels \, and there
@@ -38,6 +38,7 @@ must be three channels.;
 #X text 14 136 Note: if you just need to apply a palette on an indexed-color
 picture or greyscale picture \, you don't need this. Just use #store
 instead.;
+#X obj 0 641 doc_f;
 #X connect 0 0 13 0;
 #X connect 6 0 7 0;
 #X connect 7 0 13 1;
@@ -50,3 +51,7 @@ instead.;
 #X connect 13 0 1 0;
 #X connect 14 0 9 0;
 #X connect 15 0 14 0;
+#X connect 24 1 5 0;
+#X connect 25 1 4 0;
+#X connect 25 1 27 0;
+#X connect 26 1 2 0;

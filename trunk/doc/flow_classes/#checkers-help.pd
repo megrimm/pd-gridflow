@@ -1,4 +1,4 @@
-#N canvas 692 0 555 385 10;
+#N canvas 692 0 568 389 10;
 #X obj 171 66 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 171 135 #out window \, title checkers;
@@ -13,11 +13,14 @@
 #X obj 3 226 doc_i 1;
 #X obj 3 300 doc_o 1;
 #X obj 3 186 doc_c 0;
-#X obj 14 324 doc_oo 0;
-#X obj 14 250 doc_ii 0;
-#X obj 100 250 doc_m i0 grid;
-#X obj 100 324 doc_m o0 grid;
+#X obj 14 330 doc_oo 0;
+#X obj 14 256 doc_ii 0;
+#X obj 97 256 doc_m i0 grid;
+#X obj 97 330 doc_m o0 grid;
 #X obj 171 88 #for (0 0) (128 128) (1 1);
+#X obj 0 360 doc_f;
 #X connect 0 0 14 0;
 #X connect 3 0 1 0;
+#X connect 12 1 2 0;
+#X connect 13 1 4 0;
 #X connect 14 0 3 0;

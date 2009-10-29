@@ -1,4 +1,4 @@
-#N canvas 687 0 560 484 10;
+#N canvas 687 0 568 438 10;
 #X obj 29 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
 #X obj 22 178 print number_of_dimensions;
@@ -13,25 +13,31 @@ representing grid dimensions. For example \, a grid sized like dim(240
 \, 320 \, 4) [#dim] will return a grid like dim(3) whose values are
 240 \, 320 \, 4;
 #X obj 0 0 doc_h;
-#X obj 3 237 doc_i 1;
+#X obj 3 248 doc_i 1;
 #X obj 3 311 doc_o 1;
 #X obj 3 208 doc_c;
-#X obj 117 459 #print;
-#X obj 166 459 #export;
-#X obj 222 459 #export_list;
-#X obj 3 459 doc_also;
-#X obj 14 261 doc_ii 0;
-#X obj 14 335 doc_oo 0;
-#X obj 100 261 doc_m i0 grid;
-#X obj 100 335 doc_m o0 grid;
+#X obj 117 389 #print;
+#X obj 166 389 #export;
+#X obj 222 389 #export_list;
+#X obj 3 389 doc_also;
+#X obj 14 278 doc_ii 0;
+#X obj 14 341 doc_oo 0;
+#X obj 97 278 doc_m i0 grid;
+#X obj 97 341 doc_m o0 grid;
 #X text 185 65 Returns list of dimensions as a grid. Given a grid sized
 like Dim(240 \, 320 \, 4) \, [#dim] will return a grid like Dim(3)
 \, whose values are 240 \, 320 \, 4 .;
 #X text 200 260 ignores any data contained within. sends a grid dim(length
 of dims) containing dims.;
+#X obj 0 409 doc_f;
 #X connect 0 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 1 0;
 #X connect 5 0 2 0;
 #X connect 5 0 0 0;
+#X connect 15 1 12 0;
+#X connect 15 1 13 0;
+#X connect 15 1 14 0;
+#X connect 18 1 21 0;
+#X connect 19 1 7 0;
