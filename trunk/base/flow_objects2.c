@@ -305,12 +305,15 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 wire_dotted (int r, int g, int b);
 	\decl 0 wire_hide ();
 	\decl 0  box_dotted (int r, int g, int b);
+	\decl 0  box_align_x (int x);
 };
+#define BEGIN \
+	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
+	t_canvas *can = bself->mom->gl_owner; \
+	if (!can) RAISE("no such canvas");
 \def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
-	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
-	t_canvas *can = bself->mom->gl_owner;
-	if (!can) RAISE("no such canvas");
+	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
 		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
@@ -321,9 +324,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 }
 \def 0 wire_hide () {
 #ifndef DESIREDATA
-	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
-	t_canvas *can = bself->mom->gl_owner;
-	if (!can) RAISE("no such canvas");
+	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
 		sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
@@ -335,18 +336,31 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 extern t_widgetbehavior text_widgetbehavior;
 \def 0 box_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
-	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
-	t_canvas *can = bself->mom->gl_owner;
-	if (!can) RAISE("no such canvas");
+	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
 		t_object *t = (t_object *)wire->to;
 		int x1=t->te_xpix,y1=t->te_ypix,x2=x1+15,y2=y1+15;
-		//pd_class((t_pd *)wire->to)->c_wb->w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
 		text_widgetbehavior.w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
 		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(wire->to));
 		sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
 			long(can),x1,y1,x2,y2,long(wire->to));
+	}
+#else
+	post("doesn't work with DesireData");
+#endif
+}
+\def 0 box_align_x (int x) {
+#ifndef DESIREDATA
+	BEGIN
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+		t_object *t = (t_object *)wire->to;
+		if (t->te_xpix!=x) {
+			t->te_xpix=x;
+			text_widgetbehavior.w_visfn((t_gobj *)wire->to,can,0);
+			text_widgetbehavior.w_visfn((t_gobj *)wire->to,can,1);
+		}
 	}
 #else
 	post("doesn't work with DesireData");
