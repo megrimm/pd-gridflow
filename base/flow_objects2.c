@@ -32,6 +32,7 @@ extern t_class *text_class;
 };
 #endif
 #define OP(x) op_dict[string(#x)]
+#include <algorithm>
 
 #ifndef DESIREDATA
 struct _outconnect {
@@ -305,7 +306,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 wire_dotted (int r, int g, int b);
 	\decl 0 wire_hide ();
 	\decl 0  box_dotted (int r, int g, int b);
-	\decl 0  box_align_x (int x);
+	\decl 0  box_align_same_x (int x, int y_start, int y_spacing);
 };
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
@@ -340,27 +341,39 @@ extern t_widgetbehavior text_widgetbehavior;
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
 		t_object *t = (t_object *)wire->to;
-		int x1=t->te_xpix,y1=t->te_ypix,x2=x1+15,y2=y1+15;
+		int x1,y1,x2,y2;
 		text_widgetbehavior.w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
-		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(wire->to));
+		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(t));
 		sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
-			long(can),x1,y1,x2,y2,long(wire->to));
+			long(can),x1,y1,x2,y2,long(t));
 	}
 #else
 	post("doesn't work with DesireData");
 #endif
 }
-\def 0 box_align_x (int x) {
+bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictWeakOrdering */ {
+	return a->te_ypix < b->te_ypix;
+}
+#define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
+\def 0 box_align_same_x (int x, int y_start, int y_spacing) {
 #ifndef DESIREDATA
+	std::vector<t_object *> v;
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
-		t_object *t = (t_object *)wire->to;
-		if (t->te_xpix!=x) {
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) v.push_back((t_object *)wire->to);
+	sort(v.begin(),v.end(),comment_sort_y_lt);
+	int y = y_start;
+	foreach(tt,v) {
+		t_object *t = *tt;
+		if (t->te_xpix!=x || t->te_ypix!=y) {
 			t->te_xpix=x;
-			text_widgetbehavior.w_visfn((t_gobj *)wire->to,can,0);
-			text_widgetbehavior.w_visfn((t_gobj *)wire->to,can,1);
+			t->te_ypix=y;
+			text_widgetbehavior.w_visfn((t_gobj *)t,can,0);
+			text_widgetbehavior.w_visfn((t_gobj *)t,can,1);
 		}
+		int x1,y1,x2,y2;
+		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
+		y += y2-y1+y_spacing;
 	}
 #else
 	post("doesn't work with DesireData");
