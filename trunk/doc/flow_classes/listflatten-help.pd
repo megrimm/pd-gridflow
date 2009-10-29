@@ -1,4 +1,4 @@
-#N canvas 630 27 558 526 10;
+#N canvas 630 27 568 533 10;
 #X obj 117 460 listappend;
 #X obj 215 460 listelement;
 #X obj 314 461 listfind;
@@ -21,8 +21,18 @@
 #X obj 14 411 doc_oo 0;
 #X text 7 30 Takes nested lists and places their contents into a single
 list.;
-#X obj 100 318 doc_m i0 list;
-#X obj 100 411 doc_m o0 list;
+#X obj 97 318 doc_m i0 list;
+#X obj 97 411 doc_m o0 list;
+#X obj 0 504 doc_f;
 #X connect 8 0 7 0;
 #X connect 10 0 8 0;
 #X connect 10 0 11 0;
+#X connect 17 1 0 0;
+#X connect 17 1 4 0;
+#X connect 17 1 1 0;
+#X connect 17 1 5 0;
+#X connect 17 1 2 0;
+#X connect 17 1 6 0;
+#X connect 17 1 3 0;
+#X connect 21 1 12 0;
+#X connect 22 1 9 0;

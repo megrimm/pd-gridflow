@@ -1,4 +1,4 @@
-#N canvas 679 22 560 644 10;
+#N canvas 679 22 568 654 10;
 #X obj 109 184 unix_time;
 #X obj 109 153 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
@@ -30,10 +30,11 @@ the current Unix timestamp and send it to the outlets.;
 #X text 199 564 Outputs the Unix timestamp in seconds.;
 #X text 199 594 Outputs the fractions of a second up to 10 microseconds
 (?) (actual precision is probably platform-dependent...);
-#X obj 100 454 doc_m i0 bang;
-#X obj 100 535 doc_m o0 list;
-#X obj 100 565 doc_m o1 list;
-#X obj 100 595 doc_m o2 list;
+#X obj 97 454 doc_m i0 bang;
+#X obj 97 535 doc_m o0 list;
+#X obj 97 565 doc_m o1 list;
+#X obj 97 595 doc_m o2 list;
+#X obj 0 625 doc_f;
 #X connect 0 0 2 0;
 #X connect 0 1 8 0;
 #X connect 0 2 7 0;
@@ -43,3 +44,7 @@ the current Unix timestamp and send it to the outlets.;
 #X connect 3 0 5 0;
 #X connect 5 0 1 0;
 #X connect 10 0 9 0;
+#X connect 24 1 20 0;
+#X connect 25 1 21 0;
+#X connect 26 1 22 0;
+#X connect 27 1 23 0;

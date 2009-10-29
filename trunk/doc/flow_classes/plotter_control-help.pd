@@ -1,4 +1,4 @@
-#N canvas 576 39 587 677 10;
+#N canvas 576 39 568 677 10;
 #X obj 22 162 r foo;
 #X msg 427 236 print_from_ascii $*;
 #X msg 427 115 print hello_world;
@@ -53,11 +53,14 @@
 #X obj 3 407 doc_c 0;
 #X obj 3 490 doc_i 1;
 #X obj 3 578 doc_o 1;
-#X obj 14 602 doc_oo 0;
-#X obj 14 514 doc_ii 0;
+#X obj 14 608 doc_oo 0;
+#X obj 14 520 doc_ii 0;
 #X text 10 32 This object produces HPGL instructions in ASCII form
 that can be sent to the comport object in order to control an HPGL
 compatible plotter.;
+#X obj 0 638 doc_f;
+#X obj 97 520 doc_m i0;
+#X obj 97 608 doc_m o0;
 #X connect 0 0 11 0;
 #X connect 1 0 13 0;
 #X connect 2 0 16 0;

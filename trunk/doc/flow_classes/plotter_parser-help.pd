@@ -1,4 +1,4 @@
-#N canvas 663 22 558 582 10;
+#N canvas 663 22 568 611 10;
 #X obj 195 161 plotter_parser;
 #X obj 195 63 until;
 #X obj 195 46 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
@@ -51,9 +51,13 @@ type b;
 #X obj 3 402 doc_c 0;
 #X obj 3 442 doc_i 1;
 #X obj 3 502 doc_o 2;
-#X obj 14 466 doc_ii 0;
-#X obj 15 526 doc_oo 0;
-#X obj 15 550 doc_oo 1;
+#X obj 14 472 doc_ii 0;
+#X obj 14 532 doc_oo 0;
+#X obj 14 552 doc_oo 1;
+#X obj 0 582 doc_f;
+#X obj 97 472 doc_m i0;
+#X obj 97 532 doc_m o0;
+#X obj 97 552 doc_m o1;
 #X connect 0 0 10 0;
 #X connect 0 0 29 2;
 #X connect 0 1 5 0;
