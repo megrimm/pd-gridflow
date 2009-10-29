@@ -33,6 +33,19 @@ extern t_class *text_class;
 #endif
 #define OP(x) op_dict[string(#x)]
 
+#ifndef DESIREDATA
+struct _outconnect {
+    struct _outconnect *next;
+    t_pd *to;
+};
+struct _outlet {
+    t_object *owner;
+    struct _outlet *next;
+    t_outconnect *connections;
+    t_symbol *sym;
+};
+#endif
+
 static void expect_min_one_dim (P<Dim> d) {
 	if (d->n<1) RAISE("expecting at least one dimension, got %s",d->to_s());}
 
@@ -284,16 +297,36 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 }
 \end class {
 	install("gf/canvas_loadbang",1,0);
+};
+
+\class GFLOL : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 wire_dotted (int r, int g, int b);
+};
+\def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
-	post("text_class hack begin");
-	//text_class->c_firstin = 1;
+	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
+	t_canvas *can = bself->mom->gl_owner;
+	if (!can) RAISE("no such canvas");
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {2 2 2 2}\n",long(can),long(wire),r,g,b);
+	}
+#else
+	post("doesn't work with DesireData");
+#endif
+}
+
+\end class {
+	install("gf/lol",1,0);
+#ifndef DESIREDATA
 	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
 	unsigned long *lol = (unsigned long *)text_class;
 	int i=0;
 	while (lol[i]!=0xDECAFFED) i++;
 	*((char *)(lol+i+1) + 6) = 1;
 	class_setpropertiesfn(text_class,0);
-	post("text_class hack end");
 #endif
 }
 
