@@ -9,10 +9,14 @@
 #X msg 409 136 3 \$2;
 #X msg 409 60 1;
 #X obj 409 96 metro 400;
+#X obj 0 27 doc_layout s 92 30;
+#X obj 212 49 doc_below o 1 10;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
 #X connect 4 0 5 0;
 #X connect 5 0 1 0;
 #X connect 6 0 3 0;
 #X connect 7 0 4 0;
+#X connect 8 2 9 0;
+#X connect 9 0 8 1;
 #X coords 0 -1 1 1 92 16 2 0 0;
