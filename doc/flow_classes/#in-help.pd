@@ -1,4 +1,4 @@
-#N canvas 680 0 554 717 10;
+#N canvas 680 0 568 1213 10;
 #X obj 354 172 #out window;
 #X text 13 34 This object imports a grid \, usually an image \, video
 or live stream.;
@@ -8,7 +8,7 @@ or live stream.;
 #X text 55 181 <--click here;
 #X text 192 683 "close" - Closes the video input device. Only necessary
 when you are using a live capture device.;
-#X text 185 819 "rewind" - Will rewind video to the beginning.;
+#X text 213 819 "rewind" - Will rewind video to the beginning.;
 #X text 182 876 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
 #X text 185 1050 Signals the end of a file and when a file is unreadable.
@@ -151,44 +151,44 @@ not mmap.;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
 #X obj 17 305 #out window \, title video;
-#X text 184 767 Outputs the frame that corresponds to the value. Applies
+#X text 210 771 Outputs the frame that corresponds to the value. Applies
 to formats that have frame numbers \, i.e. video.;
-#X text 182 842 "loop 1" - Restarts a video each time it reaches the
+#X text 202 839 "loop 1" - Restarts a video each time it reaches the
 end (default setting).;
 #X obj 41 248 route bang;
 #X msg 24 147 open violoncelle.mov;
 #X obj 0 0 doc_h;
 #X obj 3 471 doc_i 1;
 #X obj 3 994 doc_o 2;
-#X obj 14 495 doc_ii 0;
-#X obj 14 1018 doc_oo 0;
+#X obj 14 501 doc_ii 0;
+#X obj 14 1024 doc_oo 0;
 #X obj 14 1051 doc_oo 1;
 #X obj 3 332 doc_c 1..2;
 #X text 164 389 auto-open with auto-detect of the format-handler;
 #X text 207 409 auto-open with manual choice of the format-handler
 ;
-#X obj 100 659 doc_m i0 open;
-#X obj 100 719 doc_m i0 set;
-#X obj 100 689 doc_m i0 close;
-#X obj 100 819 doc_m i0 rewind;
-#X obj 100 849 doc_m i0 loop;
-#X obj 100 769 doc_m i0 float int;
-#X obj 100 1018 doc_m o0 grid;
-#X obj 100 1051 doc_m o1 bang;
+#X obj 97 659 doc_m i0 open;
+#X obj 97 718 doc_m i0 set;
+#X obj 97 689 doc_m i0 close;
+#X obj 97 812 doc_m i0 rewind;
+#X obj 97 849 doc_m i0 loop;
+#X obj 97 769 doc_m i0 float int;
+#X obj 97 1024 doc_m o0 grid;
+#X obj 97 1051 doc_m o1 bang;
 #X obj 3 1164 doc_also;
 #X obj 103 1163 #out;
 #X obj 32 370 #in;
 #X obj 33 391 #in filename.suffix;
 #X obj 34 411 #in handler filename.suffix;
 #X text 64 369 nothing opened \, you have to open by yourself;
-#X text 186 659 \$1=filename. sends it as a resource to [#in]. For
+#X text 198 655 \$1=filename. sends it as a resource to [#in]. For
 example: "open sewing.jpg".;
-#X obj 100 495 doc_m i0 bang;
-#X text 185 716 "set" - followed by a number will select the corresponding
+#X obj 97 501 doc_m i0 bang;
+#X text 213 716 "set" - followed by a number will select the corresponding
 video frame. A bang must be sent to [#in] in order to display the frame.
 this only works with video file formats.;
-#X obj 100 1071 doc_m o1 float int;
-#X text 194 1074 frame number of the frame currently being viewed.
+#X obj 97 1071 doc_m o1 float int;
+#X text 217 1074 frame number of the frame currently being viewed.
 Applies to formats that have frame numbers \, i.e. video.;
 #X text 188 495 A bang reads a frame and sends it through the outlet.
 Since frames from videos and live streams are read as a series of individual
@@ -201,6 +201,7 @@ read from a file \, reading another picture will continue if there
 are several pictures in the same file \, but if the end of file is
 reached instead \, it will rewind and send the first picture again.
 ;
+#X obj 0 1184 doc_f;
 #X connect 2 0 11 0;
 #X connect 3 0 11 0;
 #X connect 11 0 0 0;
@@ -219,3 +220,15 @@ reached instead \, it will rewind and send the first picture again.
 #X connect 34 0 19 0;
 #X connect 41 0 18 0;
 #X connect 42 0 19 0;
+#X connect 52 1 66 0;
+#X connect 53 1 68 0;
+#X connect 54 1 5 0;
+#X connect 55 1 6 0;
+#X connect 56 1 40 0;
+#X connect 56 1 7 0;
+#X connect 57 1 39 0;
+#X connect 58 1 9 0;
+#X connect 59 1 8 0;
+#X connect 60 1 61 0;
+#X connect 67 1 71 0;
+#X connect 69 1 70 0;

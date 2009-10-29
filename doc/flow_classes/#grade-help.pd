@@ -1,4 +1,4 @@
-#N canvas 690 0 557 717 10;
+#N canvas 690 0 568 717 10;
 #X text 143 55 splits a dim[a... \, b] grid into dim[b] vectors that
 each contain numbers from 0 to b-1 indicating the ordering of the values.
 the result is a dim[a... \, b] grid.;
@@ -11,13 +11,13 @@ the result is a dim[a... \, b] grid.;
 #X obj 19 208 #print;
 #X obj 0 0 doc_h;
 #X obj 3 250 doc_c 0;
-#X obj 3 273 doc_i 1;
+#X obj 3 290 doc_i 1;
 #X obj 3 364 doc_o 1;
-#X obj 14 388 doc_oo 0;
-#X obj 14 297 doc_ii 0;
-#X obj 100 297 doc_m i0 grid;
-#X obj 100 388 doc_m o0 grid;
-#X text 189 390 splits a Dim[A... \, B] grid into Dim[B] vectors \,
+#X obj 14 394 doc_oo 0;
+#X obj 14 320 doc_ii 0;
+#X obj 97 320 doc_m i0 grid;
+#X obj 97 394 doc_m o0 grid;
+#X text 197 384 splits a Dim[A... \, B] grid into Dim[B] vectors \,
 producing new Dim[B] vectors that each contain numbers from 0 to B-1
 indicating the ordering of the values. The result is a Dim[A... \,
 B] grid.;
@@ -33,9 +33,13 @@ you plug [#grade] directly into another [#grade] \, you will get the
 inverse arrangement \, which allows to take the sorted values and make
 them unsorted in the original way. note that this is really not the
 same as just listing the values backwards.;
+#X obj 0 424 doc_f;
 #X connect 1 0 5 0;
 #X connect 2 0 5 1;
 #X connect 3 0 5 2;
 #X connect 4 0 5 3;
 #X connect 5 0 6 0;
 #X connect 6 0 7 0;
+#X connect 15 1 16 0;
+#X connect 15 1 17 0;
+#X connect 15 1 18 0;
