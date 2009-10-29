@@ -375,13 +375,13 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
 		y += y2-y1+y_spacing;
 	}
+	outlet_float(bself->outlets[0],y-y_start);
 #else
 	post("doesn't work with DesireData");
 #endif
 }
-
 \end class {
-	install("gf/lol",1,0);
+	install("gf/lol",1,1);
 #ifndef DESIREDATA
 	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
 	unsigned long *lol = (unsigned long *)text_class;
