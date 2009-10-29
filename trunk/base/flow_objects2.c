@@ -303,6 +303,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 wire_dotted (int r, int g, int b);
+	\decl 0 wire_hide ();
 };
 \def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
@@ -311,7 +312,20 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	if (!can) RAISE("no such canvas");
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
-		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {2 2 2 2}\n",long(can),long(wire),r,g,b);
+		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
+	}
+#else
+	post("doesn't work with DesireData");
+#endif
+}
+\def 0 wire_hide () {
+#ifndef DESIREDATA
+	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet;
+	t_canvas *can = bself->mom->gl_owner;
+	if (!can) RAISE("no such canvas");
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+		sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
 	}
 #else
 	post("doesn't work with DesireData");
