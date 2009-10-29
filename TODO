@@ -1,6 +1,9 @@
 /* $Id$ */
 
 oct.2009
+[ ] s/^accepts//i
+[ ] s/^receives//i
+[ ] GridFlow Index dans toutes les fenêtres
 [ ] [route3] is like [route] but doesn't trim.
 [ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
@@ -21,7 +24,7 @@ oct.2009
     e.g. [doc_aa] would contain something like [doc_m]
 		but wouldn't have [doc_m] as a subnode.
 [ ] [print], [gf.print] bugs
-[ ] MAKE A PROPER LOADBANG FOR DYNAMIC PATCHING!
+[ ] MAKE A PROPER LOADBANG FOR DYNAMIC PATCHING! ([gf/canvas_count] + [gf/canvas_loadbang_starting_at])
 
 PFOAC/BNL 2009
 [ ] [#interval_overlap]
