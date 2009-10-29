@@ -1,4 +1,4 @@
-#N canvas 484 136 557 530 10;
+#N canvas 484 136 568 530 10;
 #X obj 28 250 #sort;
 #X msg 28 45 0 1 1 2 3 5 8 13 21 34 55 89;
 #X msg 28 102 12 # 666;
@@ -14,12 +14,15 @@
 #X text 140 252 unshuffle;
 #X obj 0 0 doc_h;
 #X obj 3 311 doc_c 0;
-#X obj 3 334 doc_i 1;
-#X obj 3 383 doc_o 1;
-#X obj 3 436 doc_also;
+#X obj 3 351 doc_i 1;
+#X obj 3 411 doc_o 1;
+#X obj 3 471 doc_also;
 #X obj 99 436 #grade;
-#X obj 15 407 doc_oo 0;
-#X obj 14 358 doc_ii 0;
+#X obj 14 441 doc_oo 0;
+#X obj 14 381 doc_ii 0;
+#X obj 0 491 doc_f;
+#X obj 97 381 doc_m i0 grid;
+#X obj 97 441 doc_m o0 grid;
 #X connect 0 0 11 0;
 #X connect 1 0 6 0;
 #X connect 2 0 3 0;
@@ -31,3 +34,4 @@
 #X connect 6 1 4 1;
 #X connect 7 0 2 0;
 #X connect 9 0 4 0;
+#X connect 17 1 18 0;
