@@ -1,21 +1,21 @@
-#N canvas 692 0 555 717 10;
+#N canvas 692 0 568 731 10;
 #X obj 0 0 doc_h;
 #X obj 27 52 fps;
 #X obj 3 127 doc_c 1;
-#X obj 14 151 doc_cc 0;
-#X obj 100 151 doc_m c0 symbol;
+#X obj 14 157 doc_cc 0;
+#X obj 97 157 doc_m c0 symbol;
 #X text 205 169 "detailed":;
 #X text 205 150 "terse":;
 #X obj 3 244 doc_i 1;
-#X obj 14 268 doc_ii 0;
-#X obj 100 268 doc_m i0 bang;
-#X obj 100 338 doc_m i0 detailed;
-#X obj 100 358 doc_m i0 mode;
-#X obj 100 508 doc_m i0 period;
-#X obj 3 557 doc_o 1;
-#X obj 14 581 doc_oo 0;
-#X obj 100 581 doc_m o0 float;
-#X obj 100 601 doc_m o0 list;
+#X obj 14 274 doc_ii 0;
+#X obj 97 274 doc_m i0 bang;
+#X obj 97 338 doc_m i0 detailed;
+#X obj 97 358 doc_m i0 mode;
+#X obj 97 508 doc_m i0 period;
+#X obj 3 558 doc_o 1;
+#X obj 14 588 doc_oo 0;
+#X obj 97 588 doc_m o0 float;
+#X obj 97 616 doc_m o0 list;
 #X text 171 472 "logical" uses [timer];
 #X text 174 487 "process" uses [cputime];
 #X text 169 457 "cpu" uses [tsctime];
@@ -33,11 +33,31 @@
 a large enough sample of those is accumulated. Large enough is defined
 to be whenever the timespan exceeds one second. Then a report is made
 through the outlet.;
-#X obj 100 528 doc_m i0 ANY;
-#X text 185 529 exceptionally \, anything else gets ignored.;
+#X obj 97 528 doc_m i0 ANY;
+#X text 201 527 exceptionally \, anything else gets ignored.;
 #X text 192 579 (terse) this is the messages-per-second rating.;
 #X text 193 599 (detailed) this is: messages-per-second \, followed
 by five values of milliseconds-per-message: minimum \, median \, maximum
 \, average \, standard deviation.;
 #X text 193 643 (the average happens to be simply 1000 divided by the
 messages-per-second \, but it is convenient to have it anyway);
+#X obj 0 702 doc_f;
+#X connect 4 1 6 0;
+#X connect 4 1 5 0;
+#X connect 9 1 30 0;
+#X connect 11 1 20 0;
+#X connect 11 1 21 0;
+#X connect 11 1 22 0;
+#X connect 11 1 19 0;
+#X connect 11 1 17 0;
+#X connect 11 1 18 0;
+#X connect 15 1 33 0;
+#X connect 16 1 35 0;
+#X connect 16 1 34 0;
+#X connect 23 1 24 0;
+#X connect 23 1 25 0;
+#X connect 23 1 26 0;
+#X connect 23 1 27 0;
+#X connect 23 1 28 0;
+#X connect 23 1 29 0;
+#X connect 31 1 32 0;
