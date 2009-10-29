@@ -1,4 +1,4 @@
-#N canvas 683 0 551 704 10;
+#N canvas 683 0 568 2172 10;
 #X obj 0 0 doc_h;
 #X obj 3 525 doc_c 0..;
 #X msg 40 554 open x11;
@@ -28,21 +28,21 @@ OS \, the OS comes with a X11 server \, but it may be on a "bundled
 software" CD.;
 #X msg 38 705 open x11 display foo.org:0;
 #X obj 3 738 doc_i 1;
-#X obj 14 762 doc_ii 0;
-#X obj 100 762 doc_m i0 grid;
+#X obj 14 768 doc_ii 0;
+#X obj 97 768 doc_m i0 grid;
 #X text 191 761 with [#out] \, displays a frame;
-#X obj 100 782 doc_m i0 bang;
+#X obj 97 782 doc_m i0 bang;
 #X text 191 781 with [#in] \, captures a frame;
-#X obj 100 806 doc_m i0 out_size;
+#X obj 97 806 doc_m i0 out_size;
 #X text 209 800 \$1=height \$2=width. changes the window's size \,
 just like sending a grid dim(height \, width \, 3) would. this affects
 the size of screen captures too.;
-#X obj 100 854 doc_m i0 setcursor;
+#X obj 97 854 doc_m i0 setcursor;
 #X text 217 852 \$1=cursor_id. \$1=cursor_id. Selects one of the 64
 predefined cursors of X11. (Note that if your cursor table has them
 numbered from 0 to 126 using only even numbers \, then those cursor
 numbers are all doubled compared to the ones GridFlow uses.);
-#X obj 100 930 doc_m i0 hidecursor;
+#X obj 97 930 doc_m i0 hidecursor;
 #X text 225 929 This makes the cursor invisible.;
 #X obj 3 2123 doc_also;
 #X obj 105 2123 #io.quartz;
@@ -64,14 +64,14 @@ can also put a window number \, e.g. 0x28003ff \, you may connect to
 an existing window \; you can find out the number of a window by using
 a tool like xwininfo \, part of X11 standard tools.;
 #X obj 3 1022 doc_o 1;
-#X obj 14 1046 doc_oo 0;
-#X obj 100 1046 doc_m o0 grid;
+#X obj 14 1052 doc_oo 0;
+#X obj 97 1052 doc_m o0 grid;
 #X text 193 1044 grid(rows columns rgb);
 #X text 193 1062 resizes the window to the size of the grid \; encodes
 that grid in the display's pixel format \; also displays it if autodraw
 &gt \; 0 the values must be in range 0-255 \, or else they will be
 "wrapped".;
-#X obj 100 1136 doc_m o0 position;
+#X obj 97 1136 doc_m o0 position;
 #X text 214 1134 \$1=y \$2=x \$3=buttons;
 #X text 189 1157 This is emitted every time the cursor moves inside
 the window connected to this format handler. This is also emitted when
@@ -96,8 +96,8 @@ whether the result is odd.;
 #X text 191 1532 12: Wheel Down;
 #X text 190 1552 NOTE: This message form may become longer in the future
 \, but the already defined parts will stay the same.;
-#X obj 100 1586 doc_m o0 keypress;
-#X obj 100 1728 doc_m o0 keyrelease;
+#X obj 97 1586 doc_m o0 keypress;
+#X obj 97 1722 doc_m o0 keyrelease;
 #X text 212 1585 \$1=y \$2=x \$3=buttons \$4=keyname;
 #X text 223 1727 \$1=y \$2=x \$3=buttons \$4=keyname;
 #X text 190 1602 Similar to position above \, but this is emitted when
@@ -110,3 +110,34 @@ already defined parts will stay the same.;
 #X text 192 1746 Same as keypress but when a key gets released instead.
 NOTE: This message form may become longer in the future \, but the
 already defined parts will stay the same.;
+#X obj 0 2143 doc_f;
+#X connect 16 1 17 0;
+#X connect 18 1 19 0;
+#X connect 20 1 21 0;
+#X connect 22 1 23 0;
+#X connect 24 1 25 0;
+#X connect 26 1 27 0;
+#X connect 26 1 28 0;
+#X connect 36 1 37 0;
+#X connect 36 1 38 0;
+#X connect 39 1 40 0;
+#X connect 39 1 41 0;
+#X connect 39 1 42 0;
+#X connect 39 1 43 0;
+#X connect 39 1 44 0;
+#X connect 39 1 45 0;
+#X connect 39 1 46 0;
+#X connect 39 1 47 0;
+#X connect 39 1 48 0;
+#X connect 39 1 49 0;
+#X connect 39 1 50 0;
+#X connect 39 1 51 0;
+#X connect 39 1 52 0;
+#X connect 39 1 53 0;
+#X connect 39 1 54 0;
+#X connect 39 1 55 0;
+#X connect 39 1 56 0;
+#X connect 57 1 59 0;
+#X connect 57 1 61 0;
+#X connect 58 1 60 0;
+#X connect 58 1 62 0;

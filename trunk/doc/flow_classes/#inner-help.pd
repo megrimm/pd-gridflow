@@ -1,18 +1,18 @@
-#N canvas 666 0 581 717 10;
-#X obj 13 10 doc_h;
+#N canvas 666 0 568 738 10;
+#X obj 0 0 doc_h;
 #X obj 3 158 doc_c 1;
-#X obj 3 211 doc_i 2;
-#X obj 3 645 doc_o 1;
-#X obj 14 182 doc_cc 0;
-#X obj 14 235 doc_ii 0;
+#X obj 3 218 doc_i 2;
+#X obj 3 649 doc_o 1;
+#X obj 14 188 doc_cc 0;
+#X obj 14 248 doc_ii 0;
 #X obj 14 619 doc_ii 1;
-#X obj 14 669 doc_oo 0;
-#X obj 100 237 doc_m i0 grid;
-#X obj 100 445 doc_m i0 op;
-#X obj 100 547 doc_m i0 seed;
-#X obj 100 617 doc_m i1 grid;
-#X obj 100 182 doc_m c0 grid;
-#X obj 100 669 doc_m o0 grid;
+#X obj 14 679 doc_oo 0;
+#X obj 97 248 doc_m i0 grid;
+#X obj 97 445 doc_m i0 op;
+#X obj 97 544 doc_m i0 seed;
+#X obj 97 619 doc_m i1 grid;
+#X obj 97 188 doc_m c0 grid;
+#X obj 97 679 doc_m o0 grid;
 #X text 160 48 think of this one as a special combination of [#outer]
 \, [#] and [#fold]. this is one of the most complex operations. It
 is very useful for performing linear transforms like rotations \, scalings
@@ -30,11 +30,21 @@ operator and base value.;
 #X text 189 376 creates a Dim(anyA... \, anyB...) grid by assembling
 all the results together.;
 #X text 191 416 (note: lastA must be equal to firstB.);
-#X obj 100 496 doc_m i0 fold;
+#X obj 97 496 doc_m i0 fold;
 #X text 198 617 same as arg 0;
 #X text 187 445 the operation that combines the values from the two
 grids together. this defaults to "*" (as in the matrix product);
-#X text 188 495 the operation that combines the result of the "op"
+#X text 198 496 the operation that combines the result of the "op"
 operations together. this defaults to "+" (as in the matrix product)
 ;
 #X text 193 546 the base value for the fold;
+#X obj 0 709 doc_f;
+#X connect 8 1 15 0;
+#X connect 8 1 16 0;
+#X connect 8 1 17 0;
+#X connect 8 1 18 0;
+#X connect 8 1 19 0;
+#X connect 9 1 22 0;
+#X connect 10 1 24 0;
+#X connect 11 1 21 0;
+#X connect 20 1 23 0;

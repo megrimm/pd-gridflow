@@ -1,4 +1,4 @@
-#N canvas 674 0 560 717 10;
+#N canvas 674 0 568 738 10;
 #X msg 55 123 reset;
 #X obj 13 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
@@ -12,7 +12,7 @@ in the order of columns \, rows and grid dimensions.;
 ;
 #X text 186 433 Like a sequence of ints sent one after another \, except
 in a single message.;
-#X text 186 674 The grid resulting from the incoming integers and/or
+#X text 195 672 The grid resulting from the incoming integers and/or
 grids is output from the outlet.;
 #X text 99 24 This object allows you to produce grids from non-grid
 data \, such as integers and lists of integers. This object also reframes/resyncs
@@ -25,11 +25,11 @@ but using this object you have greater flexibility on the conversion.
 object. It is over ten times faster.;
 #X msg 157 125 per_message;
 #X msg 158 147 240 320 3;
-#X text 185 344 Begins a new grid if there is no current grid. puts
+#X text 195 344 Begins a new grid if there is no current grid. puts
 that integer in the current grid. ends the grid if it is full. the
 constructed grid is not stored: it is streamed. the stream is buffered
 \, so the output is in packets of about a thousand numbers.;
-#X text 188 553 "per message" : the grid will shape itself according
+#X text 235 555 "per message" : the grid will shape itself according
 to the incoming data. Almost obsolete as sending a list to any grid
 inlet will result in the same except the latter can not be cast to
 other than int32.;
@@ -45,23 +45,24 @@ other than int32.;
 #X obj 3 649 doc_o 1;
 #X obj 3 220 doc_c 2;
 #X text 204 283 default: i;
-#X obj 14 339 doc_ii 0;
+#X obj 14 349 doc_ii 0;
 #X obj 14 562 doc_ii 1;
-#X obj 14 249 doc_cc 0;
+#X obj 14 250 doc_cc 0;
 #X obj 14 287 doc_cc 1;
-#X obj 100 249 doc_m c0 grid;
-#X obj 100 288 doc_m c1 numtype;
-#X obj 100 339 doc_m i0 float;
-#X obj 100 410 doc_m i0 symbol;
-#X obj 100 440 doc_m i0 list;
-#X obj 100 470 doc_m i0 reset;
+#X obj 97 250 doc_m c0 grid;
+#X obj 97 288 doc_m c1 numtype;
+#X obj 97 349 doc_m i0 float;
+#X obj 97 410 doc_m i0 symbol;
+#X obj 97 440 doc_m i0 list;
+#X obj 97 470 doc_m i0 reset;
 #X text 195 466 aborts the current grid if there is one.;
-#X obj 100 493 doc_m i0 to_ascii;
-#X obj 100 523 doc_m i0 grid;
-#X obj 100 558 doc_m i1 per_message;
-#X obj 100 618 doc_m i1 grid;
-#X obj 14 677 doc_oo 0;
-#X obj 100 677 doc_m o0 grid;
+#X obj 97 493 doc_m i0 to_ascii;
+#X obj 97 523 doc_m i0 grid;
+#X obj 97 562 doc_m i1 per_message;
+#X obj 97 618 doc_m i1 grid;
+#X obj 14 679 doc_oo 0;
+#X obj 97 679 doc_m o0 grid;
+#X obj 0 709 doc_f;
 #X connect 0 0 23 0;
 #X connect 1 0 4 0;
 #X connect 2 0 23 0;
@@ -73,3 +74,13 @@ other than int32.;
 #X connect 18 0 17 0;
 #X connect 19 0 18 0;
 #X connect 23 0 5 0;
+#X connect 31 1 6 0;
+#X connect 32 1 26 0;
+#X connect 33 1 14 0;
+#X connect 34 1 7 0;
+#X connect 35 1 8 0;
+#X connect 36 1 37 0;
+#X connect 38 1 16 0;
+#X connect 39 1 11 0;
+#X connect 40 1 15 0;
+#X connect 43 1 9 0;
