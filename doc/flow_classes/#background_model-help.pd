@@ -39,6 +39,17 @@
 #X obj 14 531 doc_cc 1;
 #X obj 14 555 doc_cc 2;
 #X obj 14 579 doc_cc 3;
+#X obj 100 507 doc_m c0;
+#X obj 100 531 doc_m c1;
+#X obj 100 555 doc_m c2;
+#X obj 100 579 doc_m c3;
+#X obj 100 635 doc_m i0;
+#X obj 100 659 doc_m i1;
+#X obj 100 683 doc_m i2;
+#X obj 100 707 doc_m i3;
+#X obj 100 771 doc_m o0;
+#X obj 100 795 doc_m o1;
+#X obj 100 819 doc_m o2;
 #X connect 0 0 19 0;
 #X connect 1 0 18 0;
 #X connect 2 0 19 2;
