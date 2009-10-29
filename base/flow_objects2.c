@@ -27,6 +27,8 @@
 #else
 extern "C" {
 #include "bundled/g_canvas.h"
+#include "bundled/m_imp.h"
+extern t_class *text_class;
 };
 #endif
 #define OP(x) op_dict[string(#x)]
@@ -280,7 +282,20 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	}
 	
 }
-\end class {install("gf/canvas_loadbang",1,0);}
+\end class {
+	install("gf/canvas_loadbang",1,0);
+#ifndef DESIREDATA
+	post("text_class hack begin");
+	//text_class->c_firstin = 1;
+	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
+	unsigned long *lol = (unsigned long *)text_class;
+	int i=0;
+	while (lol[i]!=0xDECAFFED) i++;
+	*((char *)(lol+i+1) + 6) = 1;
+	class_setpropertiesfn(text_class,0);
+	post("text_class hack end");
+#endif
+}
 
 \class GFSearchAndReplace : FObject {
 	t_symbol *from;
