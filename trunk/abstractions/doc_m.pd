@@ -1,5 +1,5 @@
-#N canvas 346 149 684 502 10;
-#X obj 0 20 cnv 15 94 17 \$0-rect_s \$0-rect grid 4 9 1 9 -261615 -1
+#N canvas 139 168 684 502 10;
+#X obj 0 0 cnv 15 94 17 \$0-rect_s \$0-rect grid 4 9 1 9 -261615 -1
 0;
 #X obj 265 127 s \$0-rect;
 #X obj 222 69 loadbang;
@@ -22,6 +22,17 @@
 #X msg 314 21 97 \$2;
 #X obj 35 458 outlet dummy;
 #X obj 441 460 outlet to_comment;
+#X obj 317 377 gf/lol 1;
+#X obj 317 171 loadbang;
+#X obj 317 237 metro 666;
+#X obj 317 220 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+1;
+#X obj 317 256 gf/canvas_edit_mode 1;
+#X obj 317 316 sel 0 1;
+#X msg 317 354 wire_hide;
+#X msg 336 335 wire_dotted 255 170 0 \, box_dotted 255 170 0;
+#X obj 329 195 print doc_m:\$1:\$2;
+#X msg 297 195 1;
 #X connect 2 0 13 0;
 #X connect 3 0 13 0;
 #X connect 4 0 1 0;
@@ -39,4 +50,14 @@
 #X connect 15 0 17 0;
 #X connect 17 2 18 0;
 #X connect 18 0 14 0;
+#X connect 22 0 29 0;
+#X connect 22 0 30 0;
+#X connect 23 0 25 0;
+#X connect 24 0 23 0;
+#X connect 25 0 26 0;
+#X connect 26 0 27 0;
+#X connect 26 1 28 0;
+#X connect 27 0 21 0;
+#X connect 28 0 21 0;
+#X connect 30 0 24 0;
 #X coords 0 -1 1 1 94 17 1 0 0;
