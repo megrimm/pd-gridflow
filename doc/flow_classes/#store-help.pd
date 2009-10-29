@@ -1,4 +1,4 @@
-#N canvas 666 0 568 717 10;
+#N canvas 666 0 568 958 10;
 #X floatatom 132 89 5 0 0 0 - - -;
 #X floatatom 177 89 5 0 0 0 - - -;
 #X floatatom 20 160 5 0 0 0 - - -;
@@ -32,24 +32,24 @@ initializes the first value to be stored.;
 #X obj 3 296 doc_i 2;
 #X obj 0 0 doc_h;
 #X obj 3 234 doc_c 1;
-#X obj 14 320 doc_ii 0;
+#X obj 14 326 doc_ii 0;
 #X obj 14 539 doc_ii 1;
 #X obj 3 869 doc_o 1;
-#X obj 14 893 doc_oo 0;
-#X obj 14 258 doc_cc 0;
-#X obj 100 257 doc_m c0 grid;
-#X obj 100 366 doc_m i0 grid;
-#X obj 100 321 doc_m i0 bang;
+#X obj 14 899 doc_oo 0;
+#X obj 14 264 doc_cc 0;
+#X obj 97 264 doc_m c0 grid;
+#X obj 97 366 doc_m i0 grid;
+#X obj 97 326 doc_m i0 bang;
 #X text 202 324 A bang at the left inlet will cause [#store] to send
 its value to the outlet.;
-#X obj 100 539 doc_m i1 grid;
+#X obj 97 539 doc_m i1 grid;
 #X text 204 538 when in reassign mode \, this is same as arg 0;
 #X text 204 555 when it put_at mode \, it basically keeps the previous
 arg 0 or reassignment \, but replaces a selected part inside of it.
 ;
-#X obj 90 597 doc_m i1 reassign;
-#X obj 90 647 doc_m i1 put_at;
-#X obj 100 893 doc_m o0 grid;
+#X obj 97 597 doc_m i1 reassign;
+#X obj 97 647 doc_m i1 put_at;
+#X obj 97 899 doc_m o0 grid;
 #X text 198 366 in this grid \, the last dimension refers to subparts
 of the stored grid. sending a Dim(200 \, 200 \, 2) on a [#store] that
 holds a Dim(240 \, 320 \, 3) will cause the [#store] to handle the
@@ -61,7 +61,7 @@ a 200*200 RGB picture from a 200*200 XY map and a 240*320 RGB picture.
 this object can be logically used in the same way for many purposes
 including color palettes \, tables of probabilities \, tables of statistics
 \, whole animations \, etc.;
-#X text 199 593 makes it so that sending a grid to inlet 1 detaches
+#X text 202 598 makes it so that sending a grid to inlet 1 detaches
 the old buffer from [#store] and attaches a new one instead. This is
 the default.;
 #X text 199 642 makes it so that sending a grid to inlet 1 writes into
@@ -75,11 +75,12 @@ frame #3. Furthermore \, it also allows you to write a Dim[n \, 240
 indices of the incoming grid \, replacing frame #3 \, #4 \, ... up
 to #3+n-1. Here n is at most 7 because the last frame in the buffer
 is #9.;
-#X text 198 804 that way of working extends to other kinds of data
+#X text 198 813 that way of working extends to other kinds of data
 you'd put in Grids \, in any numbers of dimensions. because \, as usual
 \, [#store] wouldn't know the difference.;
 #X text 202 894 grids as stored \, as indexed \, or as assembled from
 multiple indexings.;
+#X obj 0 929 doc_f;
 #X connect 0 0 12 0;
 #X connect 1 0 12 1;
 #X connect 12 0 15 0;
@@ -96,3 +97,12 @@ multiple indexings.;
 #X connect 17 0 21 0;
 #X connect 22 0 17 0;
 #X connect 24 0 14 0;
+#X connect 33 1 20 0;
+#X connect 34 1 43 0;
+#X connect 35 1 36 0;
+#X connect 37 1 38 0;
+#X connect 37 1 39 0;
+#X connect 40 1 44 0;
+#X connect 41 1 45 0;
+#X connect 41 1 46 0;
+#X connect 42 1 48 0;

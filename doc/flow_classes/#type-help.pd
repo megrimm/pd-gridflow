@@ -1,15 +1,16 @@
-#N canvas 682 0 565 313 10;
+#N canvas 682 0 568 313 10;
 #X obj 0 0 doc_h;
 #X obj 3 79 doc_c 0;
-#X obj 3 106 doc_i 1;
-#X obj 3 158 doc_o 1;
-#X obj 14 182 doc_oo 0;
-#X obj 14 130 doc_ii 0;
+#X obj 3 119 doc_i 1;
+#X obj 3 179 doc_o 1;
+#X obj 14 209 doc_oo 0;
+#X obj 14 149 doc_ii 0;
 #X text 138 34 gives a symbol representing the numeric type of the
 grid received.;
-#X obj 100 182 doc_m o0 symbol;
-#X obj 100 130 doc_m i0 grid;
+#X obj 97 209 doc_m o0 symbol;
+#X obj 97 149 doc_m i0 grid;
 #X text 203 182 numbertype;
 #X obj 3 253 doc_also;
 #X obj 103 253 #dim;
 #X obj 137 253 #finished;
+#X obj 0 273 doc_f;

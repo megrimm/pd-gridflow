@@ -1,4 +1,4 @@
-#N canvas 680 0 567 642 10;
+#N canvas 680 0 568 642 10;
 #X obj 11 298 cnv 15 63 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 176 269 display;
@@ -15,7 +15,7 @@ a symbol.;
 #X obj 11 357 print converted_grid;
 #X obj 0 0 doc_h;
 #X obj 3 503 doc_o 1;
-#X obj 3 415 doc_i 1;
+#X obj 3 429 doc_i 1;
 #X obj 3 389 doc_c 0;
 #X text 11 102 note that a zero value will cause pd to truncate the
 symbol there. thus a symbol may have less bytes than the grid it was
@@ -29,13 +29,16 @@ are expected to be valid in the character encoding that you are using
 \, but no check will be performed for that \, and additionally \, no
 check will be made that the generated symbol only contains characters
 that can be put in a symbol.;
-#X obj 14 439 doc_ii 0;
-#X obj 14 527 doc_oo 0;
-#X obj 100 439 doc_m i0 grid;
-#X obj 100 527 doc_m o0 symbol;
+#X obj 14 459 doc_ii 0;
+#X obj 14 533 doc_oo 0;
+#X obj 97 459 doc_m i0 grid;
+#X obj 97 533 doc_m o0 symbol;
+#X obj 0 563 doc_f;
 #X connect 6 0 7 0;
 #X connect 7 0 1 0;
 #X connect 7 0 9 0;
 #X connect 9 0 2 0;
 #X connect 9 0 3 0;
 #X connect 9 0 10 0;
+#X connect 20 1 4 0;
+#X connect 21 1 5 0;

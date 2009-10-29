@@ -1,4 +1,4 @@
-#N canvas 691 0 556 545 10;
+#N canvas 691 0 568 561 10;
 #X text 143 55 like @redim but always produces a 1-D grid with the
 same total number of elements.;
 #X obj 20 80 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
@@ -17,15 +17,16 @@ same total number of elements.;
 #X obj 140 169 #ravel;
 #X obj 0 0 doc_h;
 #X obj 3 288 doc_c 0;
-#X obj 3 317 doc_i 1;
+#X obj 3 328 doc_i 1;
 #X obj 3 512 doc_also;
 #X obj 3 391 doc_o 1;
-#X obj 14 415 doc_oo 0;
-#X obj 14 341 doc_ii 0;
-#X obj 100 341 doc_m i0 grid;
-#X obj 100 415 doc_m o0 grid;
+#X obj 14 421 doc_oo 0;
+#X obj 14 358 doc_ii 0;
+#X obj 97 358 doc_m i0 grid;
+#X obj 97 421 doc_m o0 grid;
 #X text 199 339 like [#redim] but always produce a 1-D grid with the
 same total number of elements.;
+#X obj 0 532 doc_f;
 #X connect 1 0 5 0;
 #X connect 4 0 6 0;
 #X connect 5 0 6 0;
@@ -37,3 +38,6 @@ same total number of elements.;
 #X connect 11 0 3 0;
 #X connect 12 0 11 0;
 #X connect 13 0 12 0;
+#X connect 17 1 9 0;
+#X connect 17 1 10 0;
+#X connect 21 1 23 0;
