@@ -1,4 +1,4 @@
-#N canvas 673 22 568 530 10;
+#N canvas 673 22 568 500 10;
 #X floatatom 121 151 5 0 0 0 - - -;
 #X floatatom 163 151 5 0 0 0 - - -;
 #X floatatom 205 151 5 0 0 0 - - -;
@@ -9,34 +9,34 @@
 #X text 272 84 <-- select output here;
 #X text 65 84 vary this -->;
 #X obj 346 119 shunt;
-#X text 213 379 The integer passed to inlet 1 determines which outlet
+#X text 200 351 The integer passed to inlet 1 determines which outlet
 is active.;
-#X text 211 332 Incoming message can be Grids \, Symbols \, Integers
+#X text 200 316 Incoming message can be Grids \, Symbols \, Integers
 \, Lists \, etc.;
-#X text 203 460 Outputs incoming message value according to the selector
+#X text 200 426 Outputs incoming message value according to the selector
 value.;
 #X text 7 29 The [shunt] routes any type of data to its active outlet.
 The number of outlets is defined by the argument at creation and the
 active outlet is defined by its right most inlet.;
 #X obj 0 0 doc_h;
-#X obj 3 293 doc_i 2;
-#X obj 3 429 doc_o n;
-#X obj 14 331 doc_ii 0;
-#X obj 14 378 doc_ii 1;
-#X obj 14 465 doc_oo any;
+#X obj 3 286 doc_i 2;
+#X obj 3 396 doc_o n;
+#X obj 14 316 doc_ii 0;
+#X obj 14 351 doc_ii 1;
+#X obj 14 426 doc_oo any;
 #X obj 166 114 shunt 4;
-#X text 226 211 Defines the number of outlets desired. If [shunt] is
+#X text 200 219 Defines the number of outlets desired. If [shunt] is
 created without an argument \, it will have 2 outlets.;
-#X text 225 255 Defines the initial active outlet.;
+#X text 200 254 Defines the initial active outlet.;
 #X obj 3 189 doc_c 2;
-#X obj 14 257 doc_cc 1;
+#X obj 14 254 doc_cc 1;
 #X obj 14 219 doc_cc 0;
-#X obj 0 495 doc_f;
+#X obj 0 471 doc_f;
 #X obj 97 219 doc_m c0 float/int;
-#X obj 97 257 doc_m c1 float/int;
-#X obj 97 331 doc_m i0 (any);
-#X obj 97 378 doc_m i1 float int;
-#X obj 97 465 doc_m oany (any);
+#X obj 97 254 doc_m c1 float/int;
+#X obj 97 316 doc_m i0 (any);
+#X obj 97 351 doc_m i1 float int;
+#X obj 97 426 doc_m oany (any);
 #X connect 4 0 19 0;
 #X connect 5 0 19 1;
 #X connect 19 0 0 0;
