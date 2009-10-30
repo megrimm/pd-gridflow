@@ -137,8 +137,8 @@ void FormatQuartz_call(FormatQuartz *self);
 		wc = [[NSWindowController alloc] initWithWindow: window];
 		clock = clock_new(this,(t_method)FormatQuartz_call);
 		[window makeFirstResponder: widget];
-		post("mainWindow = %08lx",(long)[NSApp mainWindow]);
-		post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
+		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
+		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
 	}
