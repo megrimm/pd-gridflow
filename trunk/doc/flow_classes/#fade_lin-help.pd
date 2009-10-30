@@ -1,30 +1,30 @@
-#N canvas 684 0 568 607 10;
+#N canvas 684 0 568 543 10;
 #X obj 0 0 doc_h;
 #X obj 3 212 doc_c 2;
 #X obj 52 110 #fade_lin;
 #X obj 3 296 doc_i 3;
-#X obj 3 518 doc_o 1;
+#X obj 3 454 doc_o 1;
 #X obj 14 326 doc_ii 0;
-#X obj 14 464 doc_ii 1;
-#X obj 14 488 doc_ii 2;
-#X obj 14 548 doc_oo 0;
+#X obj 14 400 doc_ii 1;
+#X obj 14 422 doc_ii 2;
+#X obj 14 484 doc_oo 0;
 #X obj 14 242 doc_cc 0;
-#X obj 14 262 doc_cc 1;
+#X obj 14 264 doc_cc 1;
 #X obj 97 242 doc_m c0 grid;
-#X obj 97 262 doc_m c1 grid;
-#X text 197 234 maxraise;
-#X text 198 257 maxdrop;
+#X obj 97 264 doc_m c1 grid;
+#X text 200 242 maxraise;
+#X text 200 264 maxdrop;
 #X obj 97 326 doc_m i0 grid;
-#X text 187 314 produces on outlet 0 a piecewise-linear nonrecurrent
+#X text 200 326 produces on outlet 0 a piecewise-linear nonrecurrent
 fading according to the flow of incoming messages. For example \, if
 maxraise=2 and maxdrop=4 \, then with each new message an output is
 produced that is at most 2 more or 4 less than the previous output.
 ;
-#X obj 97 464 doc_m i1 grid;
-#X obj 97 488 doc_m i2 grid;
-#X text 193 463 same as arg 0;
-#X text 194 486 same as arg 1;
-#X obj 0 578 doc_f;
+#X obj 97 400 doc_m i1 grid;
+#X obj 97 422 doc_m i2 grid;
+#X text 200 400 same as arg 0;
+#X text 200 422 same as arg 1;
+#X obj 0 514 doc_f;
 #X connect 11 1 13 0;
 #X connect 12 1 14 0;
 #X connect 15 1 16 0;
