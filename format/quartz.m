@@ -60,7 +60,7 @@
 
 - (id) imageHeight: (int)h width: (int)w {
 	if (imheight==h && imwidth==w) return self;
-	post("new size: y=%d x=%d",h,w);
+	//post("new size: y=%d x=%d",h,w);
 	imheight=h;
 	imwidth=w;
 	if (imdata) delete imdata;
