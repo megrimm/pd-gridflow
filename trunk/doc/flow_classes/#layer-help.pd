@@ -1,4 +1,4 @@
-#N canvas 686 0 568 528 10;
+#N canvas 686 0 568 512 10;
 #X text 176 92 opacity channel file;
 #X text 52 62 foreground file;
 #X text 383 83 background file;
@@ -13,26 +13,26 @@ a picture that has no opacity channel;
 #X msg 42 38 load r001.jpg;
 #X obj 19 63 #in;
 #X obj 19 175 #layer;
-#X obj 19 236 #out window;
+#X obj 19 206 #out window;
 #X obj 0 0 doc_h;
-#X obj 3 283 doc_c 0;
-#X obj 3 430 doc_o 1;
-#X obj 3 323 doc_i 2;
-#X obj 14 461 doc_oo 0;
-#X obj 14 353 doc_ii 0;
-#X obj 14 387 doc_ii 1;
-#X text 200 350 An image that has an opacity channel. Will be used
+#X obj 3 245 doc_c 0;
+#X obj 3 395 doc_o 1;
+#X obj 3 285 doc_i 2;
+#X obj 14 425 doc_oo 0;
+#X obj 14 315 doc_ii 0;
+#X obj 14 350 doc_ii 1;
+#X text 200 315 An image that has an opacity channel. Will be used
 as foreground.;
-#X text 200 385 An image that has NO opacity channel. Will be used
+#X text 200 350 An image that has NO opacity channel. Will be used
 as background.;
-#X text 200 461 An image that has NO opacity channel. The opacity channel
+#X text 200 425 An image that has NO opacity channel. The opacity channel
 of the foreground image is used as weighting of how much either picture
 is seen in the result.;
 #X obj 19 128 #join -1;
-#X obj 97 353 doc_m i0 grid;
-#X obj 97 387 doc_m i1 grid;
-#X obj 97 461 doc_m o0 grid;
-#X obj 0 491 doc_f;
+#X obj 97 315 doc_m i0 grid;
+#X obj 97 350 doc_m i1 grid;
+#X obj 97 425 doc_m o0 grid;
+#X obj 0 483 doc_f;
 #X connect 4 0 5 0;
 #X connect 5 0 6 0;
 #X connect 6 0 23 1;

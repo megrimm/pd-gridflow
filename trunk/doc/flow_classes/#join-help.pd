@@ -1,60 +1,60 @@
-#N canvas 675 0 555 717 10;
-#X obj 18 32 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#N canvas 675 0 568 715 10;
+#X obj 18 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
-#X obj 211 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#X obj 211 40 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X text 174 228 the left grid and right grid must have the same number
 of elements in all dimensions except the one specified \, which will
 be the sum of the two corresponding;
-#X msg 41 73 open r001.jpg;
-#X msg 234 69 open b001.jpg;
-#X obj 18 53 fork;
-#X obj 211 48 fork;
-#X text 244 29 1 <--;
-#X text 45 31 2 <--;
-#X obj 18 242 #clip;
-#X obj 109 748 #fold +;
-#X obj 161 749 #scan +;
-#X obj 18 269 #out window;
-#X obj 18 96 #in;
-#X obj 237 96 #rgb_to_greyscale;
-#X obj 211 96 #in;
+#X msg 41 83 open r001.jpg;
+#X msg 234 79 open b001.jpg;
+#X obj 18 63 fork;
+#X obj 211 58 fork;
+#X text 244 39 1 <--;
+#X text 45 41 2 <--;
+#X obj 18 222 #clip;
+#X obj 103 666 #fold +;
+#X obj 157 666 #scan +;
+#X obj 18 241 #out window;
+#X obj 18 106 #in;
+#X obj 237 106 #rgb_to_greyscale;
+#X obj 211 106 #in;
 #X obj 18 188 #perspective 128;
 #X text 175 160 creation argument is the index of the dimension by
 which the join will occur. for n-dimensional grids \, the dimensions
 are numbered from 0 to n-1. in addition \, negative numbers from -n
 to -1 may be used \, to which n will be added.;
 #X obj 0 0 doc_h;
-#X obj 3 752 doc_also;
-#X obj 3 330 doc_c 0..2;
-#X obj 3 453 doc_i 2;
-#X obj 3 681 doc_o 1;
+#X obj 3 666 doc_also;
+#X obj 3 288 doc_c 0..2;
+#X obj 3 409 doc_i 2;
+#X obj 3 606 doc_o 1;
 #X obj 18 161 #join 2;
-#X obj 14 360 doc_cc 0;
-#X obj 14 423 doc_cc 1;
-#X obj 14 483 doc_ii 0;
-#X obj 14 651 doc_ii 1;
-#X obj 14 711 doc_oo 0;
-#X obj 97 360 doc_m c0 float;
-#X obj 97 423 doc_m c1 grid;
-#X obj 97 483 doc_m i0;
-#X text 201 353 Which_dim is the number of the dimension by which the
+#X obj 14 318 doc_cc 0;
+#X obj 14 379 doc_cc 1;
+#X obj 14 439 doc_ii 0;
+#X obj 14 574 doc_ii 1;
+#X obj 14 636 doc_oo 0;
+#X obj 97 318 doc_m c0 float;
+#X obj 97 379 doc_m c1 grid;
+#X obj 97 439 doc_m i0;
+#X text 200 318 Which_dim is the number of the dimension by which the
 join will occur. For N-dimensional grids \, the dimensions are numbered
 from 0 to N-1. In addition \, negative numbers from -N to -1 may be
 used \, to which N will be added.;
-#X text 196 471 The left grid and right grid must have the same number
+#X text 200 439 The left grid and right grid must have the same number
 of elements in all dimensions except the one specified. The result
 will have the same number of elements in all dimensions except the
 one specified \, which will be the sum of the two corresponding one.
 ;
-#X text 197 548 For example \, joining a RGB picture Dim[y \, x \,
+#X text 200 513 For example \, joining a RGB picture Dim[y \, x \,
 3] and a greyscale picture Dim[y \, x \, 1] on dimension 2 (or -1)
 could make a RGBA picture Dim[y \, x \, 4] in which the greyscale image
 becomes the opacity channel.;
-#X text 201 650 same as arg 1;
-#X obj 97 651 doc_m i1 grid;
-#X obj 97 711 doc_m o0 grid;
-#X obj 0 772 doc_f;
+#X text 200 574 same as arg 1;
+#X obj 97 574 doc_m i1 grid;
+#X obj 97 636 doc_m o0 grid;
+#X obj 0 686 doc_f;
 #X connect 0 0 5 0;
 #X connect 1 0 6 0;
 #X connect 3 0 13 0;
