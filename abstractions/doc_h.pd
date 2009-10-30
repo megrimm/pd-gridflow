@@ -92,8 +92,8 @@
 #X obj 383 415 metro 1000;
 #X obj 430 4 bng 15 250 50 0 empty empty empty 17 7 0 10 -4034 -1 -1
 ;
-#X msg 430 75 8;
-#X obj 430 94 s doc_pullup;
+#X obj 430 47 gf/canvas_dollarzero 1;
+#X msg 430 66 \; \$1-pullup 8;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
