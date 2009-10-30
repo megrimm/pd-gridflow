@@ -1,4 +1,4 @@
-#N canvas 426 39 798 627 10;
+#N canvas 290 64 798 627 10;
 #X obj 3 3 cnv 15 544 18 empty \$0-rect ♯border 2 9 1 13 -1 -262144
 0;
 #X obj 6 28 loadbang;
@@ -93,9 +93,9 @@
 #X obj 432 52 gf/canvas_dollarzero 1;
 #X obj 432 33 t b f;
 #X obj 429 4 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
-#X obj 432 91 pack s f;
-#X msg 432 111 \; \$1-pullup \$2;
-#X obj 476 71 * 8;
+#X msg 432 109 \; \$1-pullup \$2;
+#X obj 477 71 * 8;
+#X obj 432 90 pack f f;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 7 0;
@@ -179,9 +179,10 @@
 #X connect 79 0 73 0;
 #X connect 81 0 78 0;
 #X connect 82 0 64 0;
-#X connect 83 0 86 0;
-#X connect 84 1 88 0;
+#X connect 83 0 88 0;
+#X connect 84 0 83 0;
+#X connect 84 1 87 0;
 #X connect 85 0 84 0;
-#X connect 86 0 87 0;
-#X connect 88 0 86 1;
+#X connect 87 0 88 1;
+#X connect 88 0 86 0;
 #X coords 0 -1 1 1 550 24 2 0 0;
