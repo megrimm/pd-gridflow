@@ -15,16 +15,16 @@
 #X obj 59 162 #in;
 #X text 8 28 Adjusts the intensity of an image.;
 #X obj 190 189 #contrast;
-#X text 191 437 This value corresponds to the master contrast \, it
+#X text 200 417 This value corresponds to the master contrast \, it
 varies the amount of incoming white. The default value is 256 and it
 has no effect.;
-#X text 191 367 This value corresponds to the secondary contrast (inverse
+#X text 200 354 This value corresponds to the secondary contrast (inverse
 whiteness) \, it varies the amount of incoming black into the image.
 The default value is 256 and it has no effect.;
-#X obj 104 537 #convolve;
-#X obj 174 537 #posterize;
-#X obj 251 537 #solarize;
-#X obj 321 537 #layer;
+#X obj 104 552 #convolve;
+#X obj 174 552 #posterize;
+#X obj 251 552 #solarize;
+#X obj 321 552 #layer;
 #X text 366 118 contrast about black;
 #X text 216 118 contrast about white;
 #X obj 0 0 doc_h;
@@ -33,13 +33,13 @@ The default value is 256 and it has no effect.;
 #X obj 3 552 doc_also;
 #X obj 14 522 doc_oo 0;
 #X obj 14 319 doc_ii 0;
-#X obj 14 347 doc_ii 1;
+#X obj 14 354 doc_ii 1;
 #X obj 14 417 doc_ii 2;
 #X obj 3 249 doc_c 0;
-#X obj 97 347 doc_m i1 float int;
+#X obj 97 354 doc_m i1 float int;
 #X obj 97 417 doc_m i2 float int;
 #X obj 97 522 doc_m o0 grid;
-#X text 192 311 produces a grid like the incoming grid but with different
+#X text 200 319 produces a grid like the incoming grid but with different
 constrast.;
 #X obj 97 319 doc_m i0 grid;
 #X text 7 42 resulting values outside 0-255 are automatically clipped.

@@ -1,39 +1,39 @@
-#N canvas 597 51 568 587 10;
+#N canvas 597 51 568 499 10;
 #X obj 20 84 #in;
 #X obj 20 127 #out window;
 #X text 15 28 Creates a black border around an image.;
 #X msg 20 62 load working.jpg;
-#X text 207 213 top padding and left padding. defaults to (1 1 0).
+#X text 200 206 top padding and left padding. defaults to (1 1 0).
 ;
-#X text 207 233 bottom and right padding. defaults to (1 1 0).;
+#X text 200 228 bottom and right padding. defaults to (1 1 0).;
 #X obj 20 105 #border (5 10 0) (15 20 0);
 #X text 209 98 5 at the top;
 #X text 208 112 10 at the left;
 #X text 208 126 15 at the bottom;
 #X text 208 139 20 at the right;
-#X text 205 264 both arguments must have 3 elements. The third element
+#X text 114 255 both arguments must have 3 elements. The third element
 is reserved for future use.;
-#X text 205 524 The original image surrounded by zero padding \, which
+#X text 200 425 The original image surrounded by zero padding \, which
 usually means black pixels.;
 #X obj 0 0 doc_h;
-#X obj 3 304 doc_i 3;
-#X obj 3 498 doc_o 1;
-#X obj 3 180 doc_c 2;
-#X obj 14 528 doc_oo 0;
-#X obj 14 339 doc_ii 0;
-#X obj 14 390 doc_ii 1;
-#X obj 14 443 doc_ii 2;
-#X obj 14 213 doc_cc 0;
-#X obj 14 237 doc_cc 1;
-#X obj 97 213 doc_m c0 grid[3];
-#X obj 97 237 doc_m c1 grid[3];
-#X obj 97 339 doc_m i0 grid;
-#X obj 97 390 doc_m i1 list;
-#X obj 97 443 doc_m i2 list;
-#X text 206 389 same as arg 0;
-#X text 206 443 same as arg 1;
-#X obj 97 528 doc_m o0 grid;
-#X obj 0 558 doc_f;
+#X obj 3 291 doc_i 3;
+#X obj 3 395 doc_o 1;
+#X obj 3 176 doc_c 2;
+#X obj 14 425 doc_oo 0;
+#X obj 14 321 doc_ii 0;
+#X obj 14 341 doc_ii 1;
+#X obj 14 363 doc_ii 2;
+#X obj 14 206 doc_cc 0;
+#X obj 14 228 doc_cc 1;
+#X obj 97 206 doc_m c0 grid[3];
+#X obj 97 228 doc_m c1 grid[3];
+#X obj 97 321 doc_m i0 grid;
+#X obj 97 341 doc_m i1 list;
+#X obj 97 363 doc_m i2 list;
+#X text 200 341 same as arg 0;
+#X text 200 363 same as arg 1;
+#X obj 97 425 doc_m o0 grid;
+#X obj 0 470 doc_f;
 #X connect 0 0 6 0;
 #X connect 3 0 0 0;
 #X connect 6 0 1 0;
