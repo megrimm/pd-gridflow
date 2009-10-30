@@ -1,55 +1,55 @@
-#N canvas 676 0 568 1059 10;
+#N canvas 676 0 568 987 10;
 #X obj 0 0 doc_h;
 #X obj 15 59 #in videodev;
 #X obj 3 90 doc_c ...;
-#X obj 3 152 doc_i 1;
-#X obj 3 836 doc_o 1;
-#X obj 3 1010 doc_also;
-#X obj 101 1010 #io:dc1394;
-#X obj 168 1010 #io:quicktimecamera;
+#X obj 3 160 doc_i 1;
+#X obj 3 898 doc_o 1;
+#X obj 3 938 doc_also;
+#X obj 103 938 #io:dc1394;
+#X obj 175 938 #io:quicktimecamera;
 #X msg 28 120 open videodev /dev/video0;
-#X obj 14 182 doc_ii 0;
-#X obj 97 182 doc_m i0 brightness;
-#X obj 97 196 doc_m i0 hue;
-#X obj 97 216 doc_m i0 colour;
-#X obj 97 236 doc_m i0 contrast;
-#X obj 97 256 doc_m i0 whiteness;
-#X obj 97 286 doc_m i0 get;
-#X obj 97 306 doc_m i0 help;
-#X obj 97 336 doc_m i0 channel;
-#X obj 97 356 doc_m i0 tuner;
-#X obj 97 376 doc_m i0 norm;
-#X obj 97 396 doc_m i0 frequency;
-#X obj 97 416 doc_m i0 transfer symbol;
-#X text 253 416 "read";
-#X text 253 455 "mmap": \$1=nframes (default:2);
-#X text 275 471 This is the normal (and fast) way of transferring pictures
+#X obj 14 190 doc_ii 0;
+#X obj 97 210 doc_m i0 brightness;
+#X obj 97 539 doc_m i0 hue;
+#X obj 97 338 doc_m i0 colour;
+#X obj 97 378 doc_m i0 contrast;
+#X obj 97 868 doc_m i0 whiteness;
+#X obj 97 418 doc_m i0 get;
+#X obj 97 519 doc_m i0 help;
+#X obj 97 230 doc_m i0 channel;
+#X obj 97 768 doc_m i0 tuner;
+#X obj 97 579 doc_m i0 norm;
+#X obj 97 398 doc_m i0 frequency;
+#X obj 97 619 doc_m i0 transfer symbol;
+#X text 200 619 "read";
+#X text 200 663 "mmap": \$1=nframes (default:2);
+#X text 200 685 This is the normal (and fast) way of transferring pictures
 from the camera.;
-#X text 264 436 Some cameras/drivers only support this instead of mmap.
+#X text 200 641 Some cameras/drivers only support this instead of mmap.
 ;
-#X obj 97 516 doc_m i0 white_red;
-#X obj 97 536 doc_m i0 white_blue;
-#X obj 97 555 doc_m i0 white_speed;
-#X obj 97 575 doc_m i0 white_delay;
-#X obj 97 595 doc_m i0 auto_gain;
-#X obj 97 615 doc_m i0 noise_reduction;
-#X obj 97 635 doc_m i0 compression;
-#X obj 97 665 doc_m i0 colorspace;
-#X text 248 663 "y":;
-#X text 248 683 "yuv":;
-#X text 248 703 "rgb":;
-#X text 248 723 "magic":;
-#X obj 97 765 doc_m i0 size;
+#X obj 97 828 doc_m i0 white_red;
+#X obj 97 788 doc_m i0 white_blue;
+#X obj 97 848 doc_m i0 white_speed;
+#X obj 97 808 doc_m i0 white_delay;
+#X obj 97 190 doc_m i0 auto_gain;
+#X obj 97 559 doc_m i0 noise_reduction;
+#X obj 97 358 doc_m i0 compression;
+#X obj 97 250 doc_m i0 colorspace;
+#X text 200 250 "y":;
+#X text 200 272 "yuv":;
+#X text 200 294 "rgb":;
+#X text 200 316 "magic":;
+#X obj 97 599 doc_m i0 size;
 #X text 188 764 \$1=y \$2=x;
-#X text 223 314 "min": minimum values for "size";
-#X text 223 334 "max": maximum values for "size";
-#X text 227 354 default: gets all attributes.;
-#X text 223 278 gets a specific attribute. a message is sent through
+#X text 200 453 "min": minimum values for "size";
+#X text 200 475 "max": maximum values for "size";
+#X text 200 497 default: gets all attributes.;
+#X text 200 418 gets a specific attribute. a message is sent through
 right outlet.;
-#X text 256 501 In case of mmap \, the extra numeric argument sets
+#X text 200 720 In case of mmap \, the extra numeric argument sets
 the queue length in number of frames \, so you can select an appropriate
 tradeoff between efficiency and latency.;
-#X obj 0 1030 doc_f;
+#X obj 0 958 doc_f;
 #X connect 5 1 6 0;
 #X connect 5 1 7 0;
 #X connect 15 1 43 0;

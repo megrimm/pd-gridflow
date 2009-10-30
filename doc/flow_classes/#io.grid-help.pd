@@ -1,6 +1,6 @@
-#N canvas 689 0 568 704 10;
+#N canvas 689 0 568 673 10;
 #X obj 0 0 doc_h;
-#X obj 3 247 doc_i 1;
+#X obj 3 245 doc_i 1;
 #X text 67 100 This is the picture format that would support TCP connections
 if that feature actually worked. More on this later.;
 #X text 62 37 This is GridFlow's special file format. This is the only
@@ -8,33 +8,33 @@ I/O format that can hold nearly anything that the [#store] object can.
 ;
 #X obj 3 185 doc_c ...;
 #X msg 59 215 open foo.grid;
-#X obj 14 277 doc_ii 0;
-#X obj 97 277 doc_m i0 type;
-#X text 190 270 type that the output will be written as. (#out only)
+#X obj 14 275 doc_ii 0;
+#X obj 97 550 doc_m i0 type;
+#X text 200 550 type that the output will be written as. (#out only)
 ;
-#X text 189 286 supported: uint8 int32 and perhaps some others;
-#X obj 97 321 doc_m i0 headerful;
-#X obj 97 360 doc_m i0 headerless;
-#X text 213 324 cancels "headerless" (and back to reading the real
+#X text 200 572 supported: uint8 int32 and perhaps some others;
+#X obj 97 454 doc_m i0 headerful;
+#X obj 97 489 doc_m i0 headerless;
+#X text 200 454 cancels "headerless" (and back to reading the real
 .grid format);
-#X text 219 358 instead of reading .grid files with header \, will
+#X text 200 489 instead of reading .grid files with header \, will
 read raw data \, faking a .grid header to itself. It will use the hereby
 specified dimension list \, as well as two other settings: type and
 endian.;
-#X obj 97 429 doc_m i0 endian;
-#X text 202 424 When writing "raw" data \, a file may be considered
+#X obj 97 275 doc_m i0 endian;
+#X text 200 275 When writing "raw" data \, a file may be considered
 a long string of base 256 digits (called bytes) \, but different computers
 have different conventions for dealing with them:;
-#X text 203 491 big: A number will be written starting with the biggest
+#X text 200 323 big: A number will be written starting with the biggest
 digit. This is the natural way on the Macintosh \, Sun \, Amiga \,
 and so on.;
-#X text 205 553 little: A number will be written starting with the
+#X text 200 371 little: A number will be written starting with the
 smallest digit. This is the natural way on the Intel 386/Pentium.;
-#X text 205 608 same: A number will be written in whichever way is
+#X text 200 406 same: A number will be written in whichever way is
 more natural on this computer. The natural way is slightly faster to
 handle. This is the default setting.;
-#X obj 3 487 doc_o;
-#X obj 0 527 doc_f;
+#X obj 3 604 doc_o;
+#X obj 0 644 doc_f;
 #X connect 7 1 8 0;
 #X connect 7 1 9 0;
 #X connect 10 1 12 0;
