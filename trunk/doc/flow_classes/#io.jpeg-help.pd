@@ -1,3 +1,6 @@
-#N canvas 666 0 450 300 10;
+#N canvas 666 0 568 300 10;
 #X obj 0 0 doc_h;
-#X obj 3 60 doc_i 1;
+#X obj 3 70 doc_i 1;
+#X obj 3 30 doc_c;
+#X obj 3 110 doc_o;
+#X obj 0 150 doc_f;
