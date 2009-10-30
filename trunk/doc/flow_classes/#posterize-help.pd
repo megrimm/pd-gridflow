@@ -1,4 +1,4 @@
-#N canvas 674 0 568 704 10;
+#N canvas 674 0 568 625 10;
 #X obj 178 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
 -1;
 #X text 274 230 2 - 255;
@@ -6,17 +6,17 @@
 #X obj 197 179 #in;
 #X obj 178 203 #store;
 #X obj 178 251 #posterize;
-#X obj 102 576 #convolve;
-#X obj 171 576 #contrast;
-#X obj 240 576 #solarize;
-#X obj 309 576 #layer;
+#X obj 102 568 #convolve;
+#X obj 171 568 #contrast;
+#X obj 240 568 #solarize;
+#X obj 309 568 #layer;
 #X obj 0 0 doc_h;
-#X obj 3 576 doc_also;
-#X obj 3 399 doc_i 2;
-#X obj 3 489 doc_o 1;
-#X obj 14 519 doc_oo 0;
-#X obj 14 429 doc_ii 0;
-#X obj 14 452 doc_ii 1;
+#X obj 3 568 doc_also;
+#X obj 3 424 doc_i 2;
+#X obj 3 506 doc_o 1;
+#X obj 14 536 doc_oo 0;
+#X obj 14 454 doc_ii 0;
+#X obj 14 476 doc_ii 1;
 #X text 10 35 Reduces the number of possible intensities in an image:
 it rounds the color values. The effect is mostly apparent with a low
 number of levels.;
@@ -26,20 +26,20 @@ number of levels.;
 #X floatatom 235 230 5 0 0 0 - - -;
 #X msg 235 210 2;
 #X obj 235 190 loadbang;
-#X obj 97 429 doc_m i0 grid;
-#X obj 97 452 doc_m i1 float int;
-#X obj 97 522 doc_m o0 grid;
-#X text 205 511 posterised image;
+#X obj 97 454 doc_m i0 grid;
+#X obj 97 476 doc_m i1 float int;
+#X obj 97 536 doc_m o0 grid;
+#X text 200 536 posterised image;
 #X obj 3 323 doc_c 1;
 #X obj 14 353 doc_cc 0;
 #X obj 97 353 doc_m c0 float/int;
 #X text 11 75 example: simulate the 216-color "web" palette using 6
 levels. simulate a 15-bit display using 32 levels .;
-#X text 207 340 Number of possible levels per channel. The levels are
+#X text 200 353 Number of possible levels per channel. The levels are
 equally spaced \, with the lowest at 0 and the highest at 255 the minimum
 number of levels is 2 and the default value is also 2;
-#X obj 0 596 doc_f;
-#X text 213 423 original image;
+#X obj 0 588 doc_f;
+#X text 200 454 original image;
 #X connect 0 0 20 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 1;
