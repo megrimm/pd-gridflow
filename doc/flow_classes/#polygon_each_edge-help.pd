@@ -1,4 +1,4 @@
-#N canvas 502 236 555 319 10;
+#N canvas 502 236 568 359 10;
 #X text 200 65 very small square;
 #X text 154 98 enumerate edges;
 #X obj 21 139 #print;
@@ -8,11 +8,12 @@
 #X msg 24 40 4 2 # 0 0 1 1 1 1 1 0;
 #X obj 21 96 #polygon_each_edge;
 #X obj 0 0 doc_h;
-#X obj 3 189 doc_c;
-#X obj 3 218 doc_i 1;
-#X obj 3 271 doc_o 1;
-#X obj 14 295 doc_oo 0;
-#X obj 14 242 doc_ii 0;
+#X obj 3 170 doc_c;
+#X obj 3 210 doc_i 1;
+#X obj 3 270 doc_o 1;
+#X obj 14 300 doc_oo 0;
+#X obj 14 240 doc_ii 0;
+#X obj 0 330 doc_f;
 #X connect 5 0 7 0;
 #X connect 6 0 5 0;
 #X connect 7 0 2 0;
