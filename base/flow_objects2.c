@@ -307,6 +307,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 wire_hide ();
 	\decl 0  box_dotted (int r, int g, int b);
 	\decl 0  box_align_same_x (int x, int y_start, int y_spacing);
+	\decl 0  box_align_same_y (int y, int x_start, int x_spacing);
 };
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
@@ -380,6 +381,32 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	post("doesn't work with DesireData");
 #endif
 }
+\def 0 box_align_same_y (int y, int x_start, int x_spacing) {
+#ifndef DESIREDATA
+	std::vector<t_object *> v;
+	BEGIN
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) v.push_back((t_object *)wire->to);
+	sort(v.begin(),v.end(),comment_sort_y_lt);
+	int x = x_start;
+	foreach(tt,v) {
+		t_object *t = *tt;
+		if (!t) RAISE("WTF.");
+		if (t->te_xpix!=x || t->te_ypix!=y) {
+			t->te_xpix=x;
+			t->te_ypix=y;
+			//text_widgetbehavior.w_visfn((t_gobj *)t,can,0);
+			//text_widgetbehavior.w_visfn((t_gobj *)t,can,1);
+		}
+		int x1,y1,x2,y2;
+		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
+		x += x2-x1+x_spacing;
+	}
+	outlet_float(bself->outlets[0],x-x_start);
+#else
+	post("doesn't work with DesireData");
+#endif
+}
 \end class {
 	install("gf/lol",1,1);
 #ifndef DESIREDATA
@@ -392,7 +419,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 #endif
 }
 
-\class GFSearchAndReplace : FObject {
+\class GFStringReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
 	\constructor (t_symbol *from, t_symbol *to=&s_) {this->from=from; this->to=to;}
@@ -411,6 +438,16 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	outlet_symbol(bself->outlets[0],gensym(a.c_str()));
 }
 \end class {install("gf/string_replace",1,1);}
+
+\class GFStringLessThan : FObject {
+	t_symbol *than;
+	\constructor (t_symbol *than=&s_) {this->than=than;}
+	\decl 0 symbol (t_symbol *it);
+	\decl 1 symbol (t_symbol *than);
+};
+\def 0 symbol (t_symbol *it) {outlet_float(bself->outlets[0],strcmp(it->s_name,than->s_name)<0);}
+\def 1 symbol (t_symbol *than) {this->than=than;}
+\end class {install("gf/string_<",2,1);}
 
 void startup_flow_objects2 () {
 	\startall
