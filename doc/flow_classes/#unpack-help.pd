@@ -1,4 +1,4 @@
-#N canvas 286 66 561 487 10;
+#N canvas 286 66 568 439 10;
 #X obj 17 61 #color;
 #X floatatom 17 195 5 0 0 0 - - -;
 #X floatatom 46 174 5 0 0 0 - - -;
@@ -6,20 +6,22 @@
 #X text 196 84 <--click and drag to view grid values.;
 #X obj 17 128 #unpack 3;
 #X obj 0 0 doc_h;
-#X obj 3 297 doc_i 1;
-#X obj 3 383 doc_o n;
+#X obj 3 288 doc_i 1;
+#X obj 3 348 doc_o n;
 #X text 212 247 Defines the number of outlets \, usually corresponds
 to the number of grid dimensions. (default: 2);
 #X text 12 28 Outputs individual values from a grid.;
 #X obj 3 228 doc_c 1;
-#X text 217 404 Outputs grid dimensions as individual numbers.;
-#X obj 14 321 doc_ii 0;
-#X obj 14 405 doc_oo any;
-#X obj 14 252 doc_cc 0;
-#X obj 100 252 doc_m c0 float/int;
-#X obj 100 321 doc_m i0 grid;
-#X obj 100 405 doc_m oany float;
+#X text 200 378 Outputs grid dimensions as individual numbers.;
+#X obj 14 318 doc_ii 0;
+#X obj 14 378 doc_oo any;
+#X obj 14 258 doc_cc 0;
+#X obj 97 258 doc_m c0 float/int;
+#X obj 97 318 doc_m i0 grid;
+#X obj 97 378 doc_m oany float;
+#X obj 0 410 doc_f;
 #X connect 0 0 5 0;
 #X connect 5 0 1 0;
 #X connect 5 1 2 0;
 #X connect 5 2 3 0;
+#X connect 18 1 12 0;
