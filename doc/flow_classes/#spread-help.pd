@@ -1,4 +1,4 @@
-#N canvas 673 0 568 720 10;
+#N canvas 673 0 555 704 10;
 #X text 1 25 makes noise;
 #X obj 207 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;

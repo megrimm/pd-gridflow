@@ -17,7 +17,7 @@
 #X obj 3 351 doc_i 1;
 #X obj 3 411 doc_o 1;
 #X obj 3 471 doc_also;
-#X obj 99 436 #grade;
+#X obj 103 471 #grade;
 #X obj 14 441 doc_oo 0;
 #X obj 14 381 doc_ii 0;
 #X obj 0 491 doc_f;
