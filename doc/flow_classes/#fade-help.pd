@@ -1,5 +1,5 @@
-#N canvas 676 0 568 673 10;
-#X obj 253 276 #out window;
+#N canvas 676 0 568 596 10;
+#X obj 253 269 #out window;
 #X msg 140 155 open b001.jpg;
 #X obj 131 111 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
@@ -21,28 +21,28 @@
 ;
 #X text 9 25 Crossfade between two images.;
 #X obj 253 250 #fade;
-#X text 196 389 Accepts two grids that are blended into each other
+#X text 200 420 Accepts two grids that are blended into each other
 over time.;
 #X obj 0 0 doc_h;
-#X obj 3 365 doc_i 2;
-#X obj 3 503 doc_o 1;
-#X obj 14 533 doc_oo 0;
-#X obj 14 395 doc_ii 0;
-#X obj 14 473 doc_ii 1;
+#X obj 3 390 doc_i 2;
+#X obj 3 487 doc_o 1;
+#X obj 14 517 doc_oo 0;
+#X obj 14 420 doc_ii 0;
+#X obj 14 455 doc_ii 1;
 #X obj 3 302 doc_c 1;
-#X obj 97 395 doc_m i0 grid;
-#X obj 97 473 doc_m i1 grid;
-#X text 192 319 indicates the amount of one image being blended with
+#X obj 97 420 doc_m i0 grid;
+#X obj 97 455 doc_m i1 grid;
+#X text 200 332 indicates the amount of one image being blended with
 the other. (ex: Integer 5 will take 20% (one fifth) of the first image
 and blend it with 80% of the next image.;
-#X obj 3 563 doc_also;
-#X obj 104 542 lop~;
-#X obj 139 542 rzero~;
+#X obj 3 547 doc_also;
+#X obj 103 547 lop~;
+#X obj 139 547 rzero~;
 #X obj 14 332 doc_cc 0;
 #X obj 97 332 doc_m c0 grid;
-#X text 196 472 same as arg 0;
-#X obj 97 533 doc_m o0 grid;
-#X obj 0 583 doc_f;
+#X text 200 455 same as arg 0;
+#X obj 97 517 doc_m o0 grid;
+#X obj 0 567 doc_f;
 #X connect 1 0 3 0;
 #X connect 2 0 4 0;
 #X connect 3 0 16 0;

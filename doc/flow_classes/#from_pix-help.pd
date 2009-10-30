@@ -1,9 +1,9 @@
-#N canvas 679 0 568 718 10;
-#X text 151 668 \, game_of_life_gem.pd in the examples folder;
-#X text 213 589 Grid with 4 channels;
-#X text 200 484 With one boolean argument that selects the order in
+#N canvas 679 0 568 675 10;
+#X text 169 624 \, game_of_life_gem.pd in the examples folder;
+#X text 200 570 Grid with 4 channels;
+#X text 200 475 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '1';
-#X text 98 667 [#to_pix];
+#X text 103 624 [#to_pix];
 #X obj 22 301 #import_pix;
 #X obj 37 226 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
@@ -36,25 +36,25 @@ which the y dimension of the Grid will be read \, defaults to '1';
 ;
 #X obj 391 84 gemwin 30;
 #X text 100 301 <-- imports gemlist into Grids;
-#X text 211 434 Has to be a 'pix' gemlist;
-#X text 209 634 Passthrough outlet for gem chain;
+#X text 200 453 Has to be a 'pix' gemlist;
+#X text 200 592 Passthrough outlet for gem chain;
 #X obj 0 0 doc_h;
 #X obj 3 383 doc_c 0;
-#X obj 3 566 doc_o 2;
-#X obj 3 669 doc_also;
-#X obj 14 596 doc_oo 0;
-#X obj 14 635 doc_oo 1;
+#X obj 3 540 doc_o 2;
+#X obj 3 624 doc_also;
+#X obj 14 570 doc_oo 0;
+#X obj 14 592 doc_oo 1;
 #X obj 3 423 doc_i 2;
 #X obj 14 453 doc_ii 0;
-#X obj 14 524 doc_ii 1;
-#X text 195 517 dummy inlet existing only for weird reasons \, please
+#X obj 14 510 doc_ii 1;
+#X text 193 510 dummy inlet existing only for weird reasons \, please
 ignore.;
 #X obj 97 453 doc_m i0 gemlist;
 #X text 87 514 .................;
-#X obj 97 493 doc_m i0 yflip;
-#X obj 97 596 doc_m o0 grid;
-#X obj 97 635 doc_m o1 gemlist;
-#X obj 0 689 doc_f;
+#X obj 97 475 doc_m i0 yflip;
+#X obj 97 570 doc_m o0 grid;
+#X obj 97 592 doc_m o1 gemlist;
+#X obj 0 644 doc_f;
 #X connect 4 0 17 0;
 #X connect 5 0 6 0;
 #X connect 6 0 4 0;
