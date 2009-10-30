@@ -1,35 +1,35 @@
-#N canvas 679 40 568 579 10;
-#X obj 50 216 #out window;
+#N canvas 679 40 568 550 10;
+#X obj 50 198 #out window;
 #X obj 24 79 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
 #X obj 50 79 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
-#X obj 50 242 fps detailed;
-#X obj 50 272 print;
+#X obj 50 217 fps detailed;
+#X obj 50 236 print;
 #X obj 50 105 metro 20;
 #X text 14 27 Is an abstraction that provides a preset for bttv cards
 as well as discrete controls of other cameras.;
-#X text 190 513 Returns a grid from the video capture device for every
+#X text 200 489 Returns a grid from the video capture device for every
 bang.;
-#X obj 50 189 #scale_by;
-#X text 20 300 * for webcams \, please note that you need to have the
+#X obj 50 179 #scale_by;
+#X text 20 270 * for webcams \, please note that you need to have the
 pwc module loaded. The driver from http://www.saillard.org worked for
 the quickcam pro 4000;
 #X text 115 145 <-- open the abstraction and configure for your camera
 before sending it a bang.;
 #X obj 50 146 #camera;
-#X text 212 374 Corresponds to the video for linux device on you system
+#X text 200 354 Corresponds to the video for linux device on you system
 (0-8);
 #X obj 0 0 doc_h;
-#X obj 3 490 doc_o 1;
-#X obj 3 414 doc_i 1;
-#X obj 3 353 doc_c 1;
-#X obj 14 520 doc_oo 0;
-#X obj 14 444 doc_ii 0;
-#X obj 14 383 doc_cc 0;
-#X obj 97 383 doc_m c0 float/int;
-#X obj 97 444 doc_m i0 bang;
-#X obj 97 520 doc_m o0 grid;
-#X obj 0 550 doc_f;
+#X obj 3 459 doc_o 1;
+#X obj 3 399 doc_i 1;
+#X obj 3 324 doc_c 1;
+#X obj 14 489 doc_oo 0;
+#X obj 14 429 doc_ii 0;
+#X obj 14 354 doc_cc 0;
+#X obj 97 354 doc_m c0 float/int;
+#X obj 97 429 doc_m i0 bang;
+#X obj 97 489 doc_m o0 grid;
+#X obj 0 521 doc_f;
 #X connect 0 0 3 0;
 #X connect 1 0 11 0;
 #X connect 2 0 5 0;
@@ -37,4 +37,5 @@ before sending it a bang.;
 #X connect 5 0 11 0;
 #X connect 8 0 0 0;
 #X connect 11 0 8 0;
+#X connect 20 1 12 0;
 #X connect 22 1 7 0;

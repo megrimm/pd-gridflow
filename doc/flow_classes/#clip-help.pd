@@ -1,4 +1,4 @@
-#N canvas 673 6 568 649 10;
+#N canvas 673 6 568 651 10;
 #X obj 51 163 #in;
 #X obj 51 189 # + 42;
 #X floatatom 88 166 5 0 0 0 - - -;
@@ -13,17 +13,17 @@ a lower and upper range to pixel values. This allows you to avoid over
 saturating the colours of your grid.;
 #X text 133 165 <-- vary this number;
 #X msg 81 138 open working.jpg;
-#X text 197 403 Grid values are clipped to the high and low values
+#X text 200 412 Grid values are clipped to the high and low values
 stored in the object;
 #X text 169 315 [#clip] accepts two integers as creation arguments
 that initialize the first values to be stored in the object. The first
 integer corresponds to the inlet 1 \, the second to inlet 2;
-#X text 213 561 Outputs the modified grid;
-#X obj 102 595 # min;
-#X obj 149 595 # max;
-#X obj 197 595 clip;
-#X text 244 594 #numop-help.pd;
-#X text 340 593 gf_tutorial_image_6.pd;
+#X text 200 570 Outputs the modified grid;
+#X obj 343 602 # min;
+#X obj 385 602 # max;
+#X obj 427 602 clip;
+#X text 247 602 #numop-help.pd;
+#X text 103 602 gf_tutorial_image_6.pd;
 #X obj 51 240 #clip 0 255;
 #X text 139 231 <--if no creation argument is given the default range
 is 0-255.;
@@ -31,7 +31,7 @@ is 0-255.;
 #X obj 3 382 doc_i 3;
 #X obj 3 540 doc_o 1;
 #X obj 3 296 doc_c 2;
-#X obj 3 600 doc_also;
+#X obj 3 602 doc_also;
 #X obj 14 412 doc_ii 0;
 #X obj 14 467 doc_ii 1;
 #X obj 14 500 doc_ii 2;
@@ -41,10 +41,10 @@ is 0-255.;
 #X obj 97 412 doc_m i0 grid;
 #X obj 97 467 doc_m i1 float int;
 #X obj 97 500 doc_m i2 float int;
-#X text 220 465 same as arg 0;
-#X text 222 497 same as arg 1;
+#X text 200 467 same as arg 0;
+#X text 200 500 same as arg 1;
 #X obj 97 570 doc_m o0 grid;
-#X obj 0 620 doc_f;
+#X obj 0 622 doc_f;
 #X connect 0 0 1 0;
 #X connect 1 0 20 0;
 #X connect 2 0 1 1;
