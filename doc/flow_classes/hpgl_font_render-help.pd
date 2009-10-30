@@ -1,4 +1,4 @@
-#N canvas 604 22 555 704 10;
+#N canvas 604 22 568 879 10;
 #X obj 215 53 until;
 #X obj 215 36 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
@@ -82,13 +82,13 @@
 #X obj 170 175 % 16;
 #X obj 0 0 doc_h;
 #X obj 3 650 doc_c 1;
-#X obj 3 730 doc_i 2;
-#X obj 3 838 doc_o 1;
-#X obj 14 868 doc_oo 0;
-#X obj 14 760 doc_ii 0;
-#X obj 14 780 doc_ii 1;
+#X obj 3 710 doc_i 2;
+#X obj 3 790 doc_o 1;
+#X obj 14 820 doc_oo 0;
+#X obj 14 740 doc_ii 0;
+#X obj 14 760 doc_ii 1;
 #X obj 14 680 doc_cc 0;
-#X obj 0 898 doc_f;
+#X obj 0 850 doc_f;
 #X connect 0 0 59 0;
 #X connect 1 0 0 0;
 #X connect 2 0 13 0;

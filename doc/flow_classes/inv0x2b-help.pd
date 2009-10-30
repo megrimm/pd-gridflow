@@ -1,4 +1,4 @@
-#N canvas 652 22 568 662 10;
+#N canvas 652 22 568 574 10;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 288 163 negative;
@@ -16,12 +16,12 @@
 #X text 68 221 Outputs initial image;
 #X obj 331 192 hsl 128 8 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X text 197 467 A float in inlet 1 is stored as the value "b" to perform
+#X text 200 418 A float in inlet 1 is stored as the value "b" to perform
 the "b-a" operation.;
-#X text 196 407 A float in inlet 1 is stored as the value "a" to perform
+#X text 200 383 A float in inlet 1 is stored as the value "a" to perform
 the "b-a" operation.;
-#X obj 154 613 swap;
-#X obj 154 613 swap;
+#X obj 154 525 swap;
+#X obj 154 525 swap;
 #X text 9 24 The [inv+] performs an inversion on the data passed to
 it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
 "b" \, [inv+] performs the operation "b-a" on the values passed to
@@ -29,30 +29,30 @@ it.;
 #X floatatom 34 102 5 0 0 0 - - -;
 #X floatatom 57 119 5 0 0 0 - - -;
 #X floatatom 34 176 5 0 0 0 - - -;
-#X obj 105 613 # inv+;
+#X obj 105 525 # inv+;
 #X obj 34 146 inv+;
 #X obj 263 211 # inv+ 255;
-#X text 197 552 Outputs the result of the operation "b-a".;
+#X text 200 493 Outputs the result of the operation "b-a".;
 #X floatatom 105 104 5 0 0 0 - - -;
 #X floatatom 149 121 5 0 0 0 - - -;
 #X floatatom 105 178 5 0 0 0 - - -;
 #X obj 105 145 inv+ 10;
-#X obj 3 371 doc_i 2;
+#X obj 3 353 doc_i 2;
 #X obj 0 0 doc_h;
-#X obj 3 613 doc_also;
-#X obj 14 405 doc_ii 0;
-#X obj 14 466 doc_ii 1;
-#X obj 3 520 doc_o 1;
-#X obj 14 552 doc_oo 0;
-#X text 192 305 [inv+] accepts a single float as a creation argument
+#X obj 3 525 doc_also;
+#X obj 14 383 doc_ii 0;
+#X obj 14 418 doc_ii 1;
+#X obj 3 463 doc_o 1;
+#X obj 14 493 doc_oo 0;
+#X text 200 308 [inv+] accepts a single float as a creation argument
 which initializes the first value to perform the operation with.;
 #X obj 3 278 doc_c 1;
-#X obj 14 309 doc_cc 0;
-#X obj 97 309 doc_m c0 float;
-#X obj 97 405 doc_m i0 float;
-#X obj 97 466 doc_m i1 float;
-#X obj 97 552 doc_m o0 float;
-#X obj 0 633 doc_f;
+#X obj 14 308 doc_cc 0;
+#X obj 97 308 doc_m c0 float;
+#X obj 97 383 doc_m i0 float;
+#X obj 97 418 doc_m i1 float;
+#X obj 97 493 doc_m o0 float;
+#X obj 0 545 doc_f;
 #X connect 0 0 7 0;
 #X connect 2 0 5 0;
 #X connect 3 0 5 1;
