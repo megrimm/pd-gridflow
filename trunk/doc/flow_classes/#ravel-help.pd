@@ -1,32 +1,32 @@
-#N canvas 691 0 568 561 10;
+#N canvas 691 0 568 491 10;
 #X text 143 55 like @redim but always produces a 1-D grid with the
 same total number of elements.;
 #X obj 20 80 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
-#X obj 20 251 print before;
-#X obj 259 253 print after;
+#X obj 20 231 print before;
+#X obj 140 233 print after;
 #X msg 43 121 open bluemarble.jpg;
 #X obj 20 100 fork;
 #X obj 20 142 #in;
-#X obj 20 208 #dim;
-#X obj 20 230 #export_list;
-#X obj 105 511 #redim (1);
-#X obj 195 511 #perspective;
-#X obj 259 232 #export_list;
-#X obj 259 210 #dim;
+#X obj 20 188 #dim;
+#X obj 20 210 #export_list;
+#X obj 103 442 #redim (1);
+#X obj 175 442 #perspective;
+#X obj 140 212 #export_list;
+#X obj 140 190 #dim;
 #X obj 140 169 #ravel;
 #X obj 0 0 doc_h;
-#X obj 3 288 doc_c 0;
-#X obj 3 328 doc_i 1;
-#X obj 3 512 doc_also;
-#X obj 3 391 doc_o 1;
-#X obj 14 421 doc_oo 0;
-#X obj 14 358 doc_ii 0;
-#X obj 97 358 doc_m i0 grid;
-#X obj 97 421 doc_m o0 grid;
-#X text 199 339 like [#redim] but always produce a 1-D grid with the
+#X obj 3 267 doc_c 0;
+#X obj 3 307 doc_i 1;
+#X obj 3 442 doc_also;
+#X obj 3 382 doc_o 1;
+#X obj 14 412 doc_oo 0;
+#X obj 14 337 doc_ii 0;
+#X obj 97 337 doc_m i0 grid;
+#X obj 97 412 doc_m o0 grid;
+#X text 200 337 like [#redim] but always produce a 1-D grid with the
 same total number of elements.;
-#X obj 0 532 doc_f;
+#X obj 0 462 doc_f;
 #X connect 1 0 5 0;
 #X connect 4 0 6 0;
 #X connect 5 0 6 0;
