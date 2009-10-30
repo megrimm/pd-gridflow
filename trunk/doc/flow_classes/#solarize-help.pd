@@ -1,30 +1,30 @@
-#N canvas 690 0 568 538 10;
-#X obj 170 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
+#N canvas 690 0 568 487 10;
+#X obj 170 104 bng 15 250 50 0 empty empty empty 0 -6 0 8 -4034 -1
 -1;
-#X msg 193 167 open bluemarble.jpg;
-#X obj 170 138 fork;
-#X obj 170 229 #solarize;
-#X obj 170 193 #in;
-#X obj 103 489 #convolve;
-#X obj 172 489 #contrast;
-#X obj 241 489 #posterize;
-#X obj 317 489 #layer;
+#X msg 193 157 open bluemarble.jpg;
+#X obj 170 128 fork;
+#X obj 170 219 #solarize;
+#X obj 170 183 #in;
+#X obj 103 438 #convolve;
+#X obj 172 438 #contrast;
+#X obj 241 438 #posterize;
+#X obj 317 438 #layer;
 #X obj 0 0 doc_h;
-#X obj 3 489 doc_also;
-#X obj 3 299 doc_c;
-#X obj 3 407 doc_o 1;
-#X obj 3 347 doc_i 1;
-#X obj 14 437 doc_oo 0;
-#X obj 14 377 doc_ii 0;
+#X obj 3 438 doc_also;
+#X obj 3 278 doc_c;
+#X obj 3 378 doc_o 1;
+#X obj 3 318 doc_i 1;
+#X obj 14 408 doc_oo 0;
+#X obj 14 348 doc_ii 0;
 #X text 12 36 Makes medium intensities brightest. Formerly brightest
 colors become darkest \, formerly darkest stays darkest. This filter
 is linear. It's like a 200% contrast \, except that overflows are mirrored
 instead of clipped or wrapped.;
-#X obj 247 225 #out window \, title original;
-#X obj 170 250 #out window \, title modified;
-#X obj 97 437 doc_m o0 grid;
-#X obj 97 377 doc_m i0 grid;
-#X obj 0 509 doc_f;
+#X obj 247 215 #out window \, title original;
+#X obj 170 240 #out window \, title modified;
+#X obj 97 408 doc_m o0 grid;
+#X obj 97 348 doc_m i0 grid;
+#X obj 0 458 doc_f;
 #X connect 0 0 2 0;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;

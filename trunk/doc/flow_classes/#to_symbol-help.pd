@@ -1,12 +1,12 @@
-#N canvas 680 0 568 642 10;
+#N canvas 680 0 568 595 10;
 #X obj 11 298 cnv 15 63 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 176 269 display;
 #X obj 174 357 display;
 #X symbolatom 353 359 12 0 0 0 - - -;
-#X text 199 439 Accepts a grid that will be transformed into a symbol.
+#X text 200 459 Accepts a grid that will be transformed into a symbol.
 ;
-#X text 197 527 The grid is transformed into a single message containing
+#X text 200 521 The grid is transformed into a single message containing
 a symbol.;
 #X msg 11 209 72 101 108 108 111 32 87 111 114 108 100 33;
 #X obj 11 228 #import (3 2 2);
@@ -14,7 +14,7 @@ a symbol.;
 #X obj 11 298 #to_symbol;
 #X obj 11 357 print converted_grid;
 #X obj 0 0 doc_h;
-#X obj 3 503 doc_o 1;
+#X obj 3 491 doc_o 1;
 #X obj 3 429 doc_i 1;
 #X obj 3 389 doc_c 0;
 #X text 11 102 note that a zero value will cause pd to truncate the
@@ -30,10 +30,10 @@ are expected to be valid in the character encoding that you are using
 check will be made that the generated symbol only contains characters
 that can be put in a symbol.;
 #X obj 14 459 doc_ii 0;
-#X obj 14 533 doc_oo 0;
+#X obj 14 521 doc_oo 0;
 #X obj 97 459 doc_m i0 grid;
-#X obj 97 533 doc_m o0 symbol;
-#X obj 0 563 doc_f;
+#X obj 97 521 doc_m o0 symbol;
+#X obj 0 566 doc_f;
 #X connect 6 0 7 0;
 #X connect 7 0 1 0;
 #X connect 7 0 9 0;
