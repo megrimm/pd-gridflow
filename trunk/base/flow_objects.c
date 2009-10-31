@@ -1365,15 +1365,13 @@ GRID_INPUT(1,offset) {} GRID_END
 	\attr int form();
 	\attr int form_val;
 	\constructor (int form=0) {form_val=form; initialize3();}
-	void initialize3();
+	void initialize3() {bself->noutlets_set(form_val ? 2 : 4);}
 };
-
 struct Stats {
 	int64 yy,yx,xx,y,x,area;
 	int64 x1,x2;
 	Stats() {yy=yx=xx=y=x=area=0;}
 };
-
 #define AT(y,x) dat[(y)*sx+(x)]
 template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *stat, int label, int form) {
 	/* find x1,x2 such that all the x of that horizontal segment are x1<=x<x2 */
@@ -1442,10 +1440,6 @@ GRID_INLET(0) {
 	form_val=form;
 	initialize3();
 }
-void GridLabeling::initialize3() {
-	bself->noutlets_set(form_val ? 2 : 4);
-}
-
 \end class {install("#labelling",1,0); add_creator("#labeling");}
 
 //****************************************************************
