@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -1360,7 +1360,7 @@ GRID_INPUT(1,offset) {} GRID_END
 \end class {install("#moment",2,1);}
 
 //****************************************************************
-\class GridLabeling : FObject {
+\class GridLabelling : FObject {
 	\grin 0
 	\attr int form();
 	\attr int form_val;
