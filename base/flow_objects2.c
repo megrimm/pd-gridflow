@@ -370,6 +370,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 			t->te_xpix=x;
 			t->te_ypix=y;
 			gobj_vis((t_gobj *)t,can,1);
+			canvas_fixlinesfor(can,t);
 		}
 		int x1,y1,x2,y2;
 		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
@@ -396,6 +397,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 			t->te_xpix=x;
 			t->te_ypix=y;
 			gobj_vis((t_gobj *)t,can,1);
+			canvas_fixlinesfor(can,t);
 		}
 		int x1,y1,x2,y2;
 		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
