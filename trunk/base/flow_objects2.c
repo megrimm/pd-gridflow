@@ -367,10 +367,10 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	foreach(tt,v) {
 		t_object *t = *tt;
 		if (t->te_xpix!=x || t->te_ypix!=y) {
+			gobj_vis((t_gobj *)t,can,0);
 			t->te_xpix=x;
 			t->te_ypix=y;
-			text_widgetbehavior.w_visfn((t_gobj *)t,can,0);
-			text_widgetbehavior.w_visfn((t_gobj *)t,can,1);
+			gobj_vis((t_gobj *)t,can,1);
 		}
 		int x1,y1,x2,y2;
 		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
@@ -393,10 +393,10 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 		t_object *t = *tt;
 		if (!t) RAISE("WTF.");
 		if (t->te_xpix!=x || t->te_ypix!=y) {
+			gobj_vis((t_gobj *)t,can,0);
 			t->te_xpix=x;
 			t->te_ypix=y;
-			//text_widgetbehavior.w_visfn((t_gobj *)t,can,0);
-			//text_widgetbehavior.w_visfn((t_gobj *)t,can,1);
+			gobj_vis((t_gobj *)t,can,1);
 		}
 		int x1,y1,x2,y2;
 		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
