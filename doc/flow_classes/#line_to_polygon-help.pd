@@ -24,7 +24,7 @@
 #X text 200 413 Line width (same as argument 0);
 #X obj 97 474 doc_m o0;
 #X text 200 392 Grid containing a pair of coordinates.;
-#X text 200 474 Grid representing the verticles of the resulting polygon.
+#X text 200 474 Grid representing the vertices of the resulting polygon.
 ;
 #X connect 0 0 1 0;
 #X connect 2 0 0 0;
