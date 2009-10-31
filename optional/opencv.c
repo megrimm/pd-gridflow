@@ -229,21 +229,22 @@ GRID_INPUT2(1,r) {} GRID_END
 \end class {}
 
 #define FUNC(CLASS) CLASS(BFObject *bself, MESSAGE):CvOp2(bself,MESSAGE2) {} virtual void func(CvArr *l, CvArr *r, CvArr *o)
+#define HELP class_sethelpsymbol(fclass->bfclass,gensym("cv/#numop"));
 
 \class CvAdd : CvOp2 {FUNC(CvAdd) {cvAdd(l,r,o,0);}};
-\end class {install("cv/#Add",2,1);}
+\end class {install("cv/#Add",2,1); HELP}
 \class CvSub : CvOp2 {FUNC(CvSub) {cvSub(l,r,o,0);}};
-\end class {install("cv/#Sub",2,1);}
+\end class {install("cv/#Sub",2,1); HELP}
 \class CvMul : CvOp2 {FUNC(CvMul) {cvMul(l,r,o,1);}};
-\end class {install("cv/#Mul",2,1);}
+\end class {install("cv/#Mul",2,1); HELP}
 \class CvDiv : CvOp2 {FUNC(CvDiv) {cvDiv(l,r,o,1);}};
-\end class {install("cv/#Div",2,1);}
+\end class {install("cv/#Div",2,1); HELP}
 \class CvAnd : CvOp2 {FUNC(CvAnd) {cvAnd(l,r,o,0);}};
-\end class {install("cv/#And",2,1);}
+\end class {install("cv/#And",2,1); HELP}
 \class CvOr  : CvOp2 {FUNC(CvOr ) {cvOr( l,r,o,0);}};
-\end class {install("cv/#Or" ,2,1);}
+\end class {install("cv/#Or" ,2,1); HELP}
 \class CvXor : CvOp2 {FUNC(CvXor) {cvXor(l,r,o,0);}};
-\end class {install("cv/#Xor",2,1);}
+\end class {install("cv/#Xor",2,1); HELP}
 
 \class CvInvert : CvOp1 {
 	\constructor () {}
