@@ -1,0 +1,25 @@
+#N canvas 543 148 568 316 10;
+#X obj 0 0 doc_h;
+#X obj 0 287 doc_f;
+#X obj 93 51 doc_make;
+#X obj 3 163 doc_i 2;
+#X obj 3 247 doc_o 0;
+#X obj 14 193 doc_ii 0;
+#X obj 14 215 doc_ii 1;
+#X obj 14 109 doc_cc 0;
+#X obj 97 109 doc_m c0 symbol id;
+#X text 200 109 something like c0 \, i0 \, o0 \, just like the \$1
+of [doc_m];
+#X obj 97 193 doc_m i0 bang;
+#X obj 97 215 doc_m i1 float;
+#X text 200 193 generate subsections;
+#X obj 3 79 doc_c 2;
+#X obj 14 131 doc_cc 1;
+#X obj 97 131 doc_m c1 float;
+#X text 200 131 how many subsections;
+#X text 200 215 starting position of new subsections;
+#X text 169 51 reserved for use by [doc_c] \, [doc_i] and [doc_o];
+#X connect 8 1 9 0;
+#X connect 10 1 12 0;
+#X connect 11 1 17 0;
+#X connect 15 1 16 0;
