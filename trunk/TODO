@@ -30,7 +30,15 @@ oct.2009
     to prevent a lot of redraw bugs.
 [ ] [doc_m] compound meta-methods: e.g. <hpgl> = the set of all selectors (method signatures) accepted in an HPGL stream.
 [ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
-[ ] examine what's wrong with [cv/#Invert] because it did seem to work in some 
+[ ] [#window] has no outlet
+[ ] [#to_literal] missing type
+[ ] [#swap] takes no argument
+[ ] [#reinterval] takes no argument
+[ ] [var.#] takes no argument
+[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
+[ ] [ascii_to_f] broken?
+[ ] [#make_arrow]
+
 PFOAC/BNL 2009
 [ ] [#interval_overlap]
 
@@ -249,14 +257,12 @@ Computation Objects
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
 [ ] #matrix_solve, #replace_if, #random_select, #markov_chain, #splice
-[ ] #timeline (or rtmetro): sequencing of events from grid
 [ ] #draw_polygon smoothly
-[ ] fuzzy #store (interpolate)
-[ ] write a complete benchmark script
+[ ] #store4 (interpolate)
+[ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
-[ ] string operations to compensate for the feebleness of PD in that area.
-	this includes [#sprintf].
---- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
+[ ] string operations to compensate for the feebleness of PD in that area. this includes [#sprintf].
+[ ] see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
 
 Effects
 [ ] #mosaic
@@ -270,7 +276,7 @@ Effects
 [ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] see gimp for ideas
 [ ] kaleidoscopes
-[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
+[ ] multilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
 [ ] #scale_by/#downscale_by fractional values
 [ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
@@ -304,7 +310,6 @@ Format
 [ ] put_at/reassign in x11/sdl/quartz
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
-[ ] AVI
 [ ] format grid: "headerless until 10" (text files)
 
 User Interface
@@ -316,33 +321,15 @@ User Interface
 [ ] drag-and-drop palette of object construction
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
 
-Extra/Examples/Etc
-[ ] .pd: read; write better
-[ ] add examples from the workshop, etc
-
-<matju> alx:
-le tab completion ne donnerait pas seulement les noms possibles pour le
-prochain argument dans le objectbox; il donnerait aussi une description de
-l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
-possibles). je pense que le help de Pd est une bonne idée (le concept hands-on)
-mais ça pourrait aller plus loin. j'ai pensé intégrer le manuel de référence de
-gridflow directement dans le programme, disponible au runtime, dans l'éventualité
-d'un GUI qui saurait en tirer avantage.
-
 -mfpmath=sse2
 
 remember to check for volatile VALUEs if GC problems ever occur
 
-Tom Schouten wrote: "
-added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*
+Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*
 this is an example on how to use external programs for raw video input.
-rationale:
-mplayer is a very nice piece of software supporting virtually any input
-format/codec. since i'm not planning to waste time on integrating more
-input codecs in pf, the best alternative is to have mplayer (actually
-mencoder) or ffmpeg as a subprocess.
-the same will be done for recording later.
-"
+rationale: mplayer is a very nice piece of software supporting virtually any input format/codec.
+since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is to have mplayer
+(actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
 
 very old bookmarks:
 	http://pdl.perl.org/
@@ -351,13 +338,9 @@ very old bookmarks:
 	http://freej.dyne.org/
 
 FObject.subclass("memstat",1,1) {
-  def _0_bang
-    f = File.open("/proc/#{$$}/stat")
-    send_out 0, Float(f.gets.split(" ")[22]) / 1024.0
-    f.close
-  end
-  #doc:_0_bang,"lookup process stats for the currently running pd and figure out how much RAM it uses."
-  #doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
+  def _0_bang; File.open("/proc/#{$$}/stat") {|f| send_out 0, Float(f.gets.split(" ")[22]) / 1024.0 } end
+  # lookup process stats for the currently running pd and figure out how much RAM it uses.
+  # virtual size of RAM in kilobytes (includes swapped out and shared memory)
 }
 
 # see also: [gf.error]
