@@ -1,0 +1,54 @@
+#N canvas 335 66 568 682 10;
+#X obj 0 0 doc_h;
+#X obj 0 653 doc_f;
+#X obj 3 30 doc_c 2;
+#X obj 3 533 doc_i 0;
+#X obj 3 573 doc_o 2;
+#X obj 14 603 doc_oo 0;
+#X obj 14 623 doc_oo 1;
+#X obj 14 60 doc_cc 0;
+#X obj 14 108 doc_cc 1;
+#X obj 97 60 doc_m c0 symbol;
+#X obj 97 108 doc_m c1 symbol;
+#X text 200 60 code for associating to a specific [doc_c] \, [doc_i]
+or [doc_o]. for example \, to associate with [doc_c 3] \, the code
+is c3;
+#X text 200 108 in the case of [doc_i] or [doc_o] \, this is either
+a selector or a meta-selector.;
+#X text 200 191 a meta-selector is a name written within <> marks;
+#X text 200 213 the sorting order of [doc_m] elements in a given subsection
+is alphabetical except for those five at the beginning: bang \, float
+\, grid \, symbol \, pointer \, list. and this one at the very end:
+<any>.;
+#X text 200 274 a list of meta-selectors:;
+#X text 200 296 <any>: represents the anything-method;
+#X text 200 318 <none>: is for writing anything of interest (?) about
+nothing at all. when present \, this is usually the only entry in the
+given subsection \, and it usually just says that the inlet or outlet
+is meant to be useless. typically \, no messages are accepted in the
+inlet \, or else \, all messages are accepted without doing anything
+with them \, or in the case of outlet \, nothing ever comes out of
+it.;
+#X text 200 418 <evil>: is like <none> \, except that the outlet that
+bears it will do weird things to the object it gets connected to. things
+that are very different from sending mere messages.;
+#X text 200 488 <hpgl>: this stands for a pd message version of the
+HPGL protocol.;
+#X text 200 143 in the case of [doc_c] \, we're just faking that this
+is a selector \, but you better only use atom types here: float \,
+grid \, symbol \, pointer \, <atom>.;
+#X text 200 466 <atom>: this stands for float \, grid \, symbol \,
+or pointer.;
+#X obj 97 603 doc_m o0 <none>;
+#X obj 97 623 doc_m o1 <evil>;
+#X connect 9 1 11 0;
+#X connect 10 1 12 0;
+#X connect 10 1 13 0;
+#X connect 10 1 14 0;
+#X connect 10 1 15 0;
+#X connect 10 1 16 0;
+#X connect 10 1 17 0;
+#X connect 10 1 18 0;
+#X connect 10 1 19 0;
+#X connect 10 1 20 0;
+#X connect 10 1 21 0;
