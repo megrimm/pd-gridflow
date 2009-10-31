@@ -1,0 +1,21 @@
+#N canvas 653 141 568 343 10;
+#X obj 0 0 doc_h;
+#X obj 0 314 doc_f;
+#X obj 84 56 list.==;
+#X text 174 49 compare two lists and tell whether they are exactly
+equal to each other.;
+#X obj 3 110 doc_c any;
+#X obj 14 140 doc_cc any;
+#X obj 97 140 doc_m cany <any>;
+#X text 200 140 same as inlet 1;
+#X obj 3 172 doc_i 2;
+#X obj 3 252 doc_o 1;
+#X obj 14 202 doc_ii 0;
+#X obj 14 222 doc_ii 1;
+#X obj 14 282 doc_oo 0;
+#X obj 97 202 doc_m i0 list;
+#X obj 97 222 doc_m i1 list;
+#X obj 97 282 doc_m o0 float bool;
+#X text 200 282 1 if lists are same \, 0 if they are different.;
+#X connect 6 1 7 0;
+#X connect 15 1 16 0;
