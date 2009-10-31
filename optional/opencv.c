@@ -448,40 +448,6 @@ GRID_INLET(0) {
 } GRID_END
 \end class {install("cv/#HaarDetectObjects",2,1);}
 
-\class CvKalmanWrapper : CvOp1 {
-	CvKalman *kal;
-	\constructor (int dynam_params, int measure_params, int control_params=0) {
-		kal = cvCreateKalman(dynam_params,measure_params,control_params);
-	}
-	~CvKalmanWrapper () {if (kal) cvReleaseKalman(&kal);}
-	\decl void _0_bang ();
-	\grin 0
-	\grin 1
-};
-\def void _0_bang () {
-	const CvMat *r = cvKalmanPredict(kal,0);
-	cvMatSend(r,this,0);
-}
-GRID_INLET(0) {
-	in->set_chunk(0);
-} GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
-	CvMat *a = (CvMat *)cvGrid(l,mode,2);
-	const CvMat *r = cvKalmanPredict(kal,a);
-	cvMatSend(r,this,0);
-} GRID_END
-
-GRID_INLET(1) {
-	in->set_chunk(0);
-} GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
-	CvMat *a = (CvMat *)cvGrid(l,mode,2);
-	const CvMat* r = cvKalmanCorrect(kal,a);
-	cvMatSend(r,this,0);
-	cvRelease(&r);
-} GRID_END
-\end class {install("cv/#Kalman",2,1);}
-
 /* **************************************************************** */
 
 \class CvKMeans : CvOp1 {
