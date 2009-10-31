@@ -2166,21 +2166,6 @@ GRID_INLET(0) {
 \end class {install("#draw_points",3,1);}
 
 //****************************************************************
-\class GridPolygonize : FObject {
-	\constructor () {}
-	\grin 0
-};
-
-GRID_INLET(0) {
-	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
-	in->set_chunk(0);
-} GRID_FLOW {
-	/* WRITE ME */
-} GRID_END
-
-\end class {install("#polygonize",1,1);}
-
-//****************************************************************
 \class GridNoiseGateYuvs : FObject {
 	\grin 0
 	int thresh;
