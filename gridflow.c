@@ -906,7 +906,7 @@ void allow_big_stack () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
-    post("GridFlow " GF_VERSION ", Copyright (c) 2001-2008 Mathieu Bouchard");
+    post("GridFlow " GF_VERSION ", Copyright (c) 2001-2009 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
