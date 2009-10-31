@@ -313,11 +313,12 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
 	t_canvas *can = bself->mom->gl_owner; \
 	if (!can) RAISE("no such canvas");
+#define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
 \def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+	wire_each(wire,ouch) {
 		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
 	}
 #else
@@ -328,9 +329,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 #ifndef DESIREDATA
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
-		sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
-	}
+	wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
 #else
 	post("doesn't work with DesireData");
 #endif
@@ -340,7 +339,7 @@ extern t_widgetbehavior text_widgetbehavior;
 #ifndef DESIREDATA
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) {
+	wire_each(wire,ouch) {
 		t_object *t = (t_object *)wire->to;
 		int x1,y1,x2,y2;
 		text_widgetbehavior.w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
@@ -361,7 +360,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	std::vector<t_object *> v;
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) v.push_back((t_object *)wire->to);
+	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
 	sort(v.begin(),v.end(),comment_sort_y_lt);
 	int y = y_start;
 	foreach(tt,v) {
@@ -386,7 +385,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	std::vector<t_object *> v;
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	for (t_outconnect *wire = ouch->connections; wire; wire=wire->next) v.push_back((t_object *)wire->to);
+	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
 	sort(v.begin(),v.end(),comment_sort_y_lt);
 	int x = x_start;
 	foreach(tt,v) {
