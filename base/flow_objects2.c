@@ -373,7 +373,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 			gobj_vis((t_gobj *)t,can,1);
 		}
 		int x1,y1,x2,y2;
-		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
+		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
 		y += y2-y1+y_spacing;
 	}
 	outlet_float(bself->outlets[0],y-y_start);
@@ -399,7 +399,7 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 			gobj_vis((t_gobj *)t,can,1);
 		}
 		int x1,y1,x2,y2;
-		text_widgetbehavior.w_getrectfn((t_gobj *)t,can,&x1,&y1,&x2,&y2);
+		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
 		x += x2-x1+x_spacing;
 	}
 	outlet_float(bself->outlets[0],x-x_start);
