@@ -9,9 +9,11 @@ version 0.9.6 (2009.10...):
  * added [doc_h] [doc_c] [doc_cc] [doc_i] [doc_ii] [doc_o] [doc_oo]
  * added [doc_m] [doc_also] [doc_editmodebang] [doc_pos]
  * added examples/pinwheel.pd, examples/radial_blur.pd
+ * added examples/operator_spectrum.pd
  * [#change]: now takes an argument just like [change]
  * [#in x11]: fixed some bugs and set out_size to a sensible default.
  * removed [#camera_control], [#camera_old], [#centroid_in_pd]
+ * removed [count], [condition]
 
 version 0.9.5 (2009.10.18):
 
@@ -39,6 +41,7 @@ version 0.9.5 (2009.10.18):
  * fixed more OSX bugs
  * fixed [#grade] bug (thanks to mescalinum)
  * removed support for gem 0.89 and some 0.90 versions
+ * renamed [#labeling] to [#labelling] (kept an alias)
 
 version 0.9.4 (2008.07.04):
 

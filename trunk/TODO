@@ -3,6 +3,7 @@
 oct.2009
 [ ] s/^accepts//i
 [ ] s/^receives//i
+[ ] listflatten-help.pd : [display] bug
 [ ] GridFlow Index dans toutes les fenêtres
 [ ] [route3] is like [route] but doesn't trim.
 [ ] what to do with GridFlow version numbering?
@@ -24,8 +25,12 @@ oct.2009
     e.g. [doc_aa] would contain something like [doc_m]
 		but wouldn't have [doc_m] as a subnode.
 [ ] [print], [gf.print] bugs
-[ ] MAKE A PROPER LOADBANG FOR DYNAMIC PATCHING! ([gf/canvas_count] + [gf/canvas_loadbang_starting_at])
-
+[ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
+[ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
+    to prevent a lot of redraw bugs.
+[ ] [doc_m] compound meta-methods: e.g. <hpgl> = the set of all selectors (method signatures) accepted in an HPGL stream.
+[ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
+[ ] examine what's wrong with [cv/#Invert] because it did seem to work in some 
 PFOAC/BNL 2009
 [ ] [#interval_overlap]
 
