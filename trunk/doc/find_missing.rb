@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 a=[]
 `grep -nriw install ../*.[ch] ../*/*.[chm]`.each {|line|
   m=/install\(\"([^"]+)/.match(line)
@@ -14,6 +16,6 @@ c=Dir["flow_classes/*.pd"].map{|x|
 
 ab=a+b
 
-puts (ab-c).sort.join" "
-
-puts (c-ab).sort.join" "
+ puts (ab-c).sort.join" "
+ puts (ab-c).size
+#puts (c-ab).sort.join" "
