@@ -340,7 +340,7 @@ Feature.add {
 	name "X11 Display Protocol"
 	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
-	uses_o ["format/x11.o"]
+	uses_o ["src/x11.o"]
 	test proc {
 		c_test "
 		#include#
@@ -368,7 +368,7 @@ Feature.add {
 		a
 	}
 	uses_h ["SDL/SDL.h"]
-	uses_o ["format/sdl.o"]
+	uses_o ["src/sdl.o"]
 	test proc {
 		c_test "
 		#include#
@@ -390,7 +390,7 @@ Feature.add {
 	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_feature [:objcpp]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
-	uses_o ["format/quartz.o"]
+	uses_o ["src/quartz.o"]
 	test proc {
 		c_test "
 		#include#
@@ -401,7 +401,7 @@ Feature.add {
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
-	uses_o ["format/aalib.o"]
+	uses_o ["src/aalib.o"]
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
@@ -414,7 +414,7 @@ Feature.add {
 	name "NetPBM 10 Library"
 	uses_so ["-lnetpbm"]
 	uses_h Or[["pam.h"],["netpbm/pam.h"]]
-	uses_o ["format/netpbm.o"]
+	uses_o ["src/netpbm.o"]
 	test proc {|f|
 		f.c_test "
 		#include#
@@ -424,7 +424,7 @@ Feature.add {
 	name "JPEG Library"
 	uses_so ["-ljpeg"]
 	uses_h ["jpeglib.h"]
-	uses_o ["format/jpeg.o"]
+	uses_o ["src/jpeg.o"]
 	test proc {
 		c_test "
 		extern \"C\" {
@@ -438,7 +438,7 @@ Feature.add {
 	name "PNG Library"
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["libpng12/png.h"],["png.h"]]
-	uses_o ["format/png.o"]
+	uses_o ["src/png.o"]
 	test proc {|f|
 		f.c_test %`
 		extern "C" {
@@ -454,8 +454,7 @@ Feature.add {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	uses_h ["linux/videodev.h"]
-	uses_o ["format/videodev.o"]
-	#uses_o ["format/videodev-old.o"]
+	uses_o ["src/videodev.o"]
 	test proc {
 		c_test "
 		#include <stdlib.h>
@@ -466,7 +465,7 @@ Feature.add {
 	name "DC1394 for Linux"
 	uses_so ["-ldc1394_control"]
 	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
-	uses_o ["format/dc1394.o"]
+	uses_o ["src/dc1394.o"]
 	options ["HAVE_DC1394"]
 	test proc {|f|
 		f.c_test "
@@ -477,7 +476,7 @@ Feature.add {
 	name "HeroineWarrior LibMPEG3"
 	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
-	uses_o ["format/mpeg3.o"]
+	uses_o ["src/mpeg3.o"]
 	test proc {|f|
 		f.c_test "
 		#include#
@@ -487,7 +486,7 @@ Feature.add {
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
-	uses_o ["format/quicktimeapple.o"]
+	uses_o ["src/quicktimeapple.o"]
 	test proc {
 		c_test "
 		#include#
@@ -505,7 +504,7 @@ Feature.add {
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
 		f.map{|x| "quicktime/"+x }]
-	uses_o ["format/quicktimehw.o"]
+	uses_o ["src/quicktimehw.o"]
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
