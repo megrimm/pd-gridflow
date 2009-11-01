@@ -13,7 +13,7 @@
 #X text 127 11 hilite;
 #N canvas 372 198 399 273 image 0;
 #X obj 15 113 # << 2;
-#X obj 15 162 @! abs;
+#X obj 15 162 # abs-;
 #X obj 15 9 inlet;
 #X obj 18 80 # -;
 #X obj 70 174 # + 128;
