@@ -98,12 +98,9 @@ crashes, or changes didn't go through. <ul>
 	don't forget to use them again in this case.</li>
 		<li>Maybe matju forgot to upload part of an important change. Tell him.</li> </ul></li>
 	<li>PureData Crashing: <ul>
-		<li>you can start the debugger like <kbd>gdb $(which pd) core.24255</kbd> where the latter part
-			is the name of a RAM dump file. You can enable those dumps using the shell command <kbd>ulimit -c unlimited</kbd>.
-			To avoid dumping, you can also start Pd from within the debugger 
-			using <kbd>gdb `which pd`</kbd> then <kbd>run</kbd> then cause the crash.</li>
+		<li>run start Pd from within the debugger using <kbd>gdb $(which pd)</kbd> then <kbd>run</kbd> then cause the crash.</li>
 		<li>In GDB, after a crash, you can use the <kbd>where</kbd> to find out what Pd was doing at the moment 
-			of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal. </li>
+			of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal.</li>
 		<li>To quit GDB use the <kbd>quit</kbd> command. (really.)</li> </ul></li> </ul></td></tr>
 <tr><td colspan="4" bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
 <tr><td colspan="4"><h4>Credits</h4></td></tr>
