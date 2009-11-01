@@ -24,7 +24,7 @@
 //!@#$ not handling abort on compress
 //!@#$ not handling abort on decompress
 
-#include "../src/gridflow.hxx.fcs"
+#include "gridflow.hxx.fcs"
 /* removing macros (removing warnings) */
 #undef HAVE_PROTOTYPES
 #undef HAVE_STDLIB_H
