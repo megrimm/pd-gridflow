@@ -373,8 +373,8 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 		if (horiz) x += x2-x1+incr;
 		else       y += y2-y1+incr;
 	}
-	if (horiz) outlet_float(bself->outlets[0],y-y_start);
-	else       outlet_float(bself->outlets[0],x-x_start);
+	if (horiz) outlet_float(bself->outlets[0],x-x_start);
+	else       outlet_float(bself->outlets[0],y-y_start);
 #else
 	post("doesn't work with DesireData");
 #endif
