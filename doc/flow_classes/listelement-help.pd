@@ -4,7 +4,6 @@
 #X obj 195 158 print;
 #X msg 195 81 1 3 hello 8 13;
 #X obj 195 129 listelement 0;
-#X text 200 365 Accepts a list of numbers or symbols.;
 #X text 10 32 Outputs one element from a list as selected by an integer.
 ;
 #X text 200 238 An integer acts as an index \, it selects the position
@@ -29,11 +28,12 @@ index into the list to get a different element.;
 #X text 200 462 The element selected by the index is sent to the outlet
 ;
 #X obj 0 494 doc_f;
+#X text 200 365 a list of numbers or symbols.;
 #X connect 1 0 4 1;
 #X connect 3 0 4 0;
 #X connect 4 0 0 0;
 #X connect 4 0 2 0;
-#X connect 17 1 7 0;
-#X connect 18 1 5 0;
-#X connect 19 1 8 0;
-#X connect 20 1 21 0;
+#X connect 16 1 6 0;
+#X connect 17 1 22 0;
+#X connect 18 1 7 0;
+#X connect 19 1 20 0;

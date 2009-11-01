@@ -6,9 +6,6 @@ or live stream.;
 #X obj 354 106 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 55 181 <--click here;
-#X text 200 673 "close" - Closes the video input device. Only necessary
-when you are using a live capture device.;
-#X text 200 822 "rewind" - Will rewind video to the beginning.;
 #X text 200 743 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
 #X text 200 954 Signals the end of a file and when a file is unreadable.
@@ -151,8 +148,6 @@ not mmap.;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
 #X obj 17 305 #out window \, title video;
-#X text 200 638 Outputs the frame that corresponds to the value. Applies
-to formats that have frame numbers \, i.e. video.;
 #X text 200 708 "loop 1" - Restarts a video each time it reaches the
 end (default setting).;
 #X obj 41 248 route bang;
@@ -184,9 +179,6 @@ end (default setting).;
 #X text 200 787 \$1=filename. sends it as a resource to [#in]. For
 example: "open sewing.jpg".;
 #X obj 97 473 doc_m i0 bang;
-#X text 200 844 "set" - followed by a number will select the corresponding
-video frame. A bang must be sent to [#in] in order to display the frame.
-this only works with video file formats.;
 #X obj 97 976 doc_m o1 float int;
 #X text 200 976 frame number of the frame currently being viewed. Applies
 to formats that have frame numbers \, i.e. video.;
@@ -202,33 +194,40 @@ are several pictures in the same file \, but if the end of file is
 reached instead \, it will rewind and send the first picture again.
 ;
 #X obj 0 1041 doc_f;
-#X connect 2 0 11 0;
-#X connect 3 0 11 0;
-#X connect 11 0 0 0;
-#X connect 12 0 19 0;
-#X connect 13 0 19 0;
-#X connect 14 0 19 0;
-#X connect 15 0 19 0;
-#X connect 17 0 19 0;
-#X connect 19 0 38 0;
-#X connect 19 1 16 0;
-#X connect 19 1 41 0;
-#X connect 21 0 22 0;
-#X connect 22 0 19 0;
-#X connect 23 0 25 0;
-#X connect 25 0 24 0;
-#X connect 34 0 19 0;
-#X connect 41 0 18 0;
-#X connect 42 0 19 0;
-#X connect 52 1 66 0;
-#X connect 53 1 68 0;
-#X connect 54 1 5 0;
-#X connect 55 1 6 0;
-#X connect 56 1 40 0;
-#X connect 56 1 7 0;
-#X connect 57 1 39 0;
-#X connect 58 1 9 0;
-#X connect 59 1 8 0;
-#X connect 60 1 61 0;
-#X connect 67 1 71 0;
-#X connect 69 1 70 0;
+#X text 200 673 Closes the video input device. Only necessary when
+you are using a live capture device.;
+#X text 200 822 Will rewind video to the beginning.;
+#X text 200 844 select the video frame numbered \$1 \, where 0 is the
+first frame. A bang must be sent to [#in] in order to display the frame.
+this only works with video file formats.;
+#X text 200 638 same as set \$1 \, bang;
+#X connect 2 0 9 0;
+#X connect 3 0 9 0;
+#X connect 9 0 0 0;
+#X connect 10 0 17 0;
+#X connect 11 0 17 0;
+#X connect 12 0 17 0;
+#X connect 13 0 17 0;
+#X connect 15 0 17 0;
+#X connect 17 0 36 0;
+#X connect 17 1 14 0;
+#X connect 17 1 38 0;
+#X connect 19 0 20 0;
+#X connect 20 0 17 0;
+#X connect 21 0 23 0;
+#X connect 23 0 22 0;
+#X connect 32 0 17 0;
+#X connect 38 0 16 0;
+#X connect 39 0 17 0;
+#X connect 49 1 63 0;
+#X connect 50 1 71 0;
+#X connect 51 1 69 0;
+#X connect 52 1 70 0;
+#X connect 53 1 37 0;
+#X connect 53 1 5 0;
+#X connect 54 1 72 0;
+#X connect 55 1 7 0;
+#X connect 56 1 6 0;
+#X connect 57 1 58 0;
+#X connect 64 1 67 0;
+#X connect 65 1 66 0;
