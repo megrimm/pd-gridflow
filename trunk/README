@@ -13,11 +13,10 @@
   ./format ........... format handlers written in C++ (optional)
   ./doc .............. complete documentation in HTML, with XML source
   ./doc/flow_classes . help files (.pd)
-  ./doc/images ....... images that go with the HTML doc
   ./doc/tutorials .... tutorials
   ./examples ......... more complex Pd programs showing off more practical uses.
                        (this will replace ./pd_examples in the future).
-  ./images ........... sample images shared by ./samples, ./help, ./doc
+  ./images ........... sample images shared by ./examples, ./help, ./doc
   ./optional ......... optional classes but not format handlers
   ./tests ............ will contain Pd programs that test GridFlow itself.
                        (see also: the PureUnity project)
