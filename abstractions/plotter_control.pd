@@ -22,7 +22,7 @@
 #X obj 297 208 #import;
 #X obj 297 227 # & -33;
 #X text 352 226 turns to uppercase if content is only letters;
-#X obj 297 246 #export_symbol;
+#X obj 297 246 #to_symbol;
 #X msg 100 443 32;
 #X obj 17 49 list;
 #X msg 70 68 list LB;
@@ -31,7 +31,7 @@
 #X msg 17 87 break \, end;
 #X obj 126 49 t b l b;
 #X msg 179 49 list LB;
-#X obj 148 68 #export_symbol;
+#X obj 148 68 #to_symbol;
 #X msg 126 87 break \, end;
 #X obj 8 23 route other print print_from_ascii;
 #X obj 8 191 t b b s;
