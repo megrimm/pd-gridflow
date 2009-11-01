@@ -77,9 +77,6 @@ base/mmx.asm base/mmx_loader.c: base/mmx.rb
 base/mmx.o: base/mmx.asm
 	nasm -f elf base/mmx.asm -o base/mmx.o
 
-unskew::
-	find . -mtime -0 -ls -exec touch '{}' ';'
-
 $(PD_LIB): gridflow.c.fcs $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
 		gridflow.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
@@ -137,6 +134,3 @@ help::
 	@echo "do one of the following:";\
 	echo  "make all            compiles gridflow";\
 	echo  "make beep           beeps";\
-	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
-
-
