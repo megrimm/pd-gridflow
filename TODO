@@ -112,7 +112,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
-[ ] reading tux.tga is completely broken
 [ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
@@ -123,8 +122,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
-[ ] [#import~]
-[ ] [#export~]
+[ ] [#import~] [#export~]
 [ ] [#expr]
 [ ] [#line]? [#pipe]? [#delay]?
 [ ] #: option swap
@@ -134,19 +132,12 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] Copy-on-Write (COW)
 [ ] internals documentation
 [ ] internal grid protocol redesigned
-[ ] raise limit of in/outlets from 10 to 100 or unlimited.
 [ ] look into -ftree-vectorize
 [ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
-
-[145] "list -1"->[@import] only tells error message once every other time
+[ ] some proper equivalent of [rubysprintf]... see also: [gf.error]
 [144] small leak remaining in x11. may have to do with non-use of XDestroyImage.
 [140] is [@convolve] actually cross-convolution?
 	that is, convolves with a mirror image of the convolution matrix.
-[139] [peephole]
-	<mis> matju: if you try to move the GOPed abstraction the peepholes don't move along
-	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not
-	move up or to the left of the low right corner of the peephole it contains.
-	Instead it will resize itself as you move it around.  
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
 [117] osx: [#store] crash instead of raising
@@ -168,25 +159,22 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 Installation
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
-[ ] find a good profiler (not gridflow's internal...)
 [ ] cross-compile: http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
 
 Documentation
-[ ] add credits
+[ ] find a place where to put the credits
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document internals
 [ ] describe indexmap in doc
-[ ] document backward compatibility issues
 [ ] architecture: class->type/shape->use->role
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
---- remember to keep doc/help/screenshots/examples up to date
 
 Architecture
-[0.9] reentrancy of objects (to allow true recursion)
-[0.9] inlet-attrs (attrs associated to inlets)
+[ ] reentrancy of objects (to allow true recursion)
+[ ] inlet-attrs (attrs associated to inlets) (see "same as arg" in help)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
@@ -194,23 +182,23 @@ Architecture
 [ ] add reflection (#global:classes, #global:methods, ...)
 [ ] transmitting grids by diffs?
 [ ] dispatch on _#{i}_-named methods (any selector one inlet)
-[0.9] generalize the backstore
+[ ] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
 [ ] lazy grids: Grid#operator T* makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
-[0.9] accounting: grids messages packets numbers bytes copybytes
-[0.9] memory profiling
+[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] memory profiling
 [ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] interpret nested lists as n-dimensional.
-[0.9] MMX memcpy() ?
-[0.9] MMX _runtime_ autodetection
+[ ] MMX memcpy() ?
+[ ] MMX _runtime_ autodetection
+[ ] find a good profiler to use with GridFlow.
 
 Computation Objects
 [ ] #counter (similar to #for)
-[ ] #for "step" argument should have default {1...}
 [ ] zero option in #convolve (?)
 [ ] #conv (simpler #convolve) should allow n-D convolution
 [ ] #convolve rewritten as combination of #conv+#border ?
@@ -244,10 +232,7 @@ Effects
 [ ] #daltonism
 [ ] #perlin ?
 [ ] #moment could support more than 2 dimensions
-
-#<vektor> told me to:
-# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + (16 128 128)"]
-# YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
+[ ] note in the helpfiles what is meant by YUV in gridflow (what colorspace that is)
 
 Input/Output
 [ ] a #store that is persistent (saved in .pd) ?
@@ -302,16 +287,6 @@ FObject.subclass("memstat",1,1) {
   def _0_bang; File.open("/proc/#{$$}/stat") {|f| send_out 0, Float(f.gets.split(" ")[22]) / 1024.0 } end
   # lookup process stats for the currently running pd and figure out how much RAM it uses.
   # virtual size of RAM in kilobytes (includes swapped out and shared memory)
-}
-
-# see also: [gf.error]
-FObject.subclass("rubysprintf",2,1) {
-  def initialize(*format) _1_list(format) end
-  def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
-  alias _0_float _0_list
-  alias _0_symbol _0_list
-  def _1_list(*format) @format = format.join(" ") end
-  alias _1_symbol _1_list
 }
 
 there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
