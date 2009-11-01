@@ -10,7 +10,7 @@
 #X obj 102 93 #out window;
 #X msg 225 86 mode channels;
 #X obj 20 121 cv/#KMeans 8 \, termcrit (8 nil);
-#X obj 0 0 doc_h;
+#X obj 0 0 doc_h cv/;
 #X obj 3 221 doc_c 1;
 #X obj 3 280 doc_i 2;
 #X obj 3 369 doc_o 1;
