@@ -28,7 +28,7 @@
 #include <sstream>
 #include <iomanip>
 #include <errno.h>
-#include "../gridflow.h.fcs"
+#include "gridflow.hxx.fcs"
 #ifdef DESIRE
 #include "desire.h"
 #else

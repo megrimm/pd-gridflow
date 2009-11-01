@@ -28,7 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "../gridflow.h.fcs"
+#include "gridflow.hxx.fcs"
 #include <ctype.h>
 
 //#define TRACEBUFS
