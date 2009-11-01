@@ -2,7 +2,7 @@
 #X obj 12 28 inlet;
 #X obj 98 264 outlet;
 #X obj 234 1 inlet;
-#X obj 221 157 #export_list;
+#X obj 221 157 #to_list;
 #X msg 221 176 4 2 # \$1 \$2 \$1 \$4 \$3 \$4 \$3 \$2;
 #X obj 72 28 inlet;
 #X obj 121 13 loadbang;

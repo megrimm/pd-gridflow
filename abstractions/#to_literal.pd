@@ -1,7 +1,7 @@
 #N canvas 0 0 513 171 10;
-#X obj 44 63 #export_list;
+#X obj 44 63 #to_list;
 #X obj 136 24 #dim;
-#X obj 136 43 #export_list;
+#X obj 136 43 #to_list;
 #X obj 44 82 list prepend;
 #X obj 136 132 list append #;
 #X obj 44 25 inlet;

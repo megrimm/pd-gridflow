@@ -12,7 +12,7 @@
 #X obj 281 350 # + (10 2 # -1 -1 -1 1 1 1 1 -1 -1 -1 0 0 0 0 0 0 0
 0 0 0);
 #X msg 281 331 10 2 # \$1 \$2 \$1 \$4 \$3 \$4 \$3 \$2 \$1 \$2;
-#X obj 281 308 #export_list;
+#X obj 281 308 #to_list;
 #X obj 44 188 #draw_rect \$1;
 #X obj 44 349 #draw_polygon \$1 (255 255 255);
 #X obj 470 9 loadbang;

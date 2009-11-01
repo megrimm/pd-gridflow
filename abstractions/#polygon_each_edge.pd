@@ -5,7 +5,7 @@
 #X obj 20 40 t a a;
 #X obj 20 59 #finished;
 #X obj 102 22 #dim;
-#X obj 102 41 #export_list;
+#X obj 102 41 #to_list;
 #X msg 102 60 \$1;
 #X obj 19 156 #outer + (2 1 # 0 1);
 #X obj 20 97 #for 0 0 1;

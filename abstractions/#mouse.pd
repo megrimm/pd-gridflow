@@ -32,7 +32,7 @@
 #X obj 480 274 change;
 #X obj 530 275 change;
 #X obj 580 276 change;
-#X obj 469 145 #export_list;
+#X obj 469 145 #to_list;
 #X obj 163 335 outlet;
 #X text 172 378 drag;
 #X text 214 337 move;

@@ -17,7 +17,7 @@
 #X obj 10 229 #fold |;
 #X obj 216 123 loadbang;
 #X msg 216 199 range \$1 \$2;
-#X obj 216 180 #export_list;
+#X obj 216 180 #to_list;
 #X obj 64 267 loadbang;
 #X obj 64 305 - \$3;
 #X msg 64 286 1;
