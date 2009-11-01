@@ -44,6 +44,8 @@ all:: $(PD_LIB) aliases
 
 .SUFFIXES:
 
+CFLAGS += -DPDSUF=\"$(PDSUF)\"
+
 H = src/gridflow.hxx.fcs
 
 %.hxx.fcs: %.hxx $(COMMON_DEPS)
