@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 a=[]
-`grep -nriw install ../*.[ch] ../*/*.[chm]`.each {|line|
+`grep -nriw install ../src/*.[ch]xx ../src/*.m`.each {|line|
   m=/install\(\"([^"]+)/.match(line)
   a<<m[1] if m
 }
