@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-# COMMON_DEPS = config.make Makefile src/source_filter.rb
+COMMON_DEPS = config.make Makefile src/source_filter.rb
 RUBY = ruby
 
 #--------#
