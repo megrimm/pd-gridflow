@@ -1,5 +1,5 @@
 #N canvas 580 166 568 551 10;
-#X obj 0 0 doc_h;
+#X obj 0 0 doc_h cv/;
 #X obj 0 443 doc_f;
 #X obj 94 47 cv/#Ellipse;
 #X obj 3 81 doc_c 0;

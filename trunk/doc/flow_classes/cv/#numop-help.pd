@@ -14,7 +14,7 @@
 #X msg 396 69 2 2 # 0 1 42 666;
 #X msg 151 144 2 2 # 0 1 42 666;
 #X msg 151 69 2 2 # 0 1 42 666;
-#X obj 0 0 doc_h;
+#X obj 0 0 doc_h cv/;
 #X msg 267 146 2 2 # 0 1 2 -3000;
 #X text 424 167 rounds towards zero;
 #X obj 3 412 doc_c 1;

@@ -1,5 +1,5 @@
 #N canvas 599 185 568 336 10;
-#X obj 0 0 doc_h;
+#X obj 0 0 doc_h cv/;
 #X obj 0 307 doc_f;
 #X obj 73 53 cv/#CornerHarris;
 #X obj 3 87 doc_c 0;
