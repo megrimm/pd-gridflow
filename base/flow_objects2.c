@@ -311,12 +311,12 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
 	t_canvas *can = bself->mom->gl_owner; \
-	if (!can) RAISE("no such canvas");
+	if (!can) RAISE("no such canvas"); \
+	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 #define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
 \def 0 wire_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
 	BEGIN
-	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	wire_each(wire,ouch) {
 		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
 	}
@@ -327,7 +327,6 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \def 0 wire_hide () {
 #ifndef DESIREDATA
 	BEGIN
-	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
 #else
 	post("doesn't work with DesireData");
@@ -337,7 +336,6 @@ extern t_widgetbehavior text_widgetbehavior;
 \def 0 box_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
 	BEGIN
-	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	wire_each(wire,ouch) {
 		t_object *t = (t_object *)wire->to;
 		int x1,y1,x2,y2;
@@ -362,7 +360,6 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 #ifndef DESIREDATA
 	std::vector<t_object *> v;
 	BEGIN
-	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
 	sort(v.begin(),v.end(),comment_sort_y_lt);
 	foreach(tt,v) {
