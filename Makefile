@@ -57,19 +57,19 @@ H = src/gridflow.hxx.fcs
 %.m.fcs: %.m $(COMMON_DEPS) $(H)
 	$(FILT) $< $@
 %.o: %.c.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
 %.o: %.cxx.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
 %.1.o: %.cxx.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -DPASS1 -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -DPASS1 -c $< -o $@
 %.2.o: %.cxx.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -DPASS2 -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -DPASS2 -c $< -o $@
 %.3.o: %.cxx.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -DPASS3 -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -DPASS3 -c $< -o $@
 %.4.o: %.cxx.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) -DPASS4 -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS) $(H)
-	$(CXX) $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
+	$(CXX) -xc++ $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 
 %.s: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -S $< -o $@
