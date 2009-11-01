@@ -12,7 +12,7 @@
 0;
 #X obj 10 343 s \$0-cnv;
 #X msg 10 324 color \$1;
-#X obj 10 267 #export;
+#X obj 10 267 #to_float;
 #X obj 10 248 # ^ -1;
 #X obj 10 229 #fold |;
 #X obj 216 123 loadbang;
