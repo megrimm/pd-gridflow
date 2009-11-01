@@ -233,7 +233,6 @@ end
 
 LOG.puts "-"*64
 
-$CFLAGS += " -fno-operator-names"
 $CFLAGS += " -I/usr/X11R6/include"
 $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 

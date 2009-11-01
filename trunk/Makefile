@@ -3,6 +3,8 @@
 
 include config.make
 COMMON_DEPS = config.make Makefile src/source_filter.rb
+CFLAGS += -fno-operator-names
+
 RUBY = ruby
 
 #--------#
