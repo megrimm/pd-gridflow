@@ -44,7 +44,7 @@ all:: $(PD_LIB) aliases
 
 .SUFFIXES:
 
-H = gridflow.hxx.fcs
+H = src/gridflow.hxx.fcs
 
 %.hxx.fcs: %.hxx $(COMMON_DEPS)
 	$(FILT) $< $@
@@ -76,8 +76,8 @@ H = gridflow.hxx.fcs
 
 .PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
 
-src/mmx.asm src/mmx_loader.c: src/mmx.rb
-	$(RUBY) src/mmx.rb src/mmx.asm src/mmx_loader.c
+src/mmx.asm src/mmx_loader.cxx: src/mmx.rb
+	$(RUBY) src/mmx.rb src/mmx.asm src/mmx_loader.cxx
 src/mmx.o: src/mmx.asm
 	nasm -f elf src/mmx.asm -o src/mmx.o
 
@@ -90,7 +90,7 @@ beep::
 install::
 	@echo -e "\033[0;1;33;41m"
 	@echo -e "1. move this folder to lib/pd/extra or add the folder to -path"
-	@echo -e "2. delete the old gridflow.pd_linux"
+	@echo -e "2. delete the old gridflow.pd_linux if you have one (from years ago)"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
 DEPRECATED = motion_detection color mouse fade scale_to \
@@ -124,9 +124,9 @@ abstractions/inv\*.pd: abstractions/inv0x2a.pd
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS) src/*.fcs format/*.fcs optional/*.fcs \
+	rm -f $(OBJS2) $(OBJS)src/*.fcs format/*.fcs optional/*.fcs \
 		$(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
 distclean:: clean
-	rm -f config.make config.log config.h gridflow.c.fcs gridflow.h.fcs
+	rm -f config.make config.log config.h
 	rm -rf tmp
