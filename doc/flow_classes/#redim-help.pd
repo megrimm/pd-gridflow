@@ -3,10 +3,8 @@
 ;
 #X obj 21 36 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X obj 21 59 fork;
 #X obj 21 103 #in;
 #X obj 111 154 #out window;
-#X msg 44 81 open working.jpg;
 #X obj 103 575 #ravel;
 #X obj 153 575 #perspective;
 #X obj 21 154 #out window;
@@ -42,21 +40,20 @@ and put its left half on a even line and the right half on the following
 odd line. [#redim] 480 320 3 will repeat the input image twice in the
 output image. [#redim] 240 50 3 will only keep the 50 top lines.;
 #X obj 0 595 doc_f;
-#X connect 1 0 2 0;
-#X connect 2 0 3 0;
-#X connect 2 1 5 0;
-#X connect 3 0 9 0;
-#X connect 5 0 3 0;
-#X connect 9 0 8 0;
-#X connect 9 1 10 0;
-#X connect 10 0 4 0;
-#X connect 12 0 10 1;
-#X connect 13 0 10 1;
-#X connect 17 1 6 0;
-#X connect 17 1 7 0;
-#X connect 23 1 24 0;
-#X connect 23 1 26 0;
-#X connect 25 1 27 0;
+#X msg 21 81 load working.jpg;
+#X connect 1 0 31 0;
+#X connect 2 0 7 0;
+#X connect 7 0 6 0;
+#X connect 7 1 8 0;
+#X connect 8 0 3 0;
+#X connect 10 0 8 1;
+#X connect 11 0 8 1;
+#X connect 15 1 4 0;
+#X connect 15 1 5 0;
+#X connect 21 1 22 0;
+#X connect 21 1 24 0;
+#X connect 23 1 25 0;
+#X connect 26 1 27 0;
+#X connect 28 1 9 0;
 #X connect 28 1 29 0;
-#X connect 30 1 11 0;
-#X connect 30 1 31 0;
+#X connect 31 0 2 0;
