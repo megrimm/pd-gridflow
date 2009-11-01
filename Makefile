@@ -127,10 +127,3 @@ clean::
 distclean:: clean
 	rm -f config.make config.log config.h gridflow.c.fcs gridflow.h.fcs
 	rm -rf tmp
-
-#--------#--------#--------#--------#--------#--------#--------#--------
-
-help::
-	@echo "do one of the following:";\
-	echo  "make all            compiles gridflow";\
-	echo  "make beep           beeps";\
