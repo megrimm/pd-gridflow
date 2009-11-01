@@ -13,7 +13,7 @@
 #X text 194 101 2 <-- open background image;
 #X text 211 171 1 <-- open foreground image;
 #X obj 387 238 #dim;
-#X obj 387 257 #export_list;
+#X obj 387 257 #to_list;
 #X obj 387 276 unpack f f;
 #X obj 393 295 pack f f;
 #X obj 393 314 # / 2;

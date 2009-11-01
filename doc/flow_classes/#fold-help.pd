@@ -6,7 +6,7 @@ that the same operation (here addition) will be performed on all its
 elements together with the base value. the results are combined back.
 each #fold operation removes a dimension. syntax: #fold <two-input
 operation> <starting value>;
-#X obj 143 249 #export;
+#X obj 143 249 #to_float;
 #X obj 143 274 print values;
 #X text 6 721 some other forms:;
 #X obj 140 722 #fold *;
@@ -20,7 +20,7 @@ operation> <starting value>;
 #X obj 29 170 display;
 #X msg 28 27 1 3 1 3 1 3 1 5;
 #X text 154 24 <-- clicking here creates a grid through [#import];
-#X obj 122 170 #export;
+#X obj 122 170 #to_float;
 #X obj 122 195 print values;
 #X obj 28 137 #fold + \, seed ( 0 0 );
 #X connect 1 0 0 0;

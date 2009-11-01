@@ -4,7 +4,7 @@
 #X obj 22 178 print number_of_dimensions;
 #X obj 22 106 #in;
 #X obj 22 130 #dim;
-#X obj 22 154 #export;
+#X obj 22 154 #to_float;
 #X msg 22 66 open working.jpg;
 #X text 15 37 Outputs grid dimensions (columns \, row \, channels).
 ;
@@ -17,8 +17,8 @@ representing grid dimensions. For example \, a grid sized like dim(240
 #X obj 3 323 doc_o 1;
 #X obj 3 208 doc_c;
 #X obj 103 424 #print;
-#X obj 151 424 #export;
-#X obj 205 424 #export_list;
+#X obj 151 424 #to_float;
+#X obj 205 424 #to_list;
 #X obj 3 424 doc_also;
 #X obj 14 278 doc_ii 0;
 #X obj 14 353 doc_oo 0;

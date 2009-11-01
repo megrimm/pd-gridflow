@@ -23,8 +23,8 @@
 #X obj 255 148 # cos* (100 100);
 #X obj 215 278 #fold min;
 #X obj 295 278 #fold max;
-#X obj 215 297 #export;
-#X obj 295 297 #export;
+#X obj 215 297 #to_float;
+#X obj 295 297 #to_float;
 #X obj 381 129 loadbang;
 #X obj 215 316 nbx 8 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 9
 -262144 -1 -1 0 256;
