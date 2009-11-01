@@ -554,7 +554,7 @@ Feature.add {
 	tag :gem09
 	name "PureData GEM (source code) with m_holdname"
 	uses_feature [:puredata]
-	uses_o ["optional/gem.o"]
+	uses_o ["src/gem.o"]
 	options ["HAVE_GEM"]
 	test proc {
 		c_test %`
@@ -563,7 +563,7 @@ Feature.add {
 Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
-	uses_o ["optional/opencv.o"]
+	uses_o ["src/opencv.o"]
 	uses_so ["-lcv"]
 	options ["HAVE_OPENCV"]
 	defines {{:OPENCV_SHARE_PATH => File.dirname($C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
@@ -574,7 +574,7 @@ Feature.add {
 Feature.add {
 	tag :fftw
 	name "FFTW (Fastest Fourier Transform in the West)"
-	uses_o ["optional/fftw.o"]
+	uses_o ["src/fftw.o"]
 	uses_so ["-lfftw3f","-lfftw3"]
 	options ["HAVE_FFTW"]
 	test proc {
