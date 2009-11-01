@@ -1,16 +1,12 @@
 #N canvas 691 0 568 491 10;
-#X text 143 55 like @redim but always produces a 1-D grid with the
-same total number of elements.;
 #X obj 20 80 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 20 231 print before;
 #X obj 140 233 print after;
 #X obj 20 142 #in;
 #X obj 20 188 #dim;
-#X obj 20 210 #export_list;
 #X obj 103 442 #redim (1);
 #X obj 175 442 #perspective;
-#X obj 140 212 #export_list;
 #X obj 140 190 #dim;
 #X obj 140 169 #ravel;
 #X obj 0 0 doc_h;
@@ -26,15 +22,19 @@ same total number of elements.;
 same total number of elements.;
 #X obj 0 462 doc_f;
 #X msg 20 120 load bluemarble.jpg;
-#X connect 1 0 23 0;
-#X connect 4 0 5 0;
-#X connect 4 0 11 0;
-#X connect 5 0 6 0;
-#X connect 6 0 2 0;
-#X connect 9 0 3 0;
-#X connect 10 0 9 0;
-#X connect 11 0 10 0;
-#X connect 15 1 7 0;
-#X connect 15 1 8 0;
-#X connect 19 1 21 0;
-#X connect 23 0 4 0;
+#X obj 20 210 #to_list;
+#X obj 140 212 #to_list;
+#X text 143 55 like #redim but always produces a 1-D grid with the
+same total number of elements.;
+#X connect 0 0 20 0;
+#X connect 3 0 4 0;
+#X connect 3 0 8 0;
+#X connect 4 0 21 0;
+#X connect 7 0 22 0;
+#X connect 8 0 7 0;
+#X connect 12 1 5 0;
+#X connect 12 1 6 0;
+#X connect 16 1 18 0;
+#X connect 20 0 3 0;
+#X connect 21 0 1 0;
+#X connect 22 0 2 0;
