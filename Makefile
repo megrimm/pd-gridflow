@@ -15,7 +15,7 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o format/main.o
+OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o format/main.o
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),darwin)
@@ -44,7 +44,7 @@ all:: $(PD_LIB) aliases
 
 .SUFFIXES:
 
-H = gridflow.h.fcs
+H = gridflow.hxx.fcs
 
 %.hxx.fcs: %.hxx $(COMMON_DEPS)
 	$(FILT) $< $@
@@ -74,16 +74,15 @@ H = gridflow.h.fcs
 %.e: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -E $< -o $@
 
-.PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
+.PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
 
 src/mmx.asm src/mmx_loader.c: src/mmx.rb
 	$(RUBY) src/mmx.rb src/mmx.asm src/mmx_loader.c
 src/mmx.o: src/mmx.asm
 	nasm -f elf src/mmx.asm -o src/mmx.o
 
-$(PD_LIB): gridflow.c.fcs $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
-		gridflow.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
+$(PD_LIB): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
+	$(CXX) -DPDSUF=\"$(PDSUF)\" $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) $(OBJS2) $(OBJS) -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
