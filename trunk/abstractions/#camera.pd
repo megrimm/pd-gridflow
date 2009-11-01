@@ -29,7 +29,7 @@
 #X obj 768 223 s \$0-width;
 #X obj 673 223 s \$0-height;
 #X obj 673 271 #pack;
-#X obj 673 290 #export_list;
+#X obj 673 290 #to_list;
 #X obj 700 439 makefilename /dev/video%d;
 #X obj 85 419 spigot;
 #X obj 308 579 args (device a -1);

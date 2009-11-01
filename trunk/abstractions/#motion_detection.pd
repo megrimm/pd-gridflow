@@ -66,7 +66,7 @@
 ;
 #X obj 53 275 shunt 2;
 #X obj 173 298 #centroid;
-#X obj 168 342 #export_list;
+#X obj 168 342 #to_list;
 #X obj 163 370 unpack 0 0;
 #N canvas 547 147 477 267 crosshair 0;
 #X obj 12 224 outlet;
