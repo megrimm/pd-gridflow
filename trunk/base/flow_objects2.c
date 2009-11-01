@@ -216,21 +216,18 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	}
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
 	\decl 0 bang ();
-	\decl 0 whole ();
-	\decl 0 xid (t_symbol *t);
+	\decl 0 xid (t_symbol *t, t_symbol *u);
 };
 \def 0 bang () {
 	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	sys_vgui("pd %s xid [winfo id .x%lx.c] \\;\n",name->s_name,long(mom));
+	sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(mom));
 }
-\def 0 whole () {
-	t_canvas *mom = bself->mom;
-	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	sys_vgui("pd %s xid [winfo id .x%lx] \\;\n",  name->s_name,long(mom));
+\def 0 xid (t_symbol *t, t_symbol *u) {
+	outlet_symbol(bself->outlets[0],t);
+	outlet_symbol(bself->outlets[1],u);
 }
-\def 0 xid (t_symbol *t) {outlet_symbol(bself->outlets[0],t);}
-\end class {install("gf/canvas_xid",1,1);}
+\end class {install("gf/canvas_xid",1,2);}
 
 \class GFCanvasHeHeHe : FObject {
 	int n;
