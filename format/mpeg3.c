@@ -22,7 +22,7 @@
 */
 
 #define LIBMPEG_INCLUDE_HERE
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
