@@ -1,17 +1,28 @@
 /* $Id$ */
 
-oct.2009
-[ ] s/^accepts//i
-[ ] s/^receives//i
+0.9.6
 [ ] listflatten-help.pd : [display] bug
 [ ] GridFlow Index dans toutes les fenêtres
+[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
+[ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
+[ ] doc&abs: remove [fork] and other oldisms.
+[ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
+[ ] [#to_literal] missing type
+[ ] [#reinterval] takes no argument
+[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
+[ ] [ascii_to_f] broken?
+[ ] [#make_arrow] (fix and help)
+[ ] [#interval_overlap]
+[ ] [#fade_lin] doesn't use [args]
+[ ] use [args] everywhere it should
+[ ] [args] have to be connected to a [t a] in common with first inlet...
+[ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
+
+later
 [ ] [route3] is like [route] but doesn't trim.
 [ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
-[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] [pack] trigger_by (choose which inlets are hot)
-[ ] doc&abs: remove [fork] and other oldisms.
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
@@ -19,8 +30,6 @@ oct.2009
 [ ] doc attributes: [doc_a] [doc_aa] ?
 [ ] [doc_ii] links to [doc_cc]
 [ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
-[ ] [#fade_lin] doesn't use [args]
-[ ] use [args] everywhere it should
 [ ] distinguish messages vs atoms in this manual
     e.g. [doc_aa] would contain something like [doc_m]
 		but wouldn't have [doc_m] as a subnode.
@@ -28,26 +37,11 @@ oct.2009
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
     to prevent a lot of redraw bugs.
-[ ] [doc_m] compound meta-methods: e.g. <hpgl> = the set of all selectors (method signatures) accepted in an HPGL stream.
-[ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
-[ ] [#window] has no outlet
-[ ] [#to_literal] missing type
-[ ] [#swap] takes no argument
-[ ] [#reinterval] takes no argument
-[ ] [var.#] takes no argument
-[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
-[ ] [ascii_to_f] broken?
-[ ] [#make_arrow]
-
-PFOAC/BNL 2009
-[ ] [#interval_overlap]
-
-0.9.5
 [ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] reintroduce set_mode(0)
-[ ] get rid of architecture.html
+[ ] get rid of doc/stuff.txt and doc/*.html       */
 [ ] support "get" in abstractions
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] bugs roman
@@ -61,7 +55,6 @@ PFOAC/BNL 2009
 [ ] Accumulation of Background Statistics
 [ ] cvEstimateRigidTransform
 [ ] compenser pour les ajustements progressifs ou soudains de luminosite
-[ ] cvEllipse
 [ ] cvApproxPoly pour un seul poly à la fois
 [ ] cvMeanShift (?)
 [ ] cvCamShift (?)
@@ -77,40 +70,13 @@ PFOAC/BNL 2009
 	être un edge-detect d'une image plus vieille).
 [ ] cvOpticalFlow
 [ ] added [#out png]
-
-whatever version
 [ ] [cv.split]
-[ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
-[ ] ...
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] with pwc, 720x480 crashes
 [ ] fix SDL modifiers
 [ ] fix quoting in [display]
-
-+-------+-------+-------+-------+-------+-------+-------+-------
-Common Video Framework :
-
-[ ] a common library for all video IO (cameras, files, web), which is the
-    project of Thomas H and Johannes.
-
-[ ] a six-way converter for GEM/PDP/GridFlow. There are already
-    converters between GEM and PDP and between GEM and GridFlow but
-    there is none between PDP and GridFlow and then some things could
-    be easier to install and run in a cross-platform way.
-
-[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of
-    having objects for that.
-
-[ ] threads for video?
-[ ] GEM geos vs 3DP: how do they compare?
-[ ] is there anything else deserving to be unified between the video plugins?
-[ ] distinguish between C++ types Grid* and GridFlow*
-[ ] make [#draw_points] [#draw_rect] [#edit_polygon]
-[ ] look at camorama
-[ ] OpenCV
-[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
 [ ] [for] has a bug in "from".
 [ ] #out x11 doesn't accept 0-sized grids
 [ ] #print   doesn't accept 0-sized grids
@@ -118,9 +84,20 @@ Common Video Framework :
 [ ] #inner could optimise permutation matrices?
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
-
-[ ] update doc
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
+[ ] make [#draw_points] [#draw_rect] [#edit_polygon]
+[ ] distinguish between C++ types Grid* and GridFlow*
+
+Common Video Framework
+[ ] a common library for all video IO (cameras, files, web), which is the project of Thomas H and Johannes.
+[ ] a six-way converter for GEM/PDP/GridFlow. There are already converters between GEM and PDP and between GEM and GridFlow
+    but there is none between PDP and GridFlow and then some things could be easier to install and run in a cross-platform way.
+[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
+[ ] threads for video?
+[ ] GEM geos vs 3DP: how do they compare?
+[ ] is there anything else deserving to be unified between the video plugins?
+[ ] look at camorama
+[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
 
 malloc alignment = 4 mod 8 (en utilisant valgrind)
 
@@ -177,35 +154,22 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
 [078] "unsupported codec" bogus errors.
-[025] format_grid: write test for other bpv's
-[030] FormatGrid: not properly tested (crashes sometimes)
-[031] stdout should be redirected if bridge is present
 [034] format/mpeg3.c,quicktime.c might cause lockup on exit
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
 [040] GRID_FINISH triggered while backstore ???
 [079] can trap segfaults in codecs of libquicktime.
-[090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
 [041] what would be a way to make GF work well with Pd's idea of a list?
 [045] write unit tests about required functionality
 [046] write unit tests about error checking
 [047] make system to ensure everything is working before a release.
-[048] potential issues between fork() and X11 ?
 [054] it's possible to crash by sending data in two inlets of a same object at once
-
---- make the development process more test-driven:
-    * file every feature request and bug report into base/test.rb so
-      that gridflow fails those tests THEN make gridflow pass those tests.
-
-===================
 
 Installation
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] find a good profiler (not gridflow's internal...)
-[ ] cross-compile:
-	http://www.libsdl.org/extras/win32/cross/
-	http://rooster.stanford.edu/~ben/linux/cross.php
+[ ] cross-compile: http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
 
 Documentation
 [ ] add credits
@@ -237,10 +201,8 @@ Architecture
 	specified part of the grid is received.
 [0.9] accounting: grids messages packets numbers bytes copybytes
 [0.9] memory profiling
-[ ] add a "query" class for debugging other objects?
-    (would be able to extract extra info from each object/class)
-[ ] add a GridFlow::LaterException or something
-    (which tells to retry later with the same packet because another
+[ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
+[ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] interpret nested lists as n-dimensional.
 [0.9] MMX memcpy() ?
@@ -258,7 +220,6 @@ Computation Objects
 [ ] #join: option swap
 [ ] #matrix_solve, #replace_if, #random_select, #markov_chain, #splice
 [ ] #draw_polygon smoothly
-[ ] #store4 (interpolate)
 [ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
 [ ] string operations to compensate for the feebleness of PD in that area. this includes [#sprintf].
