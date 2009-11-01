@@ -1,27 +1,26 @@
 /* $Id$ */
 
 0.9.6
+[ ] ( 1 1 ) -> (1 1) wherever possible
+[ ] go back in all help files and fill in whatever is missings
 [ ] listflatten-help.pd : [display] bug
 [ ] GridFlow Index dans toutes les fenêtres
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [@convolve] and stuff can't handle [args] that come out as grid literals and have to become setter messages.
-[ ] doc&abs: remove [fork] and other oldisms.
 [ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
-[ ] [#to_literal] missing type
 [ ] [#reinterval] takes no argument
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [ascii_to_f] broken?
 [ ] [#make_arrow] (fix and help)
 [ ] [#interval_overlap]
-[ ] [#fade_lin] doesn't use [args]
-[ ] use [args] everywhere it should
+[ ] use [args] everywhere it should be
 [ ] [args] have to be connected to a [t a] in common with first inlet...
 [ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
 
-later
+unsorted
 [ ] [route3] is like [route] but doesn't trim.
 [ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
+[ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
@@ -42,7 +41,7 @@ later
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] reintroduce set_mode(0)
 [ ] get rid of doc/stuff.txt and doc/*.html       */
-[ ] support "get" in abstractions
+[ ] support "get" in abstractions... automatically, through [args] ?
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] bugs roman
 [ ] add claude's fixes
@@ -52,25 +51,6 @@ later
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance
     trigger_mode? trigger, trigger_delay
-[ ] Accumulation of Background Statistics
-[ ] cvEstimateRigidTransform
-[ ] compenser pour les ajustements progressifs ou soudains de luminosite
-[ ] cvApproxPoly pour un seul poly à la fois
-[ ] cvMeanShift (?)
-[ ] cvCamShift (?)
-       Ça s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
-       Celui-ci peut être représenté comme une grid de 5 éléments pour faire plus facile
-       (contrairement à cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que ça).
-[ ] cvCalcBackProject (?)
-[ ] cvCalcHist, cvCreateHist.
-[ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
-[ ] SnakeImage (what is the concept of 'energy', squared luminosity?)
-        J'aurais supposé que oui, mais c'est juste trois mesures reliées à trois forces qui "shapent" la courbe:
-	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
-	être un edge-detect d'une image plus vieille).
-[ ] cvOpticalFlow
-[ ] added [#out png]
-[ ] [cv.split]
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement negative indices in [listelement] and [listsublist]
@@ -78,15 +58,34 @@ later
 [ ] fix SDL modifiers
 [ ] fix quoting in [display]
 [ ] [for] has a bug in "from".
+
+Later
 [ ] #out x11 doesn't accept 0-sized grids
-[ ] #print   doesn't accept 0-sized grids
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
-ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
-ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
-[ ] make [#draw_points] [#draw_rect] [#edit_polygon]
+[ ] make [#draw_points] [#edit_polygon]
 [ ] distinguish between C++ types Grid* and GridFlow*
+[ ] add [#out png]
+[ ] Accumulation of Background Statistics
+[ ] compenser pour les ajustements progressifs ou soudains de luminosite
+
+OpenCV
+[ ] cvOpticalFlow
+[ ] [cv.split]
+[ ] cvEstimateRigidTransform
+[ ] cvApproxPoly pour un seul poly à la fois
+[ ] cvMeanShift, cvCamShift (?)
+       cvCamShift s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
+       Celui-ci peut être représenté comme une grid de 5 éléments pour faire plus facile
+       (contrairement à cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que ça).
+[ ] cvCalcBackProject (?)
+[ ] cvCalcHist, cvCreateHist.
+[ ] SnakeImage (what is the concept of 'energy', squared luminosity?)
+        J'aurais supposé que oui, mais c'est juste trois mesures reliées à trois forces qui "shapent" la courbe:
+	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
+	être un edge-detect d'une image plus vieille).
+[ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
 Common Video Framework
 [ ] a common library for all video IO (cameras, files, web), which is the project of Thomas H and Johannes.

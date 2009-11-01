@@ -3,6 +3,7 @@
 version 0.9.6 (2009.11...):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
+ * documented several dozen undocumented classes
  * added [gf/canvas_filename] [gf/string_replace] [gf/canvas_count]
  * added [gf/canvas_getpos] [gf/canvas_setpos] [gf/canvas_edit_mode]
  * added [gf/canvas_setgop] [gf/canvas_xid] [gf/canvas_loadbang] etc
@@ -17,7 +18,11 @@ version 0.9.6 (2009.11...):
  * [#window]: added outlet
  * [#swap]: added optional argument
  * [var.#]: added optional argument
-
+ * [#spread]: added optional argument
+ * [#to_literal]: write numbertype
+ * [#fade_lin]: accept grid args
+ * [#posterize]: made the optional argument really optional...
+ 
 version 0.9.5 (2009.10.18):
 
  * added [gf.print] (aliased to [print])
