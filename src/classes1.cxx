@@ -1,5 +1,5 @@
 /*
-	$Id$
+	$Id: flow_objects.c 4548 2009-10-31 20:26:25Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2009 by Mathieu Bouchard
@@ -403,9 +403,7 @@ GRID_INLET(0) {
 // takes the backstore of a grid and puts it back into place. a backstore
 // is a grid that is filled while the grid it would replace has not
 // finished being used.
-static void snap_backstore (PtrGrid &r) {
-	if (r.next) {r=r.next.p; r.next=0;}
-}
+static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
 
 template <class T> void GridStore::compute_indices(T *v, long nc, long nd) {
 	for (int i=0; i<nc; i++) {
