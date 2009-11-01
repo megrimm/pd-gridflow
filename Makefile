@@ -139,7 +139,4 @@ help::
 	echo  "make beep           beeps";\
 	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
 
-#--------#--------#--------#--------#--------#--------#--------#--------
 
-kloc::
-	wc configure base/*.rb
