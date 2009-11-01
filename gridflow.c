@@ -585,9 +585,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = 0;
-#ifdef HAVE_HOLDNAME
 	CPPExtern::m_holdname=0;
-#endif
 #endif
 
 	while (j<argc) {
