@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-COMMON_DEPS = config.make Makefile base/source_filter.rb
+# COMMON_DEPS = config.make Makefile src/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -15,9 +15,9 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = base/grid.o base/flow_objects.o base/flow_objects2.o base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
+OBJS2 = src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o format/main.o
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
-FILT = $(RUBY) -w base/source_filter.rb
+FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),darwin)
   CFLAGS += -mmacosx-version-min=10.4
   LDSOFLAGS += -headerpad_max_install_names
@@ -46,7 +46,9 @@ all:: $(PD_LIB) aliases
 
 H = gridflow.h.fcs
 
-%.h.fcs: %.h $(COMMON_DEPS)
+%.hxx.fcs: %.hxx $(COMMON_DEPS)
+	$(FILT) $< $@
+%.cxx.fcs: %.cxx $(COMMON_DEPS) $(H)
 	$(FILT) $< $@
 %.c.fcs: %.c $(COMMON_DEPS) $(H)
 	$(FILT) $< $@
@@ -54,28 +56,30 @@ H = gridflow.h.fcs
 	$(FILT) $< $@
 %.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -c $< -o $@
-%.1.o: %.c.fcs $(COMMON_DEPS) $(H)
+%.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+	$(CXX) $(CFLAGS) -c $< -o $@
+%.1.o: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS1 -c $< -o $@
-%.2.o: %.c.fcs $(COMMON_DEPS) $(H)
+%.2.o: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS2 -c $< -o $@
-%.3.o: %.c.fcs $(COMMON_DEPS) $(H)
+%.3.o: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS3 -c $< -o $@
-%.4.o: %.c.fcs $(COMMON_DEPS) $(H)
+%.4.o: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 
-%.s: %.c.fcs $(COMMON_DEPS) $(H)
+%.s: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -S $< -o $@
-%.e: %.c.fcs $(COMMON_DEPS) $(H)
+%.e: %.cxx.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -E $< -o $@
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
 
-base/mmx.asm base/mmx_loader.c: base/mmx.rb
-	$(RUBY) base/mmx.rb base/mmx.asm base/mmx_loader.c
-base/mmx.o: base/mmx.asm
-	nasm -f elf base/mmx.asm -o base/mmx.o
+src/mmx.asm src/mmx_loader.c: src/mmx.rb
+	$(RUBY) src/mmx.rb src/mmx.asm src/mmx_loader.c
+src/mmx.o: src/mmx.asm
+	nasm -f elf src/mmx.asm -o src/mmx.o
 
 $(PD_LIB): gridflow.c.fcs $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
@@ -121,7 +125,7 @@ abstractions/inv\*.pd: abstractions/inv0x2a.pd
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs \
+	rm -f $(OBJS2) $(OBJS) src/*.fcs format/*.fcs optional/*.fcs \
 		$(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
 distclean:: clean

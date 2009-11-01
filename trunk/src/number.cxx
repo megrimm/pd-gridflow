@@ -1,5 +1,5 @@
 /*
-	$Id$
+	$Id: number.c 4452 2009-10-27 15:59:57Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2009 by Mathieu Bouchard

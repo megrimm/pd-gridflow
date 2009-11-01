@@ -310,7 +310,7 @@ Feature.add {
 Feature.add {
 	tag :mmx
 	uses_feature [:pentium]
-	uses_o ["base/mmx.o","base/mmx_loader.o"]
+	uses_o ["src/mmx.o","src/mmx_loader.o"]
 	name "MMX-compatible CPU (using NASM)"
 	options ["HAVE_MMX"]
 	test proc { #!@#$ isn't 64-bit-compatible

@@ -1,5 +1,5 @@
 =begin
-	$Id$
+	$Id: mmx.rb 3638 2008-04-21 04:31:20Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2008 by Mathieu Bouchard
