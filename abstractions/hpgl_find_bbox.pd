@@ -14,7 +14,7 @@
 #X obj 303 215 # max;
 #X obj 233 147 t a a;
 #X obj 104 125 t b b;
-#X obj 104 251 @join 0;
+#X obj 104 251 #join 0;
 #X obj 104 232 #redim (1 2);
 #X obj 274 234 #redim (1 2);
 #X msg 341 196 -999999 -999999;

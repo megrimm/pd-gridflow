@@ -11,7 +11,7 @@
 #X obj 178 12 loadbang;
 #X obj 18 311 # *>>8;
 #X obj 18 330 # >> 8;
-#X obj 177 88 @join 0 (1);
+#X obj 177 88 #join 0 (1);
 #X obj 153 311 #fold *;
 #X obj 334 94 #unpack 3;
 #X obj 48 284 #convolve (1 1 # 1) \, wrap 0;
@@ -26,8 +26,8 @@
 #X obj 18 245 shunt;
 #X obj 457 228 #transpose;
 #X obj 183 129 # / 2;
-#X obj 334 209 @join 0 (1 1 # 1);
-#X obj 457 209 @join 0 (1 1 # 1);
+#X obj 334 209 #join 0 (1 1 # 1);
+#X obj 457 209 #join 0 (1 1 # 1);
 #X msg 146 44 3 3;
 #X obj 57 245 != 1;
 #X obj 57 148 != 1;

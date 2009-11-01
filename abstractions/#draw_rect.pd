@@ -11,7 +11,7 @@
 #X obj 12 110 route outline;
 #X obj 245 135 #store;
 #X obj 245 116 t b f;
-#X obj 225 240 @join 0;
+#X obj 225 240 #join 0;
 #X obj 228 220 t a a;
 #X obj 267 220 # + (1 1 1 1 -1 -1 -1 -1);
 #X obj 98 231 #draw_polygon put;

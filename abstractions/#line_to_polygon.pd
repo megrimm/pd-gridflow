@@ -15,7 +15,7 @@
 #X obj 265 157 loadbang;
 #X obj 61 95 #reverse;
 #X obj 45 76 #t;
-#X obj 45 126 @join 0;
+#X obj 45 126 #join 0;
 #X obj 172 222 display;
 #X obj 75 216 #outer *;
 #X msg 75 197 -1 -1 1 1;
