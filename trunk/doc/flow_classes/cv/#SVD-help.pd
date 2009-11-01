@@ -1,5 +1,5 @@
 #N canvas 335 0 568 576 10;
-#X obj 0 0 doc_h;
+#X obj 0 0 doc_h cv/;
 #X obj 0 547 doc_f;
 #X obj 19 160 cv/#SVD;
 #X text 200 46 Singular Value Decomposition;
