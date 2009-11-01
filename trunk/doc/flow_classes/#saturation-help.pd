@@ -15,7 +15,6 @@
 #X msg 204 198 3 # \$1;
 #X obj 47 134 #in babbage.jpg;
 #X obj 204 224 #color -256 512 1;
-#X text 200 393 Accepts original image;
 #X obj 47 203 #saturation -128;
 #X text 200 331 Saturation value \, can be negative.;
 #X obj 0 0 doc_h;
@@ -32,6 +31,7 @@
 #X obj 97 415 doc_m i1 grid;
 #X obj 97 477 doc_m o0 grid;
 #X obj 0 507 doc_f;
+#X text 200 393 image to be modified;
 #X connect 1 0 4 0;
 #X connect 4 0 0 0;
 #X connect 6 0 8 0;
@@ -41,9 +41,9 @@
 #X connect 10 0 11 0;
 #X connect 11 0 13 0;
 #X connect 12 0 14 0;
-#X connect 13 0 16 0;
-#X connect 14 0 16 1;
-#X connect 16 0 1 0;
-#X connect 27 1 17 0;
-#X connect 28 1 15 0;
-#X connect 29 1 26 0;
+#X connect 13 0 15 0;
+#X connect 14 0 15 1;
+#X connect 15 0 1 0;
+#X connect 26 1 16 0;
+#X connect 27 1 31 0;
+#X connect 28 1 25 0;
