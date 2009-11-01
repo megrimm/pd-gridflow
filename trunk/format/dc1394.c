@@ -23,7 +23,7 @@
 
 #define DC1394_INCLUDE_HERE
 #include <libraw1394/raw1394.h>
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 
 /* speeds are numbered 0 to 5, worth 100<<speednum */
 /* framerates are numbers 32 to 39, worth 1.875<<(frameratenum-32) */

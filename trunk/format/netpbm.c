@@ -22,7 +22,7 @@
 */
 
 #define NETPBM_INCLUDE_HERE
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 
 \class FormatNetPBM : Format {
 	struct pam inpam, outpam;

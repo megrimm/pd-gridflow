@@ -22,7 +22,7 @@
 
 	Note: some of the code was adapted from PDP's (the XVideo stuff).
 */
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

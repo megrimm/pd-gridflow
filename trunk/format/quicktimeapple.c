@@ -24,7 +24,7 @@
 #include <QuickTime/QuickTime.h>
 #include <QuickTime/Movies.h>
 #include <QuickTime/QuickTimeComponents.h>
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>

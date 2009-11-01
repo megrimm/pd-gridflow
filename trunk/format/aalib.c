@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 #define aa_hardwareparams aa_hardware_params
 #include <aalib.h>
 #include <map>
