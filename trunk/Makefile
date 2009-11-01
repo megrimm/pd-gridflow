@@ -84,7 +84,7 @@ src/mmx.o: src/mmx.asm
 	nasm -f elf src/mmx.asm -o src/mmx.o
 
 $(PD_LIB): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) $(OBJS2) $(OBJS) -o $@
+	$(CXX) -DPDSUF=\"$(PDSUF)\" $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
@@ -126,8 +126,7 @@ abstractions/inv\*.pd: abstractions/inv0x2a.pd
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS)src/*.fcs format/*.fcs optional/*.fcs \
-		$(patsubst %,deprecated/@%.pd,$(DEPRECATED))
+	rm -f $(OBJS2) $(OBJS)src/*.fcs format/*.fcs $(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
 distclean:: clean
 	rm -f config.make config.log config.h
