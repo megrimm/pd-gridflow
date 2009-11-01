@@ -5,10 +5,13 @@
 #X obj 17 92 # rand;
 #X obj 17 112 # - 2;
 #X obj 137 162 # +;
-#X obj 124 68 # >> 1;
+#X obj 124 88 # >> 1;
 #X obj 17 32 t a a;
 #X obj 137 182 outlet;
 #X obj 124 32 inlet;
+#X obj 220 17 loadbang;
+#X obj 220 36 args (r a 5);
+#X obj 124 59 t a;
 #X connect 0 0 7 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -18,5 +21,9 @@
 #X connect 6 0 4 1;
 #X connect 7 0 1 0;
 #X connect 7 1 5 1;
-#X connect 9 0 6 0;
-#X connect 9 0 2 1;
+#X connect 9 0 12 0;
+#X connect 10 0 11 0;
+#X connect 11 0 12 0;
+#X connect 11 1 7 0;
+#X connect 12 0 2 1;
+#X connect 12 0 6 0;
