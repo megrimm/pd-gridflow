@@ -13,13 +13,10 @@
 -262144 -1 -1 2.1416 256;
 #X obj 356 96 nbx 8 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0 10
 -262144 -1 -1 45 256;
-#X obj 306 154 #redim ( 2 2 );
 #X obj 269 177 #store;
 #X obj 306 133 #pack 3 float32;
 #X obj 14 161 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 200 283 Number types are: uint8 \, int16 \, int32 \, int64
-\, float32 \, float64. see doc/architecture.html for more info.;
 #X obj 126 157 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 12 26 Changes an entity of one data type into another. Returns
@@ -46,22 +43,25 @@ towards zero);
 #X text 200 490 conversion to an int type may wrap (same as some #
 & or some # %);
 #X obj 0 535 doc_f;
+#X text 200 283 Number types are: uint8 \, int16 \, int32 \, int64
+\, float32 \, float64. see doc/numtype.pd for more info.;
+#X obj 306 154 #redim (2 2);
 #X connect 1 0 0 0;
 #X connect 4 0 2 0;
 #X connect 5 0 3 0;
 #X connect 6 0 1 0;
 #X connect 7 0 5 0;
-#X connect 8 0 12 0;
-#X connect 9 0 13 0;
-#X connect 10 0 13 1;
-#X connect 11 0 12 1;
-#X connect 12 0 4 0;
-#X connect 13 0 11 0;
-#X connect 14 0 6 0;
-#X connect 16 0 7 0;
-#X connect 18 0 13 2;
-#X connect 27 1 15 0;
-#X connect 28 1 19 0;
-#X connect 29 1 30 0;
-#X connect 29 1 31 0;
-#X connect 29 1 32 0;
+#X connect 8 0 11 0;
+#X connect 9 0 12 0;
+#X connect 10 0 12 1;
+#X connect 11 0 4 0;
+#X connect 12 0 33 0;
+#X connect 13 0 6 0;
+#X connect 14 0 7 0;
+#X connect 16 0 12 2;
+#X connect 25 1 32 0;
+#X connect 26 1 17 0;
+#X connect 27 1 28 0;
+#X connect 27 1 29 0;
+#X connect 27 1 30 0;
+#X connect 33 0 11 1;
