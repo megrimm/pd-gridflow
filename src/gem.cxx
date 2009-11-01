@@ -1,5 +1,5 @@
 /*
-	$Id$
+	$Id: gem.c 4621 2009-11-01 21:18:17Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2009 by Mathieu Bouchard

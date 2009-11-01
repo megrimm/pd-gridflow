@@ -1,5 +1,5 @@
 /*
-	$Id$
+	$Id: opencv.c 4556 2009-11-01 00:40:16Z matju $
 
 	GridFlow
 	Copyright (c) 2001-2009 by Mathieu Bouchard
