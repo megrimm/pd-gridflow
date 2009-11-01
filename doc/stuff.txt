@@ -122,3 +122,23 @@ Introduction
 	things not directly related to raster pictures (e.g. sound recordings).
 	Those are all kinds of things you could actually develop _within_ the
 	PureData / GridFlow framework. You don't need to wait for me.
+
+
+GridFlow Release
+
+dir=gridflow-0.9.6; tag=gridflow_0_9_6
+svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
+svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
+chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
+scp $dir.tar.gz gridflow@artengine.ca:public_html/download
+mv $dir.tar.gz /home/matju/GridFlow
+cd doc/homepage; pico index.html; make install
+
+download somewhere else and try to compile
+pd-announce mlist : post release
+
+Committed revision 4239.
+Warning: 'post-commit' hook failed with error output:
+/home/svn/gridflow/hooks/post-commit: line 49: /home/svn/gridflow/hooks/svn-mailer.log: Permission denied
+
+svn copy svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ https://pure-data.svn.sourceforge.net/svnroot/pure-data/trunk/externals/gridflow/
