@@ -21,7 +21,7 @@
 #X obj 283 157 #grade;
 #X obj 284 178 #print GR;
 #X obj 361 153 #print DIST;
-#X obj 376 229 #export;
+#X obj 376 229 #to_float;
 #X obj 376 191 # < 16;
 #X obj 63 372 #draw_rect put (3 # 255 0 0) (2 2 #) \, outline 1;
 #X obj 33 279 shunt 2;

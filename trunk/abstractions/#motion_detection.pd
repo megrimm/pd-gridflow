@@ -95,7 +95,7 @@
 #X obj 333 278 #fold +;
 #X obj 333 300 #fold +;
 #X obj 333 320 #fold +;
-#X obj 333 340 #export;
+#X obj 333 340 #to_float;
 #X obj 333 360 / 100;
 #X obj 398 66 inlet crosshair;
 #X obj 333 418 outlet displaced_pixels;

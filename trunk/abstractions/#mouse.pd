@@ -41,7 +41,7 @@
 #X text 433 9 list of 3 toggles;
 #X text 434 23 which buttons should be active;
 #X obj 345 107 #fold +;
-#X obj 345 131 #export;
+#X obj 345 131 #to_float;
 #X obj 125 126 &;
 #X text 151 126 check only wanted buttons;
 #X obj 305 33 loadbang;
