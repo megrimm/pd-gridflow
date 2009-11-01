@@ -13,8 +13,8 @@ the grid has less than two dimensions it will display all grid data.
 #X obj 71 251 #print paprika;
 #X text 200 409 Incoming grid.;
 #X obj 102 582 #dim;
-#X obj 136 582 #export;
-#X obj 191 582 #export_list;
+#X obj 136 582 #to_float;
+#X obj 191 582 #to_list;
 #X obj 282 582 print;
 #X text 200 431 select between base 2 \, 8 \, 10 \, 16;
 #X text 200 453 stop printing after that number of rows;

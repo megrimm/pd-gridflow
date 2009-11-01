@@ -21,7 +21,7 @@ may be split. That kind of operation is already done implicitly in
 many cases (e.g. sending an integer or list to a grid-receiving inlet)
 but using this object you have greater flexibility on the conversion.
 ;
-#X text 200 421 This equivalent to filtering the grid through an [#export]
+#X text 200 421 This equivalent to filtering the grid through an [#to_float]
 object. It is over ten times faster.;
 #X msg 157 125 per_message;
 #X msg 158 147 240 320 3;

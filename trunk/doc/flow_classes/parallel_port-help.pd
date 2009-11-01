@@ -33,7 +33,7 @@ for the pinouts + more;
 #X obj 7 229 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 10
 -241291 -1 -1 0 256;
 #X obj 7 191 #fold +;
-#X obj 7 210 #export;
+#X obj 7 210 #to_float;
 #X obj 7 172 # << (0 1 2 3 4 5 6 7);
 #X obj 7 153 #pack 8 \, \, \, \, \, \, \, \, \, \, \, \, \, \, \, \,
 ;
