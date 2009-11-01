@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-# COMMON_DEPS = config.make Makefile base/source_filter.rb
+COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -93,7 +93,7 @@ install::
 	@echo -e "2. delete the old gridflow.pd_linux"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
-DEPRECATED = camera_control motion_detection color mouse fade scale_to \
+DEPRECATED = motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out
 
