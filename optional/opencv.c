@@ -201,6 +201,9 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 };
 \end class {}
 
+// from flow_objects.c
+static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
+
 \class CvOp2 : CvOp1 {
 	PtrGrid r;
 	\constructor (Grid *r=0) {this->r = r?r:new Grid(new Dim(),int32_e,true);}
@@ -209,6 +212,7 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 	\grin 1
 };
 GRID_INLET(0) {
+	snap_backstore(r);
 	SAME_TYPE(in,r);
 	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
 	in->set_chunk(0);
@@ -488,8 +492,6 @@ GRID_INLET(0) {
 } GRID_END
 
 \end class {install("cv/#KMeans",2,1);}
-
-
 
 \class CvCornerHarris : CvOp1 {
 	\attr int block_size;
