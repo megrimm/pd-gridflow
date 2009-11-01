@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2008 by Mathieu Bouchard
+	Copyright (c) 2001-2009 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "../gridflow.h.fcs"
+#include "../src/gridflow.hxx.fcs"
 #include <string>
 #include <map>
 #include <errno.h>
@@ -175,7 +175,7 @@ struct GridHeader {
 	if (headerless_dim) {
 		dim = headerless_dim;
 	} else {
-		fread(&head,1,8,f);
+		if (fread(&head,1,8,f)<8) RAISE("can't read header");
 		uint8 *m = (uint8 *)head.magic;
 		if (strncmp((char *)m,"\x7fgrid",5)==0) endian=1; else
 		if (strncmp((char *)m,"\x7fGRID",5)==0) endian=0; else
@@ -193,13 +193,14 @@ struct GridHeader {
 		if (head.reserved!=0) RAISE("unsupported grid reserved field %d in file",head.reserved);
 		if (head.dimn>16) RAISE("unsupported grid number of dimensions %d in file",head.dimn);
 		int32 dimv[head.dimn];
-		fread(dimv,head.dimn,4,f);
+		;
+		if (fread(dimv,1,head.dimn*4,f)<size_t(head.dimn*4)) RAISE("can't read dimension list");
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
 		dim = new Dim(head.dimn,dimv);
 	}
 	GridOutlet out(this,0,dim,nt);
 	long nn = dim->prod();
-#define FOO(T) {T data[nn]; fread(data,nn,sizeof(T),f); out.send(nn,(T *)data);}
+#define FOO(T) {T data[nn]; if (fread(data,1,nn*sizeof(T),f)<nn*sizeof(T)) RAISE("can't read grid data (body)"); out.send(nn,(T *)data);}
 TYPESWITCH(nt,FOO,)
 #undef FOO
 	SUPER;
