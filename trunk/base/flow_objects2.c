@@ -290,14 +290,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	post("doesn't work with DesireData");
 #endif
 }
-extern t_widgetbehavior text_widgetbehavior;
 \def 0 box_dotted (int r, int g, int b) {
 #ifndef DESIREDATA
 	BEGIN
 	wire_each(wire,ouch) {
 		t_object *t = (t_object *)wire->to;
 		int x1,y1,x2,y2;
-		text_widgetbehavior.w_getrectfn((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
+		gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
 		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(t));
 		sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
 			long(can),x1,y1,x2,y2,long(t));
