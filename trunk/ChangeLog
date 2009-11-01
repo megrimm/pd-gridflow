@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.6 (2009.10...):
+version 0.9.6 (2009.11...):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
  * added [gf/canvas_filename] [gf/string_replace] [gf/canvas_count]
@@ -14,6 +14,9 @@ version 0.9.6 (2009.10...):
  * [#in x11]: fixed some bugs and set out_size to a sensible default.
  * removed [#camera_control], [#camera_old], [#centroid_in_pd]
  * removed [count], [condition]
+ * [#window]: added outlet
+ * [#swap]: added optional argument
+ * [var.#]: added optional argument
 
 version 0.9.5 (2009.10.18):
 
