@@ -9,8 +9,6 @@
 #X text 99 190 This displays the image as YUV:;
 #X text 23 26 Converts an RGB color model image to a YUV color model
 image.;
-#X text 200 360 Displays an image in YUV format.;
-#X text 200 298 Receives an image in RGB format.;
 #X obj 226 152 #out window;
 #X obj 0 0 doc_h;
 #X obj 3 268 doc_i 1;
@@ -21,10 +19,12 @@ image.;
 #X obj 0 392 doc_f;
 #X obj 97 298 doc_m i0 grid;
 #X obj 97 360 doc_m o0 grid;
+#X text 200 298 image in RGB format.;
+#X text 200 360 image in YUV format.;
 #X connect 1 0 2 0;
 #X connect 2 0 4 0;
-#X connect 2 0 10 0;
+#X connect 2 0 8 0;
 #X connect 3 0 2 0;
 #X connect 4 0 0 0;
-#X connect 18 1 9 0;
-#X connect 19 1 8 0;
+#X connect 16 1 18 0;
+#X connect 17 1 19 0;
