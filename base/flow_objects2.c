@@ -306,8 +306,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 wire_dotted (int r, int g, int b);
 	\decl 0 wire_hide ();
 	\decl 0  box_dotted (int r, int g, int b);
-	\decl 0  box_align_same_x (int x, int y_start, int y_spacing);
-	\decl 0  box_align_same_y (int y, int x_start, int x_spacing);
+	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);
 };
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
@@ -355,14 +354,17 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	return a->te_ypix < b->te_ypix;
 }
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
-\def 0 box_align_same_x (int x, int y_start, int y_spacing) {
+\def 0 box_align (t_symbol *dir, int x_start, int y_start, int incr) {
+	int x=x_start, y=y_start;
+	bool horiz;
+	if (dir==&s_x) horiz=false; else
+	if (dir==&s_y) horiz=true;  else RAISE("$1 must be x or y");
 #ifndef DESIREDATA
 	std::vector<t_object *> v;
 	BEGIN
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
 	sort(v.begin(),v.end(),comment_sort_y_lt);
-	int y = y_start;
 	foreach(tt,v) {
 		t_object *t = *tt;
 		if (t->te_xpix!=x || t->te_ypix!=y) {
@@ -374,36 +376,11 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 		}
 		int x1,y1,x2,y2;
 		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
-		y += y2-y1+y_spacing;
+		if (horiz) x += x2-x1+incr;
+		else       y += y2-y1+incr;
 	}
-	outlet_float(bself->outlets[0],y-y_start);
-#else
-	post("doesn't work with DesireData");
-#endif
-}
-\def 0 box_align_same_y (int y, int x_start, int x_spacing) {
-#ifndef DESIREDATA
-	std::vector<t_object *> v;
-	BEGIN
-	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
-	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
-	sort(v.begin(),v.end(),comment_sort_y_lt);
-	int x = x_start;
-	foreach(tt,v) {
-		t_object *t = *tt;
-		if (!t) RAISE("WTF.");
-		if (t->te_xpix!=x || t->te_ypix!=y) {
-			gobj_vis((t_gobj *)t,can,0);
-			t->te_xpix=x;
-			t->te_ypix=y;
-			gobj_vis((t_gobj *)t,can,1);
-			canvas_fixlinesfor(can,t);
-		}
-		int x1,y1,x2,y2;
-		gobj_getrect((t_gobj *)t,can,&x1,&y1,&x2,&y2);
-		x += x2-x1+x_spacing;
-	}
-	outlet_float(bself->outlets[0],x-x_start);
+	if (horiz) outlet_float(bself->outlets[0],y-y_start);
+	else       outlet_float(bself->outlets[0],x-x_start);
 #else
 	post("doesn't work with DesireData");
 #endif
