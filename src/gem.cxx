@@ -41,7 +41,6 @@ void GridToPixHelper::render(GemState *state) {}
 //  in 1: grid
 // out 0: gem
 \class GridToPix : FObject {
-	GridToPixHelper *helper;
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
@@ -60,9 +59,6 @@ void GridToPixHelper::render(GemState *state) {}
 		*(int*)im.data = 0x0000ff;
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
-		helper = new GridToPixHelper;
-		helper->boss = this;
-		bself->gemself = helper;
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -98,10 +94,7 @@ GRID_INLET(1) {
 	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bit_packing->pack(sx,data,buf+y*sxc);}
         else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
 } GRID_END
-\end class {
-	install("#to_pix",2,0); // outlets are 0 because GEM makes its own outlet instead
-	add_creator("#export_pix");
-}
+\end class {install("#to_pix",2,1); add_creator("#export_pix");}
 void GridToPixHelper::obj_setupCallback(t_class *) {}
 void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
 
