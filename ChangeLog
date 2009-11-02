@@ -22,6 +22,7 @@ version 0.9.6 (2009.11...):
  * [#to_literal]: write numbertype
  * [#fade_lin]: accept grid args
  * [#posterize]: made the optional argument really optional...
+ * renamed source files
  
 version 0.9.5 (2009.10.18):
 
