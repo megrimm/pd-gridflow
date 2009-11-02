@@ -1,23 +1,21 @@
 ,-o----o----o----o-.
-|  GridFlow 0.9.5  |
+|  GridFlow 0.9.6  |
 `-o--------------o-'
   |
 .-o--------------------------------------------------------------
 | Directory layout
 
   ./abstractions ..... Pd object classes written in Pd
-  ./base ............. object classes written in C++
+  ./src ............. object classes written in C++
   ./bin .............. programs startable as applications
   ./bundled .......... files from other packages, bundled here for convenience
   ./examples ......... more complex Pd programs showing off more practical uses.
-  ./format ........... format handlers written in C++ (optional)
   ./doc .............. complete documentation in HTML, with XML source
   ./doc/flow_classes . help files (.pd)
   ./doc/tutorials .... tutorials
   ./examples ......... more complex Pd programs showing off more practical uses.
                        (this will replace ./pd_examples in the future).
-  ./images ........... sample images shared by ./examples, ./help, ./doc
-  ./optional ......... optional classes but not format handlers
+  ./images ........... sample images used by ./examples, ./doc
   ./tests ............ will contain Pd programs that test GridFlow itself.
                        (see also: the PureUnity project)
 
