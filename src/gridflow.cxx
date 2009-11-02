@@ -39,13 +39,6 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#ifdef HAVE_GEM
-struct CPPExtern {
-  static t_object *m_holder;
-  static char *m_holdname;
-};
-#endif
-
 #ifndef HAVE_DESIREDATA
 #include "bundled/g_canvas.h"
 #endif
@@ -565,10 +558,6 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	for (int i=0; i<argc; i++) argv[i] = at[i];
 	argc = handle_braces(argc,argv);
 	//pd_post(classsym->s_name,argc,argv);
-#ifdef HAVE_GEM
-	CPPExtern::m_holder = (t_object *)bself;
-	CPPExtern::m_holdname = const_cast<char *>("juste_pour_que_gem_reste_content");
-#endif
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 
@@ -583,11 +572,6 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	bself->noutlets_set(fclasses[classsym->s_name]->noutlets,false);
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
 	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
-#ifdef HAVE_GEM
-	CPPExtern::m_holder = 0;
-	CPPExtern::m_holdname=0;
-#endif
-
 	while (j<argc) {
 		j++;
 		int k=j;
