@@ -23,7 +23,7 @@
 
 #include "gridflow.hxx.fcs"
 #include "Base/GemBase.h"
-#include "Base/GemGL.h"
+#include <GL/gl.h>
 
 /* summarising Base/GemPixUtil.h */
 struct GEM_EXTERN imageStruct {
