@@ -75,10 +75,7 @@ $conf={
 	:LDSOFLAGS => [],
 	:FEATURES => {},
 	:OPTIONS => [],
-	:DEFINES => {
-		:CPU => nil,
-		:GEM_INCLUDE => "../Gem/src",
-	},
+	:DEFINES => {:CPU => nil},
 	:CC => "g++",
 	:OBJS => [],
 }
@@ -593,7 +590,6 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug]"
-	log << "[--gem-include directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -626,10 +622,6 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_LITE
 	when "--help"
 		usage; exit 0
-	when "--gem-include"
-		$conf[:DEFINES][ :GEM_INCLUDE]=ARGV.shift
-		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_INCLUDE]
-		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_INCLUDE]
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
