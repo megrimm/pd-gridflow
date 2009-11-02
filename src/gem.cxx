@@ -102,20 +102,10 @@ void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;
 //------------------------------------------------------------------------
 
 struct GridFromPix;
-struct GridFromPixHelper : GemPixObj {
-	GridFromPix *boss;
-	CPPEXTERN_HEADER(GridFromPixHelper,GemPixObj)
-public:
-	GridFromPixHelper () {}
-	virtual void render(GemState *state);
-	virtual bool isRunnable () {return true;} // required to keep GEM 0.9.1 (the real 0.9.1) happy
-};
-CPPEXTERN_NEW(GridFromPixHelper)
 
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
 // out 0: grid
 \class GridFromPix : FObject {
-	GridFromPixHelper *helper;
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
 	\attr NumberTypeE cast;
@@ -157,8 +147,6 @@ CPPEXTERN_NEW(GridFromPixHelper)
 };
 \def 0 gem_state (void *cache, void *state) {render((GemState *)state);}
 \end class {install("#from_pix",2,1); add_creator("#import_pix");}
-void GridFromPixHelper::obj_setupCallback(t_class *) {}
-void GridFromPixHelper::render(GemState *state) {boss->render(state);}
 
 //------------------------------------------------------------------------
 
