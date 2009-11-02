@@ -237,8 +237,11 @@ void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) 
 
 /* **************************************************************** */
 
+//#define DEBUG static int use=0; use++; if ((use%10000)==0) post("%s",__PRETTY_FUNCTION__);
+#define DEBUG
+
 template <class T>
-static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {
+static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -276,7 +279,7 @@ static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {
 			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7));}}
 
 template <class T>
-static void default_unpack(BitPacking *self, long n, uint8 * in, T * out) {
+static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {DEBUG
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	if (is_le()) { // smallest byte first
@@ -293,10 +296,7 @@ static void default_unpack(BitPacking *self, long n, uint8 * in, T * out) {
 /* **************************************************************** */
 
 template <class T>
-static void pack2_565(BitPacking *self, long n, T * in, uint8 * out) {
-//	const int hb[3] = {15,10,4};
-//	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
-//	uint32 span[3] = {4,5,4};
+static void pack2_565(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 	uint32 chop[3] = {3,2,3};
 	uint32 slide[3] = {11,5,0};
 	uint32 t;
@@ -304,7 +304,7 @@ static void pack2_565(BitPacking *self, long n, T * in, uint8 * out) {
 }
 
 template <class T>
-static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {
+static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 	int32 * o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
@@ -318,15 +318,15 @@ static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {
 }
 
 template <class T>
-static void unpack3_888(BitPacking *self, long n, uint8 *in, T *out) {
+static void unpack3_888(BitPacking *self, long n, uint8 *in, T *out) {DEBUG
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
 /*
 template <>
-static void pack3_888(BitPacking *self, long n, uint8 * in, uint8 * out) {
-	uint32 * o32 = uint32 *((uint32 *)out.p,n*3/4);
-	uint32 * i32 = uint32 *((uint32 *)in.p,n*3/4);
+static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
+	uint32 *o32 = uint32 *((uint32 *)out.p,n*3/4);
+	uint32 *i32 = uint32 *((uint32 *)in.p,n*3/4);
 	while (n>=4) {
 #define Z(w,i) ((word##w>>(i*8))&255)
 		uint32 word0 = i32[0];
@@ -346,12 +346,12 @@ static void pack3_888(BitPacking *self, long n, uint8 * in, uint8 * out) {
 */
 
 template <class T>
-static void pack3_888b(BitPacking *self, long n, T * in, uint8 * out) {
-	int32 * o32 = (int32 *)out;
+static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+	int32 *o32 = (int32 *)out;
 	while (n>=4) {
-		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];
-		o32[1] = (in[3]<<16) | (in[4]<<8) | in[5];
-		o32[2] = (in[6]<<16) | (in[7]<<8) | in[8];
+		o32[0] = (in[0]<<16) | (in [1]<<8) | in [2];
+		o32[1] = (in[3]<<16) | (in [4]<<8) | in [5];
+		o32[2] = (in[6]<<16) | (in [7]<<8) | in [8];
 		o32[3] = (in[9]<<16) | (in[10]<<8) | in[11];
 		o32+=4; in+=12;
 		n-=4;
@@ -360,12 +360,10 @@ static void pack3_888b(BitPacking *self, long n, T * in, uint8 * out) {
 }
 
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
-// fishy
-template <class T>
-static void pack3_bgrn8888(BitPacking *self, long n, T * in, uint8 * out) {
+static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
 /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
-	int32 * i32 = (int32 *)in;
-	int32 * o32 = (int32 *)out;
+	int32 *i32 = (int32 *)in;
+	int32 *o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff);
 		o32[1] = ((i32[1]&0xff)<<16) | (i32[1]&0xff00) | ((i32[1]>>16)&0xff);
@@ -392,13 +390,14 @@ static Packer bp_packers[] = {
 static Unpacker bp_unpackers[] = {
 	{default_unpack, default_unpack, default_unpack},
 	{unpack3_888,  unpack3_888,  unpack3_888},
+	{pack3_bgrn8888, default_unpack, default_unpack},
 };	
 
 static BitPacking builtin_bitpackers[] = {
 	BitPacking(2, 2, 3, bp_masks[0], &bp_packers[1], &bp_unpackers[0]),
 	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[1]),
 	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
-	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[0]),
+	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[2]),
 };
 
 /* **************************************************************** */
@@ -438,36 +437,27 @@ BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *pa
 	}
 end:;
 #if 0
-	::post("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
-		endian, bytes, size, packeri);
-	::post("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
+	::post("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",endian,bytes,size,packeri);
+	::post("  packer=%d unpacker=%d",this->packer-bp_packers,this->unpacker-bp_unpackers);
 	::post("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
 #endif
 }
 
-bool BitPacking::is_le() {
-	return endian==1 || (endian ^ ::is_le())==3;
-}
+bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 
-template <class T>
-void BitPacking::pack(long n, T * in, uint8 * out) {
+template <class T> void BitPacking::pack(long n, T *in, uint8 *out) {
 	switch (NumberTypeE_type_of(in)) {
-	case uint8_e: packer->as_uint8(this,n,(uint8 *)in,out); break;
-	case int16_e: packer->as_int16(this,n,(int16 *)in,out); break;
-	case int32_e: packer->as_int32(this,n,(int32 *)in,out); break;
-	default: RAISE("argh");
-	}
-}
-
+	case uint8_e:   packer->as_uint8(this,n,(uint8 *)in,out); break;
+	case int16_e:   packer->as_int16(this,n,(int16 *)in,out); break;
+	case int32_e:   packer->as_int32(this,n,(int32 *)in,out); break;
+	default: RAISE("argh");}}
 template <class T>
-void BitPacking::unpack(long n, uint8 * in, T * out) {
+void BitPacking::unpack(long n, uint8 *in, T *out) {
 	switch (NumberTypeE_type_of(out)) {
 	case uint8_e: unpacker->as_uint8(this,n,in,(uint8 *)out); break;
 	case int16_e: unpacker->as_int16(this,n,in,(int16 *)out); break;
 	case int32_e: unpacker->as_int32(this,n,in,(int32 *)out); break;
-	default: RAISE("argh");
-	}
-}
+	default: RAISE("argh");}}
 
 // i'm sorry... see the end of grid.c for an explanation...
 //static
