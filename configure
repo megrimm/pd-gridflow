@@ -232,7 +232,6 @@ for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 end
 
 LOG.puts "-"*64
-
 $CFLAGS += " -I/usr/X11R6/include"
 $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
@@ -549,16 +548,6 @@ Feature.add {
 			#include#
 			int main () {return !gobj_subscribe;}`}}
 Feature.add {
-	tag :gem09
-	name "PureData GEM (source code) with m_holdname"
-	uses_feature [:puredata]
-	uses_o ["src/gem.o"]
-	options ["HAVE_GEM"]
-	test proc {
-		c_test %`
-			#include "Base/GemBase.h"
-			int main () {CPPExtern::m_holdname; return 0;}`}}
-Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
 	uses_o ["src/opencv.o"]
@@ -579,6 +568,21 @@ Feature.add {
 		c_test %`
 			#include <fftw3.h>
 			int main () {return 0;}`}}
+Feature.add {
+	tag :opengl
+	name "OpenGL (for GEM support)"
+	uses_feature [:puredata]
+	uses_o ["src/gem.o"]
+        uses_so $LIBX11DIR+["-lGL"]
+        uses_h ["GL/gl.h"]
+	options ["HAVE_GEM"]
+	test proc {
+		c_test %`
+                #include#
+                int main () {return (GLint)0;}
+                `
+        }
+}
 #--------------------------------#
 
 $features_h = {}
