@@ -25,4 +25,3 @@
 #X connect 10 0 2 0;
 #X connect 11 0 7 1;
 #X connect 11 1 9 0;
-#X connect 11 2 10 0;
