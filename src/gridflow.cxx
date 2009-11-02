@@ -316,12 +316,6 @@ static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 	out = (uint8 *)o32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
-
-template <class T>
-static void unpack3_888(BitPacking *self, long n, uint8 *in, T *out) {DEBUG
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
-}
-
 /*
 template <>
 static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
@@ -344,6 +338,16 @@ static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 */
+
+template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {DEBUG
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
+}
+template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )
+}
+template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )
+}
 
 template <class T>
 static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
@@ -377,19 +381,22 @@ static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEB
 static uint32 bp_masks[][4] = {
 	{0x0000f800,0x000007e0,0x0000001f,0},
 	{0x00ff0000,0x0000ff00,0x000000ff,0},
+	{0x000000ff,0x0000ff00,0x00ff0000,0},
 };
 
+#define ANYCASE(a) {a,a,a}
 static Packer bp_packers[] = {
-	{default_pack, default_pack, default_pack},
-	{pack2_565, pack2_565, pack2_565},
-	{pack3_888, pack3_888, pack3_888},
-	{pack3_888b, default_pack, default_pack},
+	ANYCASE(default_pack),
+	ANYCASE(pack2_565),
+	ANYCASE(pack3_888),
+	{pack3_888b, default_pack, default_pack}, /* {pack3_888c, pack3_888c, pack3_888c}, not tested */
 	{pack3_bgrn8888, default_pack, default_pack},
+	ANYCASE(pack3_888d),
 };
 
 static Unpacker bp_unpackers[] = {
-	{default_unpack, default_unpack, default_unpack},
-	{unpack3_888,  unpack3_888,  unpack3_888},
+	ANYCASE(default_unpack),
+	ANYCASE(unpack3_888),
 	{pack3_bgrn8888, default_unpack, default_unpack},
 };	
 
@@ -398,6 +405,7 @@ static BitPacking builtin_bitpackers[] = {
 	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[1]),
 	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
 	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[2]),
+	BitPacking(1, 4, 3, bp_masks[2], &bp_packers[5], &bp_unpackers[0]),
 };
 
 /* **************************************************************** */
@@ -411,6 +419,12 @@ bool BitPacking::eq(BitPacking *o) {
 	if (endian==o->endian) return true;
 	/* same==little on a little-endian; same==big on a big-endian */
 	return (endian ^ o->endian ^ ::is_le()) == 2;
+}
+
+void post_BitPacking(BitPacking *b) {
+	::post("Bitpacking: endian=%d bytes=%d size=%d packer=%d unpacker=%d",
+		b->endian,b->bytes,b->size,b->packer-bp_packers,b->unpacker-bp_unpackers);
+	::post("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",b->mask[0],b->mask[1],b->mask[2],b->mask[3]);
 }
 
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *packer, Unpacker *unpacker) {
@@ -429,30 +443,26 @@ BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *pa
 	for (int i=0; i<(int)(sizeof(builtin_bitpackers)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = &builtin_bitpackers[i];
 		if (this->eq(bp)) {
-			this->packer = bp->packer;
+			this->  packer = bp->  packer;
 			this->unpacker = bp->unpacker;
 			packeri=i;
 			goto end;
 		}
 	}
 end:;
-#if 0
-	::post("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",endian,bytes,size,packeri);
-	::post("  packer=%d unpacker=%d",this->packer-bp_packers,this->unpacker-bp_unpackers);
-	::post("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
-#endif
 }
 
 bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 
-template <class T> void BitPacking::pack(long n, T *in, uint8 *out) {
+//#undef DEBUG
+//#define DEBUG static int use=0; use++; if ((use%10000)==0) post_BitPacking(this);
+template <class T> void BitPacking::  pack(long n, T *in, uint8 *out) {DEBUG
 	switch (NumberTypeE_type_of(in)) {
 	case uint8_e:   packer->as_uint8(this,n,(uint8 *)in,out); break;
 	case int16_e:   packer->as_int16(this,n,(int16 *)in,out); break;
 	case int32_e:   packer->as_int32(this,n,(int32 *)in,out); break;
 	default: RAISE("argh");}}
-template <class T>
-void BitPacking::unpack(long n, uint8 *in, T *out) {
+template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {DEBUG
 	switch (NumberTypeE_type_of(out)) {
 	case uint8_e: unpacker->as_uint8(this,n,in,(uint8 *)out); break;
 	case int16_e: unpacker->as_int16(this,n,in,(int16 *)out); break;
