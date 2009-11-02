@@ -24,26 +24,17 @@
 #include "gridflow.hxx.fcs"
 #include "Base/GemBase.h"
 #include "Base/GemGL.h"
-#include <string.h>
-#include <stdlib.h>
-#include "Base/GemFuncUtil.h"
-#include "Base/GemPixPete.h"
 
 /* summarising Base/GemPixUtil.h */
 struct GEM_EXTERN imageStruct {
   imageStruct();
   ~imageStruct();
-  void info();
   unsigned char*   allocate(size_t size);  unsigned char*   allocate();
   unsigned char* reallocate(size_t size);  unsigned char* reallocate();
   void clear();
   GLint xsize, ysize, csize;
   GLenum type, format;
   int notowned;
-  void setBlack();
-  void setWhite();
-  int setCsizeByFormat(int format);
-  int setCsizeByFormat();
   void copy2Image(imageStruct *to) const;
   void copy2ImageStruct(imageStruct *to) const; // copy the imageStruct (but not the actual data)
   void refreshImage(imageStruct *to);
