@@ -35,6 +35,7 @@ public:
 	virtual bool isRunnable () {return true;} // required to keep GEM 0.9.1 (the real 0.9.1) happy
 };
 CPPEXTERN_NEW(GridToPixHelper)
+void GridToPixHelper::render(GemState *state) {}
 
 //  in 0: gem
 //  in 1: grid
@@ -44,6 +45,9 @@ CPPEXTERN_NEW(GridToPixHelper)
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
+	\decl 0 gem_state (...);
+	void render(GemState *state) {state->image = &m_pixBlock;}
+	void startRendering () {m_pixBlock.newimage = 1;}
 	GridToPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
@@ -63,6 +67,10 @@ CPPEXTERN_NEW(GridToPixHelper)
 	~GridToPix () {}
 	\grin 1 int
 };
+\def 0 gem_state (...) {
+	if (argc==2) render((GemState *)(void *)argv[1]); else startRendering();
+	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
+}
 GRID_INLET(1) {
 	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 4) RAISE("expecting 4 channels (got %d)",in->dim->get(2));
@@ -93,18 +101,12 @@ GRID_INLET(1) {
 \end class {
 	install("#to_pix",2,0); // outlets are 0 because GEM makes its own outlet instead
 	add_creator("#export_pix");
-	GridToPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
 void GridToPixHelper::obj_setupCallback(t_class *) {}
 void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
-void GridToPixHelper::render(GemState *state) {state->image = &boss->m_pixBlock;}
 
 //------------------------------------------------------------------------
 
-struct GridFromPix;
-
-//  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
-// out 0: grid
 \class GridFromPix : FObject {
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
@@ -117,7 +119,7 @@ struct GridFromPix;
 		cast = int32_e;
 	}
 	virtual ~GridFromPix () {}
-	\decl 0 gem_state (void *cache, void *state);
+	\decl 0 gem_state (...);
 	void render(GemState *state) {
 		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
@@ -145,7 +147,7 @@ struct GridFromPix;
 */
 	}
 };
-\def 0 gem_state (void *cache, void *state) {render((GemState *)state);}
+\def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
 \end class {install("#from_pix",2,1); add_creator("#import_pix");}
 
 //------------------------------------------------------------------------
