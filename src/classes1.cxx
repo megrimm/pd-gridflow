@@ -1047,7 +1047,7 @@ GRID_INPUT(1,dim_grid) {
 \end class {install("#redim",2,1); add_creator("@redim");}
 
 //****************************************************************
-\class Grid_End : FObject {
+\class GridJoin : FObject {
 	\attr int which_dim;
 	PtrGrid r;
 	\grin 0
