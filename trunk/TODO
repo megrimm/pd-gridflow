@@ -1,8 +1,7 @@
 /* $Id$ */
 
 0.9.6
-[ ] ( 1 1 ) -> (1 1) wherever possible
-[ ] go back in all help files and fill in whatever is missings
+[ ] go back in all help files and fill in whatever is missing
 [ ] listflatten-help.pd : [display] bug
 [ ] GridFlow Index dans toutes les fenêtres
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
@@ -122,7 +121,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
 [ ] re-enable int64,float64
-[ ] added #matrix_solve, #slice
+[ ] add #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
 [ ] look into -ftree-vectorize
@@ -139,7 +138,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] "unsupported codec" bogus errors.
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [ ] some seeds aren't typechecked
-[ ] jpeg file cat crashes on second file (jpeglib buffering?)
 [ ] GRID_FINISH triggered while backstore ???
 [ ] what would be a way to make GF work well with Pd's idea of a list?
 [ ] write unit tests about required functionality
@@ -212,7 +210,6 @@ Effects
 [ ] effectv
 [ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] see gimp for ideas
-[ ] kaleidoscopes
 [ ] multilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
 [ ] #scale_by/#downscale_by fractional values
 [ ] bicubic interpolation
@@ -228,8 +225,6 @@ Input/Output
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format
 [ ] Gimp, ffmpeg, xine, mplayer, PDP, OSC
-[ ] get subtitling of tv channels
-[ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: double buffering using a Pixmap remote-object
