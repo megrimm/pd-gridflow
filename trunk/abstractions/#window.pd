@@ -20,7 +20,6 @@
 #X connect 6 0 0 0;
 #X connect 6 1 5 0;
 #X connect 7 0 5 1;
-#X connect 7 1 8 0;
 #X connect 8 0 9 0;
 #X connect 8 1 1 0;
 #X connect 9 0 6 0;

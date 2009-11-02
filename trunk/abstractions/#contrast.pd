@@ -21,4 +21,3 @@
 #X connect 9 0 4 1;
 #X connect 10 0 2 1;
 #X connect 10 1 4 1;
-#X connect 10 2 1 0;
