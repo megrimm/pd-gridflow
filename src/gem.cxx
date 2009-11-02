@@ -131,6 +131,7 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		cast = int32_e;
 	}
 	virtual ~GridFromPix () {}
+	\decl 0 gem_state (void *cache, void *state);
 	void render(GemState *state) {
 		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
@@ -158,13 +159,13 @@ CPPEXTERN_NEW(GridFromPixHelper)
 */
 	}
 };
+\def 0 gem_state (void *cache, void *state) {render((GemState *)state);}
 
 void GridFromPixHelper::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#from_pix",2,1);
 	add_creator("#import_pix");
-	GridFromPixHelper::real_obj_setupCallback(fclass->bfclass);
 }
 void GridFromPixHelper::render(GemState *state) {boss->render(state);}
 
