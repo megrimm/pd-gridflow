@@ -25,17 +25,6 @@
 #include "Base/GemPixDualObj.h"
 
 struct GridToPix;
-struct GridToPixHelper : GemPixObj {
-	GridToPix *boss;
-	CPPEXTERN_HEADER(GridToPixHelper,GemPixObj)
-public:
-	GridToPixHelper () {}
-	virtual void startRendering();
-	virtual void render(GemState *state);
-	virtual bool isRunnable () {return true;} // required to keep GEM 0.9.1 (the real 0.9.1) happy
-};
-CPPEXTERN_NEW(GridToPixHelper)
-void GridToPixHelper::render(GemState *state) {}
 
 //  in 0: gem
 //  in 1: grid
@@ -95,8 +84,6 @@ GRID_INLET(1) {
         else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
-void GridToPixHelper::obj_setupCallback(t_class *) {}
-void GridToPixHelper::startRendering() {boss->m_pixBlock.newimage = 1;}
 
 //------------------------------------------------------------------------
 
