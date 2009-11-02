@@ -23,7 +23,13 @@ version 0.9.6 (2009.11...):
  * [#fade_lin]: accept grid args
  * [#posterize]: made the optional argument really optional...
  * renamed source files
- 
+ * rewrote GEM support without using GEM headers
+ * removed --gem-include
+ * removed bundled/Base (was a copy of GEM 0.91 include files)
+ * [#from_pix]: much faster
+ * [#to_pix]: support 3-channel rgb input
+ * [#out x11]: some video modes are now much faster than before
+
 version 0.9.5 (2009.10.18):
 
  * added [gf.print] (aliased to [print])
