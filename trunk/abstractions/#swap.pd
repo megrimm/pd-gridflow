@@ -7,7 +7,6 @@
 #X obj 24 54 t a a;
 #X obj 24 73 #finished;
 #X obj 72 54 args (my_grid a 0);
-#X obj 72 35 loadbang;
 #X connect 0 0 5 0;
 #X connect 1 0 4 1;
 #X connect 4 0 2 0;
@@ -16,4 +15,3 @@
 #X connect 6 0 4 0;
 #X connect 7 0 4 1;
 #X connect 7 1 5 0;
-#X connect 8 0 7 0;
