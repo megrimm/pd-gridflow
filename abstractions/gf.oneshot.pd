@@ -6,8 +6,8 @@
 #X obj 123 20 inlet;
 #X obj 123 39 route bang;
 #X msg 123 58 1;
-#X obj 199 89 args (x f 1);
-#X obj 199 70 loadbang;
+#X obj 39 39 args (x f 1);
+#X obj 39 20 loadbang;
 #X obj 33 101 spigot;
 #X connect 0 0 9 0;
 #X connect 2 0 1 0;
@@ -18,5 +18,6 @@
 #X connect 5 1 9 1;
 #X connect 6 0 9 1;
 #X connect 7 0 9 1;
+#X connect 7 1 9 0;
 #X connect 8 0 7 0;
 #X connect 9 0 2 0;
