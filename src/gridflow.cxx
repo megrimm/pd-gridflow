@@ -237,7 +237,7 @@ void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) 
 
 /* **************************************************************** */
 
-#define DEBUG 1
+//#define DEBUG 1
 #ifdef DEBUG
 #define TRACE static int use=0; use++; if ((use%10000)==0) post("%s",__PRETTY_FUNCTION__);
 #else
