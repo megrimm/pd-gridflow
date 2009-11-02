@@ -22,11 +22,42 @@
 */
 
 #include "gridflow.hxx.fcs"
-#include "Base/GemBase.h"
 #include <GL/gl.h>
+//#include "Base/GemExportDef.h"
+struct pixBlock;
+class TexCoord;
+class TexCoord {
+ public:
+  TexCoord() : s(0.f), t(0.f) { }
+    TexCoord(float s_, float t_) : s(s_), t(t_) { }
+      float   	    s;
+      float   	    t;
+};
+class GemState {
+ public:
+  int dirty, inDisplayList, lighting, smooth, texture;
+  pixBlock *image;
+  TexCoord *texCoords;
+  int numTexCoords, multiTexUnits;
+  float tickTime;
+  GLenum drawType;
+  int stackDepth[4];
+  int VertexDirty;
+  GLfloat *VertexArray;   int VertexArraySize; int VertexArrayStride;
+  GLfloat *ColorArray;    int HaveColorArray;
+  GLfloat *NormalArray;   int HaveNormalArray;
+  GLfloat *TexCoordArray; int HaveTexCoordArray;
+  GemState();
+  ~GemState();
+  float texCoordX(int num) const {if (texture && numTexCoords > num) return texCoords[num].s; else return 0.;}
+  float texCoordY(int num) const {if (texture && numTexCoords > num) return texCoords[num].t; else return 0.;}
+  void reset();
+};
+
+//------------------------------------------------------------------------------------------------------
 
 /* summarising Base/GemPixUtil.h */
-struct GEM_EXTERN imageStruct {
+struct imageStruct {
   imageStruct();
   ~imageStruct();
   unsigned char*   allocate(size_t size);  unsigned char*   allocate();
@@ -48,7 +79,7 @@ struct GEM_EXTERN imageStruct {
   public:
   GLboolean       upsidedown;
 };
-struct GEM_EXTERN pixBlock {
+struct pixBlock {
   pixBlock();
   imageStruct     image;
   int newimage, newfilm;
