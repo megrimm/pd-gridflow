@@ -237,11 +237,15 @@ void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) 
 
 /* **************************************************************** */
 
-//#define DEBUG static int use=0; use++; if ((use%10000)==0) post("%s",__PRETTY_FUNCTION__);
-#define DEBUG
+#define DEBUG 1
+#ifdef DEBUG
+#define TRACE static int use=0; use++; if ((use%10000)==0) post("%s",__PRETTY_FUNCTION__);
+#else
+#define TRACE
+#endif
 
 template <class T>
-static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -279,7 +283,7 @@ static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7));}}
 
 template <class T>
-static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {DEBUG
+static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {TRACE
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	if (is_le()) { // smallest byte first
@@ -296,7 +300,7 @@ static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {DEBUG
 /* **************************************************************** */
 
 template <class T>
-static void pack2_565(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+static void pack2_565(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	uint32 chop[3] = {3,2,3};
 	uint32 slide[3] = {11,5,0};
 	uint32 t;
@@ -304,8 +308,8 @@ static void pack2_565(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 }
 
 template <class T>
-static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
-	int32 * o32 = (int32 *)out;
+static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+	int32 *o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
 		o32[1] = (in[7]<<24) | (in[ 8]<<16) | (in[ 3]<<8) | in[4];
@@ -318,7 +322,7 @@ static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 }
 /*
 template <>
-static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
+static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
 	uint32 *o32 = uint32 *((uint32 *)out.p,n*3/4);
 	uint32 *i32 = uint32 *((uint32 *)in.p,n*3/4);
 	while (n>=4) {
@@ -339,18 +343,18 @@ static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
 }
 */
 
-template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {DEBUG
+template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {TRACE
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
-template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )
 }
-template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )
 }
 
 template <class T>
-static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
+static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	int32 *o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in [1]<<8) | in [2];
@@ -364,7 +368,7 @@ static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {DEBUG
 }
 
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
-static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {DEBUG
+static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
 /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
 	int32 *i32 = (int32 *)in;
 	int32 *o32 = (int32 *)out;
@@ -454,15 +458,19 @@ end:;
 
 bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 
-//#undef DEBUG
-//#define DEBUG static int use=0; use++; if ((use%10000)==0) post_BitPacking(this);
-template <class T> void BitPacking::  pack(long n, T *in, uint8 *out) {DEBUG
+#undef TRACE
+#ifdef DEBUG
+#define TRACE static int use=0; use++; if ((use%10000)==0) post_BitPacking(this);
+#else
+#define TRACE
+#endif
+template <class T> void BitPacking::  pack(long n, T *in, uint8 *out) {TRACE
 	switch (NumberTypeE_type_of(in)) {
 	case uint8_e:   packer->as_uint8(this,n,(uint8 *)in,out); break;
 	case int16_e:   packer->as_int16(this,n,(int16 *)in,out); break;
 	case int32_e:   packer->as_int32(this,n,(int32 *)in,out); break;
 	default: RAISE("argh");}}
-template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {DEBUG
+template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {TRACE
 	switch (NumberTypeE_type_of(out)) {
 	case uint8_e: unpacker->as_uint8(this,n,in,(uint8 *)out); break;
 	case int16_e: unpacker->as_int16(this,n,in,(int16 *)out); break;
@@ -474,7 +482,7 @@ template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {DEBUG
 void make_hocus_pocus () {
 //	exit(1);
 #define FOO(S) \
-	((BitPacking*)0)->pack(0,(S *)0,(uint8 *)0); \
+	((BitPacking*)0)->  pack(0,(S *)0,(uint8 *)0); \
 	((BitPacking*)0)->unpack(0,(uint8 *)0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
