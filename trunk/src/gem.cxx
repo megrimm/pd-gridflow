@@ -118,6 +118,7 @@ CPPEXTERN_NEW(GridFromPixHelper)
 	GridFromPixHelper *helper;
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
+	\attr NumberTypeE cast;
 	GridFromPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
 	GridFromPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
@@ -127,6 +128,7 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		helper = new GridFromPixHelper;
 		helper->boss = this;
 		bself->gemself = helper;
+		cast = int32_e;
 	}
 	virtual ~GridFromPix () {}
 	void render(GemState *state) {
@@ -135,7 +137,7 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
 		if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
 		int32 v[] = { im.ysize, im.xsize, im.csize };
-		GridOutlet out(this,0,new Dim(3,v));
+		GridOutlet out(this,0,new Dim(3,v),cast);
 		long sxc = im.xsize*im.csize;
 		long sy = v[0];
 		uint8 buf[sxc];
