@@ -91,17 +91,20 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment", x);
     return x;
 } 
-\def 0 loadbang () {
-	//t_canvasenvironment *env = canvas_getenv(bself->mom);
-	post("LOADBANG from [args] in %s",canvas_getabstop(bself->mom)->gl_name->s_name);
-}
+\def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(bself->mom)->gl_name->s_name);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
 	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
 	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_float);
 	else outlet_anything(o,&s_list,argc,argv);
 }
-\def 0 bang () {
+void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
+	if (!argc) pd_bang(o);
+	else if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) pd_float(o,argv[0].a_float);
+	else pd_typedmess(o,&s_list,argc,argv);
+}
+\def 0 loadbang () {
 	t_canvasenvironment *env = canvas_getenv(bself->mom);
 	int ac = env->ce_argc;
 	t_atom av[ac];
@@ -116,7 +119,10 @@ void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 		j++;
 		int k=j;
 		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
-		outlet_anything2(bself->outlets[sargc],j-k,av+k);
+		//outlet_anything2(bself->outlets[sargc],j-k,av+k);
+		t_text *t = (t_text *)canvas_getabstop(bself->mom);
+		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
+		pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
 	}
 }
 void Args::process_args (int argc, t_atom *argv) {
