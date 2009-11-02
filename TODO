@@ -10,17 +10,26 @@
 [ ] [ascii_to_f] broken?
 [ ] [#make_arrow] (fix and help)
 [ ] [#interval_overlap]
-[ ] use [args] everywhere it should be
-[ ] [args] have to be connected to a [t a] in common with first inlet...
+[ ] [#from_pix]: 3-channel output
 [ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
 
 unsorted
-[ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
-[ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
+[ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
+[ ] put_at is lacking some checks for number-of-dims, causing segfault.
+[ ] strange problem with [#import] when input size doesn't match output size and object is recreated
+[ ] get rid of doc/stuff.txt and doc/install.html
+[ ] fix [nbx]<->[hsl] relationship in [#camera]
+[ ] #line_to_polygon is buggy
+[ ] #draw_polygon init_lines() not sufficiently called
+[ ] conversion from float to int is inconsistent: when to round and when to trunc?
+[ ] with pwc, 720x480 crashes
+[ ] about.pd: link from help menu; add link to website, mention irc, etc.
+
+Later
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 [ ] doc attributes: [doc_a] [doc_aa] ?
@@ -33,25 +42,18 @@ unsorted
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
     to prevent a lot of redraw bugs.
-[ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
-[ ] put_at is lacking some checks for number-of-dims, causing segfault.
-[ ] strange problem with [#import] when input size doesn't match output size and object is recreated
-[ ] reintroduce set_mode(0)
-[ ] get rid of doc/stuff.txt and doc/*.html       */
 [ ] support "get" in abstractions... automatically, through [args] ?
-[ ] fix [nbx]<->[hsl] relationship in [#camera]
-[ ] bugs/bugfixes from roman, claude, etc
-s[ ] #line_to_polygon is buggy
-[ ] #draw_polygon init_lines() not sufficiently called
+[ ] bugs/bugfixes from roman, claude, federico, etc
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
-[ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement negative indices in [listelement] and [listsublist]
-[ ] with pwc, 720x480 crashes
 [ ] fix SDL modifiers
 [ ] fix quoting in [display]
-[ ] about.pd: link from help menu; add link to website, mention irc, etc.
-
-Later
+[ ] [args] have to be connected to a [t a] in common with first inlet... (BUT: this has an impact on float vs list distinction)
+    (why not make this automatic, by making [args] contact whichever inlet is first?)
+[ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
+[ ] what to do with GridFlow version numbering?
+[ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
+[ ] reintroduce set_mode(0)
 [ ] [#fold] is slowwww
 [ ] [route3] is like [route] but doesn't trim.
 [ ] #out x11 doesn't accept 0-sized grids
@@ -62,7 +64,7 @@ Later
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] add [#out png]
 [ ] Accumulation of Background Statistics
-[ ] compenser pour les ajustements progressifs ou soudains de luminosite
+[ ] compenser pour les ajustements progressifs ou soudains de luminosité
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 
@@ -90,7 +92,6 @@ Common Video Framework
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
 [ ] threads for video?
 [ ] GEM geos vs 3DP: how do they compare?
-[ ] [#from_pix]: 3-channel output
 [ ] is there anything else deserving to be unified between the video plugins?
 [ ] look at camorama
 [ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
