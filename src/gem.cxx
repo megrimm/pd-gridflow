@@ -144,8 +144,18 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		for (int y=0; y<v[0]; y++) {
 			uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y);
 			bit_packing->pack(im.xsize,data,buf);
+			// not supposed to be using pack here, but it's faster than unpack, and they're self-inverses here.
 			out.send(sxc,buf);
 		}
+/*		#define FOO(T) { \
+			uint8 buf[sxc]; \
+			for (int y=0; y<v[0]; y++) { \
+				uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y); \
+				bit_packing->unpack(im.xsize,data,buf); \
+				out.send(sxc,buf);}}
+		TYPESWITCH(cast,FOO,)
+		#undef FOO
+*/
 	}
 };
 
