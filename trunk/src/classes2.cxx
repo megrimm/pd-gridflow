@@ -816,6 +816,53 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	cpu_hertz = estimates[1];
 }
 
+\class GFError : FObject {
+	string format;
+	\constructor (...) {
+		std::ostringstream o;
+		char buf[MAXPDSTRING];
+		for (int i=0; i<argc; i++) {
+			atom_string(&argv[i],buf,MAXPDSTRING);
+			o << buf;
+			if (i!=argc-1) o << ' ';
+		}
+		format = o.str();
+	}
+	\decl 0 bang ();
+	\decl 0 float (float f);
+	\decl 0 symbol (t_symbol *s);
+	\decl 0 list (...);
+};
+\def 0 bang () {_0_list(0,0);}
+\def 0 float (float f) {_0_list(argc,argv);}
+\def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
+
+\def 0 list (...) {
+	std::ostringstream o;
+	pd_oprintf(o,format.data(),argc,argv);
+	t_canvas *canvas = canvas_getrootfor(bself->mom);
+	string s = o.str();
+	pd_error(canvas,"%s",s.data());
+}
+\end class {install("gf.error",1,0);}
+
+//****************************************************************
+\class ForEach : FObject {
+	\constructor () {}
+	\decl 0 list (...);
+};
+\def 0 list (...) {
+	t_outlet *o = bself->outlets[0];
+	for (int i=0; i<argc; i++) {
+		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,argv[i]);
+		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,argv[i]);
+		else RAISE("oops. unsupported.");
+	}
+}
+\end class {install("foreach",1,1);}
+
+//****************************************************************
+
 #define MOM \
 	t_canvas *mom = bself->mom; \
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
