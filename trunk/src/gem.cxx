@@ -82,7 +82,8 @@ class GemState {
 //  in 1: grid
 // out 0: gem
 \class GridToPix : FObject {
-	P<BitPacking> bit_packing;
+	P<BitPacking> bit_packing3;
+	P<BitPacking> bit_packing4;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 	\decl 0 gem_state (...);
@@ -99,7 +100,8 @@ class GemState {
 		im.allocate();
 		*(int*)im.data = 0x0000ff;
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing = new BitPacking(is_le(),4,4,mask);
+		bit_packing3 = new BitPacking(is_le(),4,3,mask);
+		bit_packing4 = new BitPacking(is_le(),4,4,mask);
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -109,31 +111,32 @@ class GemState {
 	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
 }
 GRID_INLET(1) {
-	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 4) RAISE("expecting 4 channels (got %d)",in->dim->get(2));
+	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	int c = in->dim->get(2);
+	if (c!=3 && c!=4)    RAISE("expecting 3 or 4 channels (got %d)",in->dim->get(2));
 	in->set_chunk(1);
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
 	im.ysize = in->dim->get(0);
 	im.xsize = in->dim->get(1);
-	im.csize = in->dim->get(2);
 	im.type = GL_UNSIGNED_BYTE;
-	im.allocate();
-	im.format = GL_RGBA;
-	/*
 	switch (in->dim->get(2)) {
-	    case 4: im.format = GL_RGBA; break;
+	    case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
+	    case 3: im.csize = 4; im.format = GL_RGBA;      break;
+	    case 4: im.csize = 4; im.format = GL_RGBA;      break;
 	    default: RAISE("you shouldn't see this error message.");
 	}
-	*/
+	im.allocate();
 } GRID_FLOW {
 	uint8 *buf = (uint8 *)m_pixBlock.image.data;
 	/*!@#$ it would be nice to skip the bitpacking when we can */
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
 	long sy = in->dim->v[0];
-	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bit_packing->pack(sx,data,buf+y*sxc);}
-        else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bit_packing->pack(sx,data,buf+y*sxc);}
+	BitPacking *bp = in->dim->get(2)==3 ? bit_packing3 : bit_packing4;
+	imageStruct &im = m_pixBlock.image;
+	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);}
+        else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bp->pack(sx,data,buf+y*sx*im.csize);}
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
