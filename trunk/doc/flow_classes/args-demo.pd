@@ -1,6 +1,6 @@
 #N canvas 0 0 613 300 10;
 #X obj 152 20 args hello (world a 42) *;
-#X obj 322 39 print args;
+#X obj 43 96 print args;
 #X obj 152 3 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
 #X obj 18 35 inlet;
@@ -21,8 +21,8 @@
 #X connect 0 1 8 0;
 #X connect 0 2 7 0;
 #X connect 0 3 5 0;
-#X connect 0 3 1 0;
 #X connect 2 0 0 0;
 #X connect 3 0 5 0;
 #X connect 5 0 6 0;
+#X connect 5 0 1 0;
 #X connect 6 3 11 0;
