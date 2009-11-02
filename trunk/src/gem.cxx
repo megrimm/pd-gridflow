@@ -22,9 +22,8 @@
 */
 
 #include "gridflow.hxx.fcs"
-#include "Base/GemPixDualObj.h"
-
-struct GridToPix;
+#include "Base/GemBase.h"
+#include "Base/GemPixUtil.h"
 
 //  in 0: gem
 //  in 1: grid
