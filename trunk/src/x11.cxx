@@ -280,6 +280,7 @@ void FormatX11::set_wm_hints () {
 	wmh.input = True;
 	wmh.flags = InputHint;
 	XSetWMProperties(display,window,&wtitle,&wtitle,0,0,&sh,&wmh,0);
+	XFree(wtitle.value); // do i really have to do that?
 }
 
 void FormatX11::report_pointer(int y, int x, int state) {
