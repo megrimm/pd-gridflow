@@ -1,6 +1,6 @@
-#N canvas 371 309 450 300 10;
+#N canvas 371 309 473 313 10;
 #X obj 12 28 inlet;
-#X obj 98 264 outlet;
+#X obj 98 250 outlet;
 #X obj 234 1 inlet;
 #X obj 221 157 #to_list;
 #X msg 221 176 4 2 # \$1 \$2 \$1 \$4 \$3 \$4 \$3 \$2;
@@ -11,9 +11,9 @@
 #X obj 12 110 route outline;
 #X obj 245 135 #store;
 #X obj 245 116 t b f;
-#X obj 225 240 #join 0;
-#X obj 228 220 t a a;
-#X obj 267 220 # + (1 1 1 1 -1 -1 -1 -1);
+#X obj 269 214 #join 0;
+#X obj 269 195 t a a;
+#X obj 308 195 # + (1 1 1 1 -1 -1 -1 -1);
 #X obj 98 231 #draw_polygon put;
 #X obj 120 32 args op color (polygon a (2 2 #));
 #X connect 0 0 9 0;
