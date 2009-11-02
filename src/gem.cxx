@@ -23,15 +23,38 @@
 
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
-//#include "Base/GemExportDef.h"
-struct pixBlock;
-class TexCoord;
+/* summarising GEM's headers: GemState.h and GemPixUtil.h */
+struct imageStruct {
+  imageStruct(); ~imageStruct();
+  unsigned char*   allocate(size_t size);  unsigned char*   allocate();
+  unsigned char* reallocate(size_t size);  unsigned char* reallocate();
+  void clear();
+  GLint xsize, ysize, csize;
+  GLenum type, format;
+  int notowned;
+  void copy2Image(imageStruct *to) const;
+  void copy2ImageStruct(imageStruct *to) const; // copy the imageStruct (but not the actual data)
+  void refreshImage(imageStruct *to);
+  void swapRedBlue ();
+  void convertTo  (imageStruct*to,   GLenum dest_format=0);
+  void convertFrom(imageStruct*from, GLenum dest_format=0);
+  unsigned char *data;
+  private:
+  unsigned char *pdata;
+  size_t    datasize;
+  public:
+  GLboolean upsidedown;
+};
+struct pixBlock {
+  pixBlock();
+  imageStruct image;
+  int newimage, newfilm;
+};
 class TexCoord {
  public:
-  TexCoord() : s(0.f), t(0.f) { }
-    TexCoord(float s_, float t_) : s(s_), t(t_) { }
-      float   	    s;
-      float   	    t;
+  TexCoord() : s(0.f), t(0.f) {}
+  TexCoord(float s_, float t_) : s(s_), t(t_) {}
+  float s,t;
 };
 class GemState {
  public:
@@ -53,38 +76,7 @@ class GemState {
   float texCoordY(int num) const {if (texture && numTexCoords > num) return texCoords[num].t; else return 0.;}
   void reset();
 };
-
-//------------------------------------------------------------------------------------------------------
-
-/* summarising Base/GemPixUtil.h */
-struct imageStruct {
-  imageStruct();
-  ~imageStruct();
-  unsigned char*   allocate(size_t size);  unsigned char*   allocate();
-  unsigned char* reallocate(size_t size);  unsigned char* reallocate();
-  void clear();
-  GLint xsize, ysize, csize;
-  GLenum type, format;
-  int notowned;
-  void copy2Image(imageStruct *to) const;
-  void copy2ImageStruct(imageStruct *to) const; // copy the imageStruct (but not the actual data)
-  void refreshImage(imageStruct *to);
-  void swapRedBlue ();
-  void convertTo  (imageStruct*to,   GLenum dest_format=0);
-  void convertFrom(imageStruct*from, GLenum dest_format=0);
-  unsigned char   *data;
-  private:
-  unsigned char   *pdata;
-  size_t    datasize;
-  public:
-  GLboolean       upsidedown;
-};
-struct pixBlock {
-  pixBlock();
-  imageStruct     image;
-  int newimage, newfilm;
-};
-/* end of summarising Base/GemPixUtil.h */
+/* end of summary */
 
 //  in 0: gem
 //  in 1: grid
