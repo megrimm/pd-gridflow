@@ -532,6 +532,12 @@ struct BFProxy : t_object {
 
 static t_class *BFProxy_class;
 
+static void BFObject_loadbang (BFObject *bself) {
+	FMethod m = funcall_lookup(bself,"_0_loadbang");
+	if (!m) {error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); return;}
+	m(bself->self,0,0);
+}
+
 static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
     try {
 	t_atom2 argv[ac+1];
@@ -748,7 +754,11 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
-	class_addanything(fclass->bfclass,(t_method)BFObject_anything0);
+	t_class *b = fclass->bfclass;
+	class_addanything(b,t_method(BFObject_anything0));
+	FMethod m = funcall_lookup(fclass,"_0_loadbang");
+	//post("class %s loadbang %08x",name,long(m));
+	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
