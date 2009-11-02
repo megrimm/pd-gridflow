@@ -31,7 +31,6 @@ extern "C" {
 extern t_class *text_class;
 };
 #endif
-#define OP(x) op_dict[string(#x)]
 #include <algorithm>
 
 #ifndef DESIREDATA
@@ -47,67 +46,775 @@ struct _outlet {
 };
 #endif
 
-static void expect_min_one_dim (P<Dim> d) {
-	if (d->n<1) RAISE("expecting at least one dimension, got %s",d->to_s());}
+//****************************************************************
 
-// obviously unfinished
-\class GridExpr : FObject {
+struct ArgSpec {
+	t_symbol *name;
+	t_symbol *type;
+	t_atom defaultv;
+};
+
+\class Args : FObject {
+	ArgSpec *sargv;
+	int sargc;
 	\constructor (...) {
-		std::ostringstream os;
-		for (int i=0; i<argc; i++) os << " " << argv[i];
-		string s = os.str();
-		post("expr = '%s'",s.data());
-	}
-};
-\end class {install("#expr",1,1);}
-
-\class GridClusterAvg : FObject {
-	\attr int numClusters;
-	\attr PtrGrid r;
-	\attr PtrGrid sums;
-	\attr PtrGrid counts;
-	\constructor (int v) {_1_float(0,0,v); r.constrain(expect_min_one_dim);}
-	\decl 1 float (int v);
-	\grin 0 int32
-	\grin 2
-	template <class T> void make_stats (long n, int32 *ldata, T *rdata) {
-		int32 chans = r->dim->v[r->dim->n-1];
-		T     *sdata = (T     *)*sums;
-		int32 *cdata = (int32 *)*counts;
-		for (int i=0; i<n; i++, ldata++, rdata+=chans) {
-			if (*ldata<0 || *ldata>=numClusters) RAISE("value out of range in left grid");
-			OP(+)->zip(chans,sdata+(*ldata)*chans,rdata);
-			cdata[*ldata]++;
+		sargc = argc;
+		sargv = new ArgSpec[argc];
+		for (int i=0; i<argc; i++) {
+			if (argv[i].a_type==A_LIST) {
+				t_binbuf *b = (t_binbuf *)argv[i].a_gpointer;
+				int bac = binbuf_getnatom(b);
+				t_atom *bat = binbuf_getvec(b);
+				sargv[i].name = atom_getsymbolarg(0,bac,bat);
+				sargv[i].type = atom_getsymbolarg(1,bac,bat);
+				if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
+			} else if (argv[i].a_type==A_SYMBOL) {
+				sargv[i].name = argv[i].a_symbol;
+				sargv[i].type = gensym("a");
+				SETNULL(&sargv[i].defaultv);
+			} else RAISE("expected symbol or nested list");
 		}
-		for (int i=0; i<numClusters; i++) OP(/)->map(chans,sdata+i*chans,(T)cdata[i]);
-		out = new GridOutlet(this,1,counts->dim,counts->nt);
-		out->send(counts->dim->prod(),(int32 *)*counts);
-		out = new GridOutlet(this,0,sums->dim,sums->nt);
-		out->send(sums->dim->prod(),(T *)*sums);
+		bself->noutlets_set(sargc+1);
+	}
+	~Args () {delete[] sargv;}
+	\decl 0 bang ();
+	\decl 0 loadbang ();
+	void process_args (int argc, t_atom *argv);
+};
+/* get the owner of the result of canvas_getenv */
+static t_canvas *canvas_getabstop(t_canvas *x) {
+    while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment", x);
+    return x;
+} 
+\def 0 loadbang () {
+	//t_canvasenvironment *env = canvas_getenv(bself->mom);
+	post("LOADBANG from [args] in %s",canvas_getabstop(bself->mom)->gl_name->s_name);
+}
+void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
+	if (!argc) outlet_bang(o);
+	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_float);
+	else outlet_anything(o,&s_list,argc,argv);
+}
+\def 0 bang () {
+	t_canvasenvironment *env = canvas_getenv(bself->mom);
+	int ac = env->ce_argc;
+	t_atom av[ac];
+	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
+	//ac = handle_braces(ac,av);
+	t_symbol *comma = gensym(",");
+	int j;
+	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
+	int jj = handle_braces(j,av);
+	process_args(jj,av);
+	while (j<ac) {
+		j++;
+		int k=j;
+		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
+		outlet_anything2(bself->outlets[sargc],j-k,av+k);
+	}
+}
+void Args::process_args (int argc, t_atom *argv) {
+	t_canvas *canvas = canvas_getrootfor(bself->mom);
+	t_symbol *wildcard = gensym("*");
+	for (int i=sargc-1; i>=0; i--) {
+		t_atom *v;
+		if (i>=argc) {
+			if (sargv[i].defaultv.a_type != A_NULL) {
+				v = &sargv[i].defaultv;
+			} else if (sargv[i].name!=wildcard) {
+				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
+				continue;
+			}
+		} else v = &argv[i];
+		if (sargv[i].name==wildcard) {
+			if (argc-i>0) outlet_list(bself->outlets[i],&s_list,argc-i,argv+i);
+			else outlet_bang(bself->outlets[i]);
+		} else {
+			if (v->a_type==A_LIST) {
+				t_binbuf *b = (t_binbuf *)v->a_gpointer;
+				outlet_list(bself->outlets[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
+			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->outlets[i],v->a_symbol);
+			else outlet_anything2(bself->outlets[i],1,v);
+		}
+	}
+	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
+}
+\end class {install("args",1,1);}
+
+//****************************************************************
+
+template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
+
+\class ListReverse : FObject {
+	\constructor () {}
+	\decl 0 list(...);
+};
+\def 0 list (...) {
+	for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
+	outlet_list(bself->te_outlet,&s_list,argc,argv);
+}
+\end class {install("listreverse",1,1);}
+
+\class ListFlatten : FObject {
+	std::vector<t_atom2> contents;
+	\constructor () {}
+	\decl 0 list(...);
+	void traverse (int argc, t_atom2 *argv) {
+		for (int i=0; i<argc; i++) {
+			if (argv[i].a_type==A_LIST) traverse(binbuf_getnatom(argv[i]),(t_atom2 *)binbuf_getvec(argv[i]));
+			else contents.push_back(argv[i]);
+		}
 	}
 };
+\def 0 list (...) {
+	traverse(argc,argv);
+	outlet_list(bself->te_outlet,&s_list,contents.size(),&contents[0]);
+	contents.clear();
 
-GRID_INLET(0) {
-	NOTEMPTY(r);
-	int32 v[r->dim->n];
-	COPY(v,r->dim->v,r->dim->n-1);
-	v[r->dim->n-1]=1;
-	P<Dim> t = new Dim(r->dim->n,v);
-	if (!t->equal(in->dim)) RAISE("left %s must be equal to right %s except last dimension should be 1",in->dim->to_s(),r->dim->to_s());
-	in->set_chunk(0);
-	int32 w[2] = {numClusters,r->dim->v[r->dim->n-1]};
-	sums   = new Grid(new Dim(2,w),r->nt,  true);
-	counts = new Grid(new Dim(1,w),int32_e,true);
-} GRID_FLOW {
-	#define FOO(U) make_stats(n,data,(U *)*r);
-	TYPESWITCH(r->nt,FOO,)
-	#undef FOO
-} GRID_END
-\def 1 float (int v) {numClusters = v;}
-GRID_INPUT(2,r) {
-} GRID_END
+}
+\end class {install("listflatten",1,1);}
 
-\end class {install("#cluster_avg",3,2);}
+// does not do recursive comparison of lists.
+static bool atom_eq (t_atom &a, t_atom &b) {
+	if (a.a_type!=b.a_type) return false;
+	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
+	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
+	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer;
+	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer;
+	RAISE("don't know how to compare elements of type %d",a.a_type);
+}
+
+\class ListFind : FObject {
+	int ac;
+	t_atom *at;
+	~ListFind() {if (at) delete[] at;}
+	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
+	\decl 0 list(...);
+	\decl 1 list(...);
+	\decl 0 float(float f);
+	\decl 0 symbol(t_symbol *s);
+};
+\def 1 list (...) {
+	if (at) delete[] at;
+	ac = argc;
+	at = new t_atom[argc];
+	for (int i=0; i<argc; i++) at[i] = argv[i];
+}
+\def 0 list (...) {
+	if (argc<1) RAISE("empty input");
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
+	outlet_float(bself->outlets[0],i==ac?-1:i);
+}
+\def 0 float (float f) {
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
+	outlet_float(bself->outlets[0],i==ac?-1:i);
+}
+\def 0 symbol (t_symbol *s) {
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
+	outlet_float(bself->outlets[0],i==ac?-1:i);
+}
+//doc:_1_list,"list to search into"
+//doc:_0_float,"float to find in that list"
+//doc_out:_0_float,"position of the incoming float in the stored list"
+\end class {install("listfind",2,1);}
+
+void outlet_atom (t_outlet *self, t_atom *av) {
+	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
+	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
+	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
+	outlet_list(self,gensym("list"),1,av);
+}
+
+\class ListRead : FObject { /* sounds like tabread */
+	int ac;
+	t_atom *at;
+	~ListRead() {if (at) delete[] at;}
+	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
+	\decl 0 float(float f);
+	\decl 1 list(...);
+};
+\def 0 float(float f) {
+	int i = int(f);
+	if (i<0) i+=ac;
+	if (i<0 || i>=ac) {outlet_bang(bself->outlets[0]); return;} /* out-of-range */
+	outlet_atom(bself->outlets[0],&at[i]);
+}
+\def 1 list (...) {
+	if (at) delete[] at;
+	ac = argc;
+	at = new t_atom[argc];
+	for (int i=0; i<argc; i++) at[i] = argv[i];
+}
+\end class {install("listread",2,1);}
+
+\class Range : FObject {
+	t_float *mosusses;
+	int nmosusses;
+	\constructor (...) {
+		nmosusses = argc;
+		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
+		mosusses = new t_float[argc];
+		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_float;
+		bself-> ninlets_set(1+nmosusses);
+		bself->noutlets_set(1+nmosusses);
+	}
+	~Range () {delete[] mosusses;}
+	\decl 0 float(float f);
+	\decl 0 list(float f);
+	\decl void _n_float(int i, float f);
+};
+\def 0 list(float f) {_0_float(argc,argv,f);}
+\def 0 float(float f) {
+	int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
+	outlet_float(bself->outlets[i],f);
+}
+ // precedence problem in dispatcher... does this problem still exist?
+\def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
+\end class {install("range",1,1);}
+
+//****************************************************************
+
+string ssprintf(const char *fmt, ...) {
+	std::ostringstream os;
+	va_list va;
+	va_start(va,fmt);
+	voprintf(os,fmt,va);
+	va_end(va);
+	return os.str();
+}
+
+\class GFPrint : FObject {
+	t_symbol *prefix;
+	t_pd *gp;
+	//t_symbol *rsym;
+	\constructor (t_symbol *s=0) {
+		//rsym = gensym(const_cast<char *>(ssprintf("gf.print:%08x",this).data())); // not in use atm.
+		prefix=s?s:gensym("print");
+		t_atom a[1];
+		SETSYMBOL(a,prefix);
+		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
+		gp = pd_newest();
+		SETPOINTER(a,(t_gpointer *)bself);
+		//pd_typedmess(gp,gensym("dest"),1,a);
+	}
+	~GFPrint () {
+		//pd_unbind((t_pd *)bself,rsym);
+		pd_free(gp);
+	}
+	\decl 0 grid(...);
+	\decl void anything (...);
+};
+std::ostream &operator << (std::ostream &self, const t_atom &a) {
+	switch (a.a_type) {
+		case A_FLOAT:   self << a.a_float; break;
+		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
+		case A_DOLLSYM: self << a.a_symbol->s_name; break; // for real, it's the same thing as A_SYMBOL in pd >= 0.40
+		case A_POINTER: self << "\\p(0x" << std::hex << a.a_gpointer << std::dec << ")"; break;
+		case A_COMMA:   self << ","; break;
+		case A_SEMI:    self << ";"; break;
+		case A_DOLLAR:  self << "$" << a.a_w.w_index; break;
+		case A_LIST: {
+			t_list *b = (t_list *)a.a_gpointer;
+			int argc = binbuf_getnatom(b);
+			t_atom *argv = binbuf_getvec(b);
+			self << "(";
+			for (int i=0; i<argc; i++) self << argv[i] << " )"[i==argc-1];
+			break;
+		}
+		default: self << "\\a(" << a.a_type << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
+	}
+	return self;
+}
+\def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
+\def void anything(...) {
+	std::ostringstream text;
+	text << prefix->s_name << ":";
+	if (argv[0]==gensym("_0_list") && argc>=2 && argv[1].a_type==A_FLOAT) {
+		// don't show the selector.
+	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_SYMBOL) {
+		text << " symbol";
+	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_POINTER) {
+		text << " pointer";
+	} else if (argv[0]==gensym("_0_list") && argc==1) {
+		text << " bang";
+	} else {
+		text << " " << argv[0].a_symbol->s_name+3; // as is
+	}
+	for (int i=1; i<argc; i++) {text << " " << argv[i];}
+	post("%s",text.str().data());
+}
+\end class {install("gf.print",1,0); add_creator3(fclass,"print");}
+
+#ifdef HAVE_DESIREDATA
+t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
+void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
+#endif
+
+//#ifdef HAVE_DESIREDATA
+static void display_update(void *x);
+\class Display : FObject {
+	bool selected;
+	t_glist *canvas;
+	t_symbol *rsym;
+	int y,x,sy,sx;
+	bool vis;
+	std::ostringstream text;
+	t_clock *clock;
+	t_pd *gp;
+	\constructor () {
+		selected=false; canvas=0; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
+		std::ostringstream os;
+		rsym = gensym(const_cast<char *>(ssprintf("display:%08x",this).data()));
+		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
+		gp = pd_newest();
+		t_atom a[1];
+		SETFLOAT(a,20);
+		pd_typedmess(gp,gensym("maxrows"),1,a);
+		text << "...";
+		pd_bind((t_pd *)bself,rsym);
+		SETPOINTER(a,(t_gpointer *)bself);
+		pd_typedmess(gp,gensym("dest"),1,a);
+		clock = clock_new((void *)this,(void(*)())display_update);
+	}
+	~Display () {
+		pd_unbind((t_pd *)bself,rsym);
+		pd_free(gp);
+		if (clock) clock_free(clock);
+	}
+	\decl void anything (...);
+	\decl 0 set_size(int sy, int sx);
+	\decl 0 grid(...);
+	\decl 0 very_long_name_that_nobody_uses(...);
+ 	void show() {
+		std::ostringstream quoted;
+	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
+		std::string ss = text.str();
+		const char *s = ss.data();
+		int n = ss.length();
+		for (int i=0;i<n;i++) {
+			if (s[i]=='\n') quoted << "\\n";
+			else if (strchr("\"[]$",s[i])) quoted << "\\" << (char)s[i];
+			else quoted << (char)s[i];
+		}
+		//return if not canvas or not @vis # can't show for now...
+		/* we're not using quoting for now because there's a bug in it. */
+		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c {%s}\n",
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,ss.data());
+	}
+};
+static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+	*x1 = bself->te_xpix-1;
+	*y1 = bself->te_ypix-1;
+	*x2 = bself->te_xpix+1+self->sx;
+	*y2 = bself->te_ypix+1+self->sy;
+}
+static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+	bself->te_xpix+=dx;
+	bself->te_ypix+=dy;
+	self->canvas = glist_getcanvas(glist);
+	self->show();
+	canvas_fixlinesfor(glist, (t_text *)x);
+}
+static void display_selectfn(t_gobj *x, t_glist *glist, int state) {
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+	self->selected=!!state;
+	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
+}
+static void display_deletefn(t_gobj *x, t_glist *glist) {
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
+	canvas_deletelinesfor(glist, (t_text *)x);
+}
+static void display_visfn(t_gobj *x, t_glist *glist, int flag) {
+	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+	self->vis = !!flag;
+	display_update(self);
+}
+static void display_update(void *x) {
+	Display *self = (Display *)x;
+	if (self->vis) self->show();
+}
+\def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
+\def void anything (...) {
+	string sel = string(argv[0]).data()+3;
+	text.str("");
+	if (sel != "float") {text << sel; if (argc>1) text << " ";}
+	long col = text.str().length();
+	char buf[MAXPDSTRING];
+	for (int i=1; i<argc; i++) {
+		atom_string(&argv[i],buf,MAXPDSTRING);
+		text << buf;
+		col += strlen(buf);
+		if (i!=argc-1) {
+			text << " ";
+			col++;
+			if (col>56) {text << "\\\\\n"; col=0;}
+		}
+	}
+	clock_delay(clock,0);
+}
+\def 0 grid(...) {
+	text.str("");
+	pd_typedmess(gp,gensym("grid"),argc,argv);
+	clock_delay(clock,0);
+}
+\def 0 very_long_name_that_nobody_uses(...) {
+	if (text.str().length()) text << "\n";
+	for (int i=0; i<argc; i++) text << (char)INT(argv[i]);
+}
+\end class {
+#ifndef DESIRE
+	install("display",1,0);
+	t_class *qlass = fclass->bfclass;
+	t_widgetbehavior *wb = new t_widgetbehavior;
+	wb->w_getrectfn    = display_getrectfn;
+	wb->w_displacefn   = display_displacefn;
+	wb->w_selectfn     = display_selectfn;
+	wb->w_activatefn   = 0;
+	wb->w_deletefn     = display_deletefn;
+	wb->w_visfn        = display_visfn;
+	wb->w_clickfn      = 0;
+	class_setwidget(qlass,wb);
+	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n\
+		$canvas delete ${self}TEXT \n\
+		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
+		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
+		incr x -1 \n\
+		incr y -1 \n\
+		set sx [expr $x2-$x1+2] \n\
+		set sy [expr $y2-$y1+4] \n\
+		$canvas delete ${self} \n\
+		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline \n\
+		$canvas lower $self ${self}TEXT \n\
+		pd \"$self set_size $sy $sx;\" \n\
+	}\n");
+#endif
+}
+//#endif // ndef HAVE_DESIREDATA
+
+//****************************************************************
+
+\class UnixTime : FObject {
+	\constructor () {}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	timeval tv;
+	gettimeofday(&tv,0);
+	time_t t = time(0);
+	struct tm *tmp = localtime(&t);
+	if (!tmp) RAISE("localtime: %s",strerror(errno));
+	char tt[MAXPDSTRING];
+	strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
+	t_atom a[6];
+	SETFLOAT(a+0,tmp->tm_year+1900);
+	SETFLOAT(a+1,tmp->tm_mon-1);
+	SETFLOAT(a+2,tmp->tm_mday);
+	SETFLOAT(a+3,tmp->tm_hour);
+	SETFLOAT(a+4,tmp->tm_min);
+	SETFLOAT(a+5,tmp->tm_sec);
+	t_atom b[3];
+	SETFLOAT(b+0,tv.tv_sec/86400);
+	SETFLOAT(b+1,mod(tv.tv_sec,86400));
+	SETFLOAT(b+2,tv.tv_usec);
+	outlet_anything(bself->outlets[2],&s_list,6,a);
+	outlet_anything(bself->outlets[1],&s_list,3,b);
+	send_out(0,strlen(tt),tt);
+}
+
+\end class UnixTime {install("unix_time",1,3);}
+
+
+//****************************************************************
+
+/* if using a DB-25 female connector as found on a PC, then the pin numbering is like:
+  13 _____ 1
+  25 \___/ 14
+  1 = STROBE = the clock line is a square wave, often at 9600 Hz,
+      which determines the data rate in usual circumstances.
+  2..9 = D0..D7 = the eight ordinary data bits
+  10 = -ACK (status bit 6 ?)
+  11 = BUSY (status bit 7)
+  12 = PAPER_END (status bit 5)
+  13 = SELECT (status bit 4 ?)
+  14 = -AUTOFD
+  15 = -ERROR (status bit 3 ?)
+  16 = -INIT
+  17 = -SELECT_IN
+  18..25 = GROUND
+*/
+
+//#include <linux/parport.h>
+#define LPCHAR 0x0601
+#define LPCAREFUL 0x0609 /* obsoleted??? wtf? */
+#define LPGETSTATUS 0x060b /* return LP_S(minor) */
+#define LPGETFLAGS 0x060e /* get status flags */
+
+#include <sys/ioctl.h>
+
+struct ParallelPort;
+void ParallelPort_call(ParallelPort *self);
+\class ParallelPort : FObject {
+	FILE *f;
+	int fd;
+	int status;
+	int flags;
+	bool manually;
+	t_clock *clock;
+	~ParallelPort () {if (clock) clock_free(clock); if (f) fclose(f);}
+	\constructor (string port, bool manually=0) {
+		f = fopen(port.data(),"r+");
+		if (!f) RAISE("open %s: %s",port.data(),strerror(errno));
+		fd = fileno(f);
+		status = 0xdeadbeef;
+		flags  = 0xdeadbeef;
+		this->manually = manually;
+		clock = manually ? 0 : clock_new(this,(void(*)())ParallelPort_call);
+		clock_delay(clock,0);
+	}
+	void call ();
+	\decl 0 float (float x);
+	\decl 0 bang ();
+};
+\def 0 float (float x) {
+  uint8 foo = (uint8) x;
+  fwrite(&foo,1,1,f);
+  fflush(f);
+}
+void ParallelPort_call(ParallelPort *self) {self->call();}
+void ParallelPort::call() {
+	int flags;
+	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
+	if (this->flags!=flags) outlet_float(bself->outlets[2],flags);
+	this->flags = flags;
+	int status;
+	if (ioctl(fd,LPGETSTATUS,&status)<0) post("ioctl: %s",strerror(errno));
+	if (this->status!=status) outlet_float(bself->outlets[1],status);
+	this->status = status;
+	if (clock) clock_delay(clock,2000);
+}
+\def 0 bang () {status = flags = 0xdeadbeef; call();}
+//outlet 0 reserved (future use)
+\end class {install("parallel_port",1,3);}
+
+//****************************************************************
+
+\class Route2 : FObject {
+	int nsels;
+	t_symbol **sels;
+	~Route2() {if (sels) delete[] sels;}
+	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); bself->noutlets_set(1+nsels);}
+	\decl void anything(...);
+	\decl 1 list(...);
+};
+\def void anything(...) {
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+	int i=0;
+	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+	outlet_anything(bself->outlets[i],sel,argc-1,argv+1);
+}
+\def 1 list(...) {
+	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+	if (sels) delete[] sels;
+	nsels = argc;
+	sels = new t_symbol*[argc];
+	for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
+}
+\end class {install("route2",1,1);}
+
+template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
+
+\class Shunt : FObject {
+	int n;
+	\attr int index;
+	\attr int mode;
+	\attr int hi;
+	\attr int lo;
+	\constructor (int n=2, int i=0) {
+		this->n=n;
+		this->hi=n-1;
+		this->lo=0;
+		this->mode=0;
+		this->index=i;
+		bself->noutlets_set(n);
+	}
+	\decl void anything(...);
+	\decl 1 float(int i);
+};
+\def void anything(...) {
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+	outlet_anything(bself->outlets[index],sel,argc-1,argv+1);
+	if (mode) {
+		index += sgn(mode);
+		if (index<lo || index>hi) {
+			int k = max(hi-lo+1,0);
+			int m = gf_abs(mode);
+			if (m==1) index = mod(index-lo,k)+lo; else {mode=-mode; index+=mode;}
+		}
+	}
+}
+\def 1 float(int i) {index = mod(i,n);}
+\end class {install("shunt",2,0);}
+
+\class Send39 : FObject {
+	\attr t_symbol *dest;
+	\constructor (t_symbol *dest) {
+		char buf[MAXPDSTRING];
+		sprintf(buf,"pd-%s",dest->s_name);
+		this->dest = gensym(buf);
+	}
+	\decl void anything (...);
+};
+\def void anything(...) {
+	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+	if (this->dest->s_thing) pd_typedmess(this->dest->s_thing,sel,argc-1,argv+1);
+	else RAISE("send-symbol %s does not exist",this->dest->s_name);
+}
+\end class {install("send39",1,0);}
+
+struct Receives;
+struct ReceivesProxy {
+	t_pd x_pd;
+	Receives *parent;
+	t_symbol *suffix;
+};
+t_class *ReceivesProxy_class;
+
+\class Receives : FObject {
+	int ac;
+	ReceivesProxy **av;
+	t_symbol *prefix;
+	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
+	\constructor (t_symbol *prefix=&s_, ...) {
+		this->prefix = prefix==gensym("empty") ? &s_ : prefix;
+		int n = min(1,argc);
+		do_bind(argc-n,argv+n);
+	}
+	\decl 0 bang ();
+	\decl 0 symbol (t_symbol *s);
+	\decl 0 list (...);
+	void do_bind (int argc, t_atom2 *argv) {
+		ac = argc;
+		av = new ReceivesProxy *[argc];
+		for (int i=0; i<ac; i++) {
+			av[i] = (ReceivesProxy *)pd_new(ReceivesProxy_class);
+			av[i]->parent = this;
+			av[i]->suffix = argv[i];
+			pd_bind(  (t_pd *)av[i],local(av[i]->suffix));
+		}
+	}
+	void do_unbind () {
+		for (int i=0; i<ac; i++) {
+			pd_unbind((t_pd *)av[i],local(av[i]->suffix));
+			pd_free((t_pd *)av[i]);
+		}
+		delete[] av;
+	}
+	~Receives () {do_unbind();}
+};
+\def 0 bang () {_0_list(0,0);}
+\def 0 symbol (t_symbol *s) {t_atom2 a[1]; SETSYMBOL(a,s); _0_list(1,a);}
+\def 0 list (...) {
+	do_unbind();
+	do_bind(argc,argv);
+}
+void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
+	outlet_symbol(  self->parent->bself->outlets[1],self->suffix);
+	outlet_anything(self->parent->bself->outlets[0],s,argc,argv);
+}
+\end class {
+	install("receives",1,2);
+	ReceivesProxy_class = class_new(gensym("receives.proxy"),0,0,sizeof(ReceivesProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
+	class_addanything(ReceivesProxy_class,(t_method)ReceivesProxy_anything);
+}
+
+/* this can't report on bang,float,symbol,pointer,list because zgetfn can't either */
+\class ClassExists : FObject {
+	\constructor () {}
+	\decl void _0_symbol(t_symbol *s);
+};
+\def void _0_symbol(t_symbol *s) {
+	outlet_float(bself->outlets[0],!!zgetfn(&pd_objectmaker,s));
+}
+\end class {install("class_exists",1,1);}
+
+\class ListEqual : FObject {
+	t_list *list;
+	\constructor (...) {list=0; _1_list(argc,argv);}
+	\decl 0 list (...);
+	\decl 1 list (...);
+};
+\def 1 list (...) {
+	if (list) list_free(list);
+	list = list_new(argc,argv);
+}
+\def 0 list (...) {
+	if (binbuf_getnatom(list) != argc) {outlet_float(bself->outlets[0],0); return;}
+	t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
+	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {outlet_float(bself->outlets[0],0); return;}
+	outlet_float(bself->outlets[0],1);
+}
+\end class {install("list.==",2,1);}
+
+//****************************************************************
+//#ifdef UNISTD
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/times.h>
+#include <sys/param.h>
+#include <unistd.h>
+//#endif
+#if defined (__APPLE__) || defined (__FreeBSD__)
+#define HZ CLK_TCK
+#endif
+
+uint64 cpu_hertz;
+int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
+
+\class UserTime : FObject {
+	clock_t time;
+	\constructor () {_0_bang(argc,argv);}
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_utime-time)*1000/HZ);}
+\end class {install("usertime",2,1);}
+\class SystemTime : FObject {
+	clock_t time;
+	\constructor () {_0_bang(argc,argv);}
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_stime-time)*1000/HZ);}
+\end class {install("systemtime",2,1);}
+\class TSCTime : FObject {
+	uint64 time;
+	\constructor () {_0_bang(argc,argv);}
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def 0 bang () {time=rdtsc();}
+\def 1 bang () {outlet_float(bself->outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
+\end class {install("tsctime",2,1);
+	struct timeval t0,t1;
+	uint64 u0,u1;
+	uint64 estimates[3];
+	for (int i=0; i<3; i++) {
+		u0=rdtsc(); gettimeofday(&t0,0); usleep(10000);
+		u1=rdtsc(); gettimeofday(&t1,0);
+		uint64 t = (t1.tv_sec-t0.tv_sec)*1000000+(t1.tv_usec-t0.tv_usec);
+		estimates[i] = (u1-u0)*1000000/t;
+	}
+	qsort(estimates,3,sizeof(uint64),(comparator_t)uint64_compare);
+	cpu_hertz = estimates[1];
+}
 
 #define MOM \
 	t_canvas *mom = bself->mom; \
@@ -297,9 +1004,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		t_object *t = (t_object *)wire->to;
 		int x1,y1,x2,y2;
 		gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
-		sys_vgui(".x%lx.c delete %lxRECT\n",long(can),long(t));
-		sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
-			long(can),x1,y1,x2,y2,long(t));
+		sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
+			long(can),long(t),long(can),x1,y1,x2,y2,long(t));
 	}
 #else
 	post("doesn't work with DesireData");
