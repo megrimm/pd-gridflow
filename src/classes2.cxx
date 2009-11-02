@@ -32,6 +32,11 @@ extern t_class *text_class;
 };
 #endif
 #include <algorithm>
+#include <errno.h>
+#include <sys/time.h>
+#include <string>
+
+typedef int (*comparator_t)(const void *, const void *);
 
 #ifndef DESIREDATA
 struct _outconnect {
@@ -144,7 +149,9 @@ void Args::process_args (int argc, t_atom *argv) {
 
 //****************************************************************
 
+namespace {
 template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
+};
 
 \class ListReverse : FObject {
 	\constructor () {}
