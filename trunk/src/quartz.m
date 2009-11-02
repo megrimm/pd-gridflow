@@ -36,7 +36,7 @@
 #include <objc/Object.h>
 #include <Cocoa/Cocoa.h>
 
-#include "../gridflow.h.fcs"
+#include "gridflow.hxx.fcs"
 
 @interface GFView: NSView {
 	uint8 *imdata;
