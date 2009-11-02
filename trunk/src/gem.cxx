@@ -23,7 +23,46 @@
 
 #include "gridflow.hxx.fcs"
 #include "Base/GemBase.h"
-#include "Base/GemPixUtil.h"
+#include "Base/GemGL.h"
+#include <string.h>
+#include <stdlib.h>
+#include "Base/GemFuncUtil.h"
+#include "Base/GemPixPete.h"
+
+/* summarising Base/GemPixUtil.h */
+struct GEM_EXTERN imageStruct {
+  imageStruct();
+  ~imageStruct();
+  void info();
+  unsigned char*   allocate(size_t size);  unsigned char*   allocate();
+  unsigned char* reallocate(size_t size);  unsigned char* reallocate();
+  void clear();
+  GLint xsize, ysize, csize;
+  GLenum type, format;
+  int notowned;
+  void setBlack();
+  void setWhite();
+  int setCsizeByFormat(int format);
+  int setCsizeByFormat();
+  void copy2Image(imageStruct *to) const;
+  void copy2ImageStruct(imageStruct *to) const; // copy the imageStruct (but not the actual data)
+  void refreshImage(imageStruct *to);
+  void swapRedBlue ();
+  void convertTo  (imageStruct*to,   GLenum dest_format=0);
+  void convertFrom(imageStruct*from, GLenum dest_format=0);
+  unsigned char   *data;
+  private:
+  unsigned char   *pdata;
+  size_t    datasize;
+  public:
+  GLboolean       upsidedown;
+};
+struct GEM_EXTERN pixBlock {
+  pixBlock();
+  imageStruct     image;
+  int newimage, newfilm;
+};
+/* end of summarising Base/GemPixUtil.h */
 
 //  in 0: gem
 //  in 1: grid
