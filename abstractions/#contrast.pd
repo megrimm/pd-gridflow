@@ -10,7 +10,6 @@
 #X obj 54 14 inlet;
 #X obj 94 14 inlet;
 #X obj 163 43 args (span a 256) (white a 256);
-#X obj 163 24 loadbang;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
@@ -23,4 +22,3 @@
 #X connect 10 0 2 1;
 #X connect 10 1 4 1;
 #X connect 10 2 1 0;
-#X connect 11 0 10 0;

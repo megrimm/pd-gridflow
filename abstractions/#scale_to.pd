@@ -10,7 +10,6 @@
 #X obj 28 64 #finished;
 #X obj 28 39 t a a;
 #X obj 140 20 inlet;
-#X obj 185 32 loadbang;
 #X obj 185 51 args size;
 #X obj 113 68 t a;
 #X connect 0 0 9 0;
@@ -24,9 +23,8 @@
 #X connect 9 0 8 0;
 #X connect 9 1 6 0;
 #X connect 9 1 5 1;
-#X connect 10 0 13 0;
+#X connect 10 0 12 0;
 #X connect 11 0 12 0;
-#X connect 12 0 13 0;
-#X connect 12 1 9 0;
-#X connect 13 0 2 1;
-#X connect 13 0 4 1;
+#X connect 11 1 9 0;
+#X connect 12 0 2 1;
+#X connect 12 0 4 1;
