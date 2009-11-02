@@ -15,6 +15,7 @@
 [ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
 
 unsorted
+[ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -89,6 +90,7 @@ Common Video Framework
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
 [ ] threads for video?
 [ ] GEM geos vs 3DP: how do they compare?
+[ ] [#from_pix]: 3-channel output
 [ ] is there anything else deserving to be unified between the video plugins?
 [ ] look at camorama
 [ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
@@ -103,13 +105,14 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 http://oprofile.sourceforge.net/about/
 also: qprofile, amd profiler, opreport -cl --demangle=smart
 
+[ ] OpenCL
+[ ] look at the endian stuff that is most probably wrong... if I can run anything on a G4 or G5.
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
 [ ] [display] should use clocks to update tk less often
-[ ] [display] leaks in server ?
 [ ] deprecation warnings
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
@@ -118,6 +121,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] [#import~] [#export~]
 [ ] [#expr]
 [ ] [#line]? [#pipe]? [#delay]?
+[ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
 [ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
 [ ] re-enable int64,float64
