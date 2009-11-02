@@ -230,7 +230,7 @@ norm transfer;
 0;
 #X text 9 32 device:;
 #X obj 11 50 vradio 15 1 0 11 \$0-s_device \$0-device empty 0 -6 0
-8 -241291 -1 -1 0;
+8 -241291 -1 -1 10;
 #X obj 81 105 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 270 214 cnv 15 144 124 empty \$0-palette2 YUV420P 86 8 0 12
@@ -238,34 +238,34 @@ norm transfer;
 #X obj 270 31 cnv 15 144 178 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 312 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_height \$0-height empty
-0 -6 1 10 -62784 -44926 -1 480 256;
+0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 360 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_width \$0-width empty
-0 -6 1 10 -62784 -44926 -1 640 256;
+0 -6 1 10 -233017 -195568 -195568 0 256;
 #X text 275 65 size:;
 #X text 315 35 height;
 #X text 365 35 width;
 #X msg 291 315 transfer mmap 4;
 #X obj 291 352 s \$0-o;
 #X obj 329 124 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
-10 -62784 -44926 -1;
+10 -233017 -195568 -195568;
 #X obj 344 124 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 10
--62784 -44926 -1;
+-233017 -195568 -195568;
 #X obj 329 136 bng 12 250 50 0 \$0-size2 \$0-sizec 240x320 -46 6 1
-10 -62784 -44926 -1;
+10 -233017 -195568 -195568;
 #X obj 344 136 bng 12 250 50 0 \$0-size3 \$0-sizec 240x360 16 6 1 10
--62784 -44926 -1;
+-233017 -195568 -195568;
 #X obj 329 148 bng 12 250 50 0 \$0-size4 \$0-sizec 480x640 -46 6 1
-10 -62784 -44926 -1;
+10 -233017 -195568 -195568;
 #X obj 344 148 bng 12 250 50 0 \$0-size5 \$0-sizec 480x720 16 6 1 10
--62784 -44926 -1;
+-233017 -195568 -195568;
 #X obj 344 160 bng 12 250 50 0 \$0-size6 \$0-sizec 576x720 16 6 1 10
--62784 -44926 -1;
+-233017 -195568 -195568;
 #X obj 344 172 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 10
--62784 -44926 -1;
+-233017 -195568 -195568;
 #X obj 360 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
-empty 0 -6 1 10 -233017 -195568 -195568 10 256;
+empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 83 179 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
-20 7 1 10 -233017 -195568 -195568 1 1;
+20 7 1 10 -233017 -195568 -195568 0 1;
 #X text 27 50 #0;
 #X text 27 65 #1;
 #X text 27 80 #2;
@@ -279,13 +279,13 @@ empty 0 -6 1 10 -233017 -195568 -195568 10 256;
 #X obj 83 251 hradio 12 1 0 4 \$0-s_noise_reduction \$0-noise_reduction
 _0_1_2_3_noise_reduction -2 7 1 10 -233017 -195568 -195568 0;
 #X obj 83 263 hradio 12 1 0 4 \$0-s_compression \$0-compression _0_1_2_3_compression
--2 7 1 10 -233017 -195568 -195568 3;
-#X obj 11 226 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
--1 0 1;
+-2 7 1 10 -233017 -195568 -195568 0;
+#X obj 11 226 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
+-195568 0 1;
 #X text 26 224 use PWC;
 #X text 28 170 DC1394;
 #X obj 356 232 vradio 12 1 0 4 \$0-s_colorspace_e \$0-colorspace_e
-empty 0 -8 0 10 -62784 -44926 -1 2;
+empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 370 229 y;
 #X text 370 241 yuv;
 #X text 370 254 rgb;
@@ -309,21 +309,21 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 214 45 NTSC;
 #X text 213 57 SECAM;
 #X text 213 68 auto;
-#X obj 6 6 cnv 15 408 20 empty \$0-title Logitech_QuickCam_Pro_4000
-4 10 1 12 -1 -262144 0;
+#X obj 6 6 cnv 15 408 20 empty \$0-title No_camera_selected 4 10 1
+12 -1 -262144 0;
 #X obj 356 285 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
-0 -8 0 10 -62784 -44926 -1 1;
+0 -8 0 10 -233017 -195568 -195568 0;
 #X text 291 289 Transfer:;
 #X text 370 283 read;
 #X text 371 295 mmap;
 #X obj 312 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
--6 1 10 -233017 -1 -195568 120 256;
+-6 1 10 -233017 -1 -195568 0 256;
 #X obj 360 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
--6 1 10 -233017 -1 -195568 160 256;
+-6 1 10 -233017 -1 -195568 0 256;
 #X obj 312 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxheight empty 0
--6 1 10 -233017 -1 -195568 480 256;
+-6 1 10 -233017 -1 -195568 0 256;
 #X obj 360 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxwidth empty 0
--6 1 10 -233017 -1 -195568 640 256;
+-6 1 10 -233017 -1 -195568 0 256;
 #X text 275 79 max:;
 #X text 275 51 min:;
 #X text 297 214 Palette:;
