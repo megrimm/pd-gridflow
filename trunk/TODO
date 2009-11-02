@@ -6,7 +6,6 @@
 [ ] listflatten-help.pd : [display] bug
 [ ] GridFlow Index dans toutes les fenêtres
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [doc_h] says "#SVD" instead of "cv/#SVD", etc.
 [ ] [#reinterval] takes no argument
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [ascii_to_f] broken?
@@ -17,7 +16,6 @@
 [ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
 
 unsorted
-[ ] [route3] is like [route] but doesn't trim.
 [ ] what to do with GridFlow version numbering?
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -25,7 +23,6 @@ unsorted
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
-[ ] [#fold] is slowwww
 [ ] doc attributes: [doc_a] [doc_aa] ?
 [ ] [doc_ii] links to [doc_cc]
 [ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
@@ -43,23 +40,20 @@ unsorted
 [ ] get rid of doc/stuff.txt and doc/*.html       */
 [ ] support "get" in abstractions... automatically, through [args] ?
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
-[ ] bugs roman
-[ ] add claude's fixes
-[ ] other gf mails in inbox
-[ ] #line_to_polygon is buggy
+[ ] bugs/bugfixes from roman, claude, etc
+s[ ] #line_to_polygon is buggy
 [ ] #draw_polygon init_lines() not sufficiently called
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance
-    trigger_mode? trigger, trigger_delay
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] with pwc, 720x480 crashes
 [ ] fix SDL modifiers
 [ ] fix quoting in [display]
-[ ] [for] has a bug in "from".
+[ ] about.pd: link from help menu; add link to website, mention irc, etc.
 
 Later
+[ ] [#fold] is slowwww
+[ ] [route3] is like [route] but doesn't trim.
 [ ] #out x11 doesn't accept 0-sized grids
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
@@ -69,6 +63,8 @@ Later
 [ ] add [#out png]
 [ ] Accumulation of Background Statistics
 [ ] compenser pour les ajustements progressifs ou soudains de luminosite
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 
 OpenCV
 [ ] cvOpticalFlow
@@ -110,8 +106,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
-[ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
-[ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
+[ ] encoding of quicktime RGBA (PNG) does not work at all!
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
 [ ] [display] should use clocks to update tk less often
@@ -129,39 +124,33 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] re-enable int64,float64
 [ ] added #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
-[ ] internals documentation
 [ ] internal grid protocol redesigned
 [ ] look into -ftree-vectorize
 [ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
 [ ] some proper equivalent of [rubysprintf]... see also: [gf.error]
-[144] small leak remaining in x11. may have to do with non-use of XDestroyImage.
-[140] is [@convolve] actually cross-convolution?
-	that is, convolves with a mirror image of the convolution matrix.
-[134] #import with zero size crashes?
-[133] numop ** can freeze GF
-[117] osx: [#store] crash instead of raising
-[107] MMX computations may be done misaligned, which may be bad.
-[105] when file not found, mpeg error messages are wrong, they say the filename is "".
-[102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
-[078] "unsupported codec" bogus errors.
-[034] format/mpeg3.c,quicktime.c might cause lockup on exit
-[038] some seeds aren't typechecked
-[039] jpeg file cat crashes on second file (jpeglib buffering?)
-[040] GRID_FINISH triggered while backstore ???
-[079] can trap segfaults in codecs of libquicktime.
-[041] what would be a way to make GF work well with Pd's idea of a list?
-[045] write unit tests about required functionality
-[046] write unit tests about error checking
-[047] make system to ensure everything is working before a release.
-[054] it's possible to crash by sending data in two inlets of a same object at once
+[ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
+[ ] is [@convolve] actually cross-convolution? that is, convolves with a mirror image of the convolution matrix.
+[ ] #import with zero size crashes?
+[ ] numop ** can freeze GF
+[ ] osx: [#store] crash instead of raising
+[ ] MMX computations may be done misaligned, which may be bad.
+[ ] when file not found, mpeg error messages are wrong, they say the filename is "".
+[ ] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
+[ ] "unsupported codec" bogus errors.
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[ ] some seeds aren't typechecked
+[ ] jpeg file cat crashes on second file (jpeglib buffering?)
+[ ] GRID_FINISH triggered while backstore ???
+[ ] what would be a way to make GF work well with Pd's idea of a list?
+[ ] write unit tests about required functionality
+[ ] write unit tests about error checking
+[ ] make system to ensure everything is working before a release.
+[ ] it's possible to crash by sending data in two inlets of a same object at once
 
 Installation
-[ ] less compile-time checks and more run-time checks
-[ ] should GridFlow be bundled with some of its own dependencies?
 [ ] cross-compile: http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
 
 Documentation
-[ ] find a place where to put the credits
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
