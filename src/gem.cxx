@@ -124,10 +124,6 @@ CPPEXTERN_NEW(GridFromPixHelper)
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 		yflip = false;
-		bself->gemself = (GemPixObj *)this;
-		helper = new GridFromPixHelper;
-		helper->boss = this;
-		bself->gemself = helper;
 		cast = int32_e;
 	}
 	virtual ~GridFromPix () {}
@@ -160,13 +156,8 @@ CPPEXTERN_NEW(GridFromPixHelper)
 	}
 };
 \def 0 gem_state (void *cache, void *state) {render((GemState *)state);}
-
+\end class {install("#from_pix",2,1); add_creator("#import_pix");}
 void GridFromPixHelper::obj_setupCallback(t_class *) {}
-
-\end class {
-	install("#from_pix",2,1);
-	add_creator("#import_pix");
-}
 void GridFromPixHelper::render(GemState *state) {boss->render(state);}
 
 //------------------------------------------------------------------------
