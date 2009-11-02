@@ -352,6 +352,9 @@ template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uin
 template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )
 }
+template <class T> static void   pack3_bgrn8888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )
+}
 
 template <class T>
 static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
@@ -394,7 +397,7 @@ static Packer bp_packers[] = {
 	ANYCASE(pack2_565),
 	ANYCASE(pack3_888),
 	{pack3_888b, default_pack, default_pack}, /* {pack3_888c, pack3_888c, pack3_888c}, not tested */
-	{pack3_bgrn8888, default_pack, default_pack},
+	{pack3_bgrn8888, pack3_bgrn8888b, pack3_bgrn8888b},
 	ANYCASE(pack3_888d),
 };
 
