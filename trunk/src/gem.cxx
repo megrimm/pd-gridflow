@@ -161,22 +161,13 @@ GRID_INLET(1) {
 		GridOutlet out(this,0,new Dim(3,v),cast);
 		long sxc = im.xsize*im.csize;
 		long sy = v[0];
-		uint8 buf[sxc];
-		for (int y=0; y<v[0]; y++) {
-			uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y);
-			bit_packing->pack(im.xsize,data,buf);
-			// not supposed to be using pack here, but it's faster than unpack, and they're self-inverses here.
-			out.send(sxc,buf);
-		}
-/*		#define FOO(T) { \
-			uint8 buf[sxc]; \
+		for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
+/*		#define FOO(T) {T buf[sxc]; \
 			for (int y=0; y<v[0]; y++) { \
 				uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y); \
-				bit_packing->unpack(im.xsize,data,buf); \
-				out.send(sxc,buf);}}
+				bit_packing->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 		TYPESWITCH(cast,FOO,)
-		#undef FOO
-*/
+		#undef FOO */
 	}
 };
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
