@@ -79,7 +79,7 @@ struct ArgSpec {
 				SETNULL(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
 		}
-		bself->noutlets_set(sargc+1);
+		bself->noutlets_set(sargc);
 	}
 	~Args () {delete[] sargv;}
 	\decl 0 bang ();
