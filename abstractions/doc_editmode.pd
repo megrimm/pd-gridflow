@@ -23,12 +23,12 @@
 #X obj 16 130 t b a a b;
 #X obj 50 168 * 20;
 #X obj 50 149 spigot \$2;
-#X msg 16 33 1;
 #X text 48 32 still something wrong with the loadbang? it's a mystery.
 ;
+#X msg 16 33 1;
 #X connect 0 0 20 0;
 #X connect 1 0 13 0;
-#X connect 2 0 23 0;
+#X connect 2 0 24 0;
 #X connect 3 0 11 0;
 #X connect 4 0 3 0;
 #X connect 5 0 16 0;
@@ -51,4 +51,4 @@
 #X connect 20 3 8 0;
 #X connect 21 0 19 0;
 #X connect 22 0 21 0;
-#X connect 23 0 1 0;
+#X connect 24 0 1 0;
