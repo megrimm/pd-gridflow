@@ -3,8 +3,7 @@
 
 include config.make
 COMMON_DEPS = config.make Makefile src/source_filter.rb
-CFLAGS += -fno-operator-names
-
+COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
 
 #--------#
@@ -48,34 +47,32 @@ all:: $(PD_LIB) aliases
 
 CFLAGS += -DPDSUF=\"$(PDSUF)\"
 
-H = src/gridflow.hxx.fcs
-
 %.hxx.fcs: %.hxx $(COMMON_DEPS)
 	$(FILT) $< $@
-%.cxx.fcs: %.cxx $(COMMON_DEPS) $(H)
+%.cxx.fcs: %.cxx $(COMMON_DEPS2)
 	$(FILT) $< $@
-%.c.fcs: %.c $(COMMON_DEPS) $(H)
+%.c.fcs: %.c $(COMMON_DEPS2)
 	$(FILT) $< $@
-%.m.fcs: %.m $(COMMON_DEPS) $(H)
+%.m.fcs: %.m $(COMMON_DEPS2)
 	$(FILT) $< $@
-%.o: %.c.fcs $(COMMON_DEPS) $(H)
+%.o: %.c.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
-%.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
-%.1.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.1.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -DPASS1 -c $< -o $@
-%.2.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.2.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -DPASS2 -c $< -o $@
-%.3.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.3.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -DPASS3 -c $< -o $@
-%.4.o: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.4.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -DPASS4 -c $< -o $@
-%.o: %.m.fcs $(COMMON_DEPS) $(H)
+%.o: %.m.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 
-%.s: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.s: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) $(CFLAGS) -S $< -o $@
-%.e: %.cxx.fcs $(COMMON_DEPS) $(H)
+%.e: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) $(CFLAGS) -E $< -o $@
 
 .PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
