@@ -1075,6 +1075,19 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	return a->te_ypix < b->te_ypix;
 }
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
+static t_class *inlet_class, *floatinlet_class, *symbolinlet_class, *pointerinlet_class;
+static bool ISINLET(t_pd *o) {
+  t_class *c=pd_class(o);
+  return c==inlet_class || c==floatinlet_class || c==symbolinlet_class || c==pointerinlet_class;
+}
+struct _inlet {
+    t_pd pd;
+    struct _inlet *next;
+    t_object *owner;
+    t_pd *dest;
+    t_symbol *symfrom;
+    //union inletunion un;
+};
 \def 0 box_align (t_symbol *dir, int x_start, int y_start, int incr) {
 	int x=x_start, y=y_start;
 	bool horiz;
@@ -1083,7 +1096,11 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 #ifndef DESIREDATA
 	std::vector<t_object *> v;
 	BEGIN
-	wire_each(wire,ouch) v.push_back((t_object *)wire->to);
+	wire_each(wire,ouch) {
+		//post("wire to object of class %s ISINLET=%d",pd_class(wire->to)->c_name->s_name,ISINLET(wire->to));
+		t_object *to = ISINLET(wire->to) ? ((t_inlet *)wire->to)->owner : (t_object *)wire->to;
+		v.push_back(to);
+	}
 	sort(v.begin(),v.end(),comment_sort_y_lt);
 	foreach(tt,v) {
 		t_object *t = *tt;
@@ -1114,6 +1131,11 @@ bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictW
 	while (lol[i]!=0xDECAFFED) i++;
 	*((char *)(lol+i+1) + 6) = 1;
 	class_setpropertiesfn(text_class,0);
+	t_object *bogus = (t_object *)pd_new(text_class);
+	       inlet_class = pd_class((t_pd *)       inlet_new(bogus,0,0,0));
+	  floatinlet_class = pd_class((t_pd *)  floatinlet_new(bogus,0));
+	 symbolinlet_class = pd_class((t_pd *) symbolinlet_new(bogus,0));
+	pointerinlet_class = pd_class((t_pd *)pointerinlet_new(bogus,0));
 #endif
 }
 
