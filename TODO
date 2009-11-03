@@ -1,19 +1,12 @@
-/* $Id$ */
+$Id$
 
 0.9.6
+[ ] check that we have pd 0.40
+[ ] remove [send39]
 [ ] go back in all help files and fill in whatever is missing
-[ ] listflatten-help.pd : [display] bug
-[ ] GridFlow Index dans toutes les fenêtres
-[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [#reinterval] takes no argument
-[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
-[ ] [ascii_to_f] broken?
-[ ] [#make_arrow] (fix and help)
-[ ] [#interval_overlap]
-[ ] [#from_pix]: 3-channel output
-[ ] WILL NOT go through all the new [gf/...] to "clean things up" nows; will not make help files of them right now either.
 
 unsorted
+[ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] [pack] trigger_by (choose which inlets are hot)
@@ -28,6 +21,17 @@ unsorted
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] with pwc, 720x480 crashes
 [ ] about.pd: link from help menu; add link to website, mention irc, etc.
+[ ] WILL NOT go through all the new [gf/...] to "clean things up" now; will not make help files of them right now either.
+
+0.9.7
+[ ] listflatten-help.pd : [display] bug
+[ ] GridFlow Index dans toutes les fenêtres
+[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
+[ ] [#reinterval] takes no argument
+[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
+[ ] [doc_m] boxes are too big
+[ ] [#make_arrow] (fix and help)
+[ ] [#interval_overlap]s
 
 Later
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
