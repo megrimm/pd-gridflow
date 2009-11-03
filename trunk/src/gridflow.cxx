@@ -344,13 +344,16 @@ static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
 */
 
 template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2];           out+=3; in+=3; )
 }
 template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )
 }
 template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )
+}
+template <class T> static void unpack3_888d(BitPacking *self, long n, uint8 *in, T *out) {TRACE
+	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2];           out+=3; in+=4; )
 }
 template <class T> static void   pack3_bgrn8888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )
@@ -405,6 +408,7 @@ static Unpacker bp_unpackers[] = {
 	ANYCASE(default_unpack),
 	ANYCASE(unpack3_888),
 	{pack3_bgrn8888, default_unpack, default_unpack},
+	ANYCASE(unpack3_888d),
 };	
 
 static BitPacking builtin_bitpackers[] = {
@@ -412,7 +416,7 @@ static BitPacking builtin_bitpackers[] = {
 	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[1]),
 	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
 	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[2]),
-	BitPacking(1, 4, 3, bp_masks[2], &bp_packers[5], &bp_unpackers[0]),
+	BitPacking(1, 4, 3, bp_masks[2], &bp_packers[5], &bp_unpackers[3]),
 };
 
 /* **************************************************************** */
@@ -534,7 +538,6 @@ static t_class *BFProxy_class;
 
 static void BFObject_loadbang (BFObject *bself) {
 	FMethod m = funcall_lookup(bself,"_0_loadbang");
-	if (!m) {error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); return;}
 	m(bself->self,0,0);
 }
 
