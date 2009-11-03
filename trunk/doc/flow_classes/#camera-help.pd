@@ -1,4 +1,4 @@
-#N canvas 679 40 568 550 10;
+#N canvas 679 40 568 640 10;
 #X obj 50 198 #out window;
 #X obj 24 79 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
@@ -8,7 +8,7 @@
 #X obj 50 105 metro 20;
 #X text 14 27 Is an abstraction that provides a preset for bttv cards
 as well as discrete controls of other cameras.;
-#X text 200 489 Returns a grid from the video capture device for every
+#X text 200 579 Returns a grid from the video capture device for every
 bang.;
 #X obj 50 179 #scale_by;
 #X text 20 270 * for webcams \, please note that you need to have the
@@ -17,19 +17,27 @@ the quickcam pro 4000;
 #X text 115 145 <-- open the abstraction and configure for your camera
 before sending it a bang.;
 #X obj 50 146 #camera;
-#X text 200 354 Corresponds to the video for linux device on you system
-(0-8);
 #X obj 0 0 doc_h;
-#X obj 3 459 doc_o 1;
-#X obj 3 399 doc_i 1;
+#X obj 3 549 doc_o 1;
+#X obj 3 452 doc_i 1;
 #X obj 3 324 doc_c 1;
-#X obj 14 489 doc_oo 0;
-#X obj 14 429 doc_ii 0;
+#X obj 14 579 doc_oo 0;
+#X obj 14 482 doc_ii 0;
 #X obj 14 354 doc_cc 0;
 #X obj 97 354 doc_m c0 float/int;
-#X obj 97 429 doc_m i0 bang;
-#X obj 97 489 doc_m o0 grid;
-#X obj 0 521 doc_f;
+#X obj 97 579 doc_m o0 grid;
+#X obj 0 611 doc_f;
+#X obj 97 482 doc_m i0 device;
+#X text 200 482 same as arg 0;
+#X obj 97 504 doc_m i0 <any>;
+#X text 200 504 same as the class of the camera object being used inside:
+see #io.videodev-help.pd for a LONG list of options;
+#X text 200 376 8: a linux device using the DC-1394 interface;
+#X text 200 398 9: an OSX device using the QuickTime camera interface
+;
+#X text 200 354 0..7: a linux device using the V4L1 interface (videodev.h)
+;
+#X text 200 420 -1: none;
 #X connect 0 0 3 0;
 #X connect 1 0 11 0;
 #X connect 2 0 5 0;
@@ -37,5 +45,10 @@ before sending it a bang.;
 #X connect 5 0 11 0;
 #X connect 8 0 0 0;
 #X connect 11 0 8 0;
-#X connect 20 1 12 0;
-#X connect 22 1 7 0;
+#X connect 19 1 26 0;
+#X connect 19 1 27 0;
+#X connect 19 1 28 0;
+#X connect 19 1 29 0;
+#X connect 20 1 7 0;
+#X connect 22 1 23 0;
+#X connect 24 1 25 0;

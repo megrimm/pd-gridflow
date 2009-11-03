@@ -1,6 +1,6 @@
-#N canvas 335 118 568 238 10;
+#N canvas 335 118 600 258 10;
 #X obj 0 0 doc_h;
-#X obj 0 209 doc_f;
+#X obj 0 229 doc_f;
 #X text 146 38 an auto-positioning documentation header;
 #X obj 3 67 doc_c 1;
 #X obj 3 129 doc_i 0;
@@ -9,4 +9,9 @@
 #X obj 97 97 doc_m c0 float;
 #X text 200 97 number of creation arguments in the class being documented.
 ;
+#X obj 3 209 doc_also;
+#X text 103 209 [doc_i];
+#X text 157 209 [doc_o];
 #X connect 7 1 8 0;
+#X connect 9 1 10 0;
+#X connect 9 1 11 0;
