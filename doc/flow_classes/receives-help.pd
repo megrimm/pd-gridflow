@@ -1,14 +1,12 @@
-#N canvas 335 118 568 409 10;
+#N canvas 335 118 600 409 10;
 #X obj 0 0 doc_h;
 #X obj 0 380 doc_f;
-#X obj 81 51 receives \$0-;
-#X obj 3 77 doc_c 0..;
-#X obj 14 107 doc_cc 0;
+#X obj 3 93 doc_c 0..;
+#X obj 14 123 doc_cc 0;
 #X obj 14 165 doc_cc other;
-#X obj 97 107 doc_m c0 symbol;
+#X obj 97 123 doc_m c0 symbol;
 #X obj 97 165 doc_m cother symbol;
-#X text 261 48 any number of [r] in one object.;
-#X text 200 107 the prefix that is going to be common to all receive-symbols.
+#X text 200 123 the prefix that is going to be common to all receive-symbols.
 if omitted \, the blank symbol will be used (thus no prefix).;
 #X text 200 165 the suffix of each receive symbol that will be registered.
 ;
@@ -27,8 +25,14 @@ this is what you're doing);
 #X obj 97 348 doc_m o1 symbol;
 #X text 200 348 the receive-symbol that this message was received as.
 ;
-#X connect 6 1 9 0;
-#X connect 7 1 10 0;
-#X connect 16 1 17 0;
-#X connect 19 1 18 0;
-#X connect 20 1 21 0;
+#X obj 85 53 receives \$0- a b c;
+#X text 206 52 =;
+#X obj 223 54 r \$0-a;
+#X obj 265 54 r \$0-b;
+#X obj 307 54 r \$0-c;
+#X text 356 52 and more;
+#X connect 5 1 7 0;
+#X connect 6 1 8 0;
+#X connect 14 1 15 0;
+#X connect 17 1 16 0;
+#X connect 18 1 19 0;

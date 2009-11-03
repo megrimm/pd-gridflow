@@ -1,4 +1,4 @@
-#N canvas 442 305 568 357 10;
+#N canvas 442 305 600 357 10;
 #X obj 39 73 ascii;
 #X floatatom 39 41 5 0 0 0 - - -;
 #X obj 39 92 print;
