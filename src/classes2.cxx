@@ -974,13 +974,16 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 float (float y);
 };
 \def 0 float (float y) {MOM;
-	mom->gl_screenx2 = mom->gl_screenx1 + 568;
+	// was 568
+	mom->gl_screenx2 = mom->gl_screenx1 + 600;
 	if (mom->gl_screeny2-mom->gl_screeny1 < y) mom->gl_screeny2 = mom->gl_screeny1+y;
 	sys_vgui("wm geometry .x%lx %dx%d\n",long(mom),
 	  int(mom->gl_screenx2-mom->gl_screenx1),
 	  int(mom->gl_screeny2-mom->gl_screeny1));
 }
 \end class {install("gf/canvas_hehehe",1,1);}
+
+#define DASHRECT "-outline #80d4b2 -dash {2 6 2 6}"
 
 \class GFCanvasHoHoHo : FObject {
 	int n;
@@ -994,7 +997,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	hide();
 	MOM;
 	last = mom;
-	sys_vgui(".x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
+	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
 		long(last),x1,y1,x2,y2,bself);
 }
 \end class {install("gf/canvas_hohoho",1,0);}
@@ -1064,7 +1067,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		t_object *t = (t_object *)wire->to;
 		int x1,y1,x2,y2;
 		gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
-		sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d -outline #00aa66 -dash {3 5 3 5} -tags %lxRECT\n",
+		// was #00aa66 {3 5 3 5}
+		sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
 			long(can),long(t),long(can),x1,y1,x2,y2,long(t));
 	}
 #else
