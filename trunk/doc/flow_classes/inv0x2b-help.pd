@@ -1,4 +1,4 @@
-#N canvas 652 22 568 574 10;
+#N canvas 652 22 600 574 10;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 288 163 negative;
@@ -14,13 +14,9 @@
 #X obj 219 238 #out window \, title inv+;
 #X text 349 221 Outputs negated image;
 #X text 68 221 Outputs initial image;
-#X obj 331 192 hsl 128 8 0 255 0 0 empty empty empty -2 -6 0 8 -262144
+#X obj 331 192 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X text 200 418 A float in inlet 1 is stored as the value "b" to perform
-the "b-a" operation.;
-#X text 200 383 A float in inlet 1 is stored as the value "a" to perform
-the "b-a" operation.;
-#X obj 154 525 swap;
+#X obj 151 525 swap;
 #X obj 154 525 swap;
 #X text 9 24 The [inv+] performs an inversion on the data passed to
 it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
@@ -29,7 +25,7 @@ it.;
 #X floatatom 34 102 5 0 0 0 - - -;
 #X floatatom 57 119 5 0 0 0 - - -;
 #X floatatom 34 176 5 0 0 0 - - -;
-#X obj 105 525 # inv+;
+#X obj 103 525 # inv+;
 #X obj 34 146 inv+;
 #X obj 263 211 # inv+ 255;
 #X text 200 493 Outputs the result of the operation "b-a".;
@@ -53,25 +49,27 @@ it.;
 #X obj 0 545 doc_f;
 #X text 200 308 number that the left inlet values will be subtracted
 from.;
+#X text 200 383 a: the value to subtract;
+#X text 200 418 b: the value to subtract from;
 #X connect 0 0 7 0;
 #X connect 2 0 5 0;
 #X connect 3 0 5 1;
 #X connect 4 0 8 0;
 #X connect 5 0 9 0;
-#X connect 5 1 23 0;
+#X connect 5 1 21 0;
 #X connect 7 0 2 0;
 #X connect 8 0 0 0;
-#X connect 12 0 23 1;
-#X connect 18 0 22 0;
-#X connect 19 0 22 1;
-#X connect 22 0 20 0;
-#X connect 23 0 9 0;
-#X connect 25 0 28 0;
-#X connect 26 0 28 1;
-#X connect 28 0 27 0;
-#X connect 31 1 21 0;
-#X connect 31 1 15 0;
+#X connect 12 0 21 1;
+#X connect 16 0 20 0;
+#X connect 17 0 20 1;
+#X connect 20 0 18 0;
+#X connect 21 0 9 0;
+#X connect 23 0 26 0;
+#X connect 24 0 26 1;
+#X connect 26 0 25 0;
+#X connect 29 1 19 0;
+#X connect 29 1 13 0;
+#X connect 36 1 41 0;
+#X connect 37 1 42 0;
 #X connect 38 1 43 0;
-#X connect 39 1 14 0;
-#X connect 40 1 13 0;
-#X connect 41 1 24 0;
+#X connect 39 1 22 0;

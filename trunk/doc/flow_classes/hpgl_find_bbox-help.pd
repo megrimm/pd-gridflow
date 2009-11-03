@@ -1,4 +1,4 @@
-#N canvas 335 118 568 322 10;
+#N canvas 335 118 600 322 10;
 #X obj 0 293 doc_f;
 #X obj 0 0 doc_h;
 #X obj 94 48 hpgl_find_bbox;
