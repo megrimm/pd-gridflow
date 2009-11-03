@@ -146,33 +146,44 @@ GRID_INLET(1) {
 	P<BitPacking> bit_packing;
 	\attr bool yflip;
 	\attr NumberTypeE cast;
+	int channels;
 	GridFromPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
 	GridFromPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing = new BitPacking(is_le(),4,4,mask);
+		bit_packing = new BitPacking(is_le(),4,3,mask);
 		yflip = false;
 		cast = int32_e;
+		channels = 3;
 	}
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
+	\decl 0 colorspace (t_symbol *s);
 	void render(GemState *state) {
 		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
 		if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
 		if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
-		int32 v[] = { im.ysize, im.xsize, im.csize };
+		int32 v[] = { im.ysize, im.xsize, channels };
 		GridOutlet out(this,0,new Dim(3,v),cast);
-		long sxc = im.xsize*im.csize;
+		long sxc = im.xsize*channels;
 		long sy = v[0];
-		for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
-/*		#define FOO(T) {T buf[sxc]; \
-			for (int y=0; y<v[0]; y++) { \
-				uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y); \
+		if (channels==3) {
+			#define FOO(T) {T buf[sxc]; \
+			    for (int y=0; y<v[0]; y++) { \
+				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(yflip?y:sy-1-y); \
 				bit_packing->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
-		TYPESWITCH(cast,FOO,)
-		#undef FOO */
+			TYPESWITCH(cast,FOO,)
+			#undef FOO
+		} else {
+			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
+		}
 	}
 };
+\def 0 colorspace (t_symbol *s) {
+	if (s==gensym("rgb" )) channels=3; else
+	if (s==gensym("rgba")) channels=4; else
+	RAISE("unknown colorspace '%s'",s->s_name);
+}
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
 \end class {install("#from_pix",2,1); add_creator("#import_pix");}
 
