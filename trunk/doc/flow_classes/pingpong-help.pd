@@ -1,4 +1,4 @@
-#N canvas 688 0 568 383 10;
+#N canvas 688 0 600 383 10;
 #X obj 0 0 doc_h;
 #X obj 3 294 doc_o 1;
 #X text 148 44 Transforms linear counting (0 \, 1 \, 2 \, 3 \, 4 \,

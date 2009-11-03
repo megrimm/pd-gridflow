@@ -1,4 +1,4 @@
-#N canvas 412 190 568 462 10;
+#N canvas 412 190 600 485 10;
 #X obj 11 140 route2 blah foo bar;
 #X msg 29 39 blah blah blah;
 #X msg 29 62 foo 42;
@@ -16,9 +16,13 @@
 #X obj 3 373 doc_o n;
 #X obj 14 343 doc_ii 0;
 #X obj 14 403 doc_oo nonlast;
-#X obj 14 403 doc_oo last;
+#X obj 14 426 doc_oo last;
 #X obj 14 283 doc_cc any;
-#X obj 0 433 doc_f;
+#X obj 0 456 doc_f;
+#X obj 97 402 doc_m ononlast <any>;
+#X obj 97 426 doc_m olast <any>;
+#X obj 97 343 doc_m i0 <any>;
+#X obj 97 283 doc_m cany symbol;
 #X connect 0 0 7 0;
 #X connect 0 1 6 0;
 #X connect 0 2 5 0;
