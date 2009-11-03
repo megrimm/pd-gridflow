@@ -1122,6 +1122,15 @@ struct _inlet {
 	post("doesn't work with DesireData");
 #endif
 }
+extern t_widgetbehavior text_widgetbehavior;
+t_widgetbehavior text_widgetbehavi0r;
+static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
+	text_widgetbehavior.w_visfn(o,can,vis);
+	if (!vis) {
+	        t_rtext *y = glist_findrtext(can,(t_text *)o);
+		if (gobj_shouldvis((t_gobj *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
+	}
+}
 \end class {
 	install("gf/lol",1,1);
 #ifndef DESIREDATA
@@ -1136,6 +1145,9 @@ struct _inlet {
 	  floatinlet_class = pd_class((t_pd *)  floatinlet_new(bogus,0));
 	 symbolinlet_class = pd_class((t_pd *) symbolinlet_new(bogus,0));
 	pointerinlet_class = pd_class((t_pd *)pointerinlet_new(bogus,0));
+	memcpy(&text_widgetbehavi0r,&text_widgetbehavior,sizeof(t_widgetbehavior));
+	text_widgetbehavi0r.w_visfn = text_visfn_hax0r;
+	class_setwidget(text_class,&text_widgetbehavi0r);
 #endif
 }
 
