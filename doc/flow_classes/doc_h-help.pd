@@ -1,4 +1,4 @@
-#N canvas 409 226 568 269 10;
+#N canvas 409 226 600 269 10;
 #X obj 0 0 doc_h;
 #X obj 0 240 doc_f;
 #X text 126 40 an auto-positioning documentation header;

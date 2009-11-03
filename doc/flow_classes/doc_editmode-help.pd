@@ -1,4 +1,4 @@
-#N canvas 451 192 568 304 10;
+#N canvas 451 192 600 304 10;
 #X obj 0 0 doc_h;
 #X obj 0 275 doc_f;
 #X obj 103 51 doc_editmode;
@@ -9,5 +9,8 @@
 #X obj 14 203 doc_ii 1;
 #X obj 97 183 doc_m i0 float;
 #X obj 97 203 doc_m i1 float;
-#X text 200 203 0 or 1;
-#X connect 9 1 10 0;
+#X text 200 182 x position of the button to manage;
+#X text 200 203 1: also manage the rectangle;
+#X text 226 50 used for handling the changes that happen when switching
+from and to edit mode in GridFlow's documentation.;
+#X connect 9 1 11 0;

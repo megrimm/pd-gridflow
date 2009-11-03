@@ -1,6 +1,6 @@
-#N canvas 335 118 568 469 10;
+#N canvas 335 118 600 473 10;
 #X obj 0 0 doc_h;
-#X obj 0 440 doc_f;
+#X obj 0 444 doc_f;
 #X obj 3 91 doc_c 4;
 #X obj 14 121 doc_cc 0;
 #X obj 14 156 doc_cc 1;
@@ -15,10 +15,10 @@
 #X obj 3 232 doc_i 2;
 #X obj 3 360 doc_o 2;
 #X obj 14 390 doc_oo 0;
-#X obj 14 410 doc_oo 1;
+#X obj 14 412 doc_oo 1;
 #X obj 97 390 doc_m o0 <none>;
-#X text 201 394 current (x y) position of the object;
-#X obj 97 410 doc_m o1 list;
+#X text 200 412 current (x y) position of the object;
+#X obj 97 412 doc_m o1 list;
 #X obj 97 328 doc_m i1 list;
 #X text 200 328 new (x y) position after processing the output of outlet
 1;
@@ -33,7 +33,10 @@
 #X obj 97 156 doc_m c1 float;
 #X obj 97 178 doc_m c2 float;
 #X obj 97 121 doc_m c0 symbol;
+#X text 109 49 used by all [doc_...] abstractions for their own positioning
+;
 #X connect 7 1 8 0;
+#X connect 18 1 17 0;
 #X connect 19 1 20 0;
 #X connect 21 1 25 0;
 #X connect 22 1 26 0;
