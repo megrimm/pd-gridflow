@@ -1,10 +1,10 @@
-#N canvas 628 22 568 637 10;
-#X obj 117 584 listappend;
-#X obj 206 584 listelement;
-#X obj 305 585 listfind;
-#X obj 398 585 listflatten;
-#X obj 117 611 listprepend;
-#X obj 206 611 listreverse;
+#N canvas 628 22 600 580 10;
+#X obj 103 531 listappend;
+#X obj 175 531 listelement;
+#X obj 253 531 listfind;
+#X obj 313 531 listflatten;
+#X obj 391 531 listprepend;
+#X obj 469 531 listreverse;
 #X msg 173 112 1 3 hello 8 13;
 #X msg 182 136 1 12 a b c d e f g h i j k l;
 #X obj 174 211 display;
@@ -26,7 +26,7 @@ or arg 2). A negative index will start from the end of the list (like
 #X obj 14 283 doc_cc 0;
 #X obj 14 305 doc_cc 1;
 #X obj 14 486 doc_oo 0;
-#X obj 305 612 listsublist;
+#X obj 547 531 listsublist;
 #X floatatom 267 158 5 0 0 0 - - -;
 #X obj 173 182 listsublist 2 3;
 #X text 200 283 The index in the list to start the sublist at.;

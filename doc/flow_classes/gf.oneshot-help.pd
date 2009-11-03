@@ -1,4 +1,4 @@
-#N canvas 698 22 568 504 10;
+#N canvas 698 22 600 504 10;
 #X text 29 34 Like [spigot] \, but turns itself off after each message
 \, so you have to turn it on again to making it pass another message.
 ;
@@ -27,9 +27,9 @@ through.;
 \, Lists \, etc.;
 #X obj 0 473 doc_f;
 #X obj 97 269 doc_m c0 bool;
-#X obj 97 331 doc_m i0 (any);
 #X obj 97 366 doc_m i1 bang;
-#X obj 97 441 doc_m o0 (any);
+#X obj 97 441 doc_m o0 <any>;
+#X obj 97 331 doc_m i0 <any>;
 #X connect 1 0 10 1;
 #X connect 2 0 10 1;
 #X connect 3 0 10 0;
@@ -37,6 +37,6 @@ through.;
 #X connect 10 0 4 0;
 #X connect 10 0 6 0;
 #X connect 22 1 19 0;
-#X connect 23 1 20 0;
-#X connect 24 1 9 0;
-#X connect 25 1 8 0;
+#X connect 23 1 9 0;
+#X connect 24 1 8 0;
+#X connect 25 1 20 0;

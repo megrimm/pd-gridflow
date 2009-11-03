@@ -1,4 +1,4 @@
-#N canvas 527 144 568 404 10;
+#N canvas 527 144 600 394 10;
 #X obj 0 0 doc_h;
 #X obj 0 365 doc_f;
 #X obj 44 66 listfind 2 3 5 7 11 13;
@@ -23,7 +23,7 @@ it only tells the position of the first occurrence.;
 #X text 200 300 nonnegative list index of first occurrence \, or -1
 if not found.;
 #X obj 3 345 doc_also;
-#X obj 100 345 listread;
+#X obj 103 345 listread;
 #X connect 2 0 4 0;
 #X connect 3 0 2 0;
 #X connect 11 1 14 0;

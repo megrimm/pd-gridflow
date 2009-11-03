@@ -1,4 +1,4 @@
-#N canvas 679 174 568 352 10;
+#N canvas 679 174 600 352 10;
 #X obj 0 0 doc_h;
 #X obj 0 323 doc_f;
 #X obj 93 42 hpgl_op;
