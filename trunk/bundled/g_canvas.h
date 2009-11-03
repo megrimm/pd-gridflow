@@ -375,6 +375,7 @@ EXTERN int gobj_click(t_gobj *x, struct _glist *glist,
 EXTERN void gobj_save(t_gobj *x, t_binbuf *b);
 EXTERN void gobj_properties(t_gobj *x, struct _glist *glist);
 EXTERN void gobj_save(t_gobj *x, t_binbuf *b);
+EXTERN int gobj_shouldvis(t_gobj *x, struct _glist *glist);
 
 /* -------------------- functions on glists --------------------- */
 EXTERN t_glist *glist_new( void);
