@@ -1126,10 +1126,9 @@ extern t_widgetbehavior text_widgetbehavior;
 t_widgetbehavior text_widgetbehavi0r;
 static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	text_widgetbehavior.w_visfn(o,can,vis);
-	if (!vis) {
-	        t_rtext *y = glist_findrtext(can,(t_text *)o);
-		if (gobj_shouldvis((t_gobj *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
-	}
+	//if (vis) return; // if you want to see #X text inlets uncomment this line
+      t_rtext *y = glist_findrtext(can,(t_text *)o);
+	if (gobj_shouldvis((t_gobj *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
 }
 \end class {
 	install("gf/lol",1,1);
