@@ -1,4 +1,4 @@
-#N canvas 692 0 568 631 10;
+#N canvas 692 0 600 631 10;
 #X text 354 70 demo default args;
 #X text 354 90 demo rest of args;
 #X text 354 130 demo missing args;
