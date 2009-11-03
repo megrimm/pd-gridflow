@@ -1,9 +1,12 @@
 /* $Id$ */
 
-version 0.9.6 (2009.11...):
+version 0.9.7 (...):
+
+version 0.9.6 (2009.11.02):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
  * documented several dozen undocumented classes
+ * revised all documentation content
  * added [gf/canvas_filename] [gf/string_replace] [gf/canvas_count]
  * added [gf/canvas_getpos] [gf/canvas_setpos] [gf/canvas_edit_mode]
  * added [gf/canvas_setgop] [gf/canvas_xid] [gf/canvas_loadbang] etc
@@ -29,6 +32,8 @@ version 0.9.6 (2009.11...):
  * [#from_pix]: much faster
  * [#to_pix]: support 3-channel rgb input
  * [#out x11]: some video modes are now much faster than before
+ * [args]: don't [loadbang] it anymore: it's automatic now.
+ * [args]: removed attribute outlet: it's automatic now.
 
 version 0.9.5 (2009.10.18):
 
