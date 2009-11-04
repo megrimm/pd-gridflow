@@ -1,4 +1,4 @@
-#N canvas 335 118 600 297 10;
+#N canvas 335 118 632 297 10;
 #X obj 0 0 doc_h;
 #X obj 3 80 doc_c;
 #X obj 0 268 doc_f;
@@ -10,7 +10,7 @@
 #X obj 14 238 doc_oo 0;
 #X obj 97 150 doc_m i0 <any>;
 #X obj 97 238 doc_m o0 <any>;
-#X text 200 150 any incoming message will be copied as-is to the output.
+#X text 232 150 any incoming message will be copied as-is to the output.
 but only if a message is not currently "being sent" by this same object.
 thus this prevents any "strange loops".;
 #X connect 9 1 11 0;

@@ -1,4 +1,4 @@
-#N canvas 480 175 600 542 10;
+#N canvas 480 175 632 542 10;
 #X obj 41 115 print;
 #X obj 41 73 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
@@ -28,13 +28,13 @@
 #X obj 97 209 doc_m c0 float;
 #X obj 97 231 doc_m c1 float;
 #X obj 97 253 doc_m c2 float;
-#X text 200 209 from;
-#X text 200 231 to;
-#X text 200 253 step;
-#X text 200 379 same as arg 1;
-#X text 200 401 same as arg 2;
-#X text 200 357 same as arg 0;
-#X text 200 335 same as set \$1 \, bang;
+#X text 232 209 from;
+#X text 232 231 to;
+#X text 232 253 step;
+#X text 232 379 same as arg 1;
+#X text 232 401 same as arg 2;
+#X text 232 357 same as arg 0;
+#X text 232 335 same as set \$1 \, bang;
 #X text 41 151 note that 114 should not be included!;
 #X text 192 42 count from a value to another value. the latter value
 is excluded \, such that [for 0 10 1] and for [10 20 1] have no common

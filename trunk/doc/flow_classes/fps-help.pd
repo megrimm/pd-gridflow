@@ -1,4 +1,4 @@
-#N canvas 692 0 600 715 10;
+#N canvas 648 0 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 27 52 fps;
 #X obj 3 94 doc_c 1;
@@ -14,12 +14,12 @@
 #X obj 14 551 doc_oo 0;
 #X obj 97 551 doc_m o0 float;
 #X obj 97 573 doc_m o0 list;
-#X text 200 423 "logical" uses [timer];
-#X text 200 445 "process" uses [cputime];
-#X text 200 401 "cpu" uses [tsctime];
-#X text 200 335 "real" uses [realtime];
-#X text 200 357 "user" uses [usertime];
-#X text 200 379 "system" uses [systemtime];
+#X text 232 423 "logical" uses [timer];
+#X text 232 445 "process" uses [cputime];
+#X text 232 401 "cpu" uses [tsctime];
+#X text 232 335 "real" uses [realtime];
+#X text 232 357 "user" uses [usertime];
+#X text 232 379 "system" uses [systemtime];
 #X obj 3 666 doc_also;
 #X obj 103 666 realtime;
 #X obj 163 666 usertime;
@@ -27,24 +27,24 @@
 #X obj 295 666 tsctime;
 #X obj 349 666 timer;
 #X obj 391 666 cputime;
-#X text 200 208 Times at which bangs are received are stored until
+#X text 232 208 Times at which bangs are received are stored until
 a large enough sample of those is accumulated. Large enough is defined
 to be whenever the timespan exceeds one second. Then a report is made
 through the outlet.;
-#X text 200 489 exceptionally \, anything else gets ignored.;
-#X text 200 551 (terse) this is the messages-per-second rating.;
-#X text 200 573 (detailed) this is: messages-per-second \, followed
+#X text 232 489 exceptionally \, anything else gets ignored.;
+#X text 232 551 (terse) this is the messages-per-second rating.;
+#X text 232 573 (detailed) this is: messages-per-second \, followed
 by five values of milliseconds-per-message: minimum \, median \, maximum
 \, average \, standard deviation.;
-#X text 200 621 (the average happens to be simply 1000 divided by the
+#X text 232 621 (the average happens to be simply 1000 divided by the
 messages-per-second \, but it is convenient to have it anyway);
 #X obj 0 686 doc_f;
 #X obj 97 489 doc_m i0 <any>;
-#X text 200 146 "detailed": see outlet 0 list;
-#X text 200 124 "terse": see outlet 0 float;
-#X text 200 313 1: same as arg 0 detailed;
-#X text 200 291 0: same as arg 0 terse;
-#X text 200 467 minimum time between updates;
+#X text 232 146 "detailed": see outlet 0 list;
+#X text 232 124 "terse": see outlet 0 float;
+#X text 232 313 1: same as arg 0 detailed;
+#X text 232 291 0: same as arg 0 terse;
+#X text 232 467 minimum time between updates;
 #X text 185 52 measures frames per second... or bangs per second in
 general;
 #X connect 4 1 36 0;

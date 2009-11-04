@@ -1,4 +1,4 @@
-#N canvas 412 190 600 485 10;
+#N canvas 412 190 632 485 10;
 #X obj 11 140 route2 blah foo bar;
 #X msg 29 39 blah blah blah;
 #X msg 29 62 foo 42;

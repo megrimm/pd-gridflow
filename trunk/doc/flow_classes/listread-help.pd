@@ -1,4 +1,4 @@
-#N canvas 623 251 600 476 10;
+#N canvas 623 251 632 454 10;
 #X obj 0 0 doc_h;
 #X obj 0 425 doc_f;
 #X floatatom 44 48 5 0 0 0 - - -;
@@ -12,7 +12,7 @@
 #X obj 3 330 doc_o 1;
 #X obj 14 360 doc_oo 0;
 #X obj 97 360 doc_m o0 float int;
-#X text 200 360 nonnegative list index of first occurrence \, or -1
+#X text 232 360 nonnegative list index of first occurrence \, or -1
 if not found.;
 #X obj 3 405 doc_also;
 #X obj 103 405 listread;
@@ -25,7 +25,7 @@ array.;
 #X text 188 88 a [listfind] with the same content cancels the effect
 of a [listread] when the input of [listread] is nonnegative and is
 smaller than the list's length.;
-#X text 200 233 lookup an element. if the index is nonnegative \, then
+#X text 232 233 lookup an element. if the index is nonnegative \, then
 it must be less than the list length \, else no output will be produced.
 if the index is negative \, then it must be greater than or equal to
 minus the list length \, and this counts from the end of the list:

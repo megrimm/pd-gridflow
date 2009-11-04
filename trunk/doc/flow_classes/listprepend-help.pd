@@ -1,4 +1,4 @@
-#N canvas 631 22 600 468 10;
+#N canvas 631 22 632 468 10;
 #X obj 103 419 listappend;
 #X obj 253 419 listelement;
 #X obj 409 419 listfind;
@@ -11,8 +11,8 @@
 #X obj 93 180 display;
 #X msg 269 131 200 201 202 203 204 205 206;
 #X obj 92 151 listprepend 1 2 3 4 5 6 7;
-#X text 200 387 Outputs the resulting list.;
-#X text 200 241 This optional argument can contain the initial list
+#X text 232 387 Outputs the resulting list.;
+#X text 232 241 This optional argument can contain the initial list
 ;
 #X text 8 35 The [listprepend] combines two lists together. It takes
 the initial list (List1)(passed as an argument or to inlet 1) and appends
@@ -31,8 +31,8 @@ by List0 in a new list.;
 #X obj 97 325 doc_m i1 list;
 #X obj 97 387 doc_m o0 list;
 #X obj 0 439 doc_f;
-#X text 200 303 a list to be appended to initial list.;
-#X text 200 325 initial list to be appended to.;
+#X text 232 303 a list to be appended to initial list.;
+#X text 232 325 initial list to be appended to.;
 #X obj 97 241 doc_m cany <any>;
 #X connect 7 0 11 0;
 #X connect 8 0 11 1;

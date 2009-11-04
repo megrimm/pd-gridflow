@@ -1,4 +1,4 @@
-#N canvas 584 51 600 545 10;
+#N canvas 584 51 632 545 10;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 219 163 #in;
@@ -28,7 +28,7 @@
 it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
 "b" \, [inv*] performs the operation "b/a" on the values passed to
 it.;
-#X text 200 464 Outputs the result of the operation "b/a".;
+#X text 232 464 Outputs the result of the operation "b/a".;
 #X obj 263 209 # inv* 4000;
 #X text 288 163 inversion;
 #X obj 0 0 doc_h;
@@ -47,11 +47,11 @@ it.;
 #X obj 97 402 doc_m i1 float;
 #X obj 97 464 doc_m o0 float;
 #X obj 0 516 doc_f;
-#X text 200 318 number that the left inlet values will be divided by.
+#X text 232 318 number that the left inlet values will be divided by.
 ;
 #X msg 219 139 load r001.jpg;
-#X text 200 380 a: divisor;
-#X text 200 402 b: dividend;
+#X text 232 380 a: divisor;
+#X text 232 402 b: dividend;
 #X text 323 78 Another application: inv* as a;
 #X connect 0 0 42 0;
 #X connect 1 0 4 0;

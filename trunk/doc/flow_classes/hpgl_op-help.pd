@@ -1,4 +1,4 @@
-#N canvas 679 174 600 352 10;
+#N canvas 679 174 632 352 10;
 #X obj 0 0 doc_h;
 #X obj 0 323 doc_f;
 #X obj 93 42 hpgl_op;
@@ -17,12 +17,12 @@ of the incoming HPGL stream;
 #X obj 97 194 doc_m i0 <hpgl>;
 #X obj 97 278 doc_m o0 <hpgl>;
 #X obj 97 216 doc_m i1 grid;
-#X text 200 194 incoming HPGL commands;
-#X text 200 278 outgoing HPGL commands: same as incoming except coordinates
+#X text 232 194 incoming HPGL commands;
+#X text 232 278 outgoing HPGL commands: same as incoming except coordinates
 of PA \, PU \, PD will have been changed.;
-#X text 200 216 same as argument 1;
-#X text 200 132 same as argument 1 of [#];
-#X text 200 110 same as argument 0 of [#];
+#X text 232 216 same as argument 1;
+#X text 232 132 same as argument 1 of [#];
+#X text 232 110 same as argument 0 of [#];
 #X connect 12 1 21 0;
 #X connect 13 1 20 0;
 #X connect 14 1 17 0;

@@ -1,4 +1,4 @@
-#N canvas 604 22 600 523 10;
+#N canvas 604 22 632 523 10;
 #X floatatom 262 160 5 0 0 0 - - -;
 #X floatatom 281 106 5 0 0 0 - - -;
 #X obj 195 158 print;
@@ -6,12 +6,12 @@
 #X obj 195 129 listelement 0;
 #X text 10 32 Outputs one element from a list as selected by an integer.
 ;
-#X text 200 238 An integer acts as an index \, it selects the position
+#X text 232 238 An integer acts as an index \, it selects the position
 of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
-#X text 200 387 Changes the value of the argument i.e. changes the
+#X text 232 387 Changes the value of the argument i.e. changes the
 index into the list to get a different element.;
 #X obj 0 0 doc_h;
 #X obj 3 335 doc_i 2;
@@ -24,10 +24,10 @@ index into the list to get a different element.;
 #X obj 97 238 doc_m c0 float/int;
 #X obj 97 365 doc_m i0 list;
 #X obj 97 387 doc_m i1 float/int;
-#X text 200 462 The element selected by the index is sent to the outlet
+#X text 232 462 The element selected by the index is sent to the outlet
 ;
 #X obj 0 494 doc_f;
-#X text 200 365 a list of numbers or symbols.;
+#X text 232 365 a list of numbers or symbols.;
 #X obj 97 462 doc_m o0 >any>;
 #X connect 1 0 4 1;
 #X connect 3 0 4 0;

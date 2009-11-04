@@ -1,4 +1,4 @@
-#N canvas 663 22 600 620 10;
+#N canvas 663 22 632 620 10;
 #X obj 195 161 plotter_parser;
 #X obj 195 63 until;
 #X obj 195 46 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
@@ -58,11 +58,11 @@ type b;
 #X obj 3 571 doc_also;
 #X obj 103 571 plotter_control;
 #X obj 97 539 doc_m o1 float;
-#X text 200 539 unknown bytes;
+#X text 232 539 unknown bytes;
 #X obj 97 455 doc_m i0 float;
 #X obj 97 517 doc_m o0 <hpgl>;
-#X text 200 455 bytes that are supposed to form HPGL commands;
-#X text 200 517 HPGL commands;
+#X text 232 455 bytes that are supposed to form HPGL commands;
+#X text 232 517 HPGL commands;
 #X connect 0 0 10 0;
 #X connect 0 0 29 2;
 #X connect 0 1 5 0;

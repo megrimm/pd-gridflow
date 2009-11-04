@@ -1,4 +1,4 @@
-#N canvas 674 0 600 415 10;
+#N canvas 674 0 632 415 10;
 #X obj 90 185 display;
 #X msg 319 61 0 1 2 3 5 8 13;
 #X floatatom 319 89 5 0 0 0 - - -;
@@ -14,7 +14,7 @@
 #X obj 0 386 doc_f;
 #X obj 97 281 doc_m i0 <any>;
 #X text 294 142 GUI object equivalent to [print] and [#print].;
-#X text 200 281 Displays the received message in the box \, resizing
+#X text 232 281 Displays the received message in the box \, resizing
 the box so that the message fits exactly.;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;

@@ -1,4 +1,4 @@
-#N canvas 679 22 600 619 10;
+#N canvas 679 22 632 619 10;
 #X obj 109 184 unix_time;
 #X obj 109 153 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
@@ -24,11 +24,11 @@
 does so with ASCII \, the second in seconds and the third outlet outputs
 the fractions of seconds up to 1/100 0 th of a second which is useful
 for creating filenames.;
-#X text 200 426 A bang at the left inlet will tell [unix_time] to get
+#X text 232 426 A bang at the left inlet will tell [unix_time] to get
 the current Unix timestamp and send it to the outlets.;
-#X text 200 501 Outputs the time and date in ASCII format.;
-#X text 200 523 Outputs the Unix timestamp in seconds.;
-#X text 200 545 Outputs the fractions of a second up to 10 microseconds
+#X text 232 501 Outputs the time and date in ASCII format.;
+#X text 232 523 Outputs the Unix timestamp in seconds.;
+#X text 232 545 Outputs the fractions of a second up to 10 microseconds
 (?) (actual precision is probably platform-dependent...);
 #X obj 97 426 doc_m i0 bang;
 #X obj 97 501 doc_m o0 list;

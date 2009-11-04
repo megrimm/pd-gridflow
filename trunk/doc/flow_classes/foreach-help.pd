@@ -1,4 +1,4 @@
-#N canvas 635 118 600 307 10;
+#N canvas 635 118 632 307 10;
 #X obj 0 0 doc_h;
 #X obj 31 51 foreach;
 #X obj 3 96 doc_c 0;
@@ -7,7 +7,7 @@
 #X obj 97 166 doc_m i0 list;
 #X obj 3 198 doc_o 1;
 #X obj 14 228 doc_oo 0;
-#X text 200 166 Outputs N messages \, one per list element \, in order.
+#X text 232 166 Outputs N messages \, one per list element \, in order.
 ;
 #X obj 0 278 doc_f;
 #X obj 97 228 doc_m o0 <atom>;
