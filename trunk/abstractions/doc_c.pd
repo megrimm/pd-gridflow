@@ -1,12 +1,12 @@
 #N canvas 437 169 573 492 10;
-#X obj 0 20 cnv 15 574 17 empty \$0-rect Creation arguments (0)
+#X obj 0 0 cnv 15 606 17 empty \$0-rect Creation arguments (0)
 200 8 1 9 -88239 -262144 0;
 #X obj 354 137 loadbang;
 #X obj 354 196 s \$0-rect;
 #X msg 414 38 3 \$2;
 #X msg 354 176 label Creation arguments (\$1);
 #X obj 354 156 list append \$1;
-#X obj 562 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -258048
+#X obj 562 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -258048
 -1 -1;
 #X msg 377 89 \$2;
 #X obj 448 122 doc_make cc \$1;
@@ -22,4 +22,4 @@
 #X connect 9 0 10 1;
 #X connect 10 2 3 0;
 #X connect 10 2 7 0;
-#X coords 0 -1 1 1 574 17 1 0 0;
+#X coords 0 -1 1 1 606 17 1 0 0;

@@ -1,5 +1,5 @@
-#N canvas 110 0 573 469 10;
-#X obj 0 20 cnv 15 574 16 empty \$0-rect Outlets (1) 240 8 1 9 -88239
+#N canvas 110 0 614 482 10;
+#X obj 0 0 cnv 15 606 16 empty \$0-rect Outlets (1) 240 8 1 9 -88239
 -262144 0;
 #X obj 59 221 loadbang;
 #X obj 28 239 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -7,7 +7,7 @@
 #X obj 59 280 s \$0-rect;
 #X msg 407 38 3 \$2;
 #X obj 59 240 list append \$1;
-#X obj 562 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
+#X obj 562 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
 #X msg 370 89 \$2;
 #X obj 448 141 doc_make oo \$1;
@@ -25,4 +25,4 @@
 #X connect 10 0 11 1;
 #X connect 11 2 4 0;
 #X connect 11 2 7 0;
-#X coords 0 -1 1 1 574 17 1 0 0;
+#X coords 0 -1 1 1 606 17 1 0 0;
