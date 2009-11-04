@@ -24,7 +24,7 @@
 #X msg 99 302 close;
 #X obj 320 60 gf.io_generate \$0 out;
 #X msg 150 78 bang;
-#X obj 320 79 send39 \$0-placeholder;
+#X obj 320 79 s pd-\$0-placeholder;
 #X connect 0 0 9 0;
 #X connect 2 0 17 0;
 #X connect 5 0 1 0;
