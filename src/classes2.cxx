@@ -997,8 +997,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	hide();
 	MOM;
 	last = mom;
-	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
-		long(last),x1,y1,x2,y2,bself);
+	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(last),x1,y1,x2,y2,bself);
 }
 \end class {install("gf/canvas_hohoho",1,0);}
 
@@ -1126,13 +1125,24 @@ struct _inlet {
 	post("doesn't work with DesireData");
 #endif
 }
+
 extern t_widgetbehavior text_widgetbehavior;
 t_widgetbehavior text_widgetbehavi0r;
+
+/* i was gonna use gobj_shouldvis but it's only for >= 0.42 */
+
+static int text_chou_de_vis(t_text *x, t_glist *glist) {
+    return (glist->gl_havewindow ||
+        (x->te_pd != canvas_class && x->te_pd->c_wb != &text_widgetbehavior) ||
+        (x->te_pd == canvas_class && (((t_glist *)x)->gl_isgraph)) ||
+        (glist->gl_goprect && (x->te_type == T_TEXT)));
+}
+
 static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	text_widgetbehavior.w_visfn(o,can,vis);
 	//if (vis) return; // if you want to see #X text inlets uncomment this line
       t_rtext *y = glist_findrtext(can,(t_text *)o);
-	if (gobj_shouldvis((t_gobj *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
+	if (text_chou_de_vis((t_text *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
 }
 \end class {
 	install("gf/lol",1,1);
