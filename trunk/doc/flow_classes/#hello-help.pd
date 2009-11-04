@@ -12,7 +12,7 @@
 #X obj 3 272 doc_o 1;
 #X obj 14 302 doc_oo 0;
 #X obj 97 302 doc_m o0 grid;
-#X text 9 35 Generates a television test pattern of 7 colour bars à
+#X text 9 35 Generates a television test pattern of 7 colour bars Ã 
 la SMPTE.;
 #X text 200 302 Returns a grid representing the 7 colour bars.;
 #X msg 92 97 200 200;
