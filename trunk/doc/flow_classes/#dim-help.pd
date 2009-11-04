@@ -1,11 +1,11 @@
-#N canvas 647 0 600 473 10;
+#N canvas 647 0 632 473 10;
 #X obj 22 178 print number_of_dimensions;
 #X obj 22 106 #in;
 #X obj 22 130 #dim;
 #X obj 22 154 #to_float;
 #X text 15 37 Outputs grid dimensions (columns \, row \, channels).
 ;
-#X text 200 353 The received grid is output as a one dimensional grid
+#X text 232 353 The received grid is output as a one dimensional grid
 representing grid dimensions. For example \, a grid sized like dim(240
 \, 320 \, 4) [#dim] will return a grid like dim(3) whose values are
 240 \, 320 \, 4;
@@ -21,7 +21,7 @@ representing grid dimensions. For example \, a grid sized like dim(240
 #X text 185 65 Returns list of dimensions as a grid. Given a grid sized
 like Dim(240 \, 320 \, 4) \, [#dim] will return a grid like Dim(3)
 \, whose values are 240 \, 320 \, 4 .;
-#X text 200 278 ignores any data contained within. sends a grid dim(length
+#X text 232 278 ignores any data contained within. sends a grid dim(length
 of dims) containing dims.;
 #X msg 22 66 load working.jpg;
 #X obj 0 0 doc_h;

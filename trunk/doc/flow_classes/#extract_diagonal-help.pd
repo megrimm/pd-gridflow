@@ -1,4 +1,4 @@
-#N canvas 0 0 568 547 10;
+#N canvas 0 0 632 547 10;
 #X obj 53 82 cv/#SVD;
 #X obj 70 104 display;
 #X obj 54 174 display;
@@ -21,6 +21,8 @@
 #X obj 14 488 doc_oo 0;
 #X obj 14 428 doc_ii 0;
 #X obj 0 518 doc_f;
+#X obj 97 428 doc_m i0 grid;
+#X obj 97 488 doc_m o0 grid;
 #X connect 0 0 2 0;
 #X connect 0 0 7 0;
 #X connect 0 1 1 0;

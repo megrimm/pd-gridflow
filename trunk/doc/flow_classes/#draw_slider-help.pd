@@ -1,14 +1,14 @@
-#N canvas 587 8 568 619 10;
+#N canvas 587 8 632 619 10;
 #X obj 28 87 metro 100;
 #X obj 28 70 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
 ;
 #X obj 28 183 #out window;
-#X text 200 413 Grid values are clipped to the high and low values
+#X text 232 413 Grid values are clipped to the high and low values
 stored in the object;
-#X text 200 558 Outputs the modified grid;
-#X text 200 448 An integer can be used to vary the minimum value of
+#X text 232 558 Outputs the modified grid;
+#X text 232 448 An integer can be used to vary the minimum value of
 the range.;
-#X text 200 483 An integer can be used to vary the maximum value of
+#X text 232 483 An integer can be used to vary the maximum value of
 the range.;
 #X obj 28 106 #in scissors.jpg;
 #X obj 238 89 hsl 128 15 0 127 0 0 empty empty empty -2 -8 0 10 -241291
