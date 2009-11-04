@@ -1,4 +1,4 @@
-#N canvas 628 21 568 705 10;
+#N canvas 628 21 632 705 10;
 #X obj 20 349 #out window;
 #X obj 383 128 #color;
 #X obj 383 72 loadbang;
@@ -54,15 +54,15 @@
 #X obj 14 454 doc_cc 1;
 #X obj 14 476 doc_cc 2;
 #X obj 20 237 #draw_polygon ^ 1;
-#X text 200 419 Normally \, you would use the "put" operator \; but
+#X text 232 419 Normally \, you would use the "put" operator \; but
 the + and ^ can be interesting for color effects.;
-#X text 200 538 Picture on which the polygon will be superimposed.
+#X text 232 538 Picture on which the polygon will be superimposed.
 ;
-#X text 200 560 Color. (see argument 1);
-#X text 200 454 Color of the polygon.;
-#X text 200 644 Resulting picture.;
-#X text 200 476 Vertices of the polygon.;
-#X text 200 582 Vertices. (see argument 2);
+#X text 232 560 Color. (see argument 1);
+#X text 232 454 Color of the polygon.;
+#X text 232 644 Resulting picture.;
+#X text 232 476 Vertices of the polygon.;
+#X text 232 582 Vertices. (see argument 2);
 #X obj 97 419 doc_m c0 symbol/numop;
 #X obj 97 454 doc_m c1 grid;
 #X obj 97 476 doc_m c2 grid;

@@ -1,4 +1,4 @@
-#N canvas 653 126 568 543 10;
+#N canvas 653 126 632 519 10;
 #X obj 126 114 #color;
 #X text 308 126 <-- vary these;
 #X text 10 27 The [#color] object contains a triple slider for RGB
@@ -6,39 +6,39 @@ value selection on each channel.;
 #X text 198 68 <-- click here;
 #X msg 126 68 255 0 204;
 #X msg 317 79 delegate steady 0;
-#X text 103 494 [hsl];
-#X obj 0 0 doc_h;
-#X obj 3 297 doc_i 1;
-#X obj 3 419 doc_o 1;
-#X obj 3 179 doc_c 3;
-#X obj 3 494 doc_also;
-#X text 200 253 whether to remove the color preview;
-#X text 200 209 lower bound;
-#X text 200 231 upper bound;
-#X obj 14 449 doc_oo 0;
-#X obj 14 327 doc_ii 0;
+#X text 103 470 [hsl];
+#X obj 3 470 doc_also;
+#X text 232 253 whether to remove the color preview;
+#X text 232 209 lower bound;
+#X text 232 231 upper bound;
+#X obj 14 425 doc_oo 0;
+#X obj 14 315 doc_ii 0;
 #X obj 14 209 doc_cc 0;
 #X obj 14 231 doc_cc 1;
 #X obj 14 253 doc_cc 2;
+#X text 232 350 sends the rest of the message as a message to each
+of the sliders but not each of the numboxes.;
+#X text 232 315 replaces the current colour value inside [#color] \,
+including sliders and numboxes.;
+#X text 232 425 of size (3) representing a rgb colour or any other
+rgb-related settings you want to control with [#color].;
+#X obj 0 0 doc_h;
+#X obj 0 490 doc_f;
+#X obj 3 179 doc_c 3;
+#X obj 3 285 doc_i 1;
+#X obj 3 395 doc_o 1;
 #X obj 97 209 doc_m c0 float;
 #X obj 97 231 doc_m c1 float;
 #X obj 97 253 doc_m c2 bool;
-#X obj 97 327 doc_m i0 grid;
-#X obj 97 362 doc_m i0 delegate;
-#X text 200 362 sends the rest of the message as a message to each
-of the sliders but not each of the numboxes.;
-#X text 200 327 replaces the current colour value inside [#color] \,
-including sliders and numboxes.;
-#X obj 97 449 doc_m o0 grid;
-#X text 200 449 of size (3) representing a rgb colour or any other
-rgb-related settings you want to control with [#color].;
-#X obj 0 514 doc_f;
+#X obj 97 315 doc_m i0 grid;
+#X obj 97 350 doc_m i0 delegate;
+#X obj 97 425 doc_m o0 grid;
 #X connect 4 0 0 0;
 #X connect 5 0 0 0;
-#X connect 11 1 6 0;
-#X connect 20 1 13 0;
-#X connect 21 1 14 0;
-#X connect 22 1 12 0;
-#X connect 23 1 26 0;
-#X connect 24 1 25 0;
-#X connect 27 1 28 0;
+#X connect 7 1 6 0;
+#X connect 24 1 9 0;
+#X connect 25 1 10 0;
+#X connect 26 1 8 0;
+#X connect 27 1 17 0;
+#X connect 28 1 16 0;
+#X connect 29 1 18 0;

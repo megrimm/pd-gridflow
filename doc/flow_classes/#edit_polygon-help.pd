@@ -1,4 +1,4 @@
-#N canvas 335 118 568 440 10;
+#N canvas 335 118 632 440 10;
 #X obj 0 0 doc_h;
 #X obj 0 411 doc_f;
 #X obj 65 56 #edit_polygon;
@@ -7,9 +7,9 @@
 #X obj 14 147 doc_cc 1;
 #X obj 14 169 doc_cc 2;
 #X obj 97 125 doc_m c0 symbol;
-#X text 200 125 op;
-#X text 200 147 color;
-#X text 200 169 position;
+#X text 232 125 op;
+#X text 232 147 color;
+#X text 232 169 position;
 #X obj 97 147 doc_m c1 grid;
 #X obj 97 169 doc_m c2 grid;
 #X obj 3 201 doc_i 3;
@@ -23,14 +23,14 @@
 #X obj 97 231 doc_m i0 grid;
 #X obj 97 273 doc_m i1 grid;
 #X obj 97 295 doc_m i2 grid;
-#X text 200 295 same as arg 2;
-#X text 200 273 same as arg 1;
-#X text 200 251 from [#out window];
+#X text 232 295 same as arg 2;
+#X text 232 273 same as arg 1;
+#X text 232 251 from [#out window];
 #X text 201 231 picture to draw on;
-#X text 200 357 picture drawn on;
+#X text 232 357 picture drawn on;
 #X obj 97 357 doc_m o0 grid;
 #X obj 97 379 doc_m o1 <none>;
-#X text 200 379 for future use;
+#X text 232 379 for future use;
 #X text 237 54 probably not finished coding this. (?);
 #X connect 7 1 8 0;
 #X connect 11 1 9 0;
