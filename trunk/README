@@ -42,63 +42,61 @@ Multimedia Components (optional):
 The SVN has the absolute latest version of GridFlow, but it's not guaranteed to be working, whereas 
 the actual releases are more tested.
 However you may have various reasons to use the SVN edition, so here's how:
-Make sure you have the <kbd>svn</kbd> program installed.
+Make sure you have the svn program installed.
 
-<kbd>cd pd/extra</kbd>
-<kbd>svn checkout http://gridflow.ca/svn/trunk</kbd>
-<kbd>mv trunk gridflow</kbd>
+cd pd/extra
+svn checkout http://gridflow.ca/svn/trunk
+mv trunk gridflow
 And the subsequent times, you only do this:
-<kbd>cd pd/extra/gridflow</kbd>
-<kbd>svn update</kbd></td></tr>
-
-<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+cd pd/extra/gridflow
+svn update
 
 .-o--------------------------------------------------------------
 | Installation instructions (incl. compilation)
 	 Install Ruby.
 	Download GridFlow from the website and uncompress it, or get it from the SVN server.
-	Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. Make sure it detects all the components
-	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: <kbd>ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</kbd> 
+	Run ./configure from the gridflow directory. Make sure it detects all the components
+	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs 
 
-	In Debian (lenny) or Ubuntu (8.04), do <kbd><pre>
+	In Debian (lenny) or Ubuntu (8.04), do
 		apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
 				libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
 				ruby nasm libglib1.2-dev
-		</pre></kbd>
-	At least with Ubuntu you can add those, but haven't tried with Debian yet:<kbd><pre>
-		apt-get install libcv-dev libdc1394-13-dev
-	</pre></kbd>
 
-	Note: you may have to set <kbd>CPLUS_INCLUDE_PATH</kbd> and <kbd>C_INCLUDE_PATH</kbd>
+	At least with Ubuntu you can add those, but haven't tried with Debian yet:
+		apt-get install libcv-dev libdc1394-13-dev
+
+
+	Note: you may have to set CPLUS_INCLUDE_PATH and C_INCLUDE_PATH
 to indicate where to find *.h files, and you 
-may have to set both <kbd>LIBRARY_PATH</kbd> and <kbd>LD_LIBRARY_PATH</kbd> to indicate where to find 
+may have to set both LIBRARY_PATH and LD_LIBRARY_PATH to indicate where to find 
 *.so or *.a or *.dylib or *.bundle or *.dll or *.lib files.
-	Note: you can do <kbd>./configure --help</kbd> to get a list of supported 
+	Note: you can do ./configure --help to get a list of supported 
 options. You can use them to ignore the presence of troublesome libraries 
-and select debugging level. With <kbd>--use-compiler</kbd> you should use a version of <kbd>g++</kbd>, not 
-directly a version of <kbd>gcc</kbd>, else you get <kbd>undefined symbol</kbd> problems. Some versions of gcc/g++ 
+and select debugging level. With --use-compiler you should use a version of g++, not 
+directly a version of gcc, else you get undefined symbol problems. Some versions of gcc/g++ 
 are troublesome.
-	Run <kbd>make</kbd> to produce the executables <kbd>gridflow.so</kbd> and <kbd>gridflow.pd_linux</kbd> or similar 
+	Run make to produce the executables gridflow.so and gridflow.pd_linux or similar 
 	Loading GridFlow:
-		PureData : With a text editor, modify or create <kbd>~/.pdrc</kbd> and write <kbd>-lib gridflow</kbd>.  
-		DesireData : In "Server Preferences", add <kbd>gridflow</kbd> to the list of libraries. 
-Note that on MacOS the dot-files are invisible in the Finder but you do <kbd>cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</kbd> to make an alias on the Desktop. 
-Note also that on Windows the dot-files are even more trouble. </td></tr>
+		PureData : With a text editor, modify or create ~/.pdrc and write -lib gridflow.  
+		DesireData : In "Server Preferences", add gridflow to the list of libraries. 
+Note that on MacOS the dot-files are invisible in the Finder but you do cd ~/Desktop; ln -s ../.pdrc "PureData Configuration" to make an alias on the Desktop. 
+Note also that on Windows the dot-files are even more trouble.
 
 .-o--------------------------------------------------------------
 | Other Tips
 
 	you just did a SVN update and now the program does not compile, or 
 crashes, or changes didn't go through. 
-		When some kinds of changes have happened, you may have to rerun the <kbd>configure</kbd> 
-	program before redoing <kbd>make</kbd>. If you had previously reconfigured with specific options, 
+		When some kinds of changes have happened, you may have to rerun the configure 
+	program before redoing make. If you had previously reconfigured with specific options, 
 	don't forget to use them again in this case.
 		Maybe matju forgot to upload part of an important change. Tell him. 
 	PureData Crashing: 
-		run start Pd from within the debugger using <kbd>gdb $(which pd)</kbd> then <kbd>run</kbd> then cause the crash.
-		In GDB, after a crash, you can use the <kbd>where</kbd> to find out what Pd was doing at the moment 
+		run start Pd from within the debugger using gdb $(which pd) then run then cause the crash.
+		In GDB, after a crash, you can use the where to find out what Pd was doing at the moment 
 			of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal.
-		To quit GDB use the <kbd>quit</kbd> command.  </td></tr>
+		To quit GDB use the quit command.
 
 .-o--------------------------------------------------------------
 | Directory layout
