@@ -1,4 +1,4 @@
-#N canvas 677 0 568 537 10;
+#N canvas 648 0 632 537 10;
 #X obj 21 109 @complex_sq;
 #X text 176 59 this object computes the square of complex numbers.
 if seeing imaginary as Y and real as X \, then this operation squares
@@ -23,8 +23,8 @@ and the +X half-axis clockwise. :);
 #X obj 14 394 doc_ii 0;
 #X obj 97 394 doc_m i0 grid;
 #X obj 97 456 doc_m o0 grid;
-#X text 200 394 grid of size (... \, 2);
-#X text 200 456 grid of same size;
+#X text 232 394 grid of size (... \, 2);
+#X text 232 456 grid of same size;
 #X obj 0 508 doc_f;
 #X text 178 128 However \, this (old) object is backwards from the
 rest of GridFlow because it puts Imaginary before Real. [#fft] puts

@@ -1,4 +1,4 @@
-#N canvas 335 118 600 310 10;
+#N canvas 335 118 632 310 10;
 #X obj 0 281 doc_f;
 #X obj 0 0 doc_h;
 #X obj 43 52 hpgl_track_position;
@@ -13,9 +13,9 @@ what's the current position.;
 #X obj 97 163 doc_m i0 <hpgl>;
 #X obj 97 185 doc_m i1 bang;
 #X obj 97 249 doc_m o0 grid;
-#X text 200 249 last position in the last PA \, PD or PU.;
-#X text 200 185 causes the last position to be output.;
-#X text 200 163 a HPGL stream.;
+#X text 232 249 last position in the last PA \, PD or PU.;
+#X text 232 185 causes the last position to be output.;
+#X text 232 163 a HPGL stream.;
 #X connect 10 1 15 0;
 #X connect 11 1 14 0;
 #X connect 12 1 13 0;

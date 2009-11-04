@@ -1,4 +1,4 @@
-#N canvas 630 27 600 420 10;
+#N canvas 630 27 632 433 10;
 #X obj 103 384 listappend;
 #X obj 253 384 listelement;
 #X obj 409 384 listfind;
@@ -20,8 +20,8 @@
 #X obj 97 290 doc_m i0 list;
 #X obj 97 352 doc_m o0 list;
 #X obj 0 404 doc_f;
-#X text 200 290 a (usually) nested list.;
-#X text 200 352 Outputs the flattened (not nested) list.;
+#X text 232 290 a (usually) nested list.;
+#X text 232 352 Outputs the flattened (not nested) list.;
 #X text 7 30 Takes nested lists and places their contents into a single
 list in the same order. this is just like removing all parentheses
 from the literal and doing nothing else.;

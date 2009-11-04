@@ -1,4 +1,4 @@
-#N canvas 546 210 600 258 10;
+#N canvas 546 210 632 258 10;
 #X obj 0 0 doc_h;
 #X obj 0 229 doc_f;
 #X text 103 209 doc_ii;

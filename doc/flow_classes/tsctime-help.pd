@@ -1,4 +1,4 @@
-#N canvas 508 124 600 550 10;
+#N canvas 508 124 632 550 10;
 #X obj 0 0 doc_h;
 #X obj 3 302 doc_c;
 #X obj 0 521 doc_f;
@@ -11,8 +11,8 @@
 #X obj 97 372 doc_m i0 bang;
 #X obj 97 394 doc_m i1 bang;
 #X obj 97 456 doc_m o0 float;
-#X text 200 372 reset timer;
-#X text 200 394 trigger output;
+#X text 232 372 reset timer;
+#X text 232 394 trigger output;
 #X obj 103 501 realtime;
 #X obj 11 96 tsctime;
 #X text 188 38 This is a super-high-resolution version of the [realtime]
@@ -36,7 +36,7 @@ is the ONLY of the time-objects to allow you to measure CPU usage reliably
 while your clock speed changes.;
 #X text 192 255 in assembly language \, [tsctime] is called "RDTSC"
 \, and this is where [tsctime] got its name from.;
-#X text 200 456 value in "milliseconds" (or lousy imitation thereof...
+#X text 232 456 value in "milliseconds" (or lousy imitation thereof...
 see intro text above.);
 #X connect 3 1 14 0;
 #X connect 9 1 12 0;

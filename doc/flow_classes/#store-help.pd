@@ -1,4 +1,4 @@
-#N canvas 666 0 568 964 10;
+#N canvas 602 0 632 717 10;
 #X floatatom 132 89 5 0 0 0 - - -;
 #X floatatom 177 89 5 0 0 0 - - -;
 #X floatatom 20 160 5 0 0 0 - - -;
@@ -38,17 +38,17 @@ inlet. You fetch it back \, or selected subparts using the left inlet.
 #X obj 97 309 doc_m c0 grid;
 #X obj 97 419 doc_m i0 grid;
 #X obj 97 384 doc_m i0 bang;
-#X text 200 384 A bang at the left inlet will cause [#store] to send
+#X text 232 384 A bang at the left inlet will cause [#store] to send
 its value to the outlet.;
 #X obj 97 584 doc_m i1 grid;
-#X text 200 584 when in reassign mode \, this is same as arg 0;
-#X text 200 606 when it put_at mode \, it basically keeps the previous
+#X text 232 584 when in reassign mode \, this is same as arg 0;
+#X text 232 606 when it put_at mode \, it basically keeps the previous
 arg 0 or reassignment \, but replaces a selected part inside of it.
 ;
 #X obj 97 802 doc_m i1 reassign;
 #X obj 97 641 doc_m i1 put_at;
 #X obj 97 890 doc_m o0 grid;
-#X text 200 419 in this grid \, the last dimension refers to subparts
+#X text 232 419 in this grid \, the last dimension refers to subparts
 of the stored grid. sending a Dim(200 \, 200 \, 2) on a [#store] that
 holds a Dim(240 \, 320 \, 3) will cause the [#store] to handle the
 incoming grid as a Dim(200 \, 200) of Dim(2)'s \, where each Dim(2)
@@ -59,12 +59,12 @@ a 200*200 RGB picture from a 200*200 XY map and a 240*320 RGB picture.
 this object can be logically used in the same way for many purposes
 including color palettes \, tables of probabilities \, tables of statistics
 \, whole animations \, etc.;
-#X text 200 802 makes it so that sending a grid to inlet 1 detaches
+#X text 232 802 makes it so that sending a grid to inlet 1 detaches
 the old buffer from [#store] and attaches a new one instead. This is
 the default.;
-#X text 200 641 makes it so that sending a grid to inlet 1 writes into
+#X text 232 641 makes it so that sending a grid to inlet 1 writes into
 the existing buffer of [#store].;
-#X text 200 676 example: suppose you have [#store 10 240 320 3]. then
+#X text 232 676 example: suppose you have [#store 10 240 320 3]. then
 "put_at 3" will allow to write a Dim[240 \, 320 \, 3] grid in indices
 (3 \, y \, x \, c) where y \, x \, c are indices of the incoming grid.
 in other words \, if that's a buffer of 10 RGB frames \, you'd be replacing
@@ -76,10 +76,10 @@ is #9.;
 #X text 194 227 that way of working extends to other kinds of data
 you'd put in Grids \, in any numbers of dimensions. because \, as usual
 \, [#store] wouldn't know the difference.;
-#X text 200 890 grids as stored \, as indexed \, or as assembled from
+#X text 232 890 grids as stored \, as indexed \, or as assembled from
 multiple indexings.;
 #X obj 0 935 doc_f;
-#X text 200 309 initial value to be stored;
+#X text 232 309 initial value to be stored;
 #X connect 0 0 12 0;
 #X connect 1 0 12 1;
 #X connect 12 0 15 0;

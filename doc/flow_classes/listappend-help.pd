@@ -1,4 +1,4 @@
-#N canvas 624 22 600 469 10;
+#N canvas 624 22 632 469 10;
 #X obj 103 420 listappend;
 #X obj 175 420 listelement;
 #X obj 253 420 listfind;
@@ -29,10 +29,10 @@ followed by List1 in a new list.;
 #X obj 97 388 doc_m o0 list;
 #X obj 0 440 doc_f;
 #X obj 97 242 doc_m cany <any>;
-#X text 200 242 all arguments together form the list to be appended
+#X text 232 242 all arguments together form the list to be appended
 ;
-#X text 200 304 a list that the stored list will be appended to.;
-#X text 200 326 same as all args together;
+#X text 232 304 a list that the stored list will be appended to.;
+#X text 232 326 same as all args together;
 #X connect 7 0 11 0;
 #X connect 8 0 11 1;
 #X connect 10 0 11 1;

@@ -1,4 +1,4 @@
-#N canvas 576 39 600 605 10;
+#N canvas 576 39 632 605 10;
 #X obj 22 162 r foo;
 #X msg 427 236 print_from_ascii $*;
 #X msg 427 115 print hello_world;
@@ -58,8 +58,8 @@ compatible plotter.;
 #X obj 427 211 #to_list;
 #X obj 97 449 doc_m i0 <hpgl>;
 #X obj 97 524 doc_m o0 float;
-#X text 200 524 serialised hpgl (as ascii codes);
-#X text 200 449 hpgl stream (note: most other hpgl inlets don't support
+#X text 232 524 serialised hpgl (as ascii codes);
+#X text 232 449 hpgl stream (note: most other hpgl inlets don't support
 lowercase);
 #X obj 3 556 doc_also;
 #X obj 103 556 plotter_parser;

@@ -1,4 +1,4 @@
-#N canvas 673 22 600 717 10;
+#N canvas 673 22 632 642 10;
 #X floatatom 121 151 5 0 0 0 - - -;
 #X floatatom 163 151 5 0 0 0 - - -;
 #X floatatom 205 151 5 0 0 0 - - -;
@@ -9,9 +9,9 @@
 #X text 272 84 <-- select output here;
 #X text 65 84 vary this -->;
 #X obj 346 119 shunt;
-#X text 200 527 The integer passed to inlet 1 determines which outlet
+#X text 232 527 The integer passed to inlet 1 determines which outlet
 is active.;
-#X text 200 602 Outputs incoming message value according to the selector
+#X text 232 602 Outputs incoming message value according to the selector
 value.;
 #X text 7 29 The [shunt] routes any type of data to its active outlet.
 The number of outlets is defined by the argument at creation and the
@@ -23,9 +23,9 @@ active outlet is defined by its right most inlet.;
 #X obj 14 527 doc_ii 1;
 #X obj 14 602 doc_oo any;
 #X obj 166 114 shunt 4;
-#X text 200 219 Defines the number of outlets desired. If [shunt] is
+#X text 232 219 Defines the number of outlets desired. If [shunt] is
 created without an argument \, it will have 2 outlets.;
-#X text 200 254 Defines the initial active outlet.;
+#X text 232 254 Defines the initial active outlet.;
 #X obj 3 189 doc_c 2;
 #X obj 14 254 doc_cc 1;
 #X obj 14 219 doc_cc 0;
@@ -38,16 +38,16 @@ created without an argument \, it will have 2 outlets.;
 #X obj 97 382 doc_m i0 mode;
 #X obj 97 316 doc_m i0 hi;
 #X obj 97 360 doc_m i0 lo;
-#X text 200 382 -2: going down \, pingpong;
-#X text 200 404 -1: going down \, cycling;
+#X text 232 382 -2: going down \, pingpong;
+#X text 232 404 -1: going down \, cycling;
 #X obj 97 492 doc_m i0 <any>;
-#X text 200 426 0: not changing;
-#X text 200 448 1: going up \, cycling;
-#X text 200 470 2: going up \, pingpong;
-#X text 200 338 same as arg 1;
-#X text 200 360 min value for cycling and pingpong (default: 0);
-#X text 200 316 max value for cycling and pingpong (default: N-1);
-#X text 200 492 Incoming message can be Grids \, Symbols \, Floats
+#X text 232 426 0: not changing;
+#X text 232 448 1: going up \, cycling;
+#X text 232 470 2: going up \, pingpong;
+#X text 232 338 same as arg 1;
+#X text 232 360 min value for cycling and pingpong (default: 0);
+#X text 232 316 max value for cycling and pingpong (default: N-1);
+#X text 232 492 Incoming message can be Grids \, Symbols \, Floats
 \, Lists \, etc.;
 #X connect 4 0 18 0;
 #X connect 5 0 18 1;

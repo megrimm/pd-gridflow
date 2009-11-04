@@ -1,4 +1,4 @@
-#N canvas 652 22 600 574 10;
+#N canvas 652 22 632 574 10;
 #X obj 219 121 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 288 163 negative;
@@ -28,7 +28,7 @@ it.;
 #X obj 103 525 # inv+;
 #X obj 34 146 inv+;
 #X obj 263 211 # inv+ 255;
-#X text 200 493 Outputs the result of the operation "b-a".;
+#X text 232 493 Outputs the result of the operation "b-a".;
 #X floatatom 105 104 5 0 0 0 - - -;
 #X floatatom 149 121 5 0 0 0 - - -;
 #X floatatom 105 178 5 0 0 0 - - -;
@@ -47,10 +47,10 @@ it.;
 #X obj 97 418 doc_m i1 float;
 #X obj 97 493 doc_m o0 float;
 #X obj 0 545 doc_f;
-#X text 200 308 number that the left inlet values will be subtracted
+#X text 232 308 number that the left inlet values will be subtracted
 from.;
-#X text 200 383 a: the value to subtract;
-#X text 200 418 b: the value to subtract from;
+#X text 232 383 a: the value to subtract;
+#X text 232 418 b: the value to subtract from;
 #X connect 0 0 7 0;
 #X connect 2 0 5 0;
 #X connect 3 0 5 1;
