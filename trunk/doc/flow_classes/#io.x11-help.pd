@@ -1,4 +1,4 @@
-#N canvas 683 0 632 717 10;
+#N canvas 648 0 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 3 517 doc_c 0..;
 #X msg 40 554 open x11;

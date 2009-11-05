@@ -1,4 +1,4 @@
-#N canvas 628 21 632 705 10;
+#N canvas 628 21 632 642 10;
 #X obj 20 349 #out window;
 #X obj 383 128 #color;
 #X obj 383 72 loadbang;

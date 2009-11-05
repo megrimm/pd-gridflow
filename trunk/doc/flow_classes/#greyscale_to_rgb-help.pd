@@ -1,4 +1,4 @@
-#N canvas 693 0 568 471 10;
+#N canvas 693 0 632 471 10;
 #X obj 19 161 s xx;
 #X obj 19 185 r xx;
 #X obj 19 105 #in;
@@ -14,8 +14,8 @@
 #X obj 14 410 doc_oo 0;
 #X obj 97 348 doc_m i0;
 #X obj 97 410 doc_m o0;
-#X text 200 410 rgb pixels;
-#X text 200 348 greyscale pixels;
+#X text 232 410 rgb pixels;
+#X text 232 348 greyscale pixels;
 #X obj 0 442 doc_f;
 #X connect 1 0 4 0;
 #X connect 2 0 3 0;

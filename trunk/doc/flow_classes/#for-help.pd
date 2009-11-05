@@ -1,4 +1,4 @@
-#N canvas 679 0 568 980 10;
+#N canvas 661 0 632 642 10;
 #X floatatom 13 197 5 0 0 0 - - -;
 #X floatatom 45 219 5 0 0 0 - - -;
 #X floatatom 78 238 5 0 0 0 - - -;
@@ -13,9 +13,9 @@
 #X msg 264 198 0 0;
 #X msg 369 244 1 1;
 #X msg 326 223 4 4;
-#X text 200 484 Upper bound;
-#X text 200 506 Step value;
-#X text 200 449 Lower bound. As with the other arguments \, they are
+#X text 232 484 Upper bound;
+#X text 232 506 Step value;
+#X text 232 449 Lower bound. As with the other arguments \, they are
 overwritten when another value is given.;
 #X text 414 244 <-- step value (1);
 #X text 373 222 <-- upper bound (2);
@@ -23,16 +23,16 @@ overwritten when another value is given.;
 #X text 26 38 When given scalar bounds \, works like a regular [for]
 object plugged to a [#import] tuned for a Dim(size) where size is the
 number of values produced by a bang to that [for].;
-#X text 200 656 Sets the upper bound;
-#X text 200 678 Sets the step value;
-#X text 200 740 The result of the operation is a single dimension grid
+#X text 232 656 Sets the upper bound;
+#X text 232 678 Sets the step value;
+#X text 232 740 The result of the operation is a single dimension grid
 in the case of scalar values and variable dimensions for vectors.;
 #X obj 0 0 doc_h;
 #X obj 3 538 doc_i 3;
 #X obj 3 419 doc_c 3;
-#X text 200 568 activate object (send output);
-#X text 200 590 Sets the lower bound and activate;
-#X text 200 634 Sets the lower bound without activating;
+#X text 232 568 activate object (send output);
+#X text 232 590 Sets the lower bound and activate;
+#X text 232 634 Sets the lower bound without activating;
 #X text 26 84 When given vector bounds \, will work like any number
 of [for] objects producing all possible combinations of their values
 in the proper order. (try it below);
@@ -40,7 +40,7 @@ in the proper order. (try it below);
 be is floor((to-from)/step).;
 #X obj 14 740 doc_oo 0;
 #X obj 14 506 doc_cc 2;
-#X text 200 612 the three arguments at once;
+#X text 232 612 the three arguments at once;
 #X obj 14 449 doc_cc 0;
 #X obj 14 484 doc_cc 1;
 #X obj 14 568 doc_ii 0;
