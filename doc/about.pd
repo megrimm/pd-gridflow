@@ -1,11 +1,11 @@
-#N canvas 0 0 573 481 10;
+#N canvas 0 0 627 494 10;
 #X obj 0 453 doc_f;
-#N canvas 0 0 450 300 (subpatch) 0;
-#X obj 3 3 cnv 15 544 18 empty \$0-rect empty 2 9 1 13 -1 -262144 0
+#N canvas 0 0 743 313 (subpatch) 0;
+#X obj 3 3 cnv 15 608 18 empty \$0-rect empty 2 9 1 13 -1 -262144 0
 ;
-#X obj 447 3 cnv 15 100 18 empty \$0-rect2 GridFlow 1.0 2 9 1 12
+#X obj 511 3 cnv 15 100 18 empty \$0-rect2 GridFlow 1.0 2 9 1 12
 -1 -262144 0;
-#X coords 0 -1 1 1 550 24 1 0 0;
+#X coords 0 -1 1 1 614 24 1 0 0;
 #X restore 0 9 pd;
 #X text 96 280 Development of GridFlow 0.3.0 - 0.5.0 was made possible
 in part by a grant from the HRDC (DRHC) to Artengine.;
