@@ -1,4 +1,4 @@
-#N canvas 675 0 568 699 10;
+#N canvas 675 0 632 699 10;
 #X msg 59 113 setcursor 32;
 #X msg 40 90 hidecursor;
 #X text 125 88 <-- removes the cursor;
@@ -23,7 +23,7 @@
 #X obj 380 175 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
 1;
 #X obj 400 151 loadbang;
-#X text 200 422 select buttons to be considered in click/drag/unclick
+#X text 232 422 select buttons to be considered in click/drag/unclick
 ;
 #X obj 40 145 #out window;
 #X obj 340 201 #pack 3;
@@ -45,16 +45,16 @@
 cursor;
 #X obj 40 247 #mouse \, \, \, \, \,;
 #X obj 97 400 doc_m i0 list;
-#X text 200 484 (y x) click;
-#X text 200 506 (y x) drag;
-#X text 200 528 (y x) unclick;
-#X text 200 550 (y x) move;
-#X text 200 572 0 \, 1 button 1 status;
-#X text 200 594 0 \, 1 button 2 status;
-#X text 200 616 0 \, 1 button 3 status;
-#X text 200 638 mouse wheel difference: -1=up +1=down;
+#X text 232 484 (y x) click;
+#X text 232 506 (y x) drag;
+#X text 232 528 (y x) unclick;
+#X text 232 550 (y x) move;
+#X text 232 572 0 \, 1 button 1 status;
+#X text 232 594 0 \, 1 button 2 status;
+#X text 232 616 0 \, 1 button 3 status;
+#X text 232 638 mouse wheel difference: -1=up +1=down;
 #X obj 340 230 #to_list;
-#X text 200 400 what comes out of [#out window];
+#X text 232 400 what comes out of [#out window];
 #X obj 97 422 doc_m i1 list;
 #X obj 97 484 doc_m o0 list;
 #X obj 97 506 doc_m o1 list;
