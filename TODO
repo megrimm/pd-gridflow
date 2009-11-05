@@ -1,9 +1,10 @@
 $Id$
 
 0.9.6
-[ ] check that we have pd 0.40
-[ ] remove [send39]
 [ ] go back in all help files and fill in whatever is missing
+[ ] quicktime PNG encoding: does it work?
+[ ] add missing to index.pd
+[ ] about.pd: link from help menu; add link to website, mention irc, etc.
 
 unsorted
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
@@ -20,8 +21,10 @@ unsorted
 [ ] #draw_polygon init_lines() not sufficiently called
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] with pwc, 720x480 crashes
-[ ] about.pd: link from help menu; add link to website, mention irc, etc.
 [ ] WILL NOT go through all the new [gf/...] to "clean things up" now; will not make help files of them right now either.
+[ ] what to do with [#motion_detection] ?
+[ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
+[ ] try [# C.sq-] on chroma
 
 0.9.7
 [ ] listflatten-help.pd : [display] bug
@@ -31,7 +34,7 @@ unsorted
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [doc_m] boxes are too big
 [ ] [#make_arrow] (fix and help)
-[ ] [#interval_overlap]s
+[ ] [#interval_overlap]
 
 Later
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]

@@ -7,6 +7,7 @@ version 0.9.6 (2009.11.02):
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
  * documented several dozen undocumented classes
  * revised all documentation content
+ * installation instructions are now in ./README instead of doc/install.html
  * added [gf/canvas_filename] [gf/string_replace] [gf/canvas_count]
  * added [gf/canvas_getpos] [gf/canvas_setpos] [gf/canvas_edit_mode]
  * added [gf/canvas_setgop] [gf/canvas_xid] [gf/canvas_loadbang] etc
@@ -34,6 +35,9 @@ version 0.9.6 (2009.11.02):
  * [#out x11]: some video modes are now much faster than before
  * [args]: don't [loadbang] it anymore: it's automatic now.
  * [args]: removed attribute outlet: it's automatic now.
+ * removed [send39] : GridFlow requires PureData 0.40 these days.
+ * added GridFlow About in Help menu
+ * GridFlow menu items available in all windows instead of just the main
 
 version 0.9.5 (2009.10.18):
 
