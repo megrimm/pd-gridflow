@@ -927,7 +927,11 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 float (float gop);
 };
-\def 0 float (float gop) {MOM; t_atom a[1]; SETFLOAT(a+0,0); canvas_setgraph(mom,gop,0);}
+\def 0 float (float gop) {MOM;
+	t_atom a[1];
+	SETFLOAT(a+0,0);
+	canvas_setgraph(mom,gop,0);
+}
 \end class {install("gf/canvas_setgop",1,0);}
 \class GFCanvasXID : FObject {
 	int n;
@@ -944,7 +948,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \def 0 bang () {
 	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(mom));
+	sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(mom),long(mom));
 }
 \def 0 xid (t_symbol *t, t_symbol *u) {
 	outlet_symbol(bself->outlets[0],t);
@@ -959,7 +963,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \def 0 float (float y) {MOM;
 	// was 568
-	mom->gl_screenx2 = mom->gl_screenx1 + 600;
+	mom->gl_screenx2 = mom->gl_screenx1 + 632;
 	if (mom->gl_screeny2-mom->gl_screeny1 < y) mom->gl_screeny2 = mom->gl_screeny1+y;
 	sys_vgui("wm geometry .x%lx %dx%d\n",long(mom),
 	  int(mom->gl_screenx2-mom->gl_screenx1),
