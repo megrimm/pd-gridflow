@@ -1,4 +1,4 @@
-#N canvas 335 118 568 379 10;
+#N canvas 335 118 632 379 10;
 #X obj 0 0 doc_h;
 #X obj 0 350 doc_f;
 #X obj 60 55 #swap;
@@ -17,8 +17,8 @@
 #X obj 103 330 swap;
 #X obj 14 136 doc_cc 0;
 #X obj 3 106 doc_c 0..1;
-#X text 200 136 same as [#store];
-#X text 200 218 same as arg 0;
+#X text 232 136 same as [#store];
+#X text 232 218 same as arg 0;
 #X obj 97 136 doc_m c0 grid;
 #X connect 11 1 19 0;
 #X connect 14 1 15 0;

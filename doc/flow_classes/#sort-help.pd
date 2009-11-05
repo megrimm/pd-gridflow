@@ -1,4 +1,4 @@
-#N canvas 484 136 568 530 10;
+#N canvas 484 136 632 572 10;
 #X obj 28 250 #sort;
 #X msg 28 45 0 1 1 2 3 5 8 13 21 34 55 89;
 #X msg 28 102 12 # 666;
@@ -15,14 +15,19 @@
 #X obj 0 0 doc_h;
 #X obj 3 311 doc_c 0;
 #X obj 3 351 doc_i 1;
-#X obj 3 411 doc_o 1;
-#X obj 3 471 doc_also;
-#X obj 103 471 #grade;
-#X obj 14 441 doc_oo 0;
+#X obj 3 461 doc_o 1;
+#X obj 3 523 doc_also;
+#X obj 103 523 #grade;
+#X obj 14 491 doc_oo 0;
 #X obj 14 381 doc_ii 0;
-#X obj 0 491 doc_f;
+#X obj 0 543 doc_f;
 #X obj 97 381 doc_m i0 grid;
-#X obj 97 441 doc_m o0 grid;
+#X obj 97 491 doc_m o0 grid;
+#X text 232 491 sorted data;
+#X text 232 381 1-D grid to be sorted;
+#X text 232 403 this takes an average time proportional to N log N
+(a pass on the data takes N time \, and sorting something twice bigger
+takes an extra pass);
 #X connect 0 0 11 0;
 #X connect 1 0 6 0;
 #X connect 2 0 3 0;
@@ -35,3 +40,6 @@
 #X connect 7 0 2 0;
 #X connect 9 0 4 0;
 #X connect 17 1 18 0;
+#X connect 22 1 25 0;
+#X connect 22 1 26 0;
+#X connect 23 1 24 0;
