@@ -1,4 +1,4 @@
-#N canvas 666 0 568 691 10;
+#N canvas 666 0 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 3 158 doc_c 1;
 #X obj 3 218 doc_i 2;
@@ -7,23 +7,23 @@
 #X obj 14 248 doc_ii 0;
 #X obj 14 528 doc_ii 1;
 #X obj 14 590 doc_oo 0;
-#X text 200 248 Splits the Dim(anyA... \, lastA) left-hand grid into
+#X text 232 248 Splits the Dim(anyA... \, lastA) left-hand grid into
 Dim(anyA...) pieces of Dim(lastA) size.;
-#X text 200 283 Splits the Dim(firstB \, anyB...) right-hand grid into
+#X text 232 283 Splits the Dim(firstB \, anyB...) right-hand grid into
 Dim(anyB...) pieces of Dim(firstB) size.;
-#X text 200 318 On every piece pair \, does [#] using the specified
+#X text 232 318 On every piece pair \, does [#] using the specified
 op_para operation \, followed by a [#fold] using the specified op_fold
 operator and base value.;
-#X text 200 366 creates a Dim(anyA... \, anyB...) grid by assembling
+#X text 232 366 creates a Dim(anyA... \, anyB...) grid by assembling
 all the results together.;
-#X text 200 401 (note: lastA must be equal to firstB.);
-#X text 200 528 same as arg 0;
-#X text 200 471 the operation that combines the values from the two
+#X text 232 401 (note: lastA must be equal to firstB.);
+#X text 232 528 same as arg 0;
+#X text 232 471 the operation that combines the values from the two
 grids together. this defaults to "*" (as in the matrix product);
-#X text 200 423 the operation that combines the result of the "op"
+#X text 232 423 the operation that combines the result of the "op"
 operations together. this defaults to "+" (as in the matrix product)
 ;
-#X text 200 506 the base value for the fold;
+#X text 232 506 the base value for the fold;
 #X obj 0 640 doc_f;
 #X obj 97 248 doc_m i0 grid;
 #X obj 97 188 doc_m c0 grid;

@@ -1,4 +1,4 @@
-#N canvas 679 0 568 1267 10;
+#N canvas 679 0 632 642 10;
 #X obj 354 172 #out window;
 #X text 13 34 This object imports a grid \, usually an image \, video
 or live stream.;
@@ -6,11 +6,11 @@ or live stream.;
 #X obj 354 106 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 55 181 <--click here;
-#X text 200 750 "loop 0" - turns off the loop option. The video stops
+#X text 232 759 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
-#X text 200 952 Signals the end of a file and when a file is unreadable.
+#X text 232 1060 Signals the end of a file and when a file is unreadable.
 ;
-#X text 200 930 Displays the resulting grid when connected to [#out
+#X text 232 1038 Displays the resulting grid when connected to [#out
 window];
 #N canvas 82 93 663 454 quicktime 0;
 #X text 9 9 The following messages can be used to set parameters for
@@ -148,41 +148,41 @@ not mmap.;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
 #X obj 17 305 #out window \, title video;
-#X text 200 715 "loop 1" - Restarts a video each time it reaches the
+#X text 232 724 "loop 1" - Restarts a video each time it reaches the
 end (default setting).;
 #X obj 41 248 route bang;
 #X msg 24 147 open violoncelle.mov;
 #X obj 0 0 doc_h;
-#X obj 3 441 doc_i 1;
-#X obj 3 900 doc_o 2;
-#X obj 14 471 doc_ii 0;
-#X obj 14 930 doc_oo 0;
-#X obj 14 952 doc_oo 1;
+#X obj 3 450 doc_i 1;
+#X obj 3 1008 doc_o 2;
+#X obj 14 480 doc_ii 0;
+#X obj 14 1038 doc_oo 0;
+#X obj 14 1060 doc_oo 1;
 #X obj 3 332 doc_c 1..2;
 #X text 164 389 auto-open with auto-detect of the format-handler;
 #X text 207 409 auto-open with manual choice of the format-handler
 ;
-#X obj 97 785 doc_m i0 open;
-#X obj 97 842 doc_m i0 set;
-#X obj 97 658 doc_m i0 close;
-#X obj 97 820 doc_m i0 rewind;
-#X obj 97 715 doc_m i0 loop;
-#X obj 97 636 doc_m i0 float int;
-#X obj 97 930 doc_m o0 grid;
-#X obj 97 952 doc_m o1 bang;
-#X obj 3 1019 doc_also;
-#X obj 103 1163 #out;
+#X obj 97 794 doc_m i0 open;
+#X obj 97 851 doc_m i0 set;
+#X obj 97 667 doc_m i0 close;
+#X obj 97 829 doc_m i0 rewind;
+#X obj 97 724 doc_m i0 loop;
+#X obj 97 645 doc_m i0 float int;
+#X obj 97 1038 doc_m o0 grid;
+#X obj 97 1060 doc_m o1 bang;
+#X obj 3 1127 doc_also;
+#X obj 103 1127 #out;
 #X obj 32 370 #in;
 #X obj 33 391 #in filename.suffix;
 #X obj 34 411 #in handler filename.suffix;
 #X text 64 369 nothing opened \, you have to open by yourself;
-#X text 200 785 \$1=filename. sends it as a resource to [#in]. For
+#X text 232 794 \$1=filename. sends it as a resource to [#in]. For
 example: "open sewing.jpg".;
-#X obj 97 471 doc_m i0 bang;
-#X obj 97 974 doc_m o1 float int;
-#X text 200 974 frame number of the frame currently being viewed. Applies
-to formats that have frame numbers \, i.e. video.;
-#X text 200 471 A bang reads a frame and sends it through the outlet.
+#X obj 97 480 doc_m i0 bang;
+#X obj 97 1082 doc_m o1 float int;
+#X text 232 1082 frame number of the frame currently being viewed.
+Applies to formats that have frame numbers \, i.e. video.;
+#X text 232 480 A bang reads a frame and sends it through the outlet.
 Since frames from videos and live streams are read as a series of individual
 grids \, successive bangs advance through the frames. A bang reads
 a frame and sends it through the outlet. Since frames from videos and
@@ -193,16 +193,16 @@ read from a file \, reading another picture will continue if there
 are several pictures in the same file \, but if the end of file is
 reached instead \, it will rewind and send the first picture again.
 ;
-#X obj 0 1039 doc_f;
-#X text 200 658 Closes the video input device. Only necessary when
+#X obj 0 1147 doc_f;
+#X text 232 667 Closes the video input device. Only necessary when
 you are using a live capture device.;
-#X text 200 820 Will rewind video to the beginning.;
-#X text 200 842 select the video frame numbered \$1 \, where 0 is the
+#X text 232 829 Will rewind video to the beginning.;
+#X text 232 851 select the video frame numbered \$1 \, where 0 is the
 first frame. A bang must be sent to [#in] in order to display the frame.
 this only works with video file formats.;
-#X text 200 636 same as set \$1 \, bang;
-#X obj 97 693 doc_m i0 load;
-#X text 200 693 shortcut for open \$1 \, bang \, close;
+#X text 232 645 same as set \$1 \, bang;
+#X obj 97 702 doc_m i0 load;
+#X text 232 702 shortcut for open \$1 \, bang \, close;
 #X connect 2 0 9 0;
 #X connect 3 0 9 0;
 #X connect 9 0 0 0;
