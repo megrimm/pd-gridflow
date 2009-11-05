@@ -1,4 +1,4 @@
-#N canvas 678 0 568 661 10;
+#N canvas 678 0 632 661 10;
 #X obj 98 184 display;
 #X obj 29 252 display;
 #X text 26 38 Treats the grid as a grid of one- dimensional grids such
@@ -14,7 +14,7 @@ operation> <starting value>;
 #X obj 211 722 #fold ^;
 #X obj 284 722 #fold &;
 #X obj 355 722 #fold |;
-#N canvas 0 0 450 300 more 1;
+#N canvas 0 0 500 313 more 1;
 #X obj 98 82 display;
 #X obj 28 48 #import (2 2 2);
 #X obj 29 170 display;
@@ -51,20 +51,20 @@ dimension list;
 #X text 224 282 [#fold ^] can mean "there exists an odd number of..."
 ;
 #X obj 97 354 doc_m c0 symbol/numop;
-#X text 200 354 the operator to fold with.;
+#X text 232 354 the operator to fold with.;
 #X obj 97 416 doc_m i0 grid;
 #X obj 97 477 doc_m i0 op;
 #X obj 97 499 doc_m i0 seed;
-#X text 200 477 same as arg 0;
-#X text 200 416 replaces every subgrid by the result of a cascade on
+#X text 232 477 same as arg 0;
+#X text 232 416 replaces every subgrid by the result of a cascade on
 that subgrid. Doing that with seed value 0 and operation + on grid
 "2 3 5 7" will compute ((((0+2)+3)+5)+7) find the total "17".;
-#X text 200 499 the initial value for the folding. (default: whatever
+#X text 232 499 the initial value for the folding. (default: whatever
 does nothing for the chosen op \; e.g. 0 + \, 0 - \, 1 * \, ...). this
 can be a grid of any size \, and this decides the size of the subgrids
 we are working on.;
 #X obj 97 600 doc_m o0 grid;
-#X text 200 600 Outputs a grid that has one less dimension than the
+#X text 232 600 Outputs a grid that has one less dimension than the
 input.;
 #X obj 0 632 doc_f;
 #X connect 3 0 4 0;
