@@ -1,4 +1,4 @@
-#N canvas 335 118 568 382 10;
+#N canvas 335 118 632 382 10;
 #X obj 0 0 doc_h;
 #X obj 0 353 doc_f;
 #X obj 98 61 #reinterval;
@@ -17,12 +17,12 @@
 #X obj 97 237 doc_m i3 grid;
 #X obj 97 259 doc_m i4 grid;
 #X obj 97 321 doc_m o0 grid;
-#X text 200 171 values to be rescaled;
-#X text 200 321 rescaled values;
-#X text 200 193 old start;
-#X text 200 215 old end;
-#X text 200 237 new start;
-#X text 200 259 new end;
+#X text 232 171 values to be rescaled;
+#X text 232 321 rescaled values;
+#X text 232 193 old start;
+#X text 232 215 old end;
+#X text 232 237 new start;
+#X text 232 259 new end;
 #X text 187 46 multiply and add to values such that the old start becomes
 the new start \, and the old end becomes the new end.;
 #X connect 12 1 18 0;
