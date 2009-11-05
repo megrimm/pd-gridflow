@@ -1,25 +1,48 @@
-#N canvas 665 0 568 392 10;
-#X text 22 53 a bang is emitted every time a grid transmission ends
+#N canvas 665 0 632 599 10;
+#X text 21 37 a bang is emitted every time a grid transmission ends
 ;
-#X obj 24 175 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#X obj 23 114 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
-#X floatatom 24 80 5 0 0 0 - - -;
-#X floatatom 47 98 5 0 0 0 - - -;
-#X obj 24 146 #finished;
-#X obj 24 117 #pack;
+#X obj 23 85 #finished;
 #X obj 0 0 doc_h;
-#X obj 3 241 doc_i 1;
-#X obj 3 303 doc_o 1;
-#X obj 3 201 doc_c 0;
-#X obj 14 333 doc_oo 0;
-#X obj 14 271 doc_ii 0;
-#X obj 97 271 doc_m i0 grid;
-#X obj 97 333 doc_m o0 bang;
-#X text 200 271 a bang is emitted every time a grid transmission ends.
+#X obj 3 429 doc_i 1;
+#X obj 3 491 doc_o 1;
+#X obj 3 389 doc_c 0;
+#X obj 14 521 doc_oo 0;
+#X obj 14 459 doc_ii 0;
+#X obj 97 459 doc_m i0 grid;
+#X obj 97 521 doc_m o0 bang;
+#X text 232 459 a bang is emitted every time a grid transmission ends.
 ;
-#X obj 0 363 doc_f;
-#X connect 2 0 5 0;
-#X connect 3 0 5 1;
-#X connect 4 0 1 0;
-#X connect 5 0 4 0;
-#X connect 12 1 14 0;
+#X obj 0 571 doc_f;
+#X obj 23 66 t a a;
+#X obj 89 66 #convolve (1 3 # 1 2 1);
+#X text 90 85 this is a pattern where [t b a] doesn't cut it \, because
+the bang would be output too early \, as it gets output at GRID_BEGIN
+time (the time at which the grid message is sent). But [#convolve]
+only outputs its contents after GRID_FLOW time \, which is what [#finished]
+ensures. However you still need a [t a a] \, because [#finished]'s
+GRID_FINISH time must happen after [#convolve]'s GRID_FINISH \, so
+that you can be sure that [#convolve] is really finished with producing
+its output.;
+#X obj 3 551 doc_also;
+#X obj 103 551 #t;
+#X text 38 215 this is one of GridFlow's exceptions to how much grid-processing
+is like normal pd message passing.;
+#X text 38 245 the 2nd exception is that it definitely doesn't support
+any control-recursion (an object can't start processing a new message
+before it has finished processing its message).;
+#X obj 410 221 pdp_qt;
+#X obj 410 252 print;
+#X msg 409 199;
+#X text 40 295 the third exception is that the GRID atom type is not
+officially recognised by PureData because PureData provides no means
+for externals to register new atom types. You can see the effect of
+this in how GEM uses the POINTER atom type in an unstable way (which
+is also how GridFlow used to do it);
+#X connect 2 0 1 0;
+#X connect 9 1 11 0;
+#X connect 13 0 2 0;
+#X connect 13 1 14 0;
+#X connect 16 1 17 0;
+#X connect 20 0 21 0;
