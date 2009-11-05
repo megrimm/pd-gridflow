@@ -1,4 +1,4 @@
-#N canvas 673 0 568 722 10;
+#N canvas 673 0 632 642 10;
 #X text 1 25 makes noise;
 #X obj 207 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
@@ -51,7 +51,7 @@ by half a pixel due to rounding .;
 #X obj 0 693 doc_f;
 #X obj 97 601 doc_m i1 grid;
 #X obj 97 521 doc_m c0 grid;
-#X text 200 601 same as arg 0;
+#X text 232 601 same as arg 0;
 #X obj 20 197 #spread 1;
 #X obj 310 270 #spread 1;
 #X msg 207 89 load r001.jpg;
