@@ -1,8 +1,8 @@
-#N canvas 666 0 568 665 10;
+#N canvas 666 0 619 665 10;
 #X msg 365 61 create \, 1;
 #X obj 365 42 loadbang;
 #X msg 157 139 open violoncelle.mov;
-#X obj 130 72 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1
+#X obj 130 72 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1
 ;
 #X obj 45 52 gemhead;
 #X obj 45 272 pix_texture;
@@ -23,13 +23,13 @@
 #X text 94 250 <-- imports gridflow grids into GEM;
 #X text 181 720 \, game_of_life_gem.pd in the examples folder;
 #X obj 45 253 #to_pix;
-#X text 200 591 Modified gemstate so that the pix is equal to the Grid
+#X text 232 591 Modified gemstate so that the pix is equal to the Grid
 of inlet 1;
-#X text 200 472 Something coming from [gemhead];
+#X text 232 472 Something coming from [gemhead];
 #X msg 57 217 yflip \$1;
 #X obj 57 197 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X text 200 494 With one boolean argument that selects the order in
+#X text 232 494 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '1';
 #X obj 45 291 rectangle 4 3;
 #X obj 0 0 doc_h;
@@ -75,7 +75,7 @@ which the y dimension of the Grid will be read \, defaults to '1';
 #X restore 167 214 pd to_rgba_if_not_already;
 #X text 40 353 Note : you can get some timebased 'moire' effects if
 the arguments to the [gemwin] and the [metro] are not synched;
-#X text 200 529 Grid with 3 or 4 channels (4th channel gets destroyed)
+#X text 232 529 Grid with 3 or 4 channels (4th channel gets destroyed)
 ;
 #X obj 130 93 metro 33.3667;
 #X connect 0 0 13 0;
