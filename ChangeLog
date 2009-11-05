@@ -2,7 +2,7 @@
 
 version 0.9.7 (...):
 
-version 0.9.6 (2009.11.02):
+version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
  * documented several dozen undocumented classes
@@ -12,7 +12,8 @@ version 0.9.6 (2009.11.02):
  * added [gf/canvas_getpos] [gf/canvas_setpos] [gf/canvas_edit_mode]
  * added [gf/canvas_setgop] [gf/canvas_xid] [gf/canvas_loadbang] etc
  * added [doc_h] [doc_c] [doc_cc] [doc_i] [doc_ii] [doc_o] [doc_oo]
- * added [doc_m] [doc_also] [doc_editmodebang] [doc_pos]
+ * added [doc_m] [doc_also] [doc_editmode] [doc_pos] [doc_add]
+ * added [doc_below] [doc_bottom] [doc_exist] [doc_layout] [doc_make]
  * added examples/pinwheel.pd, examples/radial_blur.pd
  * added examples/operator_spectrum.pd
  * [#change]: now takes an argument just like [change]
