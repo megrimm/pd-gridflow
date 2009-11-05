@@ -941,9 +941,14 @@ BUILTIN_SYMBOLS(FOO)
 	startup_format();
 	STARTUP_LIST()
 	//sys_gui("bind . <Motion> {puts %W}\n");
-	sys_vgui(".mbar.help add separator\n","dummy");
-	sys_vgui(".mbar.help add command -label \"GridFlow About\" -command {pd pd open about.pd %s/doc \\;}\n",dirresult);
-	sys_vgui(".mbar.help add command -label \"GridFlow Index\" -command {pd pd open index.pd %s/doc \\;}\n",dirresult);
+	sys_vgui("proc gridflow_add_to_help {menu} {\n"
+		   "$menu add separator\n"
+		   "$menu add command -label {GridFlow About} -command {pd pd open about.pd %s/doc \\;}\n"
+		   "$menu add command -label {GridFlow Index} -command {pd pd open index.pd %s/doc \\;}\n"
+		 "}\n"
+		 "gridflow_add_to_help .mbar.help\n"
+		 "rename menu_addstd menu_addstd_old\n"
+		 "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}\n",dirresult,dirresult);
 	delete[] dirresult;
 	delete[] dirname;
     } catch (Barf &oozy) {oozy.error(0);}
