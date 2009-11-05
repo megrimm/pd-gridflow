@@ -1,4 +1,4 @@
-#N canvas 78 0 568 554 10;
+#N canvas 78 0 632 554 10;
 #X obj 10 134 #in teapot.png;
 #X obj 10 161 t a a;
 #X obj 40 181 #convolve (1 3 # -1 2 -1);
@@ -20,11 +20,11 @@ side. in those cases you should use #t.;
 right-to-left order. It outputs its input from right to left.;
 #X text 28 112 Doesn't work (all black);
 #X obj 237 134 #in teapot.png;
-#X text 200 425 The same grid received in inlet 0 is first sent to
+#X text 232 425 The same grid received in inlet 0 is first sent to
 the outlet 0;
-#X text 200 460 The same grid received in inlet 0 is sent to the outlet
+#X text 232 460 The same grid received in inlet 0 is sent to the outlet
 1 after it was sent to outlet 0;
-#X text 200 337 The Grid passed in inlet 0 will be first sent to the
+#X text 232 337 The Grid passed in inlet 0 will be first sent to the
 right most outlet and then to the second from the right (the left outlet
 in this case).;
 #X obj 0 0 doc_h;

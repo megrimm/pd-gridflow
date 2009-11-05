@@ -1,4 +1,4 @@
-#N canvas 680 0 568 782 10;
+#N canvas 680 0 619 717 10;
 #X obj 11 498 cnv 15 63 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 176 469 display;
@@ -30,8 +30,8 @@ that can be put in a symbol.;
 #X obj 97 659 doc_m i0 grid;
 #X obj 97 721 doc_m o0 symbol;
 #X obj 0 753 doc_f;
-#X text 200 659 will be transformed into a symbol.;
-#X text 200 721 symbol made of grid elements as bytes.;
+#X text 232 659 will be transformed into a symbol.;
+#X text 232 721 symbol made of grid elements as bytes.;
 #X text 12 211 in the future \, this might work at the level of codepoints
 instead. thus with today's default UTF-8 (compact unicode) encoding
 \, &eacute \; has to be written as 195 169 \, you would be able to
