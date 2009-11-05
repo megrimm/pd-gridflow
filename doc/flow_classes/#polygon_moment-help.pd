@@ -1,4 +1,4 @@
-#N canvas 678 0 568 610 10;
+#N canvas 678 0 632 610 10;
 #X msg 263 58 4 2 # 1 1 1 5 5 5 5 1;
 #X text 413 58 should give 3 3;
 #X obj 282 188 display;
@@ -26,18 +26,18 @@
 #X obj 14 427 doc_ii 1;
 #X obj 14 321 doc_cc 0;
 #X obj 97 321 doc_m c0 float;
-#X text 200 321 1: first-order moment (average);
-#X text 200 343 2: second-order moment (standard-deviation);
+#X text 232 321 1: first-order moment (average);
+#X text 232 343 2: second-order moment (standard-deviation);
 #X obj 97 546 doc_m o0 grid;
 #X obj 97 405 doc_m i0 grid;
 #X obj 97 427 doc_m i1 grid;
-#X text 200 427 centre to subtract from the input;
-#X text 200 449 in the case of an average \, you'd leave this unused
+#X text 232 427 centre to subtract from the input;
+#X text 232 449 in the case of an average \, you'd leave this unused
 ;
-#X text 200 471 but in the case of a standard-deviation \, you'd put
+#X text 232 471 but in the case of a standard-deviation \, you'd put
 the average in here \, unless you want a nonstandard deviation.;
-#X text 200 546 polygon. size (N 2);
-#X text 200 405 polygon. size (N 2);
+#X text 232 546 polygon. size (N 2);
+#X text 232 405 polygon. size (N 2);
 #X obj 0 578 doc_f;
 #X connect 0 0 14 0;
 #X connect 3 0 4 0;
