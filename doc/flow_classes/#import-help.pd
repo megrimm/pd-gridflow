@@ -1,4 +1,4 @@
-#N canvas 674 0 632 717 10;
+#N canvas 648 0 632 642 10;
 #X msg 55 123 reset;
 #X obj 13 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;

@@ -1,4 +1,4 @@
-#N canvas 602 0 632 717 10;
+#N canvas 602 0 632 642 10;
 #X floatatom 132 89 5 0 0 0 - - -;
 #X floatatom 177 89 5 0 0 0 - - -;
 #X floatatom 20 160 5 0 0 0 - - -;

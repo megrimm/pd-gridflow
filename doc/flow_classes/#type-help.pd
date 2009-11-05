@@ -1,4 +1,4 @@
-#N canvas 0 0 600 350 10;
+#N canvas 0 0 632 350 10;
 #X obj 3 117 doc_c 0;
 #X obj 3 157 doc_i 1;
 #X obj 3 217 doc_o 1;
@@ -16,8 +16,8 @@ grid received.;
 #X obj 17 65 #type;
 #X symbolatom 17 84 10 0 0 0 - - -;
 #X msg 27 38 3 3 f # 10.4;
-#X text 200 247 numbertype in long form.;
-#X text 200 269 one of: uint8 int16 int32 int64 float32 float64;
+#X text 232 247 numbertype in long form.;
+#X text 232 269 one of: uint8 int16 int32 int64 float32 float64;
 #X connect 6 1 16 0;
 #X connect 6 1 17 0;
 #X connect 8 1 9 0;
