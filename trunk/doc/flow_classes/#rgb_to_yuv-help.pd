@@ -1,4 +1,4 @@
-#N canvas 205 69 568 421 10;
+#N canvas 205 69 632 421 10;
 #X obj 324 188 #out window;
 #X obj 273 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
@@ -19,8 +19,8 @@ image.;
 #X obj 0 392 doc_f;
 #X obj 97 298 doc_m i0 grid;
 #X obj 97 360 doc_m o0 grid;
-#X text 200 298 image in RGB format.;
-#X text 200 360 image in YUV format.;
+#X text 232 298 image in RGB format.;
+#X text 232 360 image in YUV format.;
 #X connect 1 0 2 0;
 #X connect 2 0 4 0;
 #X connect 2 0 8 0;

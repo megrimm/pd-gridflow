@@ -1,4 +1,4 @@
-#N canvas 689 0 568 458 10;
+#N canvas 689 0 632 445 10;
 #X obj 180 121 #rotate;
 #X text 4 26 The [#rotate] performs rotations on indexmaps and polygons
 and such objects.;
@@ -11,14 +11,14 @@ and such objects.;
 #X obj 80 142 #out window \, title #rotate;
 #X obj 9 57 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1;
 #X obj 9 76 metro 100;
-#X text 200 274 The Grid passed in inlet 0 will be the grid on which
+#X text 232 274 The Grid passed in inlet 0 will be the grid on which
 the rotation will be performed.;
 #X floatatom 243 123 7 0 0 0 - - -;
 #X msg 80 57 open b001.jpg;
 #X obj 0 0 doc_h;
 #X obj 3 244 doc_i 2;
 #X obj 3 169 doc_c 1;
-#X text 200 371 Outputs the result of the rotation and needs to be
+#X text 232 371 Outputs the result of the rotation and needs to be
 sent to a [#remap_image] to be visualised.;
 #X obj 3 341 doc_o 1;
 #X obj 14 371 doc_oo 0;
@@ -28,10 +28,10 @@ sent to a [#remap_image] to be visualised.;
 #X obj 97 199 doc_m c0 float;
 #X obj 97 274 doc_m i0 grid;
 #X obj 97 309 doc_m i1 float;
-#X text 200 309 same as arg 0;
+#X text 232 309 same as arg 0;
 #X obj 97 371 doc_m o0 grid;
 #X obj 0 416 doc_f;
-#X text 200 199 integer number (0 to 35999) as a creation argument
+#X text 232 199 integer number (0 to 35999) as a creation argument
 which initializes the first angle of rotation.;
 #X connect 0 0 5 1;
 #X connect 2 0 3 0;
