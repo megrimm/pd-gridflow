@@ -304,7 +304,6 @@ struct CObject {
 	int32 refcount;
 	CObject() : refcount(0) {}
 	virtual ~CObject() {}
-	virtual void changed (t_symbol *s=0) {}
 };
 
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
@@ -441,8 +440,7 @@ struct BitPacking : CObject {
 	int size;
 	uint32 mask[4];
 	BitPacking(){::abort();} // don't call, but don't remove. sorry.
-	BitPacking(int endian, int bytes, int size, uint32 *mask,
-		Packer *packer=0, Unpacker *unpacker=0);
+	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *packer=0, Unpacker *unpacker=0);
 	bool is_le();
 	bool eq(BitPacking *o);
 // main entrances to Packers/Unpackers
@@ -780,7 +778,8 @@ struct BFObject : t_object {
 };
 
 // represents objects that have inlets/outlets
-\class FObject : CObject {
+\class FObject : BFObject {
+	virtual void changed (t_symbol *s=0) {}
 	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
