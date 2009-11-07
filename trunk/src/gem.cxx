@@ -149,11 +149,9 @@ GRID_INLET(1) {
 	int channels;
 	GridFromPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
 	GridFromPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
-		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing = new BitPacking(is_le(),4,3,mask);
 		yflip = false;
 		cast = int32_e;
-		channels = 3;
+		_0_colorspace(0,0,gensym("rgba"));
 	}
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
@@ -161,27 +159,36 @@ GRID_INLET(1) {
 	void render(GemState *state) {
 		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
-		if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
-		if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
+		//if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
+		//if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
+		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
 		int32 v[] = { im.ysize, im.xsize, channels };
 		GridOutlet out(this,0,new Dim(3,v),cast);
 		long sxc = im.xsize*channels;
 		long sy = v[0];
-		if (channels==3) {
+		if (channels==4 && im.format==GL_RGBA) {
+			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
+		} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
 				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(yflip?y:sy-1-y); \
 				bit_packing->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
-		} else {
-			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
 		}
 	}
 };
 \def 0 colorspace (t_symbol *s) {
-	if (s==gensym("rgb" )) channels=3; else
-	if (s==gensym("rgba")) channels=4; else
+	if (s==gensym("rgb" )) {
+		channels=3;
+		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
+		bit_packing = new BitPacking(is_le(),4,3,mask);
+	} else
+	if (s==gensym("rgba")) {
+		channels=4;
+		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
+		bit_packing = new BitPacking(is_le(),4,4,mask);
+	} else
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
