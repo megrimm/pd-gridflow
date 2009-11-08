@@ -30,9 +30,6 @@ its output.;
 #X text 39 278 the 2nd exception is that it definitely doesn't support
 any control-recursion (an object can't start processing a new message
 before it has finished processing its message).;
-#X obj 410 221 pdp_qt;
-#X obj 410 252 print;
-#X msg 409 199;
 #X text 40 327 the third exception is that the GRID atom type is not
 officially recognised by PureData because PureData provides no means
 for externals to register new atom types. You can see the effect of
@@ -51,4 +48,3 @@ else \, but there is no place for it yet.;
 #X connect 13 0 2 0;
 #X connect 13 1 14 0;
 #X connect 16 1 17 0;
-#X connect 19 0 20 0;
