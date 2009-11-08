@@ -336,7 +336,6 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 static void display_update(void *x);
 \class Display : FObject {
 	bool selected;
-	t_glist *canvas;
 	t_symbol *rsym;
 	int y,x,sy,sx;
 	bool vis;
@@ -344,7 +343,7 @@ static void display_update(void *x);
 	t_clock *clock;
 	t_pd *gp;
 	\constructor () {
-		selected=false; canvas=0; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
+		selected=false; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
 		std::ostringstream os;
 		rsym = gensym(const_cast<char *>(ssprintf("display:%08x",this).data()));
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
@@ -382,10 +381,10 @@ static void display_update(void *x);
 		/* we're not using quoting for now because there's a bug in it. */
 		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
 		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c {%s}\n",
-			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,ss.data());
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",glist_getcanvas(mom),ss.data());
 	}
 };
-#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self;
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
 	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
 	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
@@ -393,7 +392,6 @@ static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *
 static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
-	self->canvas = glist_getcanvas(glist); // bug?
 	self->show();
 	canvas_fixlinesfor(glist, (t_text *)x);
 }
