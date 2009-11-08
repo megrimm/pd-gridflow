@@ -1181,6 +1181,16 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 \def 1 symbol (t_symbol *than) {this->than=than;}
 \end class {install("gf/string_<",2,1);}
 
+\class GFGetPid : FObject {
+	\constructor () {}
+	\decl 0 bang ();
+};
+\def 0 bang () {
+	outlet_float(outlets[1],getppid());
+	outlet_float(outlets[0],getpid());
+}
+\end class {install("gf/getpid",1,2);}
+
 void startup_flow_objects2 () {
 	\startall
 }
