@@ -1,0 +1,18 @@
+#N canvas 0 0 450 300 10;
+#X obj 17 30 inlet;
+#X obj 16 216 outlet;
+#X obj 16 88 textfile;
+#X obj 16 50 gf/getpid;
+#X obj 17 108 display;
+#X obj 67 118 display;
+#X msg 16 69 read /proc/\$1/stat cr \, bang;
+#X msg 16 149 float \$23;
+#X obj 16 168 >> 10;
+#X connect 0 0 3 0;
+#X connect 2 0 4 0;
+#X connect 2 0 7 0;
+#X connect 2 1 5 0;
+#X connect 3 0 6 0;
+#X connect 6 0 2 0;
+#X connect 7 0 8 0;
+#X connect 8 0 1 0;
