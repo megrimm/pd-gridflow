@@ -229,7 +229,7 @@ def handle_classinfo(line)
 		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name}; changed(gensym(\"#{name}\"));}"
 	}
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
-	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);}"
+	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(outlets[noutlets-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"
 	frame.attrs.each {|name,attr| Out.print "fclass->attrs[\"#{name}\"] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }

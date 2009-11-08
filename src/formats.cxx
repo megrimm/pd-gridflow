@@ -75,13 +75,13 @@ void suffixes_are (const char *name, const char *suffixes) {
 \def 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
-	if (!t) outlet_symbol(bself->outlets[2],gensym(s));
+	if (!t) outlet_symbol(outlets[2],gensym(s));
 	else {
 		*t = 0;
-		outlet_symbol(bself->outlets[1],gensym(t+1));
+		outlet_symbol(outlets[1],gensym(t+1));
 		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
-		if (u==suffix_table.end()) outlet_bang(bself->outlets[0]);
-		else outlet_symbol(bself->outlets[0],gensym((char *)u->second.data()));
+		if (u==suffix_table.end()) outlet_bang(outlets[0]);
+		else outlet_symbol(outlets[0],gensym((char *)u->second.data()));
 	}
 	free(s);
 }

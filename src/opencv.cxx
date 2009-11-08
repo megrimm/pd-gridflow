@@ -409,7 +409,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 	\constructor (int channels) {
 		if (channels<0 || channels>64) RAISE("channels=%d is not in 1..64",channels);
 		this->channels = channels;
-		bself->noutlets_set(channels);
+		noutlets_set(channels);
 	}
 };
 \end class {}
