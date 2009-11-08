@@ -571,9 +571,7 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 	this->bself = bself;
 	bself->self = this;
 	string name = string(sel->s_name);
-	if (!mom) post("warning: no mom");
 	mom = (t_canvas *)canvas_getcurrent();
-	post("mom=%p",mom);
 	ninlets  = 1;
 	noutlets = 0;
 	inlets  = new  BFProxy*[1];
