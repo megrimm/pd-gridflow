@@ -832,7 +832,7 @@ int handle_braces(int ac, t_atom *av) {
 		}
 	} else {
 		//t_atom a[1];
-		//outlet_anything(bself->outlets[bself->noutlets-1],s,1,a);
+		//outlet_anything(outlets[noutlets-1],s,1,a);
 		FMethod m = funcall_lookup(bself,"___get");
 		t_atom2 a[1];
 		SETSYMBOL(a,s);

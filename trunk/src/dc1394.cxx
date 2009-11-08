@@ -216,12 +216,12 @@ typedef nodeid_t NID;
 	if (!s) {
 		SETFLOAT(a+0,camera.frame_height);
 		SETFLOAT(a+1,camera.frame_width);
-		outlet_anything(bself->outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
+		outlet_anything(outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
 		unsigned int width,height;
 		IO(dc1394_query_format7_max_image_size,MODE_FORMAT7_0,&width,&height);
 		SETFLOAT(a+0,height);
 		SETFLOAT(a+1,width);
-		outlet_anything(bself->outlets[0],gensym("maxsize"),2,a); // abnormal (does not use nested list)
+		outlet_anything(outlets[0],gensym("maxsize"),2,a); // abnormal (does not use nested list)
 	}
 }
 \def 0 size (int height, int width) {
