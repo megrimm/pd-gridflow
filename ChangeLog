@@ -1,6 +1,10 @@
 /* $Id$ */
 
-version 0.9.7 (...):
+version 0.9.7 (2009.11...):
+ * fixed colours in [#from_pix] OSX
+ * [#fft]: fixed the 1-D mode ("skip $1")
+ * doc: fixed some layout bugs (gop)
+ * added [gf/getpid]
 
 version 0.9.6 (2009.11.05):
 
