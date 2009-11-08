@@ -55,7 +55,7 @@ GRID_INLET(0) {
 	}
 	in->set_chunk(0);
 } GRID_FLOW {
-	if (skip==1 && !real) RAISE("can't do 1-D FFT in real mode, sorry");
+	if (skip==1 && real) RAISE("can't do 1-D FFT in real mode, sorry");
 	Dim *dim;
 	if (!real) dim = in->dim;
 	else if (sign==-1) {
