@@ -92,10 +92,10 @@
 #X obj 130 1 doc_layout ~unspecified~ 126 20;
 #X obj 637 363 sel 0 1;
 #X msg 637 382 3;
-#X msg 656 401 0;
 #X obj 643 454 gf/canvas_setgop 0;
 #X obj 661 425 print setgop;
 #X obj 637 425 t f;
+#X msg 656 401 1 \, 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -164,9 +164,9 @@
 #X connect 59 2 7 0;
 #X connect 59 2 49 0;
 #X connect 60 0 61 0;
-#X connect 60 1 62 0;
-#X connect 61 0 65 0;
-#X connect 62 0 65 0;
-#X connect 65 0 63 0;
+#X connect 60 1 65 0;
+#X connect 61 0 64 0;
+#X connect 64 0 62 0;
+#X connect 64 0 63 0;
 #X connect 65 0 64 0;
-#X coords 0 -1 1 1 126 17 2 0 0;
+#X coords 0 -1 1 1 126 17 0;
