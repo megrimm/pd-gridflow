@@ -1,6 +1,6 @@
 #N canvas 90 97 836 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect grid 4 9 1 9 -261615 -1
-0;
+#X obj 0 20 cnv 15 126 17 \$0-rect_s \$0-rect symbol/numop 4 9 1 9
+-261615 -1 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
 #X obj 9 214 gf/string_replace o o/;
@@ -87,13 +87,15 @@
 #X obj 317 243 receives;
 #X msg 336 354 wire_dotted 255 170 0;
 #X msg 484 335 box_dotted 255 170 0;
-#X obj 640 434 gf/canvas_setgop 0;
-#X obj 639 407 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
-1;
 #X obj 648 337 change 42;
-#X obj 637 363 inv+ 1;
 #X msg 432 278 box_align x 232 \$1 8;
 #X obj 130 1 doc_layout ~unspecified~ 126 20;
+#X obj 637 363 sel 0 1;
+#X msg 637 382 3;
+#X msg 656 401 0;
+#X obj 643 454 gf/canvas_setgop 0;
+#X obj 661 425 print setgop;
+#X obj 637 425 t f;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -101,22 +103,22 @@
 #X connect 3 0 24 1;
 #X connect 4 0 6 0;
 #X connect 5 0 27 0;
-#X connect 6 0 62 0;
+#X connect 6 0 59 0;
 #X connect 7 0 5 0;
 #X connect 10 0 21 0;
 #X connect 11 0 15 0;
 #X connect 12 0 13 0;
-#X connect 12 0 59 0;
+#X connect 12 0 57 0;
 #X connect 13 0 14 0;
 #X connect 13 1 55 0;
 #X connect 14 0 10 0;
 #X connect 16 0 12 0;
 #X connect 16 1 17 0;
 #X connect 17 0 18 0;
-#X connect 18 0 61 0;
+#X connect 18 0 58 0;
 #X connect 19 0 20 0;
 #X connect 19 0 49 1;
-#X connect 20 0 62 0;
+#X connect 20 0 59 0;
 #X connect 21 0 19 0;
 #X connect 22 0 28 1;
 #X connect 23 0 22 1;
@@ -126,7 +128,7 @@
 #X connect 26 0 24 0;
 #X connect 27 0 28 0;
 #X connect 27 1 31 0;
-#X connect 28 0 62 1;
+#X connect 28 0 59 1;
 #X connect 29 0 30 0;
 #X connect 30 0 23 0;
 #X connect 31 0 22 0;
@@ -157,10 +159,14 @@
 #X connect 53 0 51 0;
 #X connect 54 0 16 0;
 #X connect 55 0 10 0;
-#X connect 58 0 57 0;
-#X connect 59 0 60 0;
-#X connect 60 0 58 0;
-#X connect 61 0 10 0;
-#X connect 62 2 7 0;
-#X connect 62 2 49 0;
-#X coords 0 -1 1 1 126 17 1 0 0;
+#X connect 57 0 60 0;
+#X connect 58 0 10 0;
+#X connect 59 2 7 0;
+#X connect 59 2 49 0;
+#X connect 60 0 61 0;
+#X connect 60 1 62 0;
+#X connect 61 0 65 0;
+#X connect 62 0 65 0;
+#X connect 65 0 63 0;
+#X connect 65 0 64 0;
+#X coords 0 -1 1 1 126 17 2 0 0;
