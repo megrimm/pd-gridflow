@@ -372,7 +372,7 @@ static void display_update(void *x);
 		const char *s = ss.data();
 		int n = ss.length();
 		for (int i=0;i<n;i++) {
-			if (s[i]=='\n')     quoted << "\\n";
+			if     (s[i]=='\n') quoted << "\\n";
 			else if (s[i]=='{') quoted << "\\x7b";
 			else if (s[i]=='}') quoted << "\\x7d";
 			//else if (strchr("\\[]\"$",s[i])) quoted << "\\" << (char)s[i];
@@ -380,8 +380,6 @@ static void display_update(void *x);
 			else quoted << (char)s[i];
 		}
 		//return if !canvas || !@vis // can't show for now...
-		/* we're not using quoting for now because there's a bug in it. */
-		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
 		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",
 			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",glist_getcanvas(mom),quoted.str().data());
 	}
@@ -419,16 +417,13 @@ static void display_update(void *x) {
 	string sel = string(argv[0]).data()+3;
 	text.str("");
 	if (sel != "float") {text << sel; if (argc>1) text << " ";}
-	long col = text.str().length();
-	char buf[MAXPDSTRING];
+	long nl=0;
 	for (int i=1; i<argc; i++) {
-		atom_string(&argv[i],buf,MAXPDSTRING);
-		text << buf;
-		col += strlen(buf);
+		text << argv[i];
 		if (i!=argc-1) {
 			text << " ";
-			col++;
-			if (col>56) {text << "\\\\\n"; col=0;}
+			long length = text.str().size();
+			if (length-nl>64) {text << "\\\n"; nl=length;}
 		}
 	}
 	clock_delay(clock,0);
@@ -459,10 +454,8 @@ static void display_update(void *x) {
 		$canvas delete ${self}TEXT \n\
 		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
 		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
-		incr x -1 \n\
-		incr y -1 \n\
-		set sx [expr $x2-$x1+2] \n\
-		set sy [expr $y2-$y1+4] \n\
+		set sx [expr $x2-$x1+2]; incr x -1 \n\
+		set sy [expr $y2-$y1+4]; incr y -1 \n\
 		$canvas delete ${self} \n\
 		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
 		$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline \n\
