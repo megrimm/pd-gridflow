@@ -318,42 +318,16 @@ string ssprintf(const char *fmt, ...) {
 	\decl 0 grid(...);
 	\decl void anything (...);
 };
-std::ostream &operator << (std::ostream &self, const t_atom &a) {
-	switch (a.a_type) {
-		case A_FLOAT:   self << a.a_float; break;
-		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
-		case A_DOLLSYM: self << a.a_symbol->s_name; break; // for real, it's the same thing as A_SYMBOL in pd >= 0.40
-		case A_POINTER: self << "\\p(0x" << std::hex << a.a_gpointer << std::dec << ")"; break;
-		case A_COMMA:   self << ","; break;
-		case A_SEMI:    self << ";"; break;
-		case A_DOLLAR:  self << "$" << a.a_w.w_index; break;
-		case A_LIST: {
-			t_list *b = (t_list *)a.a_gpointer;
-			int argc = binbuf_getnatom(b);
-			t_atom *argv = binbuf_getvec(b);
-			self << "(";
-			for (int i=0; i<argc; i++) self << argv[i] << " )"[i==argc-1];
-			break;
-		}
-		default: self << "\\a(" << a.a_type << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
-	}
-	return self;
-}
 \def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 \def void anything(...) {
 	std::ostringstream text;
 	text << prefix->s_name << ":";
-	if (argv[0]==gensym("_0_list") && argc>=2 && argv[1].a_type==A_FLOAT) {
-		// don't show the selector.
-	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_SYMBOL) {
-		text << " symbol";
-	} else if (argv[0]==gensym("_0_list") && argc==2 && argv[1].a_type==A_POINTER) {
-		text << " pointer";
-	} else if (argv[0]==gensym("_0_list") && argc==1) {
-		text << " bang";
-	} else {
-		text << " " << argv[0].a_symbol->s_name+3; // as is
-	}
+	t_symbol *s = gensym("_0_list");
+	if      (argv[0]==s && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
+	else if (argv[0]==s && argc==2 && argv[1].a_type==A_SYMBOL ) {text << " symbol" ;}
+	else if (argv[0]==s && argc==2 && argv[1].a_type==A_POINTER) {text << " pointer";}
+	else if (argv[0]==s && argc==1) {text << " bang";}
+	else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
 	for (int i=1; i<argc; i++) {text << " " << argv[i];}
 	post("%s",text.str().data());
 }
