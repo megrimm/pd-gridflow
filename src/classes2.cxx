@@ -379,36 +379,36 @@ static void display_update(void *x);
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		//return if !canvas || !@vis // can't show for now...
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",
-			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",glist_getcanvas(mom),quoted.str().data());
+		t_canvas *c = glist_getcanvas(mom);
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",rsym->s_name,
+			text_xpix(bself,mom),
+			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
 	}
 };
 #define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self;
+#define L if(0) post("%s",__PRETTY_FUNCTION__);
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
 	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
 	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
 }
-static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT
-	bself->te_xpix+=dx;
-	bself->te_ypix+=dy;
-	self->show();
-	canvas_fixlinesfor(glist, (t_text *)x);
+static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT L
+	bself->te_xpix+=dx; bself->te_ypix+=dy; self->show();
+	//canvas_fixlinesfor(glist, (t_text *)x);
 }
-static void display_selectfn(t_gobj *x, t_glist *glist, int state) {INIT
+static void display_selectfn(t_gobj *x, t_glist *glist, int state) {INIT L
 	self->selected=!!state;
 	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
 }
-static void display_deletefn(t_gobj *x, t_glist *glist) {INIT
+static void display_deletefn(t_gobj *x, t_glist *glist) {INIT L
 	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
-static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT
+static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
 	self->vis = !!flag;
 	display_update(self);
 }
 #undef INIT
-static void display_update(void *x) {
+static void display_update(void *x) {L
 	Display *self = (Display *)x;
 	if (self->vis) self->show();
 }
