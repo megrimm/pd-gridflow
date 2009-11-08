@@ -177,12 +177,13 @@ static inline uint64 rdtsc()
 		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
+struct FObject;
 struct BFObject;
 struct Barf {
   string text;
   Barf(const char *s, ...);
   Barf(const char *file, int line, const char *func, const char *s, ...);
-  void error(BFObject *bself);
+  void error(FObject *self);
   ~Barf() {}
 };
 
@@ -766,10 +767,7 @@ struct GridOutlet : CObject {
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
 struct BFProxy;
-struct BFObject : t_object {
-	FObject *self;
-	string binbuf_string ();
-};
+struct BFObject : t_object {FObject *self;};
 
 // represents objects that have inlets/outlets
 \class FObject {
@@ -780,6 +778,7 @@ struct BFObject : t_object {
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
 	t_outlet **outlets;   // direct access to outlets (not linked lists)
 	t_canvas *mom;
+	string binbuf_string ();
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
 	std::vector<P<GridInlet> > in;
@@ -800,7 +799,7 @@ extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #undef ARGS
-#define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[null]")
+#define ARGS(OBJ) ((OBJ) ? (OBJ)->binbuf_string().data() : "[null]")
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("'%s' is empty",#_a_);
 #define SAME_TYPE(_a_,_b_) if ((_a_)->nt != (_b_)->nt) RAISE("same type please (%s has %s; %s has %s)", \
 	#_a_, number_type_table[(_a_)->nt].name, \
