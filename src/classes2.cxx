@@ -356,6 +356,7 @@ static void display_update(void *x);
 		SETPOINTER(a,(t_gpointer *)bself);
 		pd_typedmess(gp,gensym("dest"),1,a);
 		clock = clock_new((void *)this,(void(*)())display_update);
+ 		clock_delay(clock,0);
 	}
 	~Display () {
 		pd_unbind((t_pd *)bself,rsym);
@@ -386,10 +387,11 @@ static void display_update(void *x);
 	}
 };
 #define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self;
-#define L if(0) post("%s",__PRETTY_FUNCTION__);
+#define L if(1) post("%s",__PRETTY_FUNCTION__);
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
 	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
 	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
+	post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
 }
 static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT L
 	bself->te_xpix+=dx; bself->te_ypix+=dy; self->show();
@@ -410,7 +412,7 @@ static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
 #undef INIT
 static void display_update(void *x) {L
 	Display *self = (Display *)x;
-	if (self->vis) self->show();
+	self->show();
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
