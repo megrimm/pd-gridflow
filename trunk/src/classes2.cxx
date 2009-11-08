@@ -368,20 +368,22 @@ static void display_update(void *x);
 	\decl 0 very_long_name_that_nobody_uses(...);
  	void show() {
 		std::ostringstream quoted;
-	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
 		std::string ss = text.str();
 		const char *s = ss.data();
 		int n = ss.length();
 		for (int i=0;i<n;i++) {
-			if (s[i]=='\n') quoted << "\\n";
-			else if (strchr("\"[]$",s[i])) quoted << "\\" << (char)s[i];
+			if (s[i]=='\n')     quoted << "\\n";
+			else if (s[i]=='{') quoted << "\\x7b";
+			else if (s[i]=='}') quoted << "\\x7d";
+			//else if (strchr("\\[]\"$",s[i])) quoted << "\\" << (char)s[i];
+			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
 		//return if !canvas || !@vis // can't show for now...
 		/* we're not using quoting for now because there's a bug in it. */
 		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c {%s}\n",
-			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",glist_getcanvas(mom),ss.data());
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",glist_getcanvas(mom),quoted.str().data());
 	}
 };
 #define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self;
