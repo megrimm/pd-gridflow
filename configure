@@ -150,7 +150,7 @@ class Feature
 		command = ["/usr/bin/env", $conf[:CC]] +
 			$CFLAGS.split(/ /).reject{|x| x.length==0 }
 		if not launch2 log,*(command+options+[sourcename,
-			 "-o", binname, *link])
+			 "-o", binname, *link.uniq])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
 			errs = log.split("\n").find_all {|l| pat =~ l }
 			raise "gcc compilation error" if not errs or
@@ -710,7 +710,7 @@ def try feature
 	end
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
-	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
 	for k,v in feature.defines||{} do
