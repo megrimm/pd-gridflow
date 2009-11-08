@@ -87,7 +87,7 @@ static std::map<string,string> fourccs;
 \def 0 bang () {
 	long length = quicktime_video_length(anim,track);
 	long nframe = quicktime_video_position(anim,track);
-	if (nframe >= length) {outlet_bang(bself->te_outlet); return;}
+	if (nframe >= length) {outlet_bang(outlets[0]); return;}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
 	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
 		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
@@ -191,23 +191,13 @@ GRID_INLET(0) {
 }
 
 \def 0 get () {
-/*	t_atom a[1];
-	SETFLOAT(a,(float)length);
-	outlet_anything(bself->te_outlet,gensym("frames"),1,a);
-*/
 	t_atom a[1];
-	SETFLOAT(a,quicktime_video_length(anim,track));
-	outlet_anything(bself->outlets[0],gensym("frames"),1,a);
-	SETFLOAT(a,quicktime_frame_rate(anim,track));
-	outlet_anything(bself->outlets[0],gensym("framerate"),1,a);
-	SETFLOAT(a,quicktime_video_height(anim,track));
-	outlet_anything(bself->outlets[0],gensym("height"),1,a);
-	SETFLOAT(a,quicktime_video_width(anim,track));
-	outlet_anything(bself->outlets[0],gensym("width"),1,a);
-	SETFLOAT(a,quicktime_video_depth(anim,track));
-	outlet_anything(bself->outlets[0],gensym("depth"),1,a);
-	SETSYMBOL(a,gensym(quicktime_video_compressor(anim,track)));
-	outlet_anything(bself->outlets[0],gensym("codec"),1,a);
+	SETFLOAT(a,quicktime_video_length(anim,track));	outlet_anything(outlets[0],gensym("frames"),1,a);
+	SETFLOAT(a,quicktime_frame_rate(anim,track));	outlet_anything(outlets[0],gensym("framerate"),1,a);
+	SETFLOAT(a,quicktime_video_height(anim,track));	outlet_anything(outlets[0],gensym("height"),1,a);
+	SETFLOAT(a,quicktime_video_width(anim,track));	outlet_anything(outlets[0],gensym("width"),1,a);
+	SETFLOAT(a,quicktime_video_depth(anim,track));	outlet_anything(outlets[0],gensym("depth"),1,a);
+	SETSYMBOL(a,gensym(quicktime_video_compressor(anim,track))); outlet_anything(outlets[0],gensym("codec"),1,a);
 	//SUPER;
 }
 

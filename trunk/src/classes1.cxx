@@ -174,7 +174,7 @@ GRID_INPUT(1,dim_grid) {
 };
 GRID_INLET(0) {
 } GRID_FLOW {
-	for (int i=0; i<n; i++) outlet_float(bself->outlets[0],data[i]);
+	for (int i=0; i<n; i++) outlet_float(outlets[0],data[i]);
 } GRID_END
 \end class {install("#to_float",1,1); add_creator("#export"); add_creator("@export");}
 
@@ -188,7 +188,7 @@ GRID_INLET(0) {
 	char c[n+1];
 	for (int i=0; i<n; i++) c[i]=(char)data[i];
 	c[n]=0;
-	outlet_symbol(bself->outlets[0],gensym(c));
+	outlet_symbol(outlets[0],gensym(c));
 } GRID_END
 \end class {install("#to_symbol",1,1); add_creator("#export_symbol"); add_creator("@export_symbol");}
 
@@ -971,7 +971,7 @@ GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
 GRID_INLET(0) {
 	//in->set_mode(0);
 } GRID_FINISH {
-	outlet_bang(bself->outlets[0]);
+	outlet_bang(outlets[0]);
 } GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
 \class GridDim : FObject {
@@ -989,7 +989,7 @@ GRID_INLET(0) {
 	\grin 0
 };
 GRID_INLET(0) {
-	outlet_symbol(bself->outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
+	outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
 	/*in->set_mode(0);*/
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
@@ -1273,8 +1273,8 @@ GRID_INLET(0) {
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
 	out->send(2,blah);
-	outlet_float(bself->outlets[1],blah[0]);
-	outlet_float(bself->outlets[2],blah[1]);
+	outlet_float(outlets[1],blah[0]);
+	outlet_float(outlets[2],blah[1]);
 } GRID_END
 
 \end class {install("#centroid",1,3);}
@@ -1363,7 +1363,7 @@ GRID_INPUT(1,offset) {} GRID_END
 	\attr int form();
 	\attr int form_val;
 	\constructor (int form=0) {form_val=form; initialize3();}
-	void initialize3() {bself->noutlets_set(form_val ? 2 : 4);}
+	void initialize3() {noutlets_set(form_val ? 2 : 4);}
 };
 struct Stats {
 	int64 yy,yx,xx,y,x,area;
@@ -2201,7 +2201,7 @@ GRID_INLET(0) {
 		if (n>32) RAISE("n=%d is too many?",n);
 		a = new Grid(new Dim(n),nt,true);
 		this->n=n;
-		bself->ninlets_set(this->n);
+		ninlets_set(this->n);
 	}
 	\decl void _n_float (int inlet, float f);
 	\decl void _n_list  (int inlet, float f);
@@ -2229,7 +2229,7 @@ TYPESWITCH(a->nt,FOO,);
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
 		this->n=n;
-		bself->noutlets_set(this->n);
+		noutlets_set(this->n);
 	}
 	\grin 0
 };
@@ -2238,7 +2238,7 @@ GRID_INLET(0) {
 	if (in->dim->v[0]!=this->n) RAISE("expecting dim(%ld), got dim(%ld)",this->n,in->dim->v[0]);
 	in->set_chunk(0);
 } GRID_FLOW {
-	for (int i=n-1; i>=0; i--) outlet_float(bself->outlets[i],(t_float)data[i]);
+	for (int i=n-1; i>=0; i--) outlet_float(outlets[i],(t_float)data[i]);
 } GRID_END
 \end class {install("#unpack",1,0);}
 

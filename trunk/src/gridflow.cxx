@@ -567,6 +567,27 @@ static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom2 *
 	BFObject_anything(self->parent,self->id,s,argc,argv);
 }
 
+FObject::FObject (BFObject *bself, MESSAGE) {
+	this->bself = bself;
+	bself->self = this;
+	string name = string(sel->s_name);
+	if (!mom) post("warning: no mom");
+	mom = (t_canvas *)canvas_getcurrent();
+	post("mom=%p",mom);
+	ninlets  = 1;
+	noutlets = 0;
+	inlets  = new  BFProxy*[1];
+	outlets = new t_outlet*[1];
+	FClass *fc = fclasses[name];
+	inlets[0] = 0; // inlet 0 of this table is not in use
+	ninlets_set( fc->ninlets ,false);
+	noutlets_set(fc->noutlets,false);
+}
+FObject::~FObject () {
+	ninlets_set(1,false);
+	delete[] inlets;
+	delete[] outlets;
+}
 static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
     if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
@@ -580,18 +601,9 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	//pd_post(classsym->s_name,argc,argv);
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-
 	bself->self = 0;
-	bself->mom = (t_canvas *)canvas_getcurrent();
-	bself->ninlets  = 1;
-	bself->noutlets = 0;
-	bself->inlets  = new  BFProxy*[1];
-	bself->outlets = new t_outlet*[1];
-	bself->inlets[0] = 0; // inlet 0 of this table is not in use
-	bself->ninlets_set( fclasses[classsym->s_name]->ninlets ,false);
-	bself->noutlets_set(fclasses[classsym->s_name]->noutlets,false);
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
-	bself->self = alloc(bself,0,j,(t_atom2 *)argv);
+	bself->self = alloc(bself,classsym,j,(t_atom2 *)argv);
 	while (j<argc) {
 		j++;
 		int k=j;
@@ -604,38 +616,37 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete (BFObject *bself) {
 	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself);}
-	bself->ninlets_set(1,false);
-	delete[] bself->inlets;
-	delete[] bself->outlets;
 }
 
 //****************************************************************
 
 static void BFObject_undrawio (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
-	if (!bself->mom || !glist_isvisible(bself->mom)) return;
-	t_rtext *rt = glist_findrtext(bself->mom,bself);
+	t_canvas *mom = bself->self->mom;
+	if (!mom || !glist_isvisible(mom)) return;
+	t_rtext *rt = glist_findrtext(mom,bself);
 	if (!rt) return;
-	glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
+	glist_eraseiofor(mom,bself,rtext_gettag(rt));
 #endif
 }
 
 static void BFObject_redraw (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
-	if (!bself->mom || !glist_isvisible(bself->mom)) return;
-	t_rtext *rt = glist_findrtext(bself->mom,bself);
+	t_canvas *mom = bself->self->mom;
+	if (!mom || !glist_isvisible(mom)) return;
+	t_rtext *rt = glist_findrtext(mom,bself);
 	if (!rt) return;
-	gobj_vis((t_gobj *)bself,bself->mom,0);
-	gobj_vis((t_gobj *)bself,bself->mom,1);
-	canvas_fixlinesfor(bself->mom,(t_text *)bself);
+	gobj_vis((t_gobj *)bself,mom,0);
+	gobj_vis((t_gobj *)bself,mom,1);
+	canvas_fixlinesfor(mom,(t_text *)bself);
 #endif
 }
 
 /* warning: deleting inlets that are connected will cause pd to crash */
-void BFObject::ninlets_set (int n, bool draw) {
-	if (!te_binbuf) draw=false;
+void FObject::ninlets_set (int n, bool draw) {
+	if (!bself->te_binbuf) draw=false;
 	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
-	if (draw) BFObject_undrawio(this);
+	if (draw) BFObject_undrawio(bself);
 	if (ninlets<n) {
 		BFProxy **noo = new BFProxy*[n];
 		memcpy(noo,inlets,ninlets*sizeof(BFProxy*));
@@ -643,9 +654,9 @@ void BFObject::ninlets_set (int n, bool draw) {
 		inlets = noo;
 		while (ninlets<n) {
 			BFProxy *p = inlets[ninlets] = (BFProxy *)pd_new(BFProxy_class);
-			p->parent = this;
+			p->parent = bself;
 			p->id = ninlets;
-			p->inlet = inlet_new(this, &p->ob_pd, 0,0);
+			p->inlet = inlet_new(bself,&p->ob_pd,0,0);
 			ninlets++;
 		}
 	} else {
@@ -655,23 +666,23 @@ void BFObject::ninlets_set (int n, bool draw) {
 			pd_free((t_pd *)inlets[ninlets]);
 		}
 	}
-	if (draw) BFObject_redraw(this);
+	if (draw) BFObject_redraw(bself);
 }
 /* warning: deleting outlets that are connected will cause pd to crash */
-void BFObject::noutlets_set (int n, bool draw) {
-	if (!te_binbuf) draw=false;
+void FObject::noutlets_set (int n, bool draw) {
+	if (!bself->te_binbuf) draw=false;
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
-	if (draw) BFObject_undrawio(this);
+	if (draw) BFObject_undrawio(bself);
 	if (noutlets<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
 		memcpy(noo,outlets,noutlets*sizeof(t_outlet*));
 		delete[] outlets;
 		outlets = noo;
-		while (noutlets<n) outlets[noutlets++] = outlet_new(this,&s_anything);
+		while (noutlets<n) outlets[noutlets++] = outlet_new(bself,&s_anything);
 	} else {
 		while (noutlets>n) outlet_free(outlets[--noutlets]);
 	}
-	if (draw) BFObject_redraw(this);
+	if (draw) BFObject_redraw(bself);
 }
 
 string BFObject::binbuf_string () {

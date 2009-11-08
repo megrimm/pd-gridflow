@@ -726,7 +726,7 @@ struct GridOutlet : CObject {
 	static const long MIN_PACKET_SIZE = 1<<8;
 	static const long MAX_PACKET_SIZE = 1<<12;
 // those are set only once
-	FObject *parent; // not a P<> because of circular refs
+	FObject *parent;
 	P<Dim> dim; // dimensions of the grid being sent
 	NumberTypeE nt;
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
@@ -768,26 +768,27 @@ struct GridOutlet : CObject {
 struct BFProxy;
 struct BFObject : t_object {
 	FObject *self;
+	string binbuf_string ();
+};
+
+// represents objects that have inlets/outlets
+\class FObject {
+	virtual ~FObject ();
+	virtual void changed (t_symbol *s=0) {}
+	BFObject *bself; // point to PD peer
 	int ninlets,noutlets; // per object settings (not class)
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
 	t_outlet **outlets;   // direct access to outlets (not linked lists)
 	t_canvas *mom;
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
-	string binbuf_string ();
-};
-
-// represents objects that have inlets/outlets
-\class FObject {
-	virtual void changed (t_symbol *s=0) {}
-	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
-	FObject(BFObject *bself, MESSAGE) : bself(bself) {bself->self = this;}
+	FObject(BFObject *bself, MESSAGE);
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
-		outlet_list(bself->outlets[outlet],&s_list,argc,foo);
+		outlet_list(outlets[outlet],&s_list,argc,foo);
 	}
 	\decl 0 get (t_symbol *s=0);
 	\decl 0 help ();

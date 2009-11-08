@@ -294,19 +294,19 @@ static void gfpost(VideoMmap *self) {
 		t_atom a[2];
 		SETFLOAT(a+0,vcaps.minheight);
 		SETFLOAT(a+1,vcaps.minwidth);
-		outlet_anything(bself->outlets[0],gensym("minsize"),2,a);
+		outlet_anything(outlets[0],gensym("minsize"),2,a);
 		SETFLOAT(a+0,vcaps.maxheight);
 		SETFLOAT(a+1,vcaps.maxwidth);
-		outlet_anything(bself->outlets[0],gensym("maxsize"),2,a);
+		outlet_anything(outlets[0],gensym("maxsize"),2,a);
 		char *foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
 		SETSYMBOL(a,gensym(foo));
 		free(foo);
-		outlet_anything(bself->outlets[0],gensym("palette"),1,a);
+		outlet_anything(outlets[0],gensym("palette"),1,a);
 		SETSYMBOL(a,use_mmap ? gensym("mmap") : gensym("read"));
-		outlet_anything(bself->outlets[0],gensym("transfer"),1,a);
+		outlet_anything(outlets[0],gensym("transfer"),1,a);
 		SETFLOAT(a+0,dim->v[0]);
 		SETFLOAT(a+1,dim->v[1]);
-		outlet_anything(bself->outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
+		outlet_anything(outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
 	}
 }
 

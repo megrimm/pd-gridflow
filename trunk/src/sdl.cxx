@@ -79,7 +79,7 @@ static void report_pointer () {
 	SETFLOAT(a+0,mousey);
 	SETFLOAT(a+1,mousex);
 	SETFLOAT(a+2,mousem);
-	outlet_anything(instance->bself->outlets[0],gensym("position"),COUNT(a),a);
+	outlet_anything(instance->outlets[0],gensym("position"),COUNT(a),a);
 }
 
 static void HandleEvent () {
@@ -102,7 +102,7 @@ static void HandleEvent () {
 			SETFLOAT(at+1,mousex);
 			SETFLOAT(at+2,mousem);
 			SETSYMBOL(at+3,keyboard[event.key.keysym.sym]);
-			outlet_anything(instance->bself->outlets[0],sel,4,at);
+			outlet_anything(instance->outlets[0],sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);

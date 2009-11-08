@@ -198,7 +198,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE n
 	t_atom a[1];
 	SETGRIDOUT(a,this);
 	if (parent) {
-		outlet_anything(parent->bself->outlets[woutlet],bsym._grid,1,a);
+		outlet_anything(parent->outlets[woutlet],bsym._grid,1,a);
 		if (!dim->prod()) finish();
 	}
 }

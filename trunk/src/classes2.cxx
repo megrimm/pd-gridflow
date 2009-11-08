@@ -79,7 +79,7 @@ struct ArgSpec {
 				SETNULL(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
 		}
-		bself->noutlets_set(sargc);
+		noutlets_set(sargc);
 	}
 	~Args () {delete[] sargv;}
 	\decl 0 bang ();
@@ -91,7 +91,7 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment", x);
     return x;
 } 
-\def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(bself->mom)->gl_name->s_name);}
+\def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
 	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
@@ -105,7 +105,7 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	else pd_typedmess(o,&s_list,argc,argv);
 }
 \def 0 loadbang () {
-	t_canvasenvironment *env = canvas_getenv(bself->mom);
+	t_canvasenvironment *env = canvas_getenv(mom);
 	int ac = env->ce_argc;
 	t_atom av[ac];
 	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
@@ -119,14 +119,14 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 		j++;
 		int k=j;
 		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
-		//outlet_anything2(bself->outlets[sargc],j-k,av+k);
-		t_text *t = (t_text *)canvas_getabstop(bself->mom);
+		//outlet_anything2(outlets[sargc],j-k,av+k);
+		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
 	}
 }
 void Args::process_args (int argc, t_atom *argv) {
-	t_canvas *canvas = canvas_getrootfor(bself->mom);
+	t_canvas *canvas = canvas_getrootfor(mom);
 	t_symbol *wildcard = gensym("*");
 	for (int i=sargc-1; i>=0; i--) {
 		t_atom *v;
@@ -139,14 +139,14 @@ void Args::process_args (int argc, t_atom *argv) {
 			}
 		} else v = &argv[i];
 		if (sargv[i].name==wildcard) {
-			if (argc-i>0) outlet_list(bself->outlets[i],&s_list,argc-i,argv+i);
-			else outlet_bang(bself->outlets[i]);
+			if (argc-i>0) outlet_list(outlets[i],&s_list,argc-i,argv+i);
+			else outlet_bang(outlets[i]);
 		} else {
 			if (v->a_type==A_LIST) {
 				t_binbuf *b = (t_binbuf *)v->a_gpointer;
-				outlet_list(bself->outlets[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->outlets[i],v->a_symbol);
-			else outlet_anything2(bself->outlets[i],1,v);
+				outlet_list(outlets[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
+			} else if (v->a_type==A_SYMBOL) outlet_symbol(outlets[i],v->a_symbol);
+			else outlet_anything2(outlets[i],1,v);
 		}
 	}
 	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
@@ -217,15 +217,15 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 \def 0 list (...) {
 	if (argc<1) RAISE("empty input");
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->outlets[0],i==ac?-1:i);
+	outlet_float(outlets[0],i==ac?-1:i);
 }
 \def 0 float (float f) {
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->outlets[0],i==ac?-1:i);
+	outlet_float(outlets[0],i==ac?-1:i);
 }
 \def 0 symbol (t_symbol *s) {
 	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(bself->outlets[0],i==ac?-1:i);
+	outlet_float(outlets[0],i==ac?-1:i);
 }
 //doc:_1_list,"list to search into"
 //doc:_0_float,"float to find in that list"
@@ -250,8 +250,8 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 \def 0 float(float f) {
 	int i = int(f);
 	if (i<0) i+=ac;
-	if (i<0 || i>=ac) {outlet_bang(bself->outlets[0]); return;} /* out-of-range */
-	outlet_atom(bself->outlets[0],&at[i]);
+	if (i<0 || i>=ac) {outlet_bang(outlets[0]); return;} /* out-of-range */
+	outlet_atom(outlets[0],&at[i]);
 }
 \def 1 list (...) {
 	if (at) delete[] at;
@@ -269,8 +269,8 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
 		mosusses = new t_float[argc];
 		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_float;
-		bself-> ninlets_set(1+nmosusses);
-		bself->noutlets_set(1+nmosusses);
+		 ninlets_set(1+nmosusses);
+		noutlets_set(1+nmosusses);
 	}
 	~Range () {delete[] mosusses;}
 	\decl 0 float(float f);
@@ -280,7 +280,7 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 \def 0 list(float f) {_0_float(argc,argv,f);}
 \def 0 float(float f) {
 	int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
-	outlet_float(bself->outlets[i],f);
+	outlet_float(outlets[i],f);
 }
  // precedence problem in dispatcher... does this problem still exist?
 \def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
@@ -535,8 +535,8 @@ static void display_update(void *x) {
 	SETFLOAT(b+0,tv.tv_sec/86400);
 	SETFLOAT(b+1,mod(tv.tv_sec,86400));
 	SETFLOAT(b+2,tv.tv_usec);
-	outlet_anything(bself->outlets[2],&s_list,6,a);
-	outlet_anything(bself->outlets[1],&s_list,3,b);
+	outlet_anything(outlets[2],&s_list,6,a);
+	outlet_anything(outlets[1],&s_list,3,b);
 	send_out(0,strlen(tt),tt);
 }
 
@@ -603,11 +603,11 @@ void ParallelPort_call(ParallelPort *self) {self->call();}
 void ParallelPort::call() {
 	int flags;
 	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
-	if (this->flags!=flags) outlet_float(bself->outlets[2],flags);
+	if (this->flags!=flags) outlet_float(outlets[2],flags);
 	this->flags = flags;
 	int status;
 	if (ioctl(fd,LPGETSTATUS,&status)<0) post("ioctl: %s",strerror(errno));
-	if (this->status!=status) outlet_float(bself->outlets[1],status);
+	if (this->status!=status) outlet_float(outlets[1],status);
 	this->status = status;
 	if (clock) clock_delay(clock,2000);
 }
@@ -621,7 +621,7 @@ void ParallelPort::call() {
 	int nsels;
 	t_symbol **sels;
 	~Route2() {if (sels) delete[] sels;}
-	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); bself->noutlets_set(1+nsels);}
+	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...);
 	\decl 1 list(...);
 };
@@ -629,7 +629,7 @@ void ParallelPort::call() {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 	int i=0;
 	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-	outlet_anything(bself->outlets[i],sel,argc-1,argv+1);
+	outlet_anything(outlets[i],sel,argc-1,argv+1);
 }
 \def 1 list(...) {
 	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -654,14 +654,14 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 		this->lo=0;
 		this->mode=0;
 		this->index=i;
-		bself->noutlets_set(n);
+		noutlets_set(n);
 	}
 	\decl void anything(...);
 	\decl 1 float(int i);
 };
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	outlet_anything(bself->outlets[index],sel,argc-1,argv+1);
+	outlet_anything(outlets[index],sel,argc-1,argv+1);
 	if (mode) {
 		index += sgn(mode);
 		if (index<lo || index>hi) {
@@ -721,8 +721,8 @@ t_class *ReceivesProxy_class;
 	do_bind(argc,argv);
 }
 void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
-	outlet_symbol(  self->parent->bself->outlets[1],self->suffix);
-	outlet_anything(self->parent->bself->outlets[0],s,argc,argv);
+	outlet_symbol(  self->parent->outlets[1],self->suffix);
+	outlet_anything(self->parent->outlets[0],s,argc,argv);
 }
 \end class {
 	install("receives",1,2);
@@ -736,7 +736,7 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	\decl void _0_symbol(t_symbol *s);
 };
 \def void _0_symbol(t_symbol *s) {
-	outlet_float(bself->outlets[0],!!zgetfn(&pd_objectmaker,s));
+	outlet_float(outlets[0],!!zgetfn(&pd_objectmaker,s));
 }
 \end class {install("class_exists",1,1);}
 
@@ -751,10 +751,10 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	list = list_new(argc,argv);
 }
 \def 0 list (...) {
-	if (binbuf_getnatom(list) != argc) {outlet_float(bself->outlets[0],0); return;}
+	if (binbuf_getnatom(list) != argc) {outlet_float(outlets[0],0); return;}
 	t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
-	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {outlet_float(bself->outlets[0],0); return;}
-	outlet_float(bself->outlets[0],1);
+	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {outlet_float(outlets[0],0); return;}
+	outlet_float(outlets[0],1);
 }
 \end class {install("list.==",2,1);}
 
@@ -780,7 +780,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_utime-time)*1000/HZ);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
@@ -789,7 +789,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->outlets[0],(t.tms_stime-time)*1000/HZ);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
@@ -798,7 +798,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 1 bang ();
 };
 \def 0 bang () {time=rdtsc();}
-\def 1 bang () {outlet_float(bself->outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
+\def 1 bang () {outlet_float(outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 \end class {install("tsctime",2,1);
 	struct timeval t0,t1;
 	uint64 u0,u1;
@@ -837,7 +837,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \def 0 list (...) {
 	std::ostringstream o;
 	pd_oprintf(o,format.data(),argc,argv);
-	t_canvas *canvas = canvas_getrootfor(bself->mom);
+	t_canvas *canvas = canvas_getrootfor(mom);
 	string s = o.str();
 	pd_error(canvas,"%s",s.data());
 }
@@ -849,7 +849,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 list (...);
 };
 \def 0 list (...) {
-	t_outlet *o = bself->outlets[0];
+	t_outlet *o = outlets[0];
 	for (int i=0; i<argc; i++) {
 		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,argv[i]);
 		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,argv[i]);
@@ -861,7 +861,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 //****************************************************************
 
 #define MOM \
-	t_canvas *mom = bself->mom; \
+	t_canvas *mom = this->mom; \
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
 
 \class GFCanvasFileName : FObject {
@@ -869,14 +869,14 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; outlet_symbol(bself->outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));}
+\def 0 bang () {MOM; outlet_symbol(outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));}
 \end class {install("gf/canvas_filename",1,1);}
 \class GFCanvasDollarZero : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; outlet_float(bself->outlets[0],canvas_getenv(mom)->ce_dollarzero);}
+\def 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(mom)->ce_dollarzero);}
 \end class {install("gf/canvas_dollarzero",1,1);}
 \class GFCanvasGetPos : FObject {
 	int n;
@@ -887,7 +887,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	t_atom a[2];
 	SETFLOAT(a+0,mom->gl_obj.te_xpix);
 	SETFLOAT(a+1,mom->gl_obj.te_ypix);
-	outlet_list(bself->outlets[0],&s_list,2,a);
+	outlet_list(outlets[0],&s_list,2,a);
 }
 \end class {install("gf/canvas_getpos",1,1);}
 \class GFCanvasSetPos : FObject {
@@ -918,7 +918,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \def 0 bang () {MOM;
 	t_atom a[1]; SETFLOAT(a+0,0);
-	outlet_float(bself->outlets[0],mom->gl_edit);
+	outlet_float(outlets[0],mom->gl_edit);
 }
 \end class {install("gf/canvas_edit_mode",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
@@ -946,13 +946,12 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 xid (t_symbol *t, t_symbol *u);
 };
 \def 0 bang () {
-	t_canvas *mom = bself->mom;
 	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
 	sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(mom),long(mom));
 }
 \def 0 xid (t_symbol *t, t_symbol *u) {
-	outlet_symbol(bself->outlets[0],t);
-	outlet_symbol(bself->outlets[1],u);
+	outlet_symbol(outlets[0],t);
+	outlet_symbol(outlets[1],u);
 }
 \end class {install("gf/canvas_xid",1,2);}
 
@@ -995,7 +994,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; int k=0; canvas_each(y,mom) k++; outlet_float(bself->outlets[0],k);}
+\def 0 bang () {MOM; int k=0; canvas_each(y,mom) k++; outlet_float(outlets[0],k);}
 \end class {install("gf/canvas_count",1,1);}
 
 \class GFCanvasLoadbang : FObject {
@@ -1024,8 +1023,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);
 };
 #define BEGIN \
-	t_outlet *ouch = ((t_object *)bself->mom)->te_outlet; \
-	t_canvas *can = bself->mom->gl_owner; \
+	t_outlet *ouch = ((t_object *)mom)->te_outlet; \
+	t_canvas *can = mom->gl_owner; \
 	if (!can) RAISE("no such canvas"); \
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 #define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
@@ -1107,8 +1106,8 @@ struct _inlet {
 		if (horiz) x += x2-x1+incr;
 		else       y += y2-y1+incr;
 	}
-	if (horiz) outlet_float(bself->outlets[0],x-x_start);
-	else       outlet_float(bself->outlets[0],y-y_start);
+	if (horiz) outlet_float(outlets[0],x-x_start);
+	else       outlet_float(outlets[0],y-y_start);
 #else
 	post("doesn't work with DesireData");
 #endif
@@ -1168,7 +1167,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	  a = a.replace(i,b.length(),c);
 	  i += c.length();
 	}
-	outlet_symbol(bself->outlets[0],gensym(a.c_str()));
+	outlet_symbol(outlets[0],gensym(a.c_str()));
 }
 \end class {install("gf/string_replace",1,1);}
 
@@ -1178,7 +1177,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	\decl 0 symbol (t_symbol *it);
 	\decl 1 symbol (t_symbol *than);
 };
-\def 0 symbol (t_symbol *it) {outlet_float(bself->outlets[0],strcmp(it->s_name,than->s_name)<0);}
+\def 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
 \def 1 symbol (t_symbol *than) {this->than=than;}
 \end class {install("gf/string_<",2,1);}
 
