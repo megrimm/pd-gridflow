@@ -300,21 +300,15 @@ string ssprintf(const char *fmt, ...) {
 \class GFPrint : FObject {
 	t_symbol *prefix;
 	t_pd *gp;
-	//t_symbol *rsym;
 	\constructor (t_symbol *s=0) {
-		//rsym = gensym(const_cast<char *>(ssprintf("gf.print:%08x",this).data())); // not in use atm.
 		prefix=s?s:gensym("print");
 		t_atom a[1];
 		SETSYMBOL(a,prefix);
 		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
 		gp = pd_newest();
 		SETPOINTER(a,(t_gpointer *)bself);
-		//pd_typedmess(gp,gensym("dest"),1,a);
 	}
-	~GFPrint () {
-		//pd_unbind((t_pd *)bself,rsym);
-		pd_free(gp);
-	}
+	~GFPrint () {pd_free(gp);}
 	\decl 0 grid(...);
 	\decl void anything (...);
 };
@@ -384,43 +378,38 @@ static void display_update(void *x);
 			else if (strchr("\"[]$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		//return if not canvas or not @vis # can't show for now...
+		//return if !canvas || !@vis // can't show for now...
 		/* we're not using quoting for now because there's a bug in it. */
 		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
 		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c {%s}\n",
 			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,ss.data());
 	}
 };
-static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
-	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
-	*x1 = bself->te_xpix-1;
-	*y1 = bself->te_ypix-1;
-	*x2 = bself->te_xpix+1+self->sx;
-	*y2 = bself->te_ypix+1+self->sy;
+#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
+	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
+	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
 }
-static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
-	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
-	self->canvas = glist_getcanvas(glist);
+	self->canvas = glist_getcanvas(glist); // bug?
 	self->show();
 	canvas_fixlinesfor(glist, (t_text *)x);
 }
-static void display_selectfn(t_gobj *x, t_glist *glist, int state) {
-	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+static void display_selectfn(t_gobj *x, t_glist *glist, int state) {INIT
 	self->selected=!!state;
 	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
 }
-static void display_deletefn(t_gobj *x, t_glist *glist) {
-	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+static void display_deletefn(t_gobj *x, t_glist *glist) {INIT
 	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
-static void display_visfn(t_gobj *x, t_glist *glist, int flag) {
-	BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; self->canvas = glist;
+static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT
 	self->vis = !!flag;
 	display_update(self);
 }
+#undef INIT
 static void display_update(void *x) {
 	Display *self = (Display *)x;
 	if (self->vis) self->show();
