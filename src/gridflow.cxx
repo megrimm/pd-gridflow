@@ -75,9 +75,9 @@ Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
     text = os.str();
 }
 
-void Barf::error(BFObject *bself) {
-	if (bself) pd_error(bself,"%s: %s",bself->binbuf_string().data(),text.data());
-	else        ::error(      "%s: %s",bself->binbuf_string().data(),text.data());
+void Barf::error(FObject *self) {
+	if (self) pd_error(self,"%s: %s",self->binbuf_string().data(),text.data());
+	else        ::error(    "%s: %s",self->binbuf_string().data(),text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
@@ -558,7 +558,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	m = funcall_lookup(bself,"anything");
 	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf &oozy) {oozy.error(bself);}
+    } catch (Barf &oozy) {oozy.error(bself->self);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
@@ -609,11 +609,11 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
-    } catch (Barf &oozy) {oozy.error(bself); return 0;}
+    } catch (Barf &oozy) {oozy.error(bself->self); return 0;}
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself);}
+	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself->self);}
 }
 
 //****************************************************************
@@ -683,11 +683,12 @@ void FObject::noutlets_set (int n, bool draw) {
 	if (draw) BFObject_redraw(bself);
 }
 
-string BFObject::binbuf_string () {
-	if (!te_binbuf) return "[???]";
+string FObject::binbuf_string () {
+	t_binbuf *b = bself->te_binbuf;
+	if (!b) return "[???]";
 	std::ostringstream s;
-	int n = binbuf_getnatom(te_binbuf);
-	t_atom *at = binbuf_getvec(te_binbuf);
+	int n = binbuf_getnatom(b);
+	t_atom *at = binbuf_getvec(b);
 	for (int i=0; i<n; i++) s << (i ? " " : "[") << at[i];
 	s << "]";
 	return s.str();
