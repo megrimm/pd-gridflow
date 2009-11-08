@@ -778,7 +778,7 @@ struct BFObject : t_object {
 };
 
 // represents objects that have inlets/outlets
-\class FObject : BFObject {
+\class FObject {
 	virtual void changed (t_symbol *s=0) {}
 	BFObject *bself; // point to PD peer
 	std::vector<P<GridInlet> > in;
