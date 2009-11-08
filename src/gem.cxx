@@ -143,7 +143,8 @@ GRID_INLET(1) {
 //------------------------------------------------------------------------
 
 \class GridFromPix : FObject {
-	P<BitPacking> bit_packing;
+	P<BitPacking> bp_rgba;
+	P<BitPacking> bp_bgra;
 	\attr bool yflip;
 	\attr NumberTypeE cast;
 	int channels;
@@ -159,35 +160,43 @@ GRID_INLET(1) {
 	void render(GemState *state) {
 		if (!state->image) {::post("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
-		//if (im.format != GL_RGBA         ) {::post("can't produce grid from pix format %d",im.format); return;}
-		//if (im.type   != GL_UNSIGNED_BYTE) {::post("can't produce grid from pix type %d",  im.type  ); return;}
+		BitPacking *bp;
+		switch (im.format) {
+		  case GL_RGBA: bp = bp_rgba; break;
+		  case GL_BGRA: bp = bp_bgra; break;
+		  default: ::post("can't produce grid from pix format %d",im.format); return;}
+		switch (im.type) {
+		  case GL_UNSIGNED_BYTE: case GL_UNSIGNED_INT_8_8_8_8: break; /*ok*/
+		  default: ::post("can't produce grid from pix type %d",  im.type  ); return;}
 		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
 		int32 v[] = { im.ysize, im.xsize, channels };
 		GridOutlet out(this,0,new Dim(3,v),cast);
 		long sxc = im.xsize*channels;
 		long sy = v[0];
-		if (channels==4 && im.format==GL_RGBA) {
-			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
-		} else {
+		//if (channels==4 && im.format==GL_RGBA) {
+		//	for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
+		//} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
 				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(yflip?y:sy-1-y); \
-				bit_packing->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
+				bp->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
-		}
+		//}
 	}
 };
 \def 0 colorspace (t_symbol *s) {
+	uint32 rgba[4] = {0x0000ff,0x00ff00,0xff0000,0x000000}; 
+	uint32 bgra[4] = {0xff0000,0x00ff00,0x0000ff,0x000000}; 
 	if (s==gensym("rgb" )) {
 		channels=3;
-		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing = new BitPacking(is_le(),4,3,mask);
+		bp_rgba = new BitPacking(is_le(),4,3,rgba);
+		bp_bgra = new BitPacking(is_le(),4,3,bgra);
 	} else
 	if (s==gensym("rgba")) {
 		channels=4;
-		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing = new BitPacking(is_le(),4,4,mask);
+		bp_rgba = new BitPacking(is_le(),4,4,rgba);
+		bp_bgra = new BitPacking(is_le(),4,4,bgra);
 	} else
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
