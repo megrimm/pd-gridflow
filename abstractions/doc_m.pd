@@ -1,6 +1,6 @@
 #N canvas 90 97 836 502 10;
-#X obj 0 20 cnv 15 126 17 \$0-rect_s \$0-rect symbol/numop 4 9 1 9
--261615 -1 0;
+#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect auto_gain 4 9 1 9 -261615
+-1 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
 #X obj 9 214 gf/string_replace o o/;
@@ -87,15 +87,13 @@
 #X obj 317 243 receives;
 #X msg 336 354 wire_dotted 255 170 0;
 #X msg 484 335 box_dotted 255 170 0;
-#X obj 648 337 change 42;
+#X obj 637 344 change 42;
 #X msg 432 278 box_align x 232 \$1 8;
 #X obj 130 1 doc_layout ~unspecified~ 126 20;
 #X obj 637 363 sel 0 1;
 #X msg 637 382 3;
-#X obj 643 454 gf/canvas_setgop 0;
-#X obj 661 425 print setgop;
-#X obj 637 425 t f;
 #X msg 656 401 1 \, 0;
+#X obj 637 425 gf/canvas_setgop 0;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -164,9 +162,7 @@
 #X connect 59 2 7 0;
 #X connect 59 2 49 0;
 #X connect 60 0 61 0;
-#X connect 60 1 65 0;
-#X connect 61 0 64 0;
-#X connect 64 0 62 0;
-#X connect 64 0 63 0;
-#X connect 65 0 64 0;
-#X coords 0 -1 1 1 126 17 0;
+#X connect 60 1 62 0;
+#X connect 61 0 63 0;
+#X connect 62 0 63 0;
+#X coords 0 -1 1 1 126 17 2 0 0;
