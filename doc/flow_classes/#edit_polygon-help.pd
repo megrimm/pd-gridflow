@@ -23,8 +23,8 @@
 #X obj 97 231 doc_m i0 grid;
 #X obj 97 273 doc_m i1 grid;
 #X obj 97 295 doc_m i2 grid;
-#X text 232 295 same as arg 2;
-#X text 232 273 same as arg 1;
+#X obj 232 295 doc_same 2;
+#X obj 232 273 doc_same 1;
 #X text 232 251 from [#out window];
 #X text 201 231 picture to draw on;
 #X text 232 357 picture drawn on;

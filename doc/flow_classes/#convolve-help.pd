@@ -28,7 +28,7 @@ celle of the grid.;
 by + and 0 is its base (seed).;
 #X obj 14 316 doc_cc 0;
 #X text 232 697 Resulting image.;
-#X text 232 635 same as arg 0;
+#X obj 232 635 doc_same 0;
 #X msg 43 135 open scissors.jpg \, bang;
 #X obj 0 0 doc_h;
 #X obj 0 749 doc_f;

@@ -55,7 +55,7 @@ dimension list;
 #X obj 97 416 doc_m i0 grid;
 #X obj 97 477 doc_m i0 op;
 #X obj 97 499 doc_m i0 seed;
-#X text 232 477 same as arg 0;
+#X obj 232 477 doc_same 0;
 #X text 232 416 replaces every subgrid by the result of a cascade on
 that subgrid. Doing that with seed value 0 and operation + on grid
 "2 3 5 7" will compute ((((0+2)+3)+5)+7) find the total "17".;

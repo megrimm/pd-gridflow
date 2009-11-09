@@ -28,7 +28,7 @@ you to vary the horizontal and vertical values idenpendently. In the
 example above \, inlet 0 of [#pack] varies the image on a vertical
 axis \, inlet 1 of [#pack] varies the image on a horizontal axis.;
 #X obj 97 556 doc_m i1 grid;
-#X text 232 556 same as arg 0;
+#X obj 232 556 doc_same 0;
 #X text 232 521 Scales down picture by specified amount. (See scale
 factor above);
 #X text 232 618 grid((factor/y) (factor/x) channels);
