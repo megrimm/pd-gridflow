@@ -20,8 +20,8 @@
 are as in [#join].;
 #X text 232 180 dimension number;
 #X text 232 202 dimension number;
-#X text 232 299 same as arg 0;
-#X text 232 321 same as arg 1;
+#X obj 232 299 doc_same 0;
+#X obj 232 321 doc_same 1;
 #X obj 0 415 doc_f;
 #X text 226 58 remaps contents of a grid by swapping dimensions of
 indices. for example \, [#transpose 0 1] does the same as [#remap_image]x[#reverse].

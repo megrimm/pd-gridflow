@@ -31,7 +31,7 @@ number of Dimensions between incoming and outgoing grids.;
 #X obj 97 547 doc_m i0 grid;
 #X obj 97 446 doc_m c0 float;
 #X obj 97 569 doc_m i1 float;
-#X text 232 569 same as arg 0;
+#X obj 232 569 doc_same 0;
 #X text 232 446 dimension number of the dimension by which the reverse
 will occur. For N-dimensional grids \, the dimensions are numbered
 from 0 to N-1. In addition \, negative numbers from -N to -1 may be

@@ -51,7 +51,7 @@ by half a pixel due to rounding .;
 #X obj 0 693 doc_f;
 #X obj 97 601 doc_m i1 grid;
 #X obj 97 521 doc_m c0 grid;
-#X text 232 601 same as arg 0;
+#X obj 232 601 doc_same 0;
 #X obj 20 197 #spread 1;
 #X obj 310 270 #spread 1;
 #X msg 207 89 load r001.jpg;

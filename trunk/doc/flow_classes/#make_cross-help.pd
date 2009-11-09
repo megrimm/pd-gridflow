@@ -29,7 +29,7 @@
 #X text 232 358 polygon;
 #X text 232 274 position of centre;
 #X text 232 212 size (radius);
-#X text 232 296 same as arg 0;
+#X obj 232 296 doc_same 0;
 #X connect 0 0 1 0;
 #X connect 1 0 10 0;
 #X connect 3 0 2 0;

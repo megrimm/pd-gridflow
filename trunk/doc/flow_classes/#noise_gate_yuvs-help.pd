@@ -16,7 +16,7 @@ is lower than a certain threshold.;
 #X text 232 180 picture in signed YUV format (or whatever else works
 for you);
 #X obj 97 215 doc_m i1 float;
-#X text 232 215 same as arg 0;
+#X obj 232 215 doc_same 0;
 #X obj 97 277 doc_m o0 grid;
 #X text 232 118 threshold;
 #X text 232 277 filtered picture in signed YUV format;

@@ -39,7 +39,7 @@ y values passed. Initial creation arguments are mandatory (0 0) otherwise.
 #X obj 14 270 doc_cc 0;
 #X obj 97 270 doc_m c0 (int int);
 #X obj 97 345 doc_m i0 grid;
-#X text 232 380 same as arg 0;
+#X obj 232 380 doc_same 0;
 #X obj 97 380 doc_m i1 (int int);
 #X obj 97 442 doc_m o0 grid;
 #X obj 0 494 doc_f;
