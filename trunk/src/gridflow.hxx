@@ -183,7 +183,8 @@ struct Barf {
   string text;
   Barf(const char *s, ...);
   Barf(const char *file, int line, const char *func, const char *s, ...);
-  void error(FObject *self);
+  void error(BFObject *self);
+  void error(t_symbol *s, int argc, t_atom *argv);
   ~Barf() {}
 };
 
@@ -767,7 +768,10 @@ struct GridOutlet : CObject {
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
 struct BFProxy;
-struct BFObject : t_object {FObject *self;};
+struct BFObject : t_object {
+	FObject *self;
+	string binbuf_string ();
+};
 
 // represents objects that have inlets/outlets
 \class FObject {
@@ -778,7 +782,6 @@ struct BFObject : t_object {FObject *self;};
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
 	t_outlet **outlets;   // direct access to outlets (not linked lists)
 	t_canvas *mom;
-	string binbuf_string ();
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
 	std::vector<P<GridInlet> > in;
@@ -799,7 +802,7 @@ extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #undef ARGS
-#define ARGS(OBJ) ((OBJ) ? (OBJ)->binbuf_string().data() : "[null]")
+#define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[???]")
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("'%s' is empty",#_a_);
 #define SAME_TYPE(_a_,_b_) if ((_a_)->nt != (_b_)->nt) RAISE("same type please (%s has %s; %s has %s)", \
 	#_a_, number_type_table[(_a_)->nt].name, \
@@ -852,6 +855,7 @@ inline void set_atom (t_atom *a, uint32    v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, long      v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
+inline void set_atom (t_atom *a, string    v) {SETSYMBOL(a,gensym(v.data()));}
 inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}

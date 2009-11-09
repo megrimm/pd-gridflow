@@ -75,9 +75,14 @@ Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
     text = os.str();
 }
 
-void Barf::error(FObject *self) {
-	if (self) pd_error(self,"%s: %s",self->binbuf_string().data(),text.data());
-	else        ::error(    "%s: %s",self->binbuf_string().data(),text.data());
+void Barf::error(BFObject *bself) {
+	if (!bself) RAISE("wtf?");
+	pd_error(bself,"%s: %s",bself->binbuf_string().data(),text.data());
+}
+void Barf::error(t_symbol *s, int argc, t_atom *argv) {
+	std::ostringstream os;
+	for (int i=0; i<argc; i++) os << (i ? " " : "[") << argv[i];
+        ::error(      "[%s]: %s",os.str().data(),text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
@@ -580,7 +585,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	m = funcall_lookup(bself,"anything");
 	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf &oozy) {oozy.error(bself->self);}
+    } catch (Barf &oozy) {oozy.error(bself);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
@@ -618,11 +623,11 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	t_atom argv[argc];
 	for (int i=0; i<argc; i++) argv[i] = at[i];
 	argc = handle_braces(argc,argv);
-	//pd_post(classsym->s_name,argc,argv);
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	bself->self = 0;
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
+	bself->te_binbuf = 0; //HACK: supposed to be 0
 	bself->self = alloc(bself,classsym,j,(t_atom2 *)argv);
 	while (j<argc) {
 		j++;
@@ -631,11 +636,11 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
-    } catch (Barf &oozy) {oozy.error(bself->self); return 0;}
+    } catch (Barf &oozy) {oozy.error(bself); return 0;}
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself->self);}
+	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself);}
 }
 
 //****************************************************************
@@ -705,8 +710,8 @@ void FObject::noutlets_set (int n, bool draw) {
 	if (draw) BFObject_redraw(bself);
 }
 
-string FObject::binbuf_string () {
-	t_binbuf *b = bself->te_binbuf;
+string BFObject::binbuf_string () {
+	t_binbuf *b = te_binbuf;
 	if (!b) return "[???]";
 	std::ostringstream s;
 	int n = binbuf_getnatom(b);
@@ -854,12 +859,9 @@ int handle_braces(int ac, t_atom *av) {
 			pd_typedmess((t_pd *)bself,gensym("get"),1,a);
 		}
 	} else {
-		//t_atom a[1];
-		//outlet_anything(outlets[noutlets-1],s,1,a);
 		FMethod m = funcall_lookup(bself,"___get");
-		t_atom2 a[1];
-		SETSYMBOL(a,s);
-		if (m) m(this,1,a);
+		if (!m) RAISE("missing ___get");
+		t_atom2 a[1]; SETSYMBOL(a,s); m(this,1,a);
 	}
 }
 \def 0 help () {
