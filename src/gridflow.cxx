@@ -80,9 +80,9 @@ void Barf::error(BFObject *bself) {
 	pd_error(bself,"%s: %s",bself->binbuf_string().data(),text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
-	std::ostringstream os;
-	for (int i=0; i<argc; i++) os << (i ? " " : "[") << argv[i];
-        ::error("%s]: %s",os.str().data(),text.data());
+	std::ostringstream os; os << s;
+	for (int i=0; i<argc; i++) os << (i ? " " : " ") << argv[i];
+        ::error("[%s]: %s",os.str().data(),text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
