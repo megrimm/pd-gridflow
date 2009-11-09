@@ -123,13 +123,11 @@ static const char *video_mode_choice[] = {
 	sprintf(buf+strlen(buf), "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	sprintf(buf+strlen(buf), "%s:%s ", #_field_, \
-		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
+	sprintf(buf+strlen(buf), "%s:%s ", #_field_, foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
 	free(foo);}
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	sprintf(buf+strlen(buf), "%s=%s; ", #_field_, \
-		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
+	sprintf(buf+strlen(buf), "%s=%s; ", #_field_, foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	free(foo);}
 
 static char *flags_to_s(int value, int n, const char **table) {
@@ -607,14 +605,14 @@ GRID_INLET(0) {
 
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb magic */
 	string c = colorspace->s_name;
-	if      (c=="y") {}
-	else if (c=="yuv") {}
-	else if (c=="rgb") {}
-	else if (c=="magic") {}
-	else RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
+	if (c=="y"    ) {} else
+	if (c=="yuv"  ) {} else
+	if (c=="rgb"  ) {} else
+	if (c=="magic") {} else
+	   RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
 	WIOCTL(fd, VIDIOCGPICT, &vp);
-	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 :
-	              (palettes&(1<<VIDEO_PALETTE_RGB32)) ? VIDEO_PALETTE_RGB32 :
+	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24 )) ? VIDEO_PALETTE_RGB24  :
+	              (palettes&(1<<VIDEO_PALETTE_RGB32 )) ? VIDEO_PALETTE_RGB32  :
 	              (palettes&(1<<VIDEO_PALETTE_RGB565)) ? VIDEO_PALETTE_RGB565 :
                       VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
@@ -624,17 +622,12 @@ GRID_INLET(0) {
 		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-        if (palette == VIDEO_PALETTE_RGB565) {
-            //uint32 masks[3] = { 0x00fc00,0x003e00,0x00001f };
-            uint32 masks[3] = { 0x00f800,0x007e0,0x00001f };
-	    bit_packing = new BitPacking(is_le(),2,3,masks);
-	} else if (palette == VIDEO_PALETTE_RGB32) {
-            uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-	    bit_packing = new BitPacking(is_le(),4,3,masks);
-	} else {
-            uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-	    bit_packing = new BitPacking(is_le(),3,3,masks);
-	}
+        if (palette==VIDEO_PALETTE_RGB565) {uint32 masks[3]={0x00f800,0x0007e0,0x00001f};
+	    bit_packing = new BitPacking(is_le(),2,3,masks);} else
+	if (palette==VIDEO_PALETTE_RGB24 ) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
+	    bit_packing = new BitPacking(is_le(),3,3,masks);} else
+	if (palette==VIDEO_PALETTE_RGB32 ) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
+	    bit_packing = new BitPacking(is_le(),4,3,masks);} else
 	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
@@ -695,16 +688,12 @@ GRID_INLET(0) {
 \def 0 white_blue(uint16 white_blue) {PWC() struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 					    pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
-\def uint16 white_speed() {PWC(0)
-	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
-\def uint16 white_delay() {PWC(0)
-	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
-\def 0 white_speed(uint16 white_speed) {PWC()
-	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-	pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-\def 0 white_delay(uint16 white_delay) {PWC()
-	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-	pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+\def uint16 white_speed() {PWC(0) struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
+\def uint16 white_delay() {PWC(0) struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
+\def 0 white_speed(uint16 white_speed) {PWC() struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+					      pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+\def 0 white_delay(uint16 white_delay) {PWC() struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+					      pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
 
 /*TODO:
 static void set_led_on_time(int fd, int val ) {struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
