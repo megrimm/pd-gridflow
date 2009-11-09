@@ -13,7 +13,7 @@ from 0 to a specified upper bound.;
 #X obj 14 262 doc_ii 1;
 #X obj 97 139 doc_m c0 float;
 #X obj 97 262 doc_m i1 float;
-#X text 232 262 same as arg 0;
+#X obj 232 262 doc_same 0;
 #X text 232 139 "top";
 #X obj 97 201 doc_m i0 float;
 #X text 232 201 a value to be transformed. If \, for example \, top=10

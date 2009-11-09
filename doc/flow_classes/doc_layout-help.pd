@@ -25,9 +25,9 @@
 #X obj 97 284 doc_m i0 name;
 #X obj 97 306 doc_m i0 parent;
 #X obj 97 262 doc_m i0 height;
-#X text 232 262 same as arg 2;
-#X text 232 284 same as arg 0;
-#X text 232 306 same as arg 3;
+#X obj 232 262 doc_same 2;
+#X obj 232 284 doc_same 0;
+#X obj 232 306 doc_same 3;
 #X obj 14 262 doc_ii 0;
 #X obj 14 328 doc_ii 1;
 #X obj 97 156 doc_m c1 float;

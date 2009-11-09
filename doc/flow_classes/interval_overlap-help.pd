@@ -30,10 +30,10 @@
 #X text 232 138 end1;
 #X text 232 160 start2;
 #X text 232 182 end2;
-#X text 232 244 same as arg 0;
-#X text 232 266 same as arg 1;
-#X text 232 310 same as arg 3;
-#X text 232 288 same as arg 2;
+#X obj 232 244 doc_same 0;
+#X obj 232 266 doc_same 1;
+#X obj 232 310 doc_same 3;
+#X obj 232 288 doc_same 2;
 #X connect 16 1 27 0;
 #X connect 17 1 28 0;
 #X connect 18 1 29 0;

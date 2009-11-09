@@ -14,7 +14,7 @@
 of the parent will be automatically added (with a slash).;
 #X obj 97 187 doc_m i0 bang;
 #X obj 97 209 doc_m i1 symbol;
-#X text 232 209 same as arg 0;
+#X obj 232 209 doc_same 0;
 #X obj 97 271 doc_m o0 float;
 #X text 232 187 perform a check and output the result;
 #X text 232 271 0: not found;
