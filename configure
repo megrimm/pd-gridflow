@@ -288,20 +288,12 @@ Feature.add {
 	options ["HAVE_PENTIUM"]
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
-		c_test '
+		c_test '#define cpuid(func,ax,bx,cx,dx) \
+			__asm__ __volatile__("cpuid":"=a"(ax),"=b"(bx),"=c"(cx),"=d"(dx):"a"(func))
 		#include <stdio.h>
-		char get_cpuid[]={
-			96,49,192,15,162,139,124,36,36,137,31,
-			137,87,4,137,79,8,137,71,12,97,195};
-		main() {
-			char result[16];
-			int code;
-			((void(*)(char*))get_cpuid)(result);
-			code = ((int*)result)[3];
-			result[12]=0;
-	                fprintf(stderr,"cpuid: name=\"%12s\", flags=0x%08x\n",
-	                        result,code);
-			return 0;}'}}
+		main() {int a[4]; cpuid(0,a[0],a[1],a[2],a[3]);
+		  fprintf(stderr,"cpuid: name=\"%.4s%.4s%.4s\", flags=0x%08x\n",
+		  (char *)&a[1],(char *)&a[3],(char *)&a[2],a[0]); return 0;}'}}
 Feature.add {
 	tag :mmx
 	uses_feature [:pentium]
