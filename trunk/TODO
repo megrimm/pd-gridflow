@@ -4,16 +4,14 @@ $Id$
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [#reinterval] takes no argument
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
-[ ] [#make_arrow] (fix and help)
-[ ] [#interval_overlap]
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
-[ ] rename local var mom to m for clarity
 [ ] go thru all the bugs/ folder
 [ ] [display] should use clocks to update tk less often
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#print] funny sign in base 8 and 16
+[ ] [doc_same]
 
 unsorted
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
@@ -36,7 +34,7 @@ unsorted
 [ ] about.pd: add link to website, mention irc, etc.
 [ ] go back in all help files and fill in whatever is missing
 [ ] quicktime PNG encoding: does it work?
-[ ] automated loadtime patch rewriting in order to get rid of deprecated forms.
+[ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 
 Later
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
