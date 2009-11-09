@@ -819,23 +819,21 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 //****************************************************************
 
-#define MOM \
-	t_canvas *mom = this->mom; \
-	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
+#define MOM t_canvas *m = mom; for (int i=0; i<n; i++) {m=m->gl_owner; if (!m) RAISE("no such canvas");}
 
 \class GFCanvasFileName : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; outlet_symbol(outlets[0],mom->gl_name ? mom->gl_name : gensym("empty"));}
+\def 0 bang () {MOM; outlet_symbol(outlets[0],m->gl_name ? m->gl_name : gensym("empty"));}
 \end class {install("gf/canvas_filename",1,1);}
 \class GFCanvasDollarZero : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(mom)->ce_dollarzero);}
+\def 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(m)->ce_dollarzero);}
 \end class {install("gf/canvas_dollarzero",1,1);}
 \class GFCanvasGetPos : FObject {
 	int n;
@@ -844,8 +842,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \def 0 bang () {MOM;
 	t_atom a[2];
-	SETFLOAT(a+0,mom->gl_obj.te_xpix);
-	SETFLOAT(a+1,mom->gl_obj.te_ypix);
+	SETFLOAT(a+0,m->gl_obj.te_xpix);
+	SETFLOAT(a+1,m->gl_obj.te_ypix);
 	outlet_list(outlets[0],&s_list,2,a);
 }
 \end class {install("gf/canvas_getpos",1,1);}
@@ -854,19 +852,18 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n) {this->n=n;}
 	\decl 0 list (...);
 };
-\def 0 list (...) {
-	MOM;
+\def 0 list (...) {MOM;
 	if (argc!=2) RAISE("wrong number of args");
-	mom->gl_obj.te_xpix = atom_getfloatarg(0,argc,argv);
-	mom->gl_obj.te_ypix = atom_getfloatarg(1,argc,argv);
-	t_canvas *granny = mom->gl_owner;
+	((t_text *)m)->te_xpix = atom_getfloatarg(0,argc,argv);
+	((t_text *)m)->te_ypix = atom_getfloatarg(1,argc,argv);
+	t_canvas *granny = m->gl_owner;
 	if (!granny) RAISE("no such canvas");
 #ifdef DESIREDATA
-	gobj_changed(mom);
+	gobj_changed(m);
 #else
-        gobj_vis((t_gobj *)mom,granny,0);
-        gobj_vis((t_gobj *)mom,granny,1);
-	canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)mom);
+        gobj_vis((t_gobj *)m,granny,0);
+        gobj_vis((t_gobj *)m,granny,1);
+	canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)m);
 #endif
 }
 \end class {install("gf/canvas_setpos",1,0);}
@@ -875,10 +872,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM;
-	t_atom a[1]; SETFLOAT(a+0,0);
-	outlet_float(outlets[0],mom->gl_edit);
-}
+\def 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
 \end class {install("gf/canvas_edit_mode",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasSetGOP : FObject {
@@ -886,11 +880,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 float (float gop);
 };
-\def 0 float (float gop) {MOM;
-	t_atom a[1];
-	SETFLOAT(a+0,0);
-	canvas_setgraph(mom,gop,0);
-}
+\def 0 float (float gop) {MOM; canvas_setgraph(m,gop,0);}
 \end class {install("gf/canvas_setgop",1,0);}
 \class GFCanvasXID : FObject {
 	int n;
@@ -904,10 +894,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 bang ();
 	\decl 0 xid (t_symbol *t, t_symbol *u);
 };
-\def 0 bang () {
-	for (int i=0; i<n; i++) {mom = mom->gl_owner; if (!mom) RAISE("no such canvas");}
-	sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(mom),long(mom));
-}
+\def 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
 \def 0 xid (t_symbol *t, t_symbol *u) {
 	outlet_symbol(outlets[0],t);
 	outlet_symbol(outlets[1],u);
@@ -921,11 +908,11 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \def 0 float (float y) {MOM;
 	// was 568
-	mom->gl_screenx2 = mom->gl_screenx1 + 632;
-	if (mom->gl_screeny2-mom->gl_screeny1 < y) mom->gl_screeny2 = mom->gl_screeny1+y;
-	sys_vgui("wm geometry .x%lx %dx%d\n",long(mom),
-	  int(mom->gl_screenx2-mom->gl_screenx1),
-	  int(mom->gl_screeny2-mom->gl_screeny1));
+	m->gl_screenx2 = m->gl_screenx1 + 632;
+	if (m->gl_screeny2-m->gl_screeny1 < y) m->gl_screeny2 = m->gl_screeny1+y;
+	sys_vgui("wm geometry .x%lx %dx%d\n",long(m),
+	  int(m->gl_screenx2-m->gl_screenx1),
+	  int(m->gl_screeny2-m->gl_screeny1));
 }
 \end class {install("gf/canvas_hehehe",1,1);}
 
@@ -939,11 +926,9 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	~GFCanvasHoHoHo () {hide();}
 	\decl 0 list (int x1, int y1, int x2, int y2);
 };
-\def 0 list (int x1, int y1, int x2, int y2) {
+\def 0 list (int x1, int y1, int x2, int y2) {MOM;
 	hide();
-	MOM;
-	last = mom;
-	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(last),x1,y1,x2,y2,bself);
+	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,bself);
 }
 \end class {install("gf/canvas_hohoho",1,0);}
 
@@ -953,7 +938,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang ();
 };
-\def 0 bang () {MOM; int k=0; canvas_each(y,mom) k++; outlet_float(outlets[0],k);}
+\def 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
 \end class {install("gf/canvas_count",1,1);}
 
 \class GFCanvasLoadbang : FObject {
@@ -961,13 +946,12 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 float (float m);
 };
-\def 0 float (float m) {MOM;
+\def 0 float (float z) {MOM;
 	int k=0;
-	canvas_each(y,mom) {
+	canvas_each(y,m) {
 		k++;
-		if (k>=m && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
+		if (k>=z && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
 	}
-	
 }
 \end class {
 	install("gf/canvas_loadbang",1,0);
