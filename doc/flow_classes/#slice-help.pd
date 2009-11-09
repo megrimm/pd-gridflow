@@ -27,8 +27,8 @@
 #X obj 97 380 doc_m i1 grid;
 #X obj 97 402 doc_m i2 grid;
 #X obj 97 464 doc_m o0 grid;
-#X text 232 380 same as arg 0;
-#X text 232 402 same as arg 1;
+#X obj 232 380 doc_same 0;
+#X obj 232 402 doc_same 1;
 #X text 232 464 slice;
 #X text 232 358 grid to be sliced;
 #X text 232 296 end positions (as in #for);

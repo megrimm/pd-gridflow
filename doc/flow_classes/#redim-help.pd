@@ -31,7 +31,7 @@ grid must be larger \, the sequence is repeated as much as necessary.
 if the resulting grid must be smaller \, the sequence is truncated.
 then the elements are deserialized to form the resulting grid.;
 #X obj 97 381 doc_m i1 grid;
-#X text 232 381 same as arg 0;
+#X obj 232 381 doc_same 0;
 #X obj 97 443 doc_m o0 grid;
 #X text 232 465 example: with a 240 320 RGB image \, [#redim 120 640
 3] will visually separate the even lines (left) from the odd lines

@@ -25,7 +25,7 @@ output);
 equal to 2 those numbers are sorted according to the smallest pixel
 index found in each region.;
 #X obj 97 268 doc_m i0 form;
-#X text 232 268 same as arg 0;
+#X obj 232 268 doc_same 0;
 #X text 232 391 when form=0: a grid[2 \, 2] giving the standard-deviation
 ([#moment 2]) of each region;
 #X text 232 487 when form=0: a grid[2] giving the centre ([#moment

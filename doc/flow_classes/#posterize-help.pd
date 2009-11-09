@@ -40,7 +40,7 @@ equally spaced \, with the lowest at 0 and the highest at 255 the minimum
 number of levels is 2 and the default value is also 2;
 #X obj 0 590 doc_f;
 #X text 232 454 original image;
-#X text 232 476 same as arg 0;
+#X obj 232 476 doc_same 0;
 #X connect 0 0 20 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 1;

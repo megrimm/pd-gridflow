@@ -28,7 +28,7 @@ sent to a [#remap_image] to be visualised.;
 #X obj 97 199 doc_m c0 float;
 #X obj 97 274 doc_m i0 grid;
 #X obj 97 309 doc_m i1 float;
-#X text 232 309 same as arg 0;
+#X obj 232 309 doc_same 0;
 #X obj 97 371 doc_m o0 grid;
 #X obj 0 416 doc_f;
 #X text 232 199 integer number (0 to 35999) as a creation argument

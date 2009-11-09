@@ -28,7 +28,7 @@ on the row and columns.;
 #X obj 97 265 doc_m c0 grid;
 #X obj 97 445 doc_m i1 grid;
 #X obj 3 235 doc_c 0..1;
-#X text 232 445 same as arg 0;
+#X obj 232 445 doc_same 0;
 #X text 232 287 if it's a single value \, then that factor is to be
 used for both rows and columns.;
 #X text 232 384 duplicates each pixel several times in width and several

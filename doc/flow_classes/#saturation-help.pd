@@ -24,7 +24,7 @@
 #X obj 14 428 doc_ii 1;
 #X obj 14 490 doc_oo 0;
 #X obj 14 331 doc_cc 0;
-#X text 232 428 same as arg 0;
+#X obj 232 428 doc_same 0;
 #X obj 97 331 doc_m c0 float/int;
 #X obj 97 406 doc_m i0 grid;
 #X obj 97 428 doc_m i1 grid;

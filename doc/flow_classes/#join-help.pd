@@ -45,7 +45,7 @@ one specified \, which will be the sum of the two corresponding one.
 3] and a greyscale picture Dim[y \, x \, 1] on dimension 2 (or -1)
 could make a RGBA picture Dim[y \, x \, 4] in which the greyscale image
 becomes the opacity channel.;
-#X text 232 574 same as arg 1;
+#X obj 232 574 doc_same 1;
 #X obj 97 574 doc_m i1 grid;
 #X obj 97 636 doc_m o0 grid;
 #X obj 0 686 doc_f;
