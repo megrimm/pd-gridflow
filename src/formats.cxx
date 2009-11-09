@@ -170,12 +170,15 @@ struct GridHeader {
 //	\decl void raw_open_gzip_out(string filename);
 };
 \def 0 bang () {
+	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
 	P<Dim> dim;
 	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
 	if (headerless_dim) {
 		dim = headerless_dim;
 	} else {
-		if (fread(&head,1,8,f)<8) RAISE("can't read header");
+		int r = fread(&head,1,8,f);
+		if (feof(f)) {outlet_bang(bself->te_outlet); return;} /* damn */
+		if (r<8) RAISE("can't read header: got %d bytes instead of 8",r);
 		uint8 *m = (uint8 *)head.magic;
 		if (strncmp((char *)m,"\x7fgrid",5)==0) endian=1; else
 		if (strncmp((char *)m,"\x7fGRID",5)==0) endian=0; else
