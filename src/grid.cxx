@@ -131,7 +131,7 @@ void GridInlet::begin(GridOutlet *sender) {
 #endif
 }
 
-#define CATCH_IT catch (Barf &slimy) {slimy.error(parent);}
+#define CATCH_IT catch (Barf &slimy) {slimy.error(parent->bself);}
 
 template <class T> void GridInlet::flow(long n, T *data) {
 	CHECK_BUSY(inlet); CHECK_TYPE(*data,sender->nt); CHECK_ALIGN(data,sender->nt);
