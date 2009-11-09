@@ -333,17 +333,16 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #endif
 
 //#ifdef HAVE_DESIREDATA
-static void display_update(void *x);
+static void display_redraw(t_gobj *client, t_glist *glist);
 \class Display : FObject {
 	bool selected;
 	t_symbol *rsym;
 	int y,x,sy,sx;
 	bool vis;
 	std::ostringstream text;
-	t_clock *clock;
 	t_pd *gp;
 	\constructor () {
-		selected=false; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
+		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		std::ostringstream os;
 		rsym = gensym(const_cast<char *>(ssprintf("display:%08x",this).data()));
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
@@ -355,18 +354,17 @@ static void display_update(void *x);
 		pd_bind((t_pd *)bself,rsym);
 		SETPOINTER(a,(t_gpointer *)bself);
 		pd_typedmess(gp,gensym("dest"),1,a);
-		clock = clock_new((void *)this,(void(*)())display_update);
- 		clock_delay(clock,0);
+ 		changed();
 	}
 	~Display () {
 		pd_unbind((t_pd *)bself,rsym);
 		pd_free(gp);
-		if (clock) clock_free(clock);
 	}
 	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
+	void changed() {sys_queuegui(bself,mom,display_redraw);}
  	void show() {
 		std::ostringstream quoted;
 		std::string ss = text.str();
@@ -408,13 +406,10 @@ static void display_deletefn(t_gobj *x, t_glist *glist) {INIT L
 }
 static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
 	self->vis = !!flag;
-	display_update(self);
+	self->changed();
 }
 #undef INIT
-static void display_update(void *x) {L
-	Display *self = (Display *)x;
-	self->show();
-}
+static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
 	string sel = string(argv[0]).data()+3;
@@ -429,12 +424,12 @@ static void display_update(void *x) {L
 			if (length-nl>64) {text << "\\\n"; nl=length;}
 		}
 	}
-	clock_delay(clock,0);
+	changed();
 }
 \def 0 grid(...) {
 	text.str("");
 	pd_typedmess(gp,gensym("grid"),argc,argv);
-	clock_delay(clock,0);
+	changed();
 }
 \def 0 very_long_name_that_nobody_uses(...) {
 	if (text.str().length()) text << "\n";
