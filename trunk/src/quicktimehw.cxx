@@ -36,18 +36,18 @@ static std::map<string,string> fourccs;
 	quicktime_t *anim;
 	int track;
 	P<Dim> dim;
-	char *codec;
+	char *m_codec;
 	int colorspace;
 	int channels;
 	bool started;
 	P<Dim> force;
-	float64 framerate;
+	float64 m_framerate;
 	P<BitPacking> bit_packing;
 	int jpeg_quality; // in theory we shouldn't need this, but...
 	~FormatQuickTimeHW() {if (anim) quicktime_close(anim);}
 	\constructor (t_symbol *mode, string filename) {
-		track=0; dim=0; codec=const_cast<char *>(QUICKTIME_RAW);
-		started=false; force=0; framerate=29.97; bit_packing=0; jpeg_quality=75;
+		track=0; dim=0; m_codec=const_cast<char *>(QUICKTIME_RAW);
+		started=false; force=0; m_framerate=29.97; bit_packing=0; jpeg_quality=75;
 // libquicktime may be nice, but it won't take a filehandle, only filename
 		filename = gf_find_file(filename);
 		anim = quicktime_open((char *)filename.data(),mode==gensym("in"),mode==gensym("out"));
@@ -56,8 +56,7 @@ static std::map<string,string> fourccs;
 		if (mode==gensym("in")) {
 	/* This doesn't really work: (is it just for encoding?)
 			if (!quicktime_supported_video(anim,track))
-				RAISE("quicktime: unsupported codec: %s",
-				      quicktime_video_compressor(anim,track));
+				RAISE("quicktime: unsupported codec: %s", quicktime_video_compressor(anim,track));
 	*/
 		}
 		_0_colorspace(0,0,string("rgb"));
@@ -69,13 +68,17 @@ static std::map<string,string> fourccs;
 	\decl 0 seek (int32 frame);
 	\decl 0 rewind ();
 	\decl 0 force_size (int32 height, int32 width);
-	\decl 0 codec (string c);
 	\decl 0 colorspace (string c);
 	\decl 0 parameter (string name, int32 value);
-	\decl 0 framerate (float64 f);
 	\decl 0 size (int32 height, int32 width);
-	\decl 0 get ();
 	\grin 0 int
+
+	\attr int32   frames();
+	\attr float64 framerate();
+	\attr int32   height();
+	\attr int32   width();
+	\attr int32   depth();
+	\attr string  codec();
 };
 
 \def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
@@ -122,16 +125,13 @@ static std::map<string,string> fourccs;
 	if (name=="jpeg_quality") jpeg_quality=value;
 }
 
-\def 0 framerate (float64 f) {
-	framerate=f;
-	quicktime_set_framerate(anim, f);
-}
+\def 0 framerate (float64 f) {m_framerate=f; quicktime_set_framerate(anim, f);}
 
 \def 0 size (int32 height, int32 width) {
 	if (dim) RAISE("video size already set!");
 	// first frame: have to do setup
 	dim = new Dim(height, width, 3);
-	quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
+	quicktime_set_video(anim,1,dim->get(1),dim->get(0),m_framerate,m_codec);
 	quicktime_set_cmodel(anim,colorspace);
 }
 
@@ -144,7 +144,8 @@ GRID_INLET(0) {
 	} else {
 		// first frame: have to do setup
 		dim = in->dim;
-		quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
+		// this is a duplicate: see _0_size. what should I do with that?
+		quicktime_set_video(anim,1,dim->get(1),dim->get(0),m_framerate,m_codec);
 		quicktime_set_cmodel(anim,colorspace);
 		quicktime_set_depth(anim,8*channels,track);
 	}
@@ -175,7 +176,7 @@ GRID_INLET(0) {
 	if (fourccs.find(string(buf))==fourccs.end())
 		RAISE("warning: unknown fourcc '%s'" /*" (%s)"*/, buf /*, rb_str_ptr(rb_inspect(rb_funcall(fourccs,SI(keys),0)))*/);
 #endif	
-	codec = strdup(buf);
+	m_codec = strdup(buf);
 }
 
 \def 0 colorspace (string c) {
@@ -189,17 +190,16 @@ GRID_INLET(0) {
 	} else if (c=="YUV420P") { channels=3; colorspace=BC_YUV420P;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",c.data());
 }
-
-\def 0 get () {
-	t_atom a[1];
-	SETFLOAT(a,quicktime_video_length(anim,track));	outlet_anything(outlets[0],gensym("frames"),1,a);
-	SETFLOAT(a,quicktime_frame_rate(anim,track));	outlet_anything(outlets[0],gensym("framerate"),1,a);
-	SETFLOAT(a,quicktime_video_height(anim,track));	outlet_anything(outlets[0],gensym("height"),1,a);
-	SETFLOAT(a,quicktime_video_width(anim,track));	outlet_anything(outlets[0],gensym("width"),1,a);
-	SETFLOAT(a,quicktime_video_depth(anim,track));	outlet_anything(outlets[0],gensym("depth"),1,a);
-	SETSYMBOL(a,gensym(quicktime_video_compressor(anim,track))); outlet_anything(outlets[0],gensym("codec"),1,a);
-	//SUPER;
-}
+\def int32 depth  () {return quicktime_video_length(anim,track);}
+\def int32 height () {return quicktime_video_height(anim,track);}
+\def int32 width  () {return quicktime_video_width(anim,track);}
+\def int32 frames () {return quicktime_video_depth(anim,track);}
+\def float64 framerate () {return quicktime_frame_rate(anim,track);}
+\def string codec () {return string(quicktime_video_compressor(anim,track));}
+\def 0 depth  (int32 v) {RAISE("read-only");}
+\def 0 height (int32 v) {RAISE("use size instead");}
+\def 0 width  (int32 v) {RAISE("use size instead");}
+\def 0 frames (int32 v) {RAISE("read-only");}
 
 \classinfo {install_format("#io.quicktime",6,"mov avi");
 //  def self.info; %[codecs: #{@codecs.keys.join' '}] end
@@ -209,16 +209,10 @@ GRID_INLET(0) {
 	int n = lqt_get_num_video_codecs();
 	for (int i=0; i<n; i++) {
 		const lqt_codec_info_t *s = lqt_get_video_codec_info(i);
-		if (!s->name) {
-			fprintf(stderr,"[#in quicktime]: skipping codec with null name!\n");
-			continue;
-		}
+		if (!s->name) {fprintf(stderr,"[#in quicktime]: skipping codec with null name!\n"); continue;}
 		string name = string(s->name);
 		std::vector<string> *f = new std::vector<string>(s->num_fourccs);
-		if (!s->fourccs) {
-			post("WARNING: no fourccs (quicktime library is broken?)");
-			goto hell;
-		}
+		if (!s->fourccs) {post("WARNING: no fourccs (quicktime library is broken?)"); goto hell;}
 		//fprintf(stderr,"num_fourccs=%d fourccs=%p\n",s->num_fourccs,s->fourccs);
 		for (int j=0; j<s->num_fourccs; j++) {
 			string fn = string(s->fourccs[j]);
