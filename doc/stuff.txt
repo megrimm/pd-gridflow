@@ -142,3 +142,10 @@ Warning: 'post-commit' hook failed with error output:
 /home/svn/gridflow/hooks/post-commit: line 49: /home/svn/gridflow/hooks/svn-mailer.log: Permission denied
 
 svn copy svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ https://pure-data.svn.sourceforge.net/svnroot/pure-data/trunk/externals/gridflow/
+
+cd ~/src/svn-pd/externals
+svn remove gridflow
+svn commit gridflow
+cd /tmp
+svn checkout svn+ssh://gridflow.ca/home/svn/gridflow/tags/gridflow_0_9_6
+svn import gridflow_0_9_6 https://pure-data.svn.sourceforge.net/svnroot/pure-data/trunk/externals/gridflow/
