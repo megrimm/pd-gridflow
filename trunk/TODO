@@ -2,7 +2,6 @@ $Id$
 
 0.9.7:
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [#reinterval] takes no argument
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 [ ] go thru all the bugs/ folder
@@ -11,7 +10,9 @@ $Id$
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#print] funny sign in base 8 and 16
-[ ] [doc_same]
+[ ] [#in]/[#out]: what happened to frame number in right outlet?
+[ ] quicktimehw: 'get' is funny
+[ ] cellular_1d.pd: should get a circular buffer and a variable width
 
 unsorted
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
@@ -162,7 +163,7 @@ Documentation
 
 Architecture
 [ ] reentrancy of objects (to allow true recursion)
-[ ] inlet-attrs (attrs associated to inlets) (see "same as arg" in help)
+[ ] expand the [doc_same] concept
 [ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)

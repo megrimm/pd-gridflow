@@ -4,7 +4,7 @@ version 0.9.7 (2009.11...):
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
- * added [gf/getpid]
+ * added [gf/getpid] [#make_arrow] [doc_same]
  * [display]: fixed problems with braces, backslashes, etc
  * [display]: fixed display of nested lists (A_LIST)
  * [display]: fixed gop mode
