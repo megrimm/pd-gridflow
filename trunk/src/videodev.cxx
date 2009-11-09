@@ -35,9 +35,10 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include "pwc-ioctl.h"
+#include <sstream>
 
 //#define error post
-static bool debug=0;
+static bool debug=1;
 
 /* **************************************************************** */
 
@@ -48,12 +49,13 @@ typedef video_window     VideoWindow    ;
 typedef video_picture    VideoPicture   ;
 typedef video_mbuf       VideoMbuf      ;
 typedef video_mmap       VideoMmap      ;
-
 #define FLAG(_num_,_name_,_desc_) #_name_,
 #define  OPT(_num_,_name_,_desc_) #_name_,
-
-/*
-static const char *video_type_flags[] = {
+#define WH(_field_,_spec_)             oprintf(buf, "%s=" _spec_ " ", #_field_, self->_field_);
+#define WHYX(_name_,_fieldy_,_fieldx_) oprintf(buf, "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
+#define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
+#define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
+/*static const char *video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
 	FLAG( 2,TELETEXT,      "Does teletext")
@@ -68,9 +70,7 @@ static const char *video_type_flags[] = {
 	FLAG(11,MPEG_ENCODER,  "Can encode MPEG streams")
 	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
-};
-*/
-
+};*/
 static const char *tuner_flags[] = {
 	FLAG(0,PAL,      "")
 	FLAG(1,NTSC,     "")
@@ -83,13 +83,11 @@ static const char *tuner_flags[] = {
 	FLAG(8,RDS_ON,   "Tuner is seeing an RDS datastream")
 	FLAG(9,MBS_ON,   "Tuner is seeing an MBS datastream")
 };
-
 static const char *channel_flags[] = {
 	FLAG(0,TUNER,"")
 	FLAG(1,AUDIO,"")
 	FLAG(2,NORM ,"")
 };
-
 static const char *video_palette_choice[] = {
 	OPT( 0,NIL,     "(nil)")
 	OPT( 1,GREY,    "Linear greyscale")
@@ -109,28 +107,13 @@ static const char *video_palette_choice[] = {
 	OPT(15,YUV420P, "YUV 4:2:0 Planar")
 	OPT(16,YUV410P, "YUV 4:1:0 Planar")
 };
-
 static const char *video_mode_choice[] = {
 	OPT( 0,PAL,  "pal")
 	OPT( 1,NTSC, "ntsc")
 	OPT( 2,SECAM,"secam")
 	OPT( 3,AUTO, "auto")
 };
-
-#define WH(_field_,_spec_) \
-	sprintf(buf+strlen(buf), "%s=" _spec_ " ", #_field_, self->_field_);
-#define WHYX(_name_,_fieldy_,_fieldx_) \
-	sprintf(buf+strlen(buf), "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
-#define WHFLAGS(_field_,_table_) { \
-	char *foo; \
-	sprintf(buf+strlen(buf), "%s:%s ", #_field_, foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
-	free(foo);}
-#define WHCHOICE(_field_,_table_) { \
-	char *foo; \
-	sprintf(buf+strlen(buf), "%s=%s; ", #_field_, foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
-	free(foo);}
-
-static char *flags_to_s(int value, int n, const char **table) {
+static string flags_to_s(int value, int n, const char **table) {
 	char foo[256];
 	*foo = 0;
 	for(int i=0; i<n; i++) {
@@ -139,29 +122,26 @@ static char *flags_to_s(int value, int n, const char **table) {
 		strcat(foo,table[i]);
 	}
 	if (!*foo) strcat(foo,"0");
-	return strdup(foo);
+	return string(foo);
 }
-static char *choice_to_s(int value, int n, const char **table) {
+static string choice_to_s(int value, int n, const char **table) {
 	if (value < 0 || value >= n) {
 		char foo[64];
 		sprintf(foo,"(Unknown #%d)",value);
-		return strdup(foo);
+		return string(foo);
 	} else {
-		return strdup(table[value]);
+		return string(table[value]);
 	}
 }
-static void gfpost(VideoChannel *self) {
-	char buf[256] = "[VideoChannel] ";
+static void gfpost(VideoChannel *self) {std::ostringstream buf; buf << "[VideoChannel] ";
 	WH(channel,"%d");
 	WH(name,"\"%.32s\"");
 	WH(tuners,"%d");
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
 	WH(norm,"%d");
-	post("%s",buf);
-}
-static void gfpost(VideoTuner *self) {
-	char buf[256] = "[VideoTuner] ";
+	post("%s",buf.str().data());}
+static void gfpost(VideoTuner *self) {std::ostringstream buf; buf << "[VideoTuner] ";
 	WH(tuner,"%d");
 	WH(name,"\"%.32s\"");
 	WH(rangelow,"%lu");
@@ -169,36 +149,28 @@ static void gfpost(VideoTuner *self) {
 	WHFLAGS(flags,tuner_flags);
 	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
-	post("%s",buf);
-}
-static void gfpost(VideoWindow *self) {
-	char buf[256] = "[VideoWindow] ";
+	post("%s",buf.str().data());}
+static void gfpost(VideoWindow *self) {std::ostringstream buf; buf << "[VideoWindow] ";
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
-	post("%s",buf);
-}
-static void gfpost(VideoMbuf *self) {
-	char buf[256] = "[VideoMBuf] ";
+	post("%s",buf.str().data());}
+static void gfpost(VideoMbuf *self) {std::ostringstream buf; buf << "[VideoMBuf] ";
 	WH(size,"%d");
 	WH(frames,"%d");
-	sprintf(buf+strlen(buf), "offsets=[");
+	oprintf(buf,"offsets=[");
 	for (int i=0; i<self->frames; i++) {
 		/* WH(offsets[i],"%d"); */
-	        sprintf(buf+strlen(buf), "%d%s", self->offsets[i],
-			i+1==self->frames?"]":", ");
+		oprintf(buf,"%d%s",self->offsets[i],i+1==self->frames?"]":", ");
 	}
-	post("%s",buf);
-}
-static void gfpost(VideoMmap *self) {
-	char buf[256] = "[VideoMMap] ";
+	post("%s",buf.str().data());}
+static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap] ";
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
-	post("%s",buf);
-};
+	post("%s",buf.str().data());}
 
 /* **************************************************************** */
 
@@ -293,9 +265,8 @@ static void gfpost(VideoMmap *self) {
 		t_atom a[2];
 		SETFLOAT(a+0,vcaps.minheight); SETFLOAT(a+1,vcaps.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
 		SETFLOAT(a+0,vcaps.maxheight); SETFLOAT(a+1,vcaps.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		char *foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
-		SETSYMBOL(a,gensym(foo));
-		free(foo);
+		string foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
+		SETSYMBOL(a,gensym(foo.data()));
 		outlet_anything(outlets[0],gensym("palette"),1,a);
 		SETSYMBOL(a,gensym(use_mmap ? "mmap" : "read")); outlet_anything(outlets[0],gensym("transfer"),1,a);
 		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),2,a);
@@ -641,14 +612,11 @@ GRID_INLET(0) {
 	pma.pan = pan; pma.tilt = tilt;            WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);}*/
 
 \def uint16 framerate() {PWC(0)
-	struct video_window vwin;
-	WIOCTL(fd, VIDIOCGWIN, &vwin);
+	struct video_window vwin; WIOCTL(fd, VIDIOCGWIN, &vwin);
 	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
 }
-
 \def 0 framerate(uint16 framerate) {PWC()
-	struct video_window vwin;
-	WIOCTL(fd, VIDIOCGWIN, &vwin);
+	struct video_window vwin; WIOCTL(fd, VIDIOCGWIN, &vwin);
 	vwin.flags &= ~PWC_FPS_FRMASK;
 	vwin.flags |= (framerate << PWC_FPS_SHIFT) & PWC_FPS_FRMASK;
 	WIOCTL(fd, VIDIOCSWIN, &vwin);
@@ -658,21 +626,18 @@ GRID_INLET(0) {
 //void set_compression_preference(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
 
 \def int auto_gain() {int auto_gain=0; if (use_pwc) WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
-\def 0   auto_gain   (int auto_gain) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
+\def 0   auto_gain   (int auto_gain)  {if (use_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
 
 //void set_shutter_speed(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 
 \def uint16 white_mode () {PWC(0)
-	struct pwc_whitebalance pwcwb;
-	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	if (pwcwb.mode==PWC_WB_AUTO)   return 0;
 	if (pwcwb.mode==PWC_WB_MANUAL) return 1;
 	return 2;
 }
-
 \def 0 white_mode (uint16 white_mode) {PWC()
-	struct pwc_whitebalance pwcwb;
-	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	if      (white_mode==0) pwcwb.mode = PWC_WB_AUTO;
 	else if (white_mode==1) pwcwb.mode = PWC_WB_MANUAL;
 	/*else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;*/
