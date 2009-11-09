@@ -87,7 +87,7 @@ Note also that on Windows the dot-files are even more trouble.
 | Other Tips
 
 	you just did a SVN update and now the program does not compile, or 
-crashes, or changes didn't go through. 
+	crashes, or changes didn't go through. 
 		When some kinds of changes have happened, you may have to rerun the configure 
 	program before redoing make. If you had previously reconfigured with specific options, 
 	don't forget to use them again in this case.
@@ -102,7 +102,7 @@ crashes, or changes didn't go through.
 | Directory layout
 
   ./abstractions ..... Pd object classes written in Pd
-  ./src ............. object classes written in C++
+  ./src .............. object classes written in C++
   ./bin .............. programs startable as applications
   ./bundled .......... files from other packages, bundled here for convenience
   ./examples ......... more complex Pd programs showing off more practical uses.
