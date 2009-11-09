@@ -1017,15 +1017,8 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,dim,in->nt);
 } GRID_FLOW {
 	long i = dex;
-	if (!temp) {
-		long n2 = min(n,dim->prod()-i);
-		if (n2>0) out->send(n2,data);
-		// discard other values if any
-	} else {
-		long n2 = min(n,in->dim->prod()-i);
-		COPY((T *)*temp+i,data,n2);
-		if (n2>0) out->send(n2,data);
-	}
+	if (!temp) {long n2 = min(n,    dim->prod()-i);                             if (n2>0) out->send(n2,data);}
+	else       {long n2 = min(n,in->dim->prod()-i); COPY((T *)*temp+i,data,n2); if (n2>0) out->send(n2,data);}
 } GRID_FINISH {
 	if (!!temp) {
 		long a = in->dim->prod(), b = dim->prod();
@@ -1908,13 +1901,8 @@ void DrawPolygon::init_lines () {
 	}
 }
 
-static int order_by_starting_scanline (const void *a, const void *b) {
-	return ((Line *)a)->y1 - ((Line *)b)->y1;
-}
-
-static int order_by_column (const void *a, const void *b) {
-	return ((Line *)a)->x - ((Line *)b)->x;
-}
+static int order_by_starting_scanline (const void *a, const void *b) {return ((Line *)a)->y1 - ((Line *)b)->y1;}
+static int order_by_column            (const void *a, const void *b) {return ((Line *)a)->x  - ((Line *)b)->x;}
 
 GRID_INLET(0) {
 	NOTEMPTY(color);
