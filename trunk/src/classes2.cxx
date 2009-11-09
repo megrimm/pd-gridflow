@@ -366,7 +366,7 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
 	void changed() {sys_queuegui(bself,mom,display_redraw);}
- 	void show() {_L_
+ 	void show() {
 		std::ostringstream quoted;
 		std::string ss = text.str();
 		const char *s = ss.data();
