@@ -1,0 +1,19 @@
+#N canvas 534 258 450 300 10;
+#X obj 220 52 print other;
+#X obj 15 166 print float;
+#X obj 49 147 print symbol;
+#X obj 83 128 print list;
+#X obj 117 109 print a;
+#X obj 151 90 print b;
+#X obj 185 71 print c;
+#X msg 15 14 42 \, symbol foo \, 1 2 foo bar \, a soir \, b belle \,
+c ca \, oui;
+#X obj 15 33 route2 float symbol list a b c;
+#X connect 7 0 8 0;
+#X connect 8 0 1 0;
+#X connect 8 1 2 0;
+#X connect 8 2 3 0;
+#X connect 8 3 4 0;
+#X connect 8 4 5 0;
+#X connect 8 5 6 0;
+#X connect 8 6 0 0;
