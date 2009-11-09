@@ -640,7 +640,10 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete (BFObject *bself) {
-	try {delete bself->self;} catch (Barf &oozy) {oozy.error(bself);}
+	try {
+	    delete bself->self;
+	    bself->self = (FObject *)0xdeadbeef;
+	} catch (Barf &oozy) {oozy.error(bself);}
 }
 
 //****************************************************************
