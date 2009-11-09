@@ -2,7 +2,6 @@ $Id$
 
 0.9.7:
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 [ ] go thru all the bugs/ folder
 [ ] [display] should use clocks to update tk less often
@@ -12,18 +11,16 @@ $Id$
 [ ] [#print] funny sign in base 8 and 16
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] quicktimehw: 'get' is funny
-[ ] cellular_1d.pd: should get a circular buffer and a variable width
-
-unsorted
-[ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
+[ ] [#io....] aren't visible from anywhere
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
-[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
-[ ] can't handle [args] that come out as grid literals and have to become setter messages.
-[ ] [pack] trigger_by (choose which inlets are hot)
+[ ] about.pd: add link to website, mention irc, etc.
+[ ] go back in all help files and fill in whatever is missing
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
+[ ] quicktime PNG encoding: does it work?
+[ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] get rid of doc/stuff.txt ?
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] #line_to_polygon is buggy
@@ -32,12 +29,14 @@ unsorted
 [ ] with pwc, 720x480 crashes
 [ ] what to do with [#motion_detection] ?
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
-[ ] about.pd: add link to website, mention irc, etc.
-[ ] go back in all help files and fill in whatever is missing
-[ ] quicktime PNG encoding: does it work?
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
+[ ] bugs/bugfixes from roman, claude, federico, etc
 
 Later
+[ ] cellular_1d.pd: should get a circular buffer and a variable width
+[ ] [pack] trigger_by (choose which inlets are hot)
+[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
+[ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 [ ] kill [listappend], [listprepend], [listlength], ... ?
 [ ] doc attributes: [doc_a] [doc_aa] ?
@@ -51,7 +50,6 @@ Later
 [ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
     to prevent a lot of redraw bugs.
 [ ] support "get" in abstractions... automatically, through [args] ?
-[ ] bugs/bugfixes from roman, claude, federico, etc
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] fix SDL modifiers
