@@ -82,7 +82,7 @@ void Barf::error(BFObject *bself) {
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 	std::ostringstream os;
 	for (int i=0; i<argc; i++) os << (i ? " " : "[") << argv[i];
-        ::error(      "[%s]: %s",os.str().data(),text.data());
+        ::error("%s]: %s",os.str().data(),text.data());
 }
 
 void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
@@ -636,7 +636,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
 	return bself;
-    } catch (Barf &oozy) {oozy.error(bself); return 0;}
+    } catch (Barf &oozy) {oozy.error(classsym,ac,at); return 0;}
 }
 
 static void BFObject_delete (BFObject *bself) {
