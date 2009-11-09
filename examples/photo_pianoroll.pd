@@ -27,7 +27,7 @@
 #X msg 287 271 \$1 0;
 #X obj 38 252 #greyscale_to_rgb;
 #X obj 462 77 #store;
-#X obj 462 153 #export_list;
+#X obj 462 153 #to_list;
 #X obj 501 172 s array1;
 #X obj 171 177 # inv+ 255;
 #X obj 146 100 # min 255;

@@ -55,7 +55,7 @@
 #X obj 28 142 outlet;
 #X obj 289 14 inlet position;
 #X obj 72 23 inlet button;
-#X obj 289 33 #export_list;
+#X obj 289 33 #to_list;
 #X obj 289 52 t b a;
 #X obj 72 81 #draw_polygon + (4000);
 #X connect 0 0 6 0;
@@ -120,7 +120,7 @@
 #X obj 227 62 # - 40;
 #X obj 295 270 # / 320;
 #X obj 295 308 # / 240;
-#X obj 295 327 #export;
+#X obj 295 327 #to_float;
 #X floatatom 294 356 5 0 0 0 - - -;
 #X obj 27 42 metro 12;
 #X text 542 3 heat propagation simulation;

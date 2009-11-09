@@ -134,7 +134,7 @@
 #X obj 9 8 inlet;
 #X obj 48 143 # +;
 #X obj 100 9 #dim;
-#X obj 132 9 #export_list;
+#X obj 132 9 #to_list;
 #X obj 48 8 t a a;
 #X obj 48 48 t a a;
 #X msg 132 28 \$1 \$2;
@@ -289,7 +289,7 @@
 #X text 51 205 produce red/cyan from horiz differences;
 #X obj 16 317 # +;
 #X obj 68 150 #dim;
-#X obj 100 150 #export_list;
+#X obj 100 150 #to_list;
 #X obj 16 149 t a a;
 #X obj 16 189 t a a;
 #X msg 101 170 \$1 \$2;

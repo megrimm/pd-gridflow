@@ -27,7 +27,7 @@
 #X obj 350 598 #dim;
 #X msg 350 636 \$1;
 #X msg 349 674 \$1 2;
-#X obj 350 617 #export_list;
+#X obj 350 617 #to_list;
 #X obj 287 500 t a a;
 #X obj 350 655 * 6;
 #X obj 27 225 #outer sq-;

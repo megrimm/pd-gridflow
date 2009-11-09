@@ -45,7 +45,7 @@
 #X obj 17 36 # * 2048;
 #X obj 18 58 # /;
 #X obj 86 49 #for 1 257 1;
-#X obj 17 80 #export_list;
+#X obj 17 80 #to_list;
 #X connect 0 0 14 0;
 #X connect 2 0 9 0;
 #X connect 4 0 5 0;
@@ -81,7 +81,7 @@
 #X obj 45 544 #outer * (3 # 255);
 #X obj 45 601 #out window;
 #X obj 240 533 #mouse \, ...;
-#X obj 244 576 #export_list;
+#X obj 244 576 #to_list;
 #X obj 30 66 #store (1 256 1 # 0);
 #X obj 17 147 # -;
 #X obj 45 563 #fade (16 4 1);
