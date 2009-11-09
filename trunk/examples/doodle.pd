@@ -9,7 +9,7 @@
 #X obj 22 262 #out window;
 #X obj 22 295 #mouse;
 #X obj 22 314 # / 8;
-#X obj 22 333 #export_list;
+#X obj 22 333 #to_list;
 #X obj 183 93 #store;
 #X obj 270 131 #color;
 #X obj 22 114 #store (64 64 3 #);

@@ -19,7 +19,7 @@
 #X text 172 1 end pos;
 #X obj 27 244 outlet;
 #X text 27 264 image;
-#X obj 125 81 #export_list;
+#X obj 125 81 #to_list;
 #X msg 95 135 4 2 # \$1 \$2 \$1 \$4 \$3 \$4 \$3 \$2;
 #X obj 27 177 #draw_polygon >> (1 1 1) (4 2 #);
 #X obj 90 37 #unpack;

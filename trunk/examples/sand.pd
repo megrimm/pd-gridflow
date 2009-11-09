@@ -6,7 +6,7 @@
 #X obj 8 442 s position;
 #X obj 192 29 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
 ;
-#X obj 323 371 #export;
+#X obj 323 371 #to_float;
 #X obj 192 82 #store;
 #X obj 217 113 shunt 2;
 #N canvas 25 226 369 359 mouse 0;
@@ -41,12 +41,12 @@
 #X obj 323 352 #fold +;
 #X obj 420 95 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
-#X obj 452 358 #export;
+#X obj 452 358 #to_float;
 #X obj 452 320 #ravel;
 #X obj 306 220 shunt 2;
 #X obj 271 159 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
 1;
-#X obj 384 371 #export;
+#X obj 384 371 #to_float;
 #X obj 367 94 shunt 2;
 #X obj 2 230 #greyscale_to_rgb;
 #X obj 367 113 r position;

@@ -32,7 +32,7 @@
 #X floatatom 354 65 5 0 0 0 - - -;
 #X msg 365 122 3 3 # \$1 \$2 \$1 \$2 \$3 \$2;
 #X obj 365 84 #pack 3;
-#X obj 365 103 #export_list;
+#X obj 365 103 #to_list;
 #X obj 292 354 # C.log (2 f #);
 #X obj 292 468 #greyscale_to_rgb;
 #X obj 292 430 #cast i;

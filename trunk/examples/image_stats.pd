@@ -1,10 +1,10 @@
 #N canvas 308 151 716 426 10;
 #X obj 214 261 print total_value;
 #X obj 473 191 #dim;
-#X obj 42 220 #export_list;
+#X obj 42 220 #to_list;
 #X obj 278 231 print number_of_values;
 #X obj 473 229 print number_of_dimensions;
-#X obj 473 210 #export;
+#X obj 473 210 #to_float;
 #X obj 205 181 #fold +;
 #X obj 205 301 /;
 #X obj 205 219 #fold +;
@@ -13,12 +13,12 @@
 #X obj 265 118 #in;
 #X obj 420 166 print dimensions;
 #X obj 205 320 print average_value;
-#X obj 205 238 #export;
+#X obj 205 238 #to_float;
 #X obj 205 200 #fold +;
-#X obj 420 147 #export_list;
+#X obj 420 147 #to_list;
 #X obj 420 128 #dim;
 #X obj 278 174 #dim;
-#X obj 278 212 #export;
+#X obj 278 212 #to_float;
 #X msg 291 55 open bluemarble.jpg \, bang;
 #X msg 291 75 open teapot.png \, bang;
 #X msg 291 95 open r001.jpg \, bang;

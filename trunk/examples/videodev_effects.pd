@@ -56,7 +56,7 @@
 #X obj 211 65 #dim;
 #X obj 44 37 t a a;
 #X msg 186 127 \$1 \$2;
-#X obj 211 85 #export_list;
+#X obj 211 85 #to_list;
 #X obj 76 146 t a a;
 #X obj 10 285 #for (0 0) (288 352) (1 1);
 #X obj 106 176 #outer & (0 -1);

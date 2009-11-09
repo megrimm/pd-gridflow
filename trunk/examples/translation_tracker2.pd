@@ -47,7 +47,7 @@
 #X obj 88 606 r \$0-meuh;
 #X obj 6 42 t b b;
 #X obj 6 647 #out window;
-#X obj 35 540 #export_list;
+#X obj 35 540 #to_list;
 #X obj 52 628 #store;
 #X obj 35 559 t b a;
 #X obj 272 558 display;
