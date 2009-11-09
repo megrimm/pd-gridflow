@@ -359,13 +359,14 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 	~Display () {
 		pd_unbind((t_pd *)bself,rsym);
 		pd_free(gp);
+		sys_unqueuegui(bself);
 	}
 	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
 	void changed() {sys_queuegui(bself,mom,display_redraw);}
- 	void show() {
+ 	void show() {_L_
 		std::ostringstream quoted;
 		std::string ss = text.str();
 		const char *s = ss.data();
@@ -406,7 +407,7 @@ static void display_deletefn(t_gobj *x, t_glist *glist) {INIT L
 }
 static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
 	self->vis = !!flag;
-	self->changed();
+	self->changed(); // is this ok?
 }
 #undef INIT
 static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
