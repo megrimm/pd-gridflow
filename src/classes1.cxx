@@ -577,10 +577,10 @@ GRID_INLET(1) {
 GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
-	out=new GridOutlet(this,0,in->dim,in->nt);
 	if (op->size>1 && (in->dim->get(in->dim->n-1)!=op->size || r->dim->get(r->dim->n-1)!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in->dim->to_s(),r->dim->to_s());
+	out=new GridOutlet(this,0,in->dim,in->nt);
 	//if (out->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",out->inlets[0]->dim->to_s());
 } GRID_FLOW {
 	T *rdata = (T *)*r;
