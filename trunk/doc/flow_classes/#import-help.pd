@@ -63,7 +63,7 @@ other than int32.;
 #X obj 14 680 doc_oo 0;
 #X obj 97 680 doc_m o0 grid;
 #X obj 0 725 doc_f;
-#X text 232 557 same as arg 0;
+#X obj 232 557 doc_same 0;
 #X connect 0 0 23 0;
 #X connect 1 0 4 0;
 #X connect 2 0 23 0;

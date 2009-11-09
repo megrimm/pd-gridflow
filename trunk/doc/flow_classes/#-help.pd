@@ -34,8 +34,8 @@ operators (at the top of this document)elements of inlet 0 are called
 same size as theone in inlet 0;
 #X text 232 439 pick a way to combine the numbers. (see the numop table)
 ;
-#X text 232 673 same as arg 1;
-#X text 232 651 same as arg 0;
+#X obj 232 673 doc_same 1;
+#X obj 232 651 doc_same 0;
 #X obj 97 735 doc_m o0 grid;
 #X text 232 463 any grid \, preferably shaped like the one that will
 be put in the left inlet \, or like a subpart of it (anyway the contents

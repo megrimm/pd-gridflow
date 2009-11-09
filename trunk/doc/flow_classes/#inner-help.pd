@@ -17,7 +17,7 @@ operator and base value.;
 #X text 232 366 creates a Dim(anyA... \, anyB...) grid by assembling
 all the results together.;
 #X text 232 401 (note: lastA must be equal to firstB.);
-#X text 232 528 same as arg 0;
+#X obj 232 528 doc_same 0;
 #X text 232 471 the operation that combines the values from the two
 grids together. this defaults to "*" (as in the matrix product);
 #X text 232 423 the operation that combines the result of the "op"

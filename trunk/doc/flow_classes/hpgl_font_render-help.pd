@@ -101,7 +101,7 @@
 #X text 232 731 NOT containing LB or print_from_ascii commands anymore
 ;
 #X obj 97 669 doc_m i1 symbol;
-#X text 232 669 same as arg 0;
+#X obj 232 669 doc_same 0;
 #X connect 0 0 52 0;
 #X connect 1 0 0 0;
 #X connect 2 0 13 0;

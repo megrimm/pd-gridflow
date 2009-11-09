@@ -11,7 +11,7 @@
 #X obj 97 135 doc_m c0 float;
 #X obj 97 195 doc_m i0 grid;
 #X obj 97 243 doc_m i1 float;
-#X text 232 243 same as arg 0;
+#X obj 232 243 doc_same 0;
 #X obj 97 305 doc_m o0 grid;
 #X text 232 195 RGB picture that gets hueshifted by a rotation in the
 colorwheel by the specified angle \; it gets sent to outlet 0;

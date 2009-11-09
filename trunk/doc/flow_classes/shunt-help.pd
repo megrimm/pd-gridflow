@@ -44,7 +44,7 @@ created without an argument \, it will have 2 outlets.;
 #X text 232 426 0: not changing;
 #X text 232 448 1: going up \, cycling;
 #X text 232 470 2: going up \, pingpong;
-#X text 232 338 same as arg 1;
+#X obj 232 338 doc_same 1;
 #X text 232 360 min value for cycling and pingpong (default: 0);
 #X text 232 316 max value for cycling and pingpong (default: N-1);
 #X text 232 492 Incoming message can be Grids \, Symbols \, Floats

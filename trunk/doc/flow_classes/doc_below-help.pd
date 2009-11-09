@@ -17,8 +17,8 @@
 #X obj 97 359 doc_m o0 list;
 #X obj 97 125 doc_m c0 symbol;
 #X obj 97 275 doc_m i1 symbol;
-#X text 232 275 same as arg 0;
-#X text 232 297 same as arg 1;
+#X obj 232 275 doc_same 0;
+#X obj 232 297 doc_same 1;
 #X obj 97 191 doc_m c2 float;
 #X obj 97 147 doc_m c1 float;
 #X text 232 147 0: just this node;
