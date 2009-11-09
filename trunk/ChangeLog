@@ -1,14 +1,19 @@
 /* $Id$ */
 
 version 0.9.7 (2009.11...):
+
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid] [#make_arrow] [doc_same]
- * [display]: fixed problems with braces, backslashes, etc
- * [display]: fixed display of nested lists (A_LIST)
- * [display]: fixed gop mode
- 
+ * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
+ * [display]: fixed gop mode; use sys_queuegui
+ * quicktimehw: use normal 'get' method
+ * when object can't create, print creator name and arguments
+ * [#]: avoid grid-abort in case of wrong dimensions
+ * [#in grid]: fixed end-of-file detection
+ * ./configure: replaced pentium detection code
+
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
