@@ -5,7 +5,10 @@ version 0.9.7 (2009.11...):
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid]
-
+ * [display]: fixed problems with braces, backslashes, etc
+ * [display]: fixed display of nested lists (A_LIST)
+ * [display]: fixed gop mode
+ 
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)

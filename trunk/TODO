@@ -1,18 +1,19 @@
 $Id$
 
-0.9.7
-[ ] [doc_m] boxes are too big; [gf/canvas_setgop] 0,3 still unable to do the job because
-    the boxes become uneditable even when they shouldn't be.
-[ ] listflatten-help.pd : [display] bug
+0.9.7:
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [#reinterval] takes no argument
 [ ] [#draw_rect] doesn't support op, etc... what do we do about attributes?
 [ ] [#make_arrow] (fix and help)
 [ ] [#interval_overlap]
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
-[ ] kill [listappend], [listprepend], [listlength], ... ?
-[ ] fix [#from_pix] colourspace detection + conversion
 [ ] rename local var mom to m for clarity
+[ ] go thru all the bugs/ folder
+[ ] [display] should use clocks to update tk less often
+[ ] bug: see #io.ppm-test.pd
+[ ] bug: see #fft*-test.pd
+[ ] on which classes do we add an attr-outlet ?
+[ ] [#print] funny sign in base 8 and 16
 
 unsorted
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
@@ -24,7 +25,7 @@ unsorted
 [ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
-[ ] get rid of doc/stuff.txt and doc/install.html
+[ ] get rid of doc/stuff.txt ?
 [ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] #line_to_polygon is buggy
 [ ] #draw_polygon init_lines() not sufficiently called
@@ -32,7 +33,6 @@ unsorted
 [ ] with pwc, 720x480 crashes
 [ ] what to do with [#motion_detection] ?
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
-[ ] add missing to index.pd
 [ ] about.pd: add link to website, mention irc, etc.
 [ ] go back in all help files and fill in whatever is missing
 [ ] quicktime PNG encoding: does it work?
@@ -40,6 +40,7 @@ unsorted
 
 Later
 <matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
+[ ] kill [listappend], [listprepend], [listlength], ... ?
 [ ] doc attributes: [doc_a] [doc_aa] ?
 [ ] [doc_ii] links to [doc_cc]
 [ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
@@ -55,7 +56,6 @@ Later
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] fix SDL modifiers
-[ ] fix quoting in [display]
 [ ] [args] have to be connected to a [t a] in common with first inlet... (BUT: this has an impact on float vs list distinction)
     (why not make this automatic, by making [args] contact whichever inlet is first?)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
@@ -71,7 +71,6 @@ Later
 [ ] make [#draw_points] [#edit_polygon]
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] add [#out png]
-[ ] Accumulation of Background Statistics
 [ ] compenser pour les ajustements progressifs ou soudains de luminosité
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
@@ -117,7 +116,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
-[ ] [display] should use clocks to update tk less often
 [ ] deprecation warnings
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
