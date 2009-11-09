@@ -15,7 +15,7 @@ before sending it a bang.;
 #X obj 14 496 doc_oo 0;
 #X obj 14 399 doc_ii 0;
 #X obj 14 271 doc_cc 0;
-#X text 232 399 same as arg 0;
+#X obj 232 399 doc_same 0;
 #X text 232 421 same as the class of the camera object being used inside:
 see #io.videodev-help.pd for a LONG list of options;
 #X text 232 293 8: a linux device using the DC-1394 interface;

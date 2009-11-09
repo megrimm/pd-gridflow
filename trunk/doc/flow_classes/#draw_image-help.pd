@@ -63,7 +63,7 @@ to top-left corner of foreground picture.;
 #X obj 97 805 doc_m o0 grid;
 #X obj 0 837 doc_f;
 #X obj 97 629 doc_m i0 op;
-#X text 232 629 same as arg 0;
+#X obj 232 629 doc_same 0;
 #X connect 0 0 1 1;
 #X connect 1 0 31 0;
 #X connect 2 0 3 0;

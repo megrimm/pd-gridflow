@@ -22,8 +22,8 @@ produced that is at most 2 more or 4 less than the previous output.
 ;
 #X obj 97 400 doc_m i1 grid;
 #X obj 97 422 doc_m i2 grid;
-#X text 232 400 same as arg 0;
-#X text 232 422 same as arg 1;
+#X obj 232 400 doc_same 0;
+#X obj 232 422 doc_same 1;
 #X obj 0 514 doc_f;
 #X text 16 33 non-linear temporal lowpass filter;
 #X text 16 47 (piecewise-constant);

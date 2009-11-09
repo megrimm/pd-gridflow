@@ -19,7 +19,7 @@
 #X text 232 148 positive int;
 #X text 175 82 note: this only accepts a single float argument \, whereas
 [# gamma] allows a grid argument.;
-#X text 232 232 same as arg 0;
+#X obj 232 232 doc_same 0;
 #X text 232 210 pixels to apply on;
 #X text 232 294 output pixels;
 #X connect 10 1 11 0;

@@ -58,7 +58,7 @@
 #X text 232 391 (y x) kernel size;
 #X obj 97 453 doc_m i0 grid;
 #X obj 97 475 doc_m i1 grid;
-#X text 232 475 same as arg 0;
+#X obj 232 475 doc_same 0;
 #X text 232 453 image to be blurred;
 #X text 232 537 image blurred;
 #X connect 1 0 2 0;
