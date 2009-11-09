@@ -12,7 +12,7 @@
 #X obj 409 139 messageprepend set;
 #X obj 497 110 t l;
 #X msg 409 89 list \$1;
-#X obj 409 109 listprepend;
+#X obj 409 109 list prepend;
 #X msg 481 84 list;
 #X obj 97 7 loadbang;
 #X obj 34 29 listfind;
@@ -25,7 +25,7 @@
 #X floatatom 105 68 5 0 0 0 - - -;
 #X msg 200 180 list \$1;
 #X obj 275 199 listsublist 0 2;
-#X obj 200 199 listappend;
+#X obj 200 199 list append;
 #X obj 483 388 display;
 #X msg 270 264 1;
 #X msg 305 240 put_at ( \$2 \$1 );
@@ -51,7 +51,7 @@
 #X obj 38 546 # <;
 #X obj 50 595 #fold +;
 #X obj 280 512 display;
-#X obj 132 596 #export;
+#X obj 132 596 #to_float;
 #X obj 248 157 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
 #X obj 104 329 + 60;

@@ -25,7 +25,7 @@
 #X obj 47 53 t b a;
 #X obj 47 127 # sq-;
 #X obj 47 79 #for (0 0) (0 0) (1 1);
-#X obj 90 53 #export_list;
+#X obj 90 53 #to_list;
 #X connect 0 0 2 0;
 #X connect 1 0 5 0;
 #X connect 2 0 3 0;
@@ -47,7 +47,7 @@
 #X obj 127 129 listelement 0;
 #X text 93 10 line generator;
 #X obj 18 154 # << 7;
-#X obj 127 110 #export_list;
+#X obj 127 110 #to_list;
 #X obj 18 9 inlet size;
 #X obj 18 173 outlet matrix;
 #X obj 18 33 t a a;
@@ -75,7 +75,7 @@
 #X obj 220 38 loadbang;
 #N canvas 624 360 400 289 fire 0;
 #X obj 174 180 #store;
-#X obj 61 196 #export_list;
+#X obj 61 196 #to_list;
 #X obj 6 65 # >> 2;
 #X obj 6 235 # & 255;
 #X obj 6 103 # / 80;
@@ -142,8 +142,8 @@
 #X obj 132 151 listsublist 0 48;
 #X obj 30 49 t a a;
 #X obj 30 284 outlet;
-#X obj 30 151 listappend 0 0;
-#X obj 107 29 #export_list;
+#X obj 30 151 list append 0 0;
+#X obj 107 29 #to_list;
 #X obj 30 79 # -;
 #X obj 115 86 #finished;
 #X obj 115 105 #store (0 0);
@@ -154,7 +154,7 @@
 #X obj 30 246 #fold +;
 #X obj 30 265 # / 5;
 #X obj 30 9 r metro;
-#X obj 30 131 #export_list;
+#X obj 30 131 #to_list;
 #X obj 30 29 list;
 #X connect 0 0 18 1;
 #X connect 1 0 6 0;
@@ -185,7 +185,7 @@
 #X obj 47 68 #for (0 0) (0 0) (1 1);
 #X obj 47 13 inlet size;
 #X obj 47 32 t b a;
-#X obj 86 32 #export_list;
+#X obj 86 32 #to_list;
 #X obj 47 91 # sq-;
 #X obj 47 262 # - 10;
 #X obj 47 243 # max 10;
