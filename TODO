@@ -3,15 +3,12 @@ $Id$
 0.9.7:
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
-[ ] go thru all the bugs/ folder
-[ ] [display] should use clocks to update tk less often
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#print] funny sign in base 8 and 16
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
-[ ] quicktimehw: 'get' is funny
-[ ] [#io....] aren't visible from anywhere
+[ ] [#io....] help files aren't visible from anywhere
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
 [ ] about.pd: add link to website, mention irc, etc.
 [ ] go back in all help files and fill in whatever is missing
@@ -22,7 +19,6 @@ $Id$
 [ ] quicktime PNG encoding: does it work?
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] get rid of doc/stuff.txt ?
-[ ] fix [nbx]<->[hsl] relationship in [#camera]
 [ ] #line_to_polygon is buggy
 [ ] #draw_polygon init_lines() not sufficiently called
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
@@ -31,6 +27,7 @@ $Id$
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 [ ] bugs/bugfixes from roman, claude, federico, etc
+[ ] videodev,quicktime,etc: height,width vs size
 
 Later
 [ ] cellular_1d.pd: should get a circular buffer and a variable width
@@ -71,6 +68,7 @@ Later
 [ ] compenser pour les ajustements progressifs ou soudains de luminosité
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
+[ ] see vsync-test.pd: probably something nasty in grid.cxx
 
 OpenCV
 [ ] cvOpticalFlow
