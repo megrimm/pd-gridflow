@@ -1,0 +1,8 @@
+#N canvas 502 104 450 300 10;
+#X obj 70 83 #draw_image put;
+#X msg 82 58 help;
+#X msg 82 33 get;
+#X obj 70 116 print;
+#X connect 0 0 3 0;
+#X connect 1 0 0 0;
+#X connect 2 0 0 0;

@@ -1,0 +1,16 @@
+#N canvas 288 169 623 282 10;
+#X obj 59 27 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 58 74 t b b;
+#X obj 57 173 display;
+#X obj 58 46 metro 100;
+#X obj 57 145 #convolve;
+#X msg 58 115 3 3 3 # 1 0 0 0 1;
+#X msg 124 145 3 3 # 1 2 1 2 4 2;
+#X connect 0 0 3 0;
+#X connect 1 0 5 0;
+#X connect 1 1 6 0;
+#X connect 3 0 1 0;
+#X connect 4 0 2 0;
+#X connect 5 0 4 0;
+#X connect 6 0 4 1;

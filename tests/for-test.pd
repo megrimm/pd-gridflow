@@ -1,0 +1,7 @@
+#N canvas 705 268 450 300 10;
+#X msg 59 42 bang \, bang;
+#X obj 59 80 print;
+#X text 129 43 try twice \, to catch bugs in "from".;
+#X obj 59 61 for 0 10 1;
+#X connect 0 0 3 0;
+#X connect 3 0 1 0;

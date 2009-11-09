@@ -1,0 +1,67 @@
+#N canvas 477 81 450 551 10;
+#X obj 17 242 #fft;
+#X obj 17 450 #out window;
+#X obj 8 27 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1
+;
+#X obj 17 122 #cast f;
+#X obj 17 431 #clip;
+#X obj 17 280 #cast i;
+#X obj 17 84 # - (0 128 128);
+#X obj 17 469 fps detailed;
+#X obj 17 488 print;
+#X obj 31 26 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+;
+#X obj 207 239 # sq-;
+#X obj 207 258 #fold +;
+#X obj 207 277 # sqrt;
+#X obj 207 296 #outer ignore (3 #);
+#X obj 207 315 #clip;
+#X obj 130 486 #print;
+#X obj 130 467 #dim;
+#X obj 17 65 #store;
+#X obj 63 46 loadbang;
+#X obj 126 47 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 17 261 # / (f # 16);
+#X obj 17 103 #inner (3 2 # 1 0 0 1 0 0);
+#X obj 17 348 #inner (2 3 # 1 0 0 0 1 0);
+#X msg 50 241 sign \$1;
+#X obj 108 222 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 108 239 * 2;
+#X obj 108 258 - 1;
+#X msg 26 218 skip \$1;
+#X obj 26 201 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+;
+#X obj 63 65 #in teapot.png;
+#X obj 17 367 # + 128;
+#X obj 50 26 metro 10;
+#X connect 0 0 20 0;
+#X connect 1 0 7 0;
+#X connect 2 0 17 0;
+#X connect 3 0 0 0;
+#X connect 4 0 1 0;
+#X connect 5 0 22 0;
+#X connect 6 0 21 0;
+#X connect 7 0 8 0;
+#X connect 9 0 31 0;
+#X connect 10 0 11 0;
+#X connect 11 0 12 0;
+#X connect 12 0 13 0;
+#X connect 13 0 14 0;
+#X connect 16 0 15 0;
+#X connect 17 0 6 0;
+#X connect 18 0 29 0;
+#X connect 19 0 29 0;
+#X connect 20 0 5 0;
+#X connect 21 0 3 0;
+#X connect 22 0 30 0;
+#X connect 23 0 0 0;
+#X connect 24 0 25 0;
+#X connect 25 0 26 0;
+#X connect 26 0 23 0;
+#X connect 27 0 0 0;
+#X connect 28 0 27 0;
+#X connect 29 0 17 1;
+#X connect 30 0 4 0;
+#X connect 31 0 17 0;
