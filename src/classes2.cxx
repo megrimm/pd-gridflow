@@ -386,23 +386,24 @@ static void display_update(void *x);
 			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
 	}
 };
-#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self;
-#define L if(1) post("%s",__PRETTY_FUNCTION__);
+#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+#define L if (0) post("%s",__PRETTY_FUNCTION__);
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
 	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
 	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
-	post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
+	//post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
 }
 static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT L
-	bself->te_xpix+=dx; bself->te_ypix+=dy; self->show();
-	//canvas_fixlinesfor(glist, (t_text *)x);
+	bself->te_xpix+=dx; bself->te_ypix+=dy;
+	sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+	canvas_fixlinesfor(glist, (t_text *)x);
 }
 static void display_selectfn(t_gobj *x, t_glist *glist, int state) {INIT L
 	self->selected=!!state;
-	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
+	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 }
 static void display_deletefn(t_gobj *x, t_glist *glist) {INIT L
-	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
+	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
 static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
