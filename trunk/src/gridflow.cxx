@@ -740,8 +740,12 @@ void add_creator2(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
 	class_addcreator((t_newmethod)BFObject_new,gensym((char *)name),A_GIMME,0);
 }
-typedef struct _methodentry
-{
+
+#ifdef DESIRE
+#define c_nmethod nmethod
+#define c_methods methods
+#else
+typedef struct _methodentry {
     t_symbol *me_name;
     t_gotfn me_fun;
     t_atomtype me_arg[MAXPDARG+1];
@@ -755,6 +759,7 @@ struct _class {
     int c_nmethod;                      /* number of methods */
     // ...
 };
+#endif
 void add_creator3(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
 	t_class *c = pd_objectmaker;
@@ -767,9 +772,11 @@ void add_creator3(FClass *fclass, const char *name) {
 
 //****************************************************************
 
+#ifndef DESIRE
 struct t_namelist;
 extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" t_namelist *namelist_append_files(t_namelist *, char *);
+#endif
 static void add_to_path(char *dir) {
 	static bool debug = false;
 	char bof[1024];
