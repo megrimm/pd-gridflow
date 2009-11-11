@@ -23,8 +23,10 @@
 
 #include "gridflow.hxx.fcs"
 #ifdef DESIRE
+#warning Bleuet
 #include "desire.h"
 #else
+#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"
