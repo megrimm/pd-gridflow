@@ -38,7 +38,7 @@ extern t_class *text_class;
 
 typedef int (*comparator_t)(const void *, const void *);
 
-#ifndef DESIREDATA
+#ifndef DESIRE
 struct _outconnect {
     struct _outconnect *next;
     t_pd *to;
@@ -327,12 +327,12 @@ string ssprintf(const char *fmt, ...) {
 }
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
-#ifdef HAVE_DESIREDATA
+#ifdef DESIRE
 t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
 void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #endif
 
-//#ifdef HAVE_DESIREDATA
+//#ifdef DESIRE
 static void display_redraw(t_gobj *client, t_glist *glist);
 \class Display : FObject {
 	bool selected;
@@ -463,7 +463,7 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 	}\n");
 #endif
 }
-//#endif // ndef HAVE_DESIREDATA
+//#endif // ndef DESIRE
 
 //****************************************************************
 
@@ -854,7 +854,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	((t_text *)m)->te_ypix = atom_getfloatarg(1,argc,argv);
 	t_canvas *granny = m->gl_owner;
 	if (!granny) RAISE("no such canvas");
-#ifdef DESIREDATA
+#ifdef DESIRE
 	gobj_changed(m);
 #else
         gobj_vis((t_gobj *)m,granny,0);
@@ -968,7 +968,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
 #define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
 \def 0 wire_dotted (int r, int g, int b) {
-#ifndef DESIREDATA
+#ifndef DESIRE
 	BEGIN
 	wire_each(wire,ouch) {
 		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
@@ -978,7 +978,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 #endif
 }
 \def 0 wire_hide () {
-#ifndef DESIREDATA
+#ifndef DESIRE
 	BEGIN
 	wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
 #else
@@ -986,7 +986,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 #endif
 }
 \def 0 box_dotted (int r, int g, int b) {
-#ifndef DESIREDATA
+#ifndef DESIRE
 	BEGIN
 	wire_each(wire,ouch) {
 		t_object *t = (t_object *)wire->to;
@@ -1022,7 +1022,7 @@ struct _inlet {
 	bool horiz;
 	if (dir==&s_x) horiz=false; else
 	if (dir==&s_y) horiz=true;  else RAISE("$1 must be x or y");
-#ifndef DESIREDATA
+#ifndef DESIRE
 	std::vector<t_object *> v;
 	BEGIN
 	wire_each(wire,ouch) {
@@ -1052,7 +1052,7 @@ struct _inlet {
 #endif
 }
 
-#ifndef DESIREDATA
+#ifndef DESIRE
 extern t_widgetbehavior text_widgetbehavior;
 t_widgetbehavior text_widgetbehavi0r;
 
@@ -1075,7 +1075,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 
 \end class {
 	install("gf/lol",1,1);
-#ifndef DESIREDATA
+#ifndef DESIRE
 	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
 	unsigned long *lol = (unsigned long *)text_class;
 	int i=0;
