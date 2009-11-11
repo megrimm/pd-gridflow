@@ -39,9 +39,21 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#ifndef HAVE_DESIREDATA
+#ifdef HAVE_DESIREDATA
+#warning Bleuet
+#include "desire.h"
+#else
+#warning Vanille
+extern "C" {
 #include "bundled/g_canvas.h"
+#include "bundled/m_imp.h"
+extern t_class *text_class;
+};
 #endif
+
+//#ifndef HAVE_DESIREDATA
+//#include "bundled/g_canvas.h"
+//#endif
 
 /* for exception-handling in 0.9.0... Linux-only */
 #ifndef MACOSX
