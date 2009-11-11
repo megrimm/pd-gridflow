@@ -1052,6 +1052,7 @@ struct _inlet {
 #endif
 }
 
+#ifndef DESIREDATA
 extern t_widgetbehavior text_widgetbehavior;
 t_widgetbehavior text_widgetbehavi0r;
 
@@ -1070,6 +1071,8 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
       t_rtext *y = glist_findrtext(can,(t_text *)o);
 	if (text_chou_de_vis((t_text *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
 }
+#endif
+
 \end class {
 	install("gf/lol",1,1);
 #ifndef DESIREDATA
