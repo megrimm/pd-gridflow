@@ -744,21 +744,6 @@ void add_creator2(FClass *fclass, const char *name) {
 #ifdef DESIRE
 #define c_nmethod nmethod
 #define c_methods methods
-#else
-typedef struct _methodentry {
-    t_symbol *me_name;
-    t_gotfn me_fun;
-    t_atomtype me_arg[MAXPDARG+1];
-} t_methodentry;
-struct _class {
-    t_symbol *c_name;                   /* name (mostly for error reporting) */
-    t_symbol *c_helpname;               /* name of help file */
-    t_symbol *c_externdir;              /* directory extern was loaded from */
-    size_t c_size;                      /* size of an instance */
-    t_methodentry *c_methods;           /* methods other than bang, etc below */
-    int c_nmethod;                      /* number of methods */
-    // ...
-};
 #endif
 void add_creator3(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
