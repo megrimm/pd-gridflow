@@ -911,4 +911,9 @@ struct _canvasenvironment {
 };
 #endif
 
+// from desiredata/src/kernel.c
+#ifndef DESIRE
+extern void outlet_atom(t_outlet *x, t_atom *a);
+#endif
+
 #endif // __GF_GRID_H
