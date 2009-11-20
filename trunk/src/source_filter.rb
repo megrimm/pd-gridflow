@@ -141,22 +141,7 @@ def handle_decl(line)
 	qlass.methods[m.selector] = m
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
-	Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA) {"
-	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "#{m.rettype} foo;" if m.rettype!="void"
-	Out.print "if (argc<#{m.minargs}"
-	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
-	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
-	Out.print "foo = " if m.rettype!="void"
-	Out.print " self->#{m.selector}(argc,argv"
-	m.arglist.each_with_index{|arg,i|
-		if arg.default then
-			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
-		else
-			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
-		end
-	}
-	Out.print ");}"
+	Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA); "
 end
 
 def handle_def(line)
@@ -177,7 +162,22 @@ def handle_def(line)
 	else
 		qlass.methods[m.selector] = m
 	end
-	Out.print "#{m.rettype} #{classname}::#{m.selector}(VA"
+	Out.print "void #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
+	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
+	Out.print "#{m.rettype} foo;" if m.rettype!="void"
+	Out.print "if (argc<#{m.minargs}"
+	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
+	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
+	Out.print "foo = " if m.rettype!="void"
+	Out.print " self->#{m.selector}(argc,argv"
+	m.arglist.each_with_index{|arg,i|
+		if arg.default then
+			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
+		else
+			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
+		end
+	}
+	Out.print ");} #{m.rettype} #{classname}::#{m.selector}(VA"
 	#puts "m=#{m} n=#{n}"
 	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
