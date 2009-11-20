@@ -175,6 +175,14 @@ std::ostream &operator << (std::ostream &self, const t_atom &a) {
 	return self;
 }
 
+// from desiredata/src/kernel.c
+void outlet_atom(t_outlet *x, t_atom *a) {
+    if      (a->a_type==A_FLOAT  ) outlet_float(  x,a->a_float);
+    else if (a->a_type==A_SYMBOL ) outlet_symbol( x,a->a_symbol);
+    else if (a->a_type==A_POINTER) outlet_pointer(x,a->a_gpointer);
+    else error("can't send atom whose type is %d",a->a_type);
+}
+
 //----------------------------------------------------------------
 // Dim
 
