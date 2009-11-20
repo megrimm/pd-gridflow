@@ -89,6 +89,10 @@ struct ArgSpec {
 	void process_args (int argc, t_atom *argv);
 };
 /* get the owner of the result of canvas_getenv */
+#ifdef DESIRE
+#define gl_env env
+#define gl_owner mom
+#endif
 static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment", x);
     return x;
@@ -234,7 +238,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 //doc_out:_0_float,"position of the incoming float in the stored list"
 \end class {install("listfind",2,1);}
 
-void outlet_atom (t_outlet *self, t_atom *av) {
+void outlet_atom2 (t_outlet *self, t_atom *av) {
 	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
 	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
 	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
@@ -253,7 +257,7 @@ void outlet_atom (t_outlet *self, t_atom *av) {
 	int i = int(f);
 	if (i<0) i+=ac;
 	if (i<0 || i>=ac) {outlet_bang(outlets[0]); return;} /* out-of-range */
-	outlet_atom(outlets[0],&at[i]);
+	outlet_atom2(outlets[0],&at[i]);
 }
 \def 1 list (...) {
 	if (at) delete[] at;
@@ -388,6 +392,7 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 	}
 };
 #define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+#undef L
 #define L if (0) post("%s",__PRETTY_FUNCTION__);
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
 	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
@@ -806,12 +811,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 list (...);
 };
 \def 0 list (...) {
-	t_outlet *o = outlets[0];
-	for (int i=0; i<argc; i++) {
-		if      (argv[i].a_type==A_FLOAT)  outlet_float( o,argv[i]);
-		else if (argv[i].a_type==A_SYMBOL) outlet_symbol(o,argv[i]);
-		else RAISE("oops. unsupported.");
-	}
+	for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);
 }
 \end class {install("foreach",1,1);}
 
