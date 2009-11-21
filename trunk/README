@@ -53,7 +53,7 @@ svn update
 
 .-o--------------------------------------------------------------
 | Installation instructions (incl. compilation)
-	 Install Ruby.
+	Install Ruby.
 	Download GridFlow from the website and uncompress it, or get it from the SVN server.
 	Run ./configure from the gridflow directory. Make sure it detects all the components
 	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs 
@@ -71,11 +71,16 @@ svn update
 to indicate where to find *.h files, and you 
 may have to set both LIBRARY_PATH and LD_LIBRARY_PATH to indicate where to find 
 *.so or *.a or *.dylib or *.bundle or *.dll or *.lib files.
+
 	Note: you can do ./configure --help to get a list of supported 
 options. You can use them to ignore the presence of troublesome libraries 
 and select debugging level. With --use-compiler you should use a version of g++, not 
 directly a version of gcc, else you get undefined symbol problems. Some versions of gcc/g++ 
 are troublesome.
+
+	Note: starting with GridFlow 0.9.6, the --no-gem08 and --no-gem09 (etc) options don't exist
+anymore. Instead use --no-opengl if you want to disable GEM support.
+
 	Run make to produce the executables gridflow.so and gridflow.pd_linux or similar 
 	Loading GridFlow:
 		PureData : With a text editor, modify or create ~/.pdrc and write -lib gridflow.  
@@ -105,6 +110,7 @@ Note also that on Windows the dot-files are even more trouble.
   ./src .............. object classes written in C++
   ./bin .............. programs startable as applications
   ./bundled .......... files from other packages, bundled here for convenience
+  ./deprecated ....... old abstractions for backward-compatibility
   ./examples ......... more complex Pd programs showing off more practical uses.
   ./doc .............. complete documentation in HTML, with XML source
   ./doc/flow_classes . help files (.pd)
