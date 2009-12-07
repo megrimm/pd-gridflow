@@ -162,6 +162,7 @@ struct GridHeader {
 	\decl 0 headerless (...);
 	\decl 0 headerful ();
 	\decl 0 type (NumberTypeE nt);
+	\decl 0 seek_byte (int64 bytepos);
 	~FormatGrid() {
 		//@stream.close if @stream
 		//GridFlow.hunt_zombies
@@ -173,6 +174,7 @@ struct GridHeader {
 	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
 	P<Dim> dim;
 	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
+	//post("#in grid bang: offset %ld",ftell(f));
 	if (headerless_dim) {
 		dim = headerless_dim;
 	} else {
@@ -240,8 +242,7 @@ TYPESWITCH(in->nt,FOO,)
 	for (int i=0; i<argc; i++) v[i] = argv[i];
 	headerless_dim = new Dim(argc,v);
 }
-\def 0 headerful () { headerless_dim = 0; }
-//#!@#$ method name conflict ?
+\def 0 headerful () {headerless_dim = 0;}
 \def 0 type (NumberTypeE nt) {
 	//!@#$ bug: should not be able to modify this _during_ a transfer
 	switch (nt) {
@@ -252,6 +253,8 @@ TYPESWITCH(in->nt,FOO,)
 	}
 	this->nt = nt;
 }
+
+\def 0 seek_byte (int64 pos) {fseek(f,pos,SEEK_SET);}
 
 //\def void raw_open_gzip_in(string filename) {
 	//r,w = IO.pipe
