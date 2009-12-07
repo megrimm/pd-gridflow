@@ -28,7 +28,7 @@ index into the list to get a different element.;
 ;
 #X obj 0 494 doc_f;
 #X text 232 365 a list of numbers or symbols.;
-#X obj 97 462 doc_m o0 >any>;
+#X obj 97 462 doc_m o0 <any>;
 #X connect 1 0 4 1;
 #X connect 3 0 4 0;
 #X connect 4 0 0 0;
