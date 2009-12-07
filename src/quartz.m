@@ -151,6 +151,7 @@ void FormatQuartz_call(FormatQuartz *self);
 		[window close];
 	}
 	void call ();
+	\decl 0 title (string title="");
 	\grin 0
 };
 
@@ -210,6 +211,11 @@ GRID_INLET(0) {
 } GRID_FINISH {
 	GFView_display(widget);
 } GRID_END
+
+\def 0 title (string title="") {
+    NSString *str = [[NSString alloc] initWithCString:title.c_str()];
+    [window setTitle: str];
+}
 
 \end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
