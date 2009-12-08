@@ -152,6 +152,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	}
 	void call ();
 	\decl 0 title (string title="");
+	\decl 0 move (int y, int x);
 	\grin 0
 };
 
@@ -215,6 +216,12 @@ GRID_INLET(0) {
 \def 0 title (string title="") {
     NSString *str = [[NSString alloc] initWithCString:title.c_str()];
     [window setTitle: str];
+}
+
+\def 0 move (int y, int x) {
+    int new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - y;
+    NSPoint pos = { x, new_y };
+    [window setFrameTopLeftPoint: pos];
 }
 
 \end class FormatQuartz {
