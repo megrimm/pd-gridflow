@@ -72,6 +72,19 @@ to indicate where to find *.h files, and you
 may have to set both LIBRARY_PATH and LD_LIBRARY_PATH to indicate where to find 
 *.so or *.a or *.dylib or *.bundle or *.dll or *.lib files.
 
+For example, if m_pd.h is found in /Users/pierre/include, you would do this to access it:
+
+	export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/Users/pierre/include
+
+You can do this in a bash shell (in which case it will have effect
+on this instance of the shell until it is closed) or you can do
+this in .bashrc (in which case it will have effect on all shells started
+in the future)
+
+Alternately you could copy m_pd.h into /usr/include
+(note: /usr is not visible from Finder)
+
+
 	Note: you can do ./configure --help to get a list of supported 
 options. You can use them to ignore the presence of troublesome libraries 
 and select debugging level. With --use-compiler you should use a version of g++, not 
