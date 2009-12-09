@@ -15,10 +15,10 @@
 #X text 232 140 with [#out] \, displays a frame;
 #X text 232 228 set window title;
 #X text 232 206 \$1=title;
-#X text 232 162 \$1=x_position \, \$2=y_position;
 #X text 232 184 move window;
+#X text 232 162 \$1=y_position \, \$2=x_position;
 #X connect 7 1 12 0;
 #X connect 8 1 14 0;
 #X connect 8 1 13 0;
-#X connect 11 1 15 0;
 #X connect 11 1 16 0;
+#X connect 11 1 15 0;

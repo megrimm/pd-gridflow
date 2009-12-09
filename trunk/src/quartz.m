@@ -219,7 +219,7 @@ GRID_INLET(0) {
 }
 
 \def 0 move (int y, int x) {
-    int new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - y;
+    int new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - 22 - y;
     NSPoint pos = { x, new_y };
     [window setFrameTopLeftPoint: pos];
 }
