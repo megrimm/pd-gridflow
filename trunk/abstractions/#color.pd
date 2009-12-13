@@ -1,14 +1,14 @@
 #N canvas 184 193 450 373 10;
 #X obj 76 87 hsl 128 14 0 255 0 0 empty empty empty -2 -6 0 8 -225271
--24198 -1 2300 1;
+-24198 -1 0 1;
 #X obj 76 101 hsl 128 14 0 255 0 0 empty empty empty -2 -6 0 8 -228992
--62784 -1 3100 1;
+-62784 -1 0 1;
 #X obj 76 73 hsl 128 14 0 255 0 0 empty empty empty -2 -6 0 8 -261689
--258699 -1 900 1;
+-258699 -1 9390 1;
 #X obj 10 166 #pack 3;
 #X obj 39 -6 inlet rgb_color;
 #X obj 15 188 outlet rgb_color;
-#X obj 122 62 cnv 10 60 10 empty \$0-cnv empty 20 12 0 14 -17104 -262144
+#X obj 122 61 cnv 10 60 10 empty \$0-cnv empty 20 12 0 14 -192513 -262144
 0;
 #X obj 10 343 s \$0-cnv;
 #X msg 10 324 color \$1;
@@ -26,9 +26,9 @@
 #X obj 216 161 # || (0 255);
 #X obj 10 210 # << (16 8 0);
 #X obj 216 142 #store ( \$1 \$2 );
-#X floatatom 50 73 3 0 255 0 - - -;
-#X floatatom 50 87 3 0 255 0 - - -;
-#X floatatom 50 101 3 0 255 0 - - -;
+#X floatatom 50 71 3 0 255 0 - - -;
+#X floatatom 50 85 3 0 255 0 - - -;
+#X floatatom 50 99 3 0 255 0 - - -;
 #X obj 82 122 int;
 #X obj 82 141 int;
 #X obj 82 160 int;
