@@ -141,6 +141,7 @@ void FormatQuartz_call(FormatQuartz *self);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
+		[window displayIfNeeded];
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -216,6 +217,7 @@ GRID_INLET(0) {
 \def 0 title (string title="") {
     NSString *str = [[NSString alloc] initWithCString:title.c_str()];
     [window setTitle: str];
+    [window displayIfNeeded];
 }
 
 \def 0 move (int y, int x) {
