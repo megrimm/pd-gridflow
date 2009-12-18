@@ -40,7 +40,7 @@ extern t_class *text_class;
 
 typedef int (*comparator_t)(const void *, const void *);
 
-#ifndef DESIRE
+#ifndef HAVE_DESIREDATA
 struct _outconnect {
     struct _outconnect *next;
     t_pd *to;
@@ -89,12 +89,12 @@ struct ArgSpec {
 	void process_args (int argc, t_atom *argv);
 };
 /* get the owner of the result of canvas_getenv */
-#ifdef DESIRE
+#ifdef HAVE_DESIREDATA
 #define gl_env env
-#define gl_owner mom
+#define gl_owner owner
 #endif
 static t_canvas *canvas_getabstop(t_canvas *x) {
-    while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment", x);
+    while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
 } 
 \def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);}
@@ -444,7 +444,9 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 	for (int i=0; i<argc; i++) text << (char)INT(argv[i]);
 }
 \end class {
-#ifndef DESIRE
+#ifdef DESIRE
+	install("gf.display",1,0);
+#else
 	install("display",1,0);
 	t_class *qlass = fclass->bfclass;
 	t_widgetbehavior *wb = new t_widgetbehavior;
@@ -810,9 +812,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor () {}
 	\decl 0 list (...);
 };
-\def 0 list (...) {
-	for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);
-}
+\def 0 list (...) {for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);}
 \end class {install("foreach",1,1);}
 
 //****************************************************************
@@ -905,12 +905,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 float (float y);
 };
 \def 0 float (float y) {MOM;
-	// was 568
+	int osx = int(m->gl_screenx2-m->gl_screenx1); // old size x
+	int osy = int(m->gl_screeny2-m->gl_screeny1); // old size y
 	m->gl_screenx2 = m->gl_screenx1 + 632;
 	if (m->gl_screeny2-m->gl_screeny1 < y) m->gl_screeny2 = m->gl_screeny1+y;
-	sys_vgui("wm geometry .x%lx %dx%d\n",long(m),
-	  int(m->gl_screenx2-m->gl_screenx1),
-	  int(m->gl_screeny2-m->gl_screeny1));
+	int  sx = int(m->gl_screenx2-m->gl_screenx1); // new size x
+	int  sy = int(m->gl_screeny2-m->gl_screeny1); // new size y
+	if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%lx %dx%d\n",long(m),sx,sy);
 }
 \end class {install("gf/canvas_hehehe",1,1);}
 
