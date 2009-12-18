@@ -13,6 +13,7 @@ version 0.9.7 (2009.11...):
  * [#]: avoid grid-abort in case of wrong dimensions
  * [#in grid]: fixed end-of-file detection
  * ./configure: replaced pentium detection code
+ * [#io.quartz]: title, move and set_geometry methods compatible with [#io.x11]
 
 version 0.9.6 (2009.11.05):
 
