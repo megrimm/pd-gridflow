@@ -132,16 +132,16 @@ void FormatQuartz_call(FormatQuartz *self);
 		widget = [[GFView alloc] initWithFrame: r];
 		[window setContentView: widget];
 		[window setTitle: @"GridFlow"];
-		[window makeKeyAndOrderFront: NSApp];
+		[window makeKeyAndOrderFront: nil];
 		[window orderFrontRegardless];
 		wc = [[NSWindowController alloc] initWithWindow: window];
 		clock = clock_new(this,(t_method)FormatQuartz_call);
+		clock_delay(clock,0);
 		[window makeFirstResponder: widget];
 		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
-		[window displayIfNeeded];
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -217,7 +217,6 @@ GRID_INLET(0) {
 \def 0 title (string title="") {
     NSString *str = [[NSString alloc] initWithCString:title.c_str()];
     [window setTitle: str];
-    [window displayIfNeeded];
 }
 
 \def 0 move (int y, int x) {
