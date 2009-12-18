@@ -154,6 +154,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	void call ();
 	\decl 0 title (string title="");
 	\decl 0 move (int y, int x);
+	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\grin 0
 };
 
@@ -223,6 +224,13 @@ GRID_INLET(0) {
     int new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - 22 - y;
     NSPoint pos = { x, new_y };
     [window setFrameTopLeftPoint: pos];
+}
+
+\def 0 set_geometry (int y, int x, int sy, int sx) {
+    int new_y;
+    new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - 22 - y - sy;
+    NSRect r = {{x, new_y}, {sx, sy}};
+    [window setFrame: r display: YES];
 }
 
 \end class FormatQuartz {
