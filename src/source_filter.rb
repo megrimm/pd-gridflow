@@ -27,7 +27,7 @@ $classes = []
 $exit = 0
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
-MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
+MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:continue)
 Arg  = Struct.new(:type,:name,:default)
 Attr = Struct.new(:type,:name,:default,:virtual)
 
@@ -74,15 +74,15 @@ def handle_class(line)
 end
 
 def parse_methoddecl(line,term)
-	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
+	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*(#{term})/.match line or
 		raise "syntax error #{where} #{line}"
-	rettype,selector,arglist = $1,$2,$3,$4
+	rettype,selector,arglist,continue = $1,$2,$3,$4,$6
 	if /^\d+$/ =~ rettype then
 		selector = "_"+rettype+"_"+selector
 		rettype = "void"
 	end
 	arglist,minargs,maxargs = parse_arglist arglist
-	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where)
+	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where,continue)
 end
 
 def parse_arglist(arglist)
@@ -137,14 +137,18 @@ def handle_decl(line)
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
-	m = parse_methoddecl(line,";\s*$")
+	m = parse_methoddecl(line,"(;\s*|\\{?.*)$")
 	qlass.methods[m.selector] = m
-	Out.print "#{m.rettype} #{m.selector}(VA"
-	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
-	Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA); "
+	if /^\{/ =~ m.continue
+	  handle_def(line,true)
+	else
+	  Out.print "#{m.rettype} #{m.selector}(VA"
+	  Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
+	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);\n"
+	end
 end
 
-def handle_def(line)
+def handle_def(line,in_class_block=false)
 	m = parse_methoddecl(line,"\\{?.*$")
 	term = line[/\{.*/]
 	qlass = $stack[-1]
@@ -162,7 +166,8 @@ def handle_def(line)
 	else
 		qlass.methods[m.selector] = m
 	end
-	Out.print "void #{classname}::#{m.selector}_wrap(#{classname} *self, VA) {"
+	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
+	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "if (argc<#{m.minargs}"
@@ -177,11 +182,14 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");} #{m.rettype} #{classname}::#{m.selector}(VA"
+	Out.print ");} #{m.rettype} "
+	Out.print "#{classname}::" unless in_class_block
+	Out.print m.selector+"(VA"
 	#puts "m=#{m} n=#{n}"
 	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
+	Out.print "/*in_class_block=#{in_class_block.inspect}*/"
 end
 
 def handle_constructor(line)
