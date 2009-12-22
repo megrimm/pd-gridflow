@@ -1,12 +1,12 @@
 #N canvas 143 119 573 310 10;
-#X obj 0 0 cnv 16 64 17 empty \$0-rect Inlet 2: 12 9 1 9 -175159
+#X obj 0 0 cnv 16 64 17 empty \$0-rect Inlet 2: 12 9 1 9 -175159
 -1 0;
 #X obj 328 103 loadbang;
 #X obj 309 120 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
 #X obj 328 163 s \$0-rect;
 #X obj 328 123 list append \$1;
-#X msg 328 143 label Inlet \$1:;
+#X msg 328 143 label Inlet \$1:;
 #X msg 287 20 14 \$2;
 #X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;

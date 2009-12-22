@@ -1,5 +1,5 @@
 #N canvas 110 0 573 469 10;
-#X obj 0 0 cnv 15 606 17 empty \$0-rect Inlets (2) 240 8 1 9 -88239
+#X obj 0 0 cnv 15 606 17 empty \$0-rect Inlets (2) 240 8 1 9 -88239
 -262144 0;
 #X obj 157 155 loadbang;
 #X obj 126 154 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
@@ -9,7 +9,7 @@
 #X obj 157 174 list append \$1;
 #X obj 562 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
-#X msg 157 194 label Inlets (\$1);
+#X msg 157 194 label Inlets (\$1);
 #X msg 362 89 \$2;
 #X obj 445 140 doc_make ii \$1;
 #X obj 399 57 doc_below c 1 10;

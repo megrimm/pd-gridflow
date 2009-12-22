@@ -1,10 +1,10 @@
 #N canvas 113 292 560 322 10;
-#X obj 0 0 cnv 16 64 17 empty \$0-rect Outlet 0: 8 9 1 9 -175159
+#X obj 0 0 cnv 16 64 17 empty \$0-rect Outlet 0: 8 9 1 9 -175159
 -1 0;
 #X obj 318 135 loadbang;
 #X obj 318 195 s \$0-rect;
 #X obj 318 155 list append \$1;
-#X msg 318 175 label Outlet \$1:;
+#X msg 318 175 label Outlet \$1:;
 #X msg 287 22 14 \$2;
 #X obj 52 0 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144
 -1 -1;
