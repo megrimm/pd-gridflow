@@ -1,9 +1,9 @@
 #N canvas 91 65 567 335 10;
-#X obj 0 0 cnv 16 80 17 empty \$0-rect Argument 2: 4 9 1 9 -175159
+#X obj 0 0 cnv 16 80 17 empty \$0-rect Argument 2: 4 9 1 9 -175159
 -1 0;
 #X obj 353 175 s \$0-rect;
 #X obj 353 135 list append \$1;
-#X msg 353 155 label Argument \$1:;
+#X msg 353 155 label Argument \$1:;
 #X msg 312 21 14 \$2;
 #X obj 353 116 loadbang;
 #X obj 68 20 bng 12 250 50 0 empty \$0-create empty 17 7 0 10 -262144

@@ -1,5 +1,5 @@
 #N canvas 49 157 658 459 10;
-#X obj 0 0 cnv 15 92 17 empty \$0-rect See also: 35 9 1 9 -88239
+#X obj 0 0 cnv 15 92 17 empty \$0-rect See also: 35 9 1 9 -88239
 -262144 0;
 #X obj 409 156 gf/canvas_setpos 0;
 #X obj 409 40 loadbang;
