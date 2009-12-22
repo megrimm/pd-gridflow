@@ -990,6 +990,18 @@ BUILTIN_SYMBOLS(FOO)
 	startup_format();
 	STARTUP_LIST()
 	//sys_gui("bind . <Motion> {puts %W}\n");
+	sys_gui("rename pdtk_canvas_sendkey pdtk_canvas_sendqui\n"
+	  "proc pdtk_canvas_sendkey {name state key iso shift} {\n"
+	  "if {$iso != \"\" && [lsearch {BackSpace Tab Return Escape Space Delete KP_Delete} $iso]<0} {\n"
+	  "  binary scan [encoding convertto $iso] c* bytes\n"
+	  "  foreach byte $bytes {pd [canvastosym $name] key $state [expr {$byte & 255}] $shift \\;}\n"
+	  "} else {pdtk_canvas_sendqui $name $state $key $iso $shift}}\n");
+#if 0
+	sys_gui("rename pdtk_text_new pdtk_text_nous\n"
+	        "proc pdtk_text_new {a b c d e f g} {pdtk_text_nous $a $b $c $d [encoding convertfrom $e] $f $g}\n"
+		"rename pdtk_text_set pdtk_text_sept\n"
+	        "proc pdtk_text_set {a b e        } {pdtk_text_sept $a $b       [encoding convertfrom $e]      }\n");
+#endif
 	sys_vgui("proc gridflow_add_to_help {menu} {\n"
 		   "$menu add separator\n"
 		   "$menu add command -label {GridFlow About} -command {pd pd open about.pd %s/doc \\;}\n"
