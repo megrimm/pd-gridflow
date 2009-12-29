@@ -22,7 +22,6 @@
 =end
 
 require "rbconfig"
-require "ftools"
 $CFLAGS  = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
