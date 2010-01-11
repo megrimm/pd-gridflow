@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.7 (2009.11...):
+version 0.9.7 (2010.01...):
 
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
@@ -13,7 +13,15 @@ version 0.9.7 (2009.11...):
  * [#]: avoid grid-abort in case of wrong dimensions
  * [#in grid]: fixed end-of-file detection
  * ./configure: replaced pentium detection code
- * [#io.quartz]: title, move and set_geometry methods compatible with [#io.x11]
+ * [#line_to_polygon]: fix: generates a rectangle as it was supposed to be
+ * [#in grid]: added method «seek_byte»
+ * [#out quartz]: no more spinning beach ball of death !
+ * [#out quartz]: added methods: title, move, set_geometry
+   (compatible with [#io.x11])
+ * fixed help file window resize (osx)
+
+handle_def can delay definition of the wrapper until 
+
 
 version 0.9.6 (2009.11.05):
 
