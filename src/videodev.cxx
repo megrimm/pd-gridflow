@@ -161,10 +161,7 @@ static void gfpost(VideoMbuf *self) {std::ostringstream buf; buf << "[VideoMBuf]
 	WH(size,"%d");
 	WH(frames,"%d");
 	oprintf(buf,"offsets=[");
-	for (int i=0; i<self->frames; i++) {
-		/* WH(offsets[i],"%d"); */
-		oprintf(buf,"%d%s",self->offsets[i],i+1==self->frames?"]":", ");
-	}
+	for (int i=0; i<self->frames; i++) oprintf(buf,"%d%s",self->offsets[i],i+1==self->frames?"]":", ");
 	post("%s",buf.str().data());}
 static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap] ";
 	WH(frame,"%u");
@@ -607,10 +604,6 @@ GRID_INLET(0) {
 \def 0    pwc (bool pwc) {use_pwc=pwc;}
 #define PWC(R) if (!use_pwc) return R;
 
-/*TODO: void set_pan_and_tilt(int fd, char what, int pan, int tilt) {PWC()
-	struct pwc_mpt_angles pma; pma.absolute=1; WIOCTL(fd, VIDIOCPWCMPTGANGLE, &pma);
-	pma.pan = pan; pma.tilt = tilt;            WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);}*/
-
 \def uint16 framerate() {PWC(0)
 	struct video_window vwin; WIOCTL(fd, VIDIOCGWIN, &vwin);
 	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
@@ -622,13 +615,8 @@ GRID_INLET(0) {
 	WIOCTL(fd, VIDIOCSWIN, &vwin);
 }
 
-/* those functions are still mostly unused */
-//void set_compression_preference(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
-
 \def int auto_gain() {int auto_gain=0; if (use_pwc) WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
 \def 0   auto_gain   (int auto_gain)  {if (use_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
-
-//void set_shutter_speed(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 
 \def uint16 white_mode () {PWC(0)
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
@@ -640,9 +628,6 @@ GRID_INLET(0) {
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	if      (white_mode==0) pwcwb.mode = PWC_WB_AUTO;
 	else if (white_mode==1) pwcwb.mode = PWC_WB_MANUAL;
-	/*else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;*/
-	/*else if (strcasecmp(mode, "outdoor") == 0) pwcwb.mode = PWC_WB_OUTDOOR;*/
-	/*else if (strcasecmp(mode, "fl") == 0)      pwcwb.mode = PWC_WB_FL;*/
 	else {error("unknown mode number %d", white_mode); return;}
 	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
@@ -659,16 +644,6 @@ GRID_INLET(0) {
 					      pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
 \def 0 white_delay(uint16 white_delay) {PWC() struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 					      pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-
-/*TODO:
-static void set_led_on_time(int fd, int val ) {struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
-				               pwcl.led_on = val;    WIOCTL(fd, VIDIOCPWCSLED, &pwcl);}
-static void set_led_off_time(int fd, int val) {struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
-					       pwcl.led_off = val;   WIOCTL(fd, VIDIOCPWCSLED, &pwcl);}
-static void set_sharpness(             int fd, int val) {WIOCTL(fd, VIDIOCPWCSCONTOUR, &val);}
-static void set_backlight_compensation(int fd, int val) {WIOCTL(fd, VIDIOCPWCSBACKLIGHT, &val);}
-static void set_antiflicker_mode(      int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);}
-*/
 
 \def int noise_reduction() {PWC(0) int noise_reduction; WIOCTL(fd, VIDIOCPWCGDYNNOISE, &noise_reduction); return noise_reduction;}
 \def 0 noise_reduction(int noise_reduction) {PWC()      WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);}
