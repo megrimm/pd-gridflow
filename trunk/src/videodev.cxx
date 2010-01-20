@@ -188,6 +188,7 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 
 	\constructor (string mode, string filename) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
+		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		has_frequency=false;
 		has_tuner=false;
 		has_norm=false;
