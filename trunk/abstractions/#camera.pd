@@ -1,4 +1,4 @@
-#N canvas 599 0 497 371 10;
+#N canvas 599 0 420 358 10;
 #X obj 81 31 cnv 15 184 68 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
@@ -215,12 +215,12 @@ norm transfer;
 #X connect 99 2 100 0;
 #X connect 99 3 66 0;
 #X connect 100 0 47 0;
-#X restore 34 390 pd camera;
-#X obj 7 409 outlet image;
-#X obj 7 352 inlet;
+#X restore 34 410 pd camera;
+#X obj 7 429 outlet image;
+#X obj 7 372 inlet;
 #X obj 143 46 hradio 12 1 0 4 \$0-s_tuner \$0-tuner _0_1_2_3 -2 7 1
 8 -233017 -195568 -195568 0;
-#X obj 46 352 r \$0-o;
+#X obj 46 372 r \$0-o;
 #X text 84 35 channel:;
 #X text 98 47 tuner:;
 #X obj 6 31 cnv 15 70 216 empty empty empty 20 12 0 14 -233017 -66577
@@ -230,7 +230,7 @@ norm transfer;
 8 -241291 -1 -1 10;
 #X obj 81 105 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X obj 270 214 cnv 15 144 124 empty \$0-palette2 YUV420P 86 8 0 10
+#X obj 270 214 cnv 15 144 140 empty \$0-palette2 YUV420P 86 8 0 10
 -233017 -1 0;
 #X obj 270 31 cnv 15 144 178 empty empty empty 20 12 0 14 -233017 -66577
 0;
@@ -241,8 +241,8 @@ norm transfer;
 #X text 275 65 size:;
 #X text 315 35 height;
 #X text 365 35 width;
-#X msg 291 315 transfer mmap 4;
-#X obj 291 352 s \$0-o;
+#X msg 291 331 transfer mmap 4;
+#X obj 291 362 s \$0-o;
 #X obj 329 124 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
 8 -233017 -195568 -195568;
 #X obj 344 124 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 8
@@ -281,13 +281,12 @@ _0_1_2_3_noise_reduction -2 7 1 8 -233017 -195568 -195568 0;
 -195568 0 1;
 #X text 26 224 use PWC;
 #X text 28 168 DC1394;
-#X obj 356 232 vradio 12 1 0 4 \$0-s_colorspace_e \$0-colorspace_e
+#X obj 345 232 vradio 12 1 0 5 \$0-s_colorspace_e \$0-colorspace_e
 empty 0 -8 0 10 -233017 -195568 -195568 0;
-#X text 370 229 y;
-#X text 370 241 yuv;
-#X text 370 254 rgb;
-#X text 370 266 magic;
-#X text 269 249 Colorspaces:;
+#X text 359 228 y;
+#X text 359 240 yuv;
+#X text 359 253 rgb;
+#X text 269 246 Colorspaces:;
 #N canvas 0 0 450 300 command_filtre 0;
 #X obj 22 24 inlet;
 #X obj 22 92 outlet;
@@ -297,7 +296,7 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X connect 2 0 1 0;
 #X connect 2 1 3 0;
 #X connect 2 2 1 0;
-#X restore 7 371 pd command_filtre;
+#X restore 7 391 pd command_filtre;
 #X text 287 191 framerate:;
 #X obj 201 34 vradio 12 1 0 4 \$0-s_norm \$0-norm empty 0 -8 0 10 -233017
 -195568 -195568 0;
@@ -307,11 +306,11 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 213 68 auto;
 #X obj 6 6 cnv 15 408 20 empty \$0-title No_camera_selected 4 10 1
 12 -1 -262144 0;
-#X obj 356 285 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
+#X obj 345 300 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
 0 -8 0 10 -233017 -195568 -195568 0;
-#X text 291 289 Transfer:;
-#X text 370 283 read;
-#X text 371 295 mmap;
+#X text 286 304 Transfer:;
+#X text 359 298 read;
+#X text 360 310 mmap;
 #X obj 312 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
 -6 1 10 -233017 -1 -195568 0 256;
 #X obj 360 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
@@ -331,7 +330,7 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 27 198 OFF;
 #X text 27 183 MacOSX;
 #X obj 83 107 gf.nbxhsl \$0 contrast;
-#X obj 7 390 #in;
+#X obj 7 410 #in;
 #X obj 83 119 gf.nbxhsl \$0 brightness;
 #X obj 83 131 gf.nbxhsl \$0 colour;
 #X obj 83 143 gf.nbxhsl \$0 hue;
@@ -342,10 +341,12 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X obj 82 227 gf.nbxhsl \$0 white_delay;
 #X obj 82 239 gf.nbxhsl \$0 auto_gain;
 #X obj 83 85 gf.nbxhsl \$0 frequency;
-#X connect 2 0 80 0;
-#X connect 4 0 53 0;
-#X connect 6 0 80 0;
+#X text 360 278 none(bad);
+#X text 360 265 magic;
+#X connect 2 0 79 0;
+#X connect 4 0 52 0;
+#X connect 6 0 79 0;
 #X connect 20 0 21 0;
-#X connect 53 0 80 0;
-#X connect 80 0 3 0;
-#X connect 80 1 2 0;
+#X connect 52 0 79 0;
+#X connect 79 0 3 0;
+#X connect 79 1 2 0;
