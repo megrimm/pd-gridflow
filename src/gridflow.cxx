@@ -1008,14 +1008,16 @@ BUILTIN_SYMBOLS(FOO)
 		"rename pdtk_text_set pdtk_text_sept\n"
 	        "proc pdtk_text_set {a b e        } {pdtk_text_sept $a $b       [encoding convertfrom $e]      }\n");
 #endif
-	sys_vgui("proc gridflow_add_to_help {menu} {\n"
+        sys_vgui("set gfdir {%s}\n",dirresult);
+	sys_gui("proc gridflow_add_to_help {menu} {\n"
 		   "$menu add separator\n"
-		   "$menu add command -label {GridFlow About} -command {pd pd open about.pd %s/doc \\;}\n"
-		   "$menu add command -label {GridFlow Index} -command {pd pd open index.pd %s/doc \\;}\n"
+		   "$menu add command -label {GridFlow About} -command {pd pd open about.pd $::gfdir/doc \\;}\n"
+		   "$menu add command -label {GridFlow Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
 		 "}\n"
-		 "gridflow_add_to_help .mbar.help\n"
-		 "rename menu_addstd menu_addstd_old\n"
-		 "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}\n",dirresult,dirresult);
+		 "catch {gridflow_add_to_help .mbar.help}\n"
+//		 "catch {gridflow_add_to_help $::pd_menus::menubar}\n"
+		 "catch {rename menu_addstd menu_addstd_old\n"
+		   "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}}\n");
 	delete[] dirresult;
 	delete[] dirname;
     } catch (Barf &oozy) {oozy.error(0);}
