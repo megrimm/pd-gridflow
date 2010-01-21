@@ -4,10 +4,10 @@
 #X obj 237 184 t a;
 #X msg 237 165 receive \$1;
 #X msg 259 127 send \$1;
-#X obj 50 0 hsl 129 12 0 65535 0 0 1005-s_contrast 1005-contrast contrast
-4 7 1 10 -233017 -195568 -195568 0 0;
-#X obj 0 0 nbx 5 12 0 65535 0 0 1005-s_contrast 1005-contrast empty
-4 7 1 10 -233017 -195568 -195568 0 256;
+#X obj 50 0 hsl 129 12 0 65535 0 0 1252-s_contrast 1252-contrast contrast
+4 7 1 8 -233017 -195568 -195568 0 0;
+#X obj 0 0 nbx 5 12 0 65535 0 0 1252-s_contrast 1252-contrast empty
+4 7 1 8 -233017 -195568 -195568 0 256;
 #X msg 47 75 set \$1;
 #X msg 0 75 set \$1;
 #X obj 173 60 args (self f) (name s);
