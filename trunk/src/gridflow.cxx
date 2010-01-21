@@ -926,11 +926,17 @@ extern "C" void canvas_delete(t_canvas *, t_gobj *);
 #endif
 
 static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
-	t_gobj *g = canvas_last(self);
+	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"else: no last"); return;}
 	if (pd_newest()) return;
 	glist_delete(self,g);
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
-	pd_typedmess((t_pd *)self,argv[0].a_w.w_symbol,argc-1,argv+1);
+	pd_typedmess((t_pd *)self,argv[0].a_symbol,argc-1,argv+1);
+}
+
+static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
+	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"else: no last"); return;}
+	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
+	pd_typedmess((t_pd *)g,argv[0].a_symbol,argc-1,argv+1);
 }
 
 // those are not really leaks but deleting them make them disappear from valgrind
@@ -1018,5 +1024,6 @@ BUILTIN_SYMBOLS(FOO)
     signal(SIGBUS, SIG_DFL);
     atexit(gridflow_unsetup);
     extern t_class *canvas_class;
-    class_addmethod(canvas_class,(t_method)canvas_else,gensym("else"),A_GIMME,0);
+    class_addmethod(canvas_class,(t_method)canvas_else,  gensym("else"),A_GIMME,0);
+    class_addmethod(canvas_class,(t_method)canvas_tolast,gensym("last"),A_GIMME,0);
 }
