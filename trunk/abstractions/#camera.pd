@@ -283,7 +283,7 @@ _0_1_2_3_noise_reduction -2 7 1 8 -233017 -195568 -195568 0;
 #X text 28 168 DC1394;
 #X obj 345 232 vradio 12 1 0 5 \$0-s_colorspace_e \$0-colorspace_e
 empty 0 -8 0 10 -62784 -44926 -1 0;
-#X text 359 228 y;
+#X text 359 228 y (grey);
 #X text 359 240 yuv;
 #X text 359 253 rgb;
 #X text 269 246 Colorspaces:;
