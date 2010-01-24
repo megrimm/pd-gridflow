@@ -38,7 +38,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__WIN32__)
 static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #else
 #include <malloc.h>
@@ -192,7 +192,7 @@ struct Barf {
 #define DELBUF(A) (delete[] A)
 
 #ifdef __WIN32__
-#define INT winINT
+#undef INT
 #define random rand
 #undef send
 #undef close
@@ -267,6 +267,8 @@ template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (cons
 
 //template <class T> class P : T * {};
 //a reference counting pointer class
+//note: T <= CObject
+//used mostly as P<Dim>, P<Grid>, P<BitPacking>
 template <class T> class P {
 public:
 #define INCR if (p) p->refcount++;
@@ -343,7 +345,7 @@ struct Dim : CObject {
 		for (Card i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	char *to_s();
+	char *to_s(); // should be std::string
 	bool equal(P<Dim> o) {
 		if (n!=o->n) return false;
 		for (Card i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
@@ -864,6 +866,15 @@ extern std::map<string,FClass *> fclasses;
 int handle_braces(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;
+
+#ifdef __WIN32__
+static inline int vasprintf(char **buf, const char *s, va_list args) {
+	int n = vsnprintf(0,0,s,args);
+	*buf = (char *)malloc(n+1);
+	vsnprintf(*buf,n,s,args);
+	return n;
+}
+#endif
 
 /* both oprintf are copied from desiredata */
 
