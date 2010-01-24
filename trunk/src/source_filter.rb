@@ -199,7 +199,7 @@ def handle_constructor(line)
 	m = parse_methoddecl("void constructor"+line,"(.*)$")
 	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
 	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-
+	Out.print "DEF_IN;"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
@@ -211,7 +211,7 @@ def handle_constructor(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");}"
+	Out.print ");DEF_OUT;}"
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ") "+line[/\{.*/]
