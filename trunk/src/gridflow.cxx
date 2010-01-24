@@ -57,8 +57,8 @@ extern t_class *text_class;
 //#include "bundled/g_canvas.h"
 //#endif
 
-/* for exception-handling in 0.9.0... Linux-only */
-#ifndef MACOSX
+/* for exception-handling in 0.9.x... Linux-only */
+#if !defined(MACOSX) && !defined(__WIN32__)
 #include <exception>
 #include <execinfo.h>
 #endif
@@ -906,7 +906,7 @@ void startup_format();
 STARTUP_LIST(void)
 
 void blargh () {
-#ifdef MACOSX
+#if defined(MACOSX) || defined(__WIN32__)
   fprintf(stderr,"unhandled exception\n");
 #else
   void *array[25];
@@ -960,6 +960,7 @@ static void gridflow_unsetup () {
 }
 
 void allow_big_stack () {
+#ifndef __WIN32__
   struct rlimit happy;
   if (0>getrlimit(RLIMIT_STACK,&happy))
     error("GF: getrlimit: %s",strerror(errno));
@@ -968,6 +969,7 @@ void allow_big_stack () {
     error("GF: setting stack size to %ld: %s",happy.rlim_cur,strerror(errno));
   else
     post( "GF: setting stack size to %ld",happy.rlim_cur);
+#endif
 }
 
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
