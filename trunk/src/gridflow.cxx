@@ -1015,7 +1015,7 @@ BUILTIN_SYMBOLS(FOO)
 		   "$menu add command -label {GridFlow Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
 		 "}\n"
 		 "catch {gridflow_add_to_help .mbar.help}\n"
-		 "catch {gridflow_add_to_help $::pd_menus::menubar.help}\n"
+		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]]}}\n"
 		 "catch {rename menu_addstd menu_addstd_old\n"
 		   "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}}\n");
 	delete[] dirresult;
