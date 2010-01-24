@@ -509,24 +509,19 @@ Feature.add {
 	tag :puredata
 	name "PureData (or DesireData)"
 	options ["HAVE_PUREDATA"]
-	defines {
-		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
-		m = /PD_VERSION_INT\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		{:PD_VERSION_INT => m[1].to_i}
-	}
 	uses_h ["m_pd.h"]
 	test proc {
 		c_test %`
 			#include#
 			#include <stdio.h>
 			int main () {
-			printf("#define PD_VERSION_INT %d\\n",
+			printf("#define PD_VERSION_INT %d\\n", (int)(
 			#ifdef PD_MAJOR_VERSION
-				(int)(PD_MAJOR_VERSION*100+PD_MINOR_VERSION));
+				PD_MAJOR_VERSION*100+PD_MINOR_VERSION
 			#else
-				(int)(PD_VERSION*100));
+				PD_VERSION*100
 			#endif
-			return 0;}`}}
+			)); return 0;}`}}
 Feature.add {
 	tag :desiredata
 	name "DesireData"
