@@ -2,21 +2,21 @@
 # $Id$
 
 include config.make
-# COMMON_DEPS = config.make Makefile src/source_filter.rb
+COMMON_DEPS = config.make Makefile src/source_filter.rb
 COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
 
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
-CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
+CFLAGS += -Wall -Wno-unused -Wunused-variable -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),darwin)
-  CFLAGS += -mmacosx-version-min=10.4
+  CFLAGS += -mmacosx-version-min=10.4 -fPIC
   LDSOFLAGS += -headerpad_max_install_names
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
@@ -25,10 +25,11 @@ else
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
     LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
-    CFLAGS += -DDES_BUGS -mms-bitfields
+    #CFLAGS += -DDES_BUGS
+    CFLAGS += -mms-bitfields
   else
     PDSUF = .pd_linux
-    PDBUNDLEFLAGS = -shared -rdynamic
+    PDBUNDLEFLAGS = -shared -rdynamic -fPIC
   endif
 endif
 PD_LIB = gridflow$(PDSUF)
