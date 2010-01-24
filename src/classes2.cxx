@@ -1152,6 +1152,22 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 };
 \end class {install("gf/getpid",1,2);}
 
+/* because of potential conflict with [iemguts/propertybang], this has to be done in precisely the same manner as it does. */
+/* this also means that there can only be one [gf.propertybang] or [iemguts/propertybang] per abstraction. */
+static void propertybang_properties(t_gobj *z, t_glist *owner) {
+  pd_bang(canvas_realizedollar((t_canvas*)z, gensym("$0 propertybang"))->s_thing);
+}
+\class GFPropertyBang : FObject {
+  t_symbol *d0name;
+  ~GFPropertyBang () {pd_unbind((t_pd *)bself,d0name);}
+  \decl 0 bang () {outlet_bang(outlets[0]);}
+  \constructor () {
+    d0name = canvas_realizedollar(glist_getcanvas(canvas_getcurrent()),gensym("$0 propertybang"));
+    pd_bind((t_pd *)bself,d0name);
+  }
+};
+\end class {install("gf/propertybang",1,1); class_setpropertiesfn(canvas_class,propertybang_properties);}
+
 void startup_flow_objects2 () {
 	\startall
 }
