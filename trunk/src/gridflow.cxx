@@ -26,7 +26,9 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <sys/resource.h>
+#ifndef __WIN32__
+	#include <sys/resource.h>
+#endif
 #include <errno.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -542,6 +544,10 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }
 
+#ifdef __WIN32__
+#define lstat stat
+#endif
+
 std::vector<string> gf_data_path;
 string gf_find_file (string x) {
 	if (strchr(x.data(),'/')) return x;
@@ -661,7 +667,9 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete (BFObject *bself) {
 	try {
-	    delete bself->self;
+		#ifndef __WIN32__ /* mysterious crash on Win32 */
+			delete bself->self;
+		#endif
 	    bself->self = (FObject *)0xdeadbeef;
 	} catch (Barf &oozy) {oozy.error(bself);}
 }
@@ -985,7 +993,9 @@ extern "C" void gridflow_setup () {
 	add_to_path(dirresult);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_anything);
+	#ifndef __WIN32__
         srandom(rdtsc());
+    #endif
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
@@ -1023,7 +1033,9 @@ BUILTIN_SYMBOLS(FOO)
     } catch (Barf &oozy) {oozy.error(0);}
     signal(SIGSEGV,SIG_DFL);
     signal(SIGABRT,SIG_DFL);
-    signal(SIGBUS, SIG_DFL);
+    #ifndef __WIN32__
+		signal(SIGBUS, SIG_DFL);
+	#endif
     atexit(gridflow_unsetup);
     extern t_class *canvas_class;
     class_addmethod(canvas_class,(t_method)canvas_else,  gensym("else"),A_GIMME,0);
