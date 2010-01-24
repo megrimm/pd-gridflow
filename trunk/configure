@@ -26,7 +26,7 @@ $CFLAGS  = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 
-require "win32/process" if CONFIG["arch"] =~ /mingw/
+# require "win32/process" if CONFIG["arch"] =~ /mingw/
 LOG = File.open "./config.log", "w"
 
 Red   = "\e[0;1;31m"
@@ -240,6 +240,7 @@ Feature.add {
 	defines :GCC_VERSION => proc {
 		m = /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
 		m[1]
+		#"3.666"
 	}
 	# how does this handle two test procs again?
 	test proc {
@@ -350,11 +351,12 @@ Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
-		a=["-lSDL","-lpthread"]
-		a << "-lobjc" if OSX
+		#a=["-lSDL","-lpthread"]; a << "-lobjc" if OSX
+		a=["$$(sdl-config --libs)"]
 		a
 	}
-	uses_h ["SDL/SDL.h"]
+	#uses_h ["SDL/SDL.h"]
+	#uses_h ["$$(sdl-config --cflags)"]
 	uses_o ["src/sdl.o"]
 	test proc {
 		c_test "
