@@ -320,9 +320,6 @@ string ssprintf(const char *fmt, ...) {
 };
 \def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 \def void anything(...) {
-  #ifdef __WIN32__
-    post("win32!"); // crash mystérieux
-  #else
 	std::ostringstream text;
 	text << prefix->s_name << ":";
 	t_symbol *s = gensym("_0_list");
@@ -333,7 +330,6 @@ string ssprintf(const char *fmt, ...) {
 	else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
 	for (int i=1; i<argc; i++) {text << " " << argv[i];}
 	post("%s",text.str().data());
-  #endif
 }
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
