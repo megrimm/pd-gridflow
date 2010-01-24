@@ -169,7 +169,7 @@ def handle_def(line,in_class_block=false)
 	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
 	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "DEF_IN;"
+	Out.print "DEF_IN(self);"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
@@ -183,7 +183,7 @@ def handle_def(line,in_class_block=false)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print "); DEF_OUT;} #{m.rettype} "
+	Out.print "); DEF_OUT(self);} #{m.rettype} "
 	Out.print "#{classname}::" unless in_class_block
 	Out.print m.selector+"(VA"
 	#puts "m=#{m} n=#{n}"
@@ -199,7 +199,7 @@ def handle_constructor(line)
 	m = parse_methoddecl("void constructor"+line,"(.*)$")
 	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
 	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "DEF_IN;"
+	Out.print "DEF_IN(this);"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
@@ -211,7 +211,7 @@ def handle_constructor(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");DEF_OUT;}"
+	Out.print ");DEF_OUT(this);}"
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ") "+line[/\{.*/]

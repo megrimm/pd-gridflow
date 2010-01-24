@@ -56,8 +56,11 @@ typedef std::string string;
 #define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
 #define sys_gui(s) sys_gui(const_cast<char *>(s))
 
-//#define DEF_IN post("> self=%08x %s",long(self),methodspec);
+#ifdef DES_BUGS
+#define DEF_IN(self) post("> self=%08x %s",long(self),methodspec);
+#else
 #define DEF_IN
+#endif
 #define DEF_OUT
 
 #ifndef DESIREDATA
