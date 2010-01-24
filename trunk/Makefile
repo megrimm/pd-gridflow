@@ -2,22 +2,18 @@
 # $Id$
 
 include config.make
-COMMON_DEPS = config.make Makefile src/source_filter.rb
+# COMMON_DEPS = config.make Makefile src/source_filter.rb
 COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
-
-#--------#
 
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 
-# LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
-
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
-SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
+OS = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),darwin)
   CFLAGS += -mmacosx-version-min=10.4
@@ -28,6 +24,8 @@ else
   ifeq ($(OS),nt)
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
+    LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
+    CFLAGS += -DDES_BUGS
   else
     PDSUF = .pd_linux
     PDBUNDLEFLAGS = -shared -rdynamic
@@ -83,7 +81,7 @@ src/mmx.o: src/mmx.asm
 	nasm -f elf src/mmx.asm -o src/mmx.o
 
 $(PD_LIB): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) -o $@
+	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
