@@ -595,6 +595,9 @@ static void BFObject_loadbang (BFObject *bself) {
 }
 
 static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
+    #ifdef DES_BUGS
+	post("BFObject_anything bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
+    #endif
     try {
 	t_atom2 argv[ac+1];
 	for (int i=0; i<ac; i++) argv[i+1] = at[i];
@@ -654,6 +657,9 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	bself->self = 0;
 	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
 	bself->te_binbuf = 0; //HACK: supposed to be 0
+	#ifdef DES_BUGS
+		bself->magic = 0x66666600;
+	#endif
 	bself->self = alloc(bself,classsym,j,(t_atom2 *)argv);
 	while (j<argc) {
 		j++;
@@ -661,6 +667,9 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
 	}
+        #ifdef DES_BUGS
+	    post("BFObject_new..... bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
+        #endif
 	return bself;
     } catch (Barf &oozy) {oozy.error(classsym,ac,at); return 0;}
 }
@@ -1035,6 +1044,9 @@ BUILTIN_SYMBOLS(FOO)
     } catch (Barf &oozy) {oozy.error(0);}
     signal(SIGSEGV,SIG_DFL);
     signal(SIGABRT,SIG_DFL);
+    signal(SIGILL,SIG_DFL);
+    //signal(SIGIOT,SIG_DFL);
+    //signal(SIGQUIT,SIG_DFL);
     #ifndef __WIN32__
 		signal(SIGBUS, SIG_DFL);
 	#endif

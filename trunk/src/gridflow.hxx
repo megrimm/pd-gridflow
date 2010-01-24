@@ -778,6 +778,9 @@ struct GridOutlet : CObject {
 
 struct BFProxy;
 struct BFObject : t_object {
+#ifdef DES_BUGS
+	long magic;
+#endif
 	FObject *self;
 	string binbuf_string ();
 };
