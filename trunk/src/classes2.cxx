@@ -320,6 +320,9 @@ string ssprintf(const char *fmt, ...) {
 };
 \def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 \def void anything(...) {
+  #ifdef __WIN32__
+    post("win32!"); // crash mystérieux
+  #else
 	std::ostringstream text;
 	text << prefix->s_name << ":";
 	t_symbol *s = gensym("_0_list");
@@ -330,6 +333,7 @@ string ssprintf(const char *fmt, ...) {
 	else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
 	for (int i=1; i<argc; i++) {text << " " << argv[i];}
 	post("%s",text.str().data());
+  #endif
 }
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
@@ -532,7 +536,9 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 #define LPGETSTATUS 0x060b /* return LP_S(minor) */
 #define LPGETFLAGS 0x060e /* get status flags */
 
+#ifndef __WIN32__
 #include <sys/ioctl.h>
+#endif
 
 struct ParallelPort;
 void ParallelPort_call(ParallelPort *self);
@@ -545,6 +551,9 @@ void ParallelPort_call(ParallelPort *self);
 	t_clock *clock;
 	~ParallelPort () {if (clock) clock_free(clock); if (f) fclose(f);}
 	\constructor (string port, bool manually=0) {
+	  #ifdef __WIN32__
+	    RAISE("doesn't work on win32");
+	  #endif
 		f = fopen(port.data(),"r+");
 		if (!f) RAISE("open %s: %s",port.data(),strerror(errno));
 		fd = fileno(f);
@@ -726,7 +735,14 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 //#ifdef UNISTD
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/times.h>
+#ifdef __WIN32__
+	struct tms {long tms_utime,tms_stime;}; static void times(struct tms *) {} // dummy
+	#define HZ 31337
+	#define NOWIN RAISE("win32 unsupported");
+#else
+	#include <sys/times.h>
+	#define NOWIN
+#endif
 #include <sys/param.h>
 #include <unistd.h>
 //#endif
@@ -743,8 +759,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
-\def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
+\def 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
+\def 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
@@ -752,8 +768,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
-\def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
+\def 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
+\def 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
@@ -852,8 +868,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \def 0 list (...) {MOM;
 	if (argc!=2) RAISE("wrong number of args");
-	((t_text *)m)->te_xpix = atom_getfloatarg(0,argc,argv);
-	((t_text *)m)->te_ypix = atom_getfloatarg(1,argc,argv);
+	((t_text *)m)->te_xpix = atom_getintarg(0,argc,argv);
+	((t_text *)m)->te_ypix = atom_getintarg(1,argc,argv);
 	t_canvas *granny = m->gl_owner;
 	if (!granny) RAISE("no such canvas");
 #ifdef DESIRE
@@ -878,7 +894,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 float (float gop);
 };
-\def 0 float (float gop) {MOM; canvas_setgraph(m,gop,0);}
+\def 0 float (float gop) {MOM; canvas_setgraph(m,int(gop),0);}
 \end class {install("gf/canvas_setgop",1,0);}
 \class GFCanvasXID : FObject {
 	int n;
@@ -952,9 +968,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		if (k>=z && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
 	}
 }
-\end class {
-	install("gf/canvas_loadbang",1,0);
-};
+\end class {install("gf/canvas_loadbang",1,0);};
 
 \class GFLOL : FObject {
 	int n;
@@ -1071,7 +1085,7 @@ static int text_chou_de_vis(t_text *x, t_glist *glist) {
 static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	text_widgetbehavior.w_visfn(o,can,vis);
 	//if (vis) return; // if you want to see #X text inlets uncomment this line
-      t_rtext *y = glist_findrtext(can,(t_text *)o);
+	t_rtext *y = glist_findrtext(can,(t_text *)o);
 	if (text_chou_de_vis((t_text *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
 }
 #endif
@@ -1119,21 +1133,23 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 \class GFStringLessThan : FObject {
 	t_symbol *than;
 	\constructor (t_symbol *than=&s_) {this->than=than;}
-	\decl 0 symbol (t_symbol *it);
-	\decl 1 symbol (t_symbol *than);
+	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
+	\decl 1 symbol (t_symbol *than) {this->than=than;}
 };
-\def 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
-\def 1 symbol (t_symbol *than) {this->than=than;}
 \end class {install("gf/string_<",2,1);}
 
 \class GFGetPid : FObject {
+	static t_symbol *sym;
 	\constructor () {}
-	\decl 0 bang ();
+	\decl 0 bang () {
+      #ifdef __WIN32__
+        RAISE("getppid unsupported on win32");
+      #else
+	    outlet_float(outlets[1],getppid());
+      #endif
+      outlet_float(outlets[0],getpid());
+	}
 };
-\def 0 bang () {
-	outlet_float(outlets[1],getppid());
-	outlet_float(outlets[0],getpid());
-}
 \end class {install("gf/getpid",1,2);}
 
 void startup_flow_objects2 () {
