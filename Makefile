@@ -13,7 +13,7 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -g -fPIC -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
-OS = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
+OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),darwin)
   CFLAGS += -mmacosx-version-min=10.4
@@ -25,7 +25,7 @@ else
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
     LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
-    CFLAGS += -DDES_BUGS
+    CFLAGS += -DDES_BUGS -mms-bitfields
   else
     PDSUF = .pd_linux
     PDBUNDLEFLAGS = -shared -rdynamic
@@ -96,9 +96,14 @@ DEPRECATED = motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out
 
-aliases:: deprecated/@fade.pd deprecated/@!.pd doc/flow_classes/@complex_sq-help.pd \
-  doc/flow_classes/inv+-help.pd  abstractions/inv+.pd \
-  doc/flow_classes/inv\*-help.pd abstractions/inv\*.pd
+ALIASES += deprecated/@fade.pd deprecated/@!.pd doc/flow_classes/@complex_sq-help.pd
+ALIASES += doc/flow_classes/inv+-help.pd  abstractions/inv+.pd
+ifeq ($(OS),nt)
+else
+ALIASES += doc/flow_classes/inv\*-help.pd abstractions/inv\*.pd
+endif
+
+aliases:: $(ALIASES)
 
 deprecated/@fade.pd: abstractions/\#fade.pd
 	for z in $(DEPRECATED); do cp abstractions/\#$$z.pd deprecated/\@$$z.pd; done
