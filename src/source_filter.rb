@@ -169,6 +169,7 @@ def handle_def(line,in_class_block=false)
 	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
 	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
+	Out.print "DEF_IN;"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
@@ -182,14 +183,14 @@ def handle_def(line,in_class_block=false)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");} #{m.rettype} "
+	Out.print "); DEF_OUT;} #{m.rettype} "
 	Out.print "#{classname}::" unless in_class_block
 	Out.print m.selector+"(VA"
 	#puts "m=#{m} n=#{n}"
 	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
-	Out.print "/*in_class_block=#{in_class_block.inspect}*/"
+	#Out.print "/*in_class_block=#{in_class_block.inspect}*/"
 end
 
 def handle_constructor(line)
