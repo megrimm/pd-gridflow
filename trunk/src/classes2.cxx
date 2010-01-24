@@ -574,6 +574,7 @@ void ParallelPort_call(ParallelPort *self);
 }
 void ParallelPort_call(ParallelPort *self) {self->call();}
 void ParallelPort::call() {
+#ifndef __WIN32__
 	int flags;
 	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
 	if (this->flags!=flags) outlet_float(outlets[2],flags);
@@ -583,6 +584,7 @@ void ParallelPort::call() {
 	if (this->status!=status) outlet_float(outlets[1],status);
 	this->status = status;
 	if (clock) clock_delay(clock,2000);
+#endif
 }
 \def 0 bang () {status = flags = 0xdeadbeef; call();}
 //outlet 0 reserved (future use)
