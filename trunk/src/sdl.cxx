@@ -56,6 +56,7 @@ static void KEYS_ARE (int i, const char *s__) {
 static void build_keyboard () {
 	KEYS_ARE(8,"BackSpace Tab");
 	KEYS_ARE(13,"Return");
+	KEYS_ARE(19,"Pause");
 	KEYS_ARE(27,"Escape");
 	KEYS_ARE(32,"space exclam quotedbl numbersign dollar percent ampersand apostrophe");
 	KEYS_ARE(40,"parenleft parenright asterisk plus comma minus period slash");
@@ -64,7 +65,7 @@ static void build_keyboard () {
 	//KEYS_ARE(65,"A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
 	KEYS_ARE(91,"bracketleft backslash bracketright asciicircum underscore grave quoteleft");
 	KEYS_ARE(97,"a b c d e f g h i j k l m n o p q r s t u v w x y z");
-	//SDLK_DELETE = 127
+	KEYS_ARE(127,"Delete");
 	KEYS_ARE(256,"KP_0 KP_1 KP_2 KP_3 KP_4 KP_5 KP_6 KP_7 KP_8 KP_9");
 	KEYS_ARE(266,"KP_Decimal KP_Divide KP_Multiply KP_Subtract KP_Add KP_Enter KP_Equal");
 	KEYS_ARE(273,"KP_Up KP_Down KP_Right KP_Left KP_Insert KP_Home KP_End KP_Prior KP_Next");
@@ -72,6 +73,8 @@ static void build_keyboard () {
 	KEYS_ARE(300,"Num_Lock Caps_Lock Scroll_Lock");
 	KEYS_ARE(303,"Shift_R Shift_L Control_R Control_L Alt_R Alt_L Meta_L Meta_R");
 	KEYS_ARE(311,"Super_L Super_R Mode_switch Multi_key");
+	KEYS_ARE(316,"Print"); // win32
+	KEYS_ARE(319,"Multi_key"); // win32
 }
 
 static void report_pointer () {
@@ -91,6 +94,7 @@ static void HandleEvent () {
 			int mod = event.key.keysym.mod;
 			if (event.type==SDL_KEYDOWN && (key==SDLK_F11 || key==SDLK_ESCAPE || key=='f')) {
 				full_screen = !full_screen;
+				post("full_screen=%d",full_screen);
 				SDL_WM_ToggleFullScreen(screen);
 				break;
 			}
@@ -102,9 +106,8 @@ static void HandleEvent () {
 			SETFLOAT(at+1,mousex);
 			SETFLOAT(at+2,mousem);
 			int k = event.key.keysym.sym;
-			if (k>=0 && k<SDLK_LAST)
-				SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
-			else RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
+			if (k<0 || k>=SDLK_LAST) RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
+			SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
 			outlet_anything(instance->outlets[0],sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
