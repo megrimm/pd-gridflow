@@ -131,9 +131,9 @@ static void HandleEvent () {
 	\decl 0 hidecursor ();
 	\decl 0 title (string title);
 	\constructor (t_symbol *mode) {
-		dim=0;screen=0;
 		if (in_use) RAISE("only one FormatSDL object at a time; sorry");
 		in_use=true;
+		dim=0;screen=0;
 		if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
 		atexit(SDL_Quit);
 		resize_window(320,240);
