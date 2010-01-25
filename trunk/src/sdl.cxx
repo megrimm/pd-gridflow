@@ -67,7 +67,7 @@ static void build_keyboard () {
 	KEYS_ARE(97,"a b c d e f g h i j k l m n o p q r s t u v w x y z");
 	KEYS_ARE(127,"Delete");
 	KEYS_ARE(256,"KP_0 KP_1 KP_2 KP_3 KP_4 KP_5 KP_6 KP_7 KP_8 KP_9");
-	KEYS_ARE(266,"KP_Decimal KP_Divide KP_Multiply KP_Subtract KP_Add KP_Enter KP_Equal");
+	KEYS_ARE(266,"KP_Delete KP_Divide KP_Multiply KP_Subtract KP_Add KP_Enter KP_Equal");
 	KEYS_ARE(273,"KP_Up KP_Down KP_Right KP_Left KP_Insert KP_Home KP_End KP_Prior KP_Next");
 	KEYS_ARE(282,"F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13 F14 F15");
 	KEYS_ARE(300,"Num_Lock Caps_Lock Scroll_Lock");
