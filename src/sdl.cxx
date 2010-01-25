@@ -101,7 +101,10 @@ static void HandleEvent () {
 			SETFLOAT(at+0,mousey);
 			SETFLOAT(at+1,mousex);
 			SETFLOAT(at+2,mousem);
-			SETSYMBOL(at+3,keyboard[event.key.keysym.sym]);
+			int k = event.key.keysym.sym;
+			if (k>=0 && k<SDLK_LAST)
+				SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
+			else RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
 			outlet_anything(instance->outlets[0],sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
@@ -171,8 +174,7 @@ void FormatSDL_call(FormatSDL *self) {self->call();}
 void FormatSDL::resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
 	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
-	if (!screen)
-		RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
+	if (!screen) RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
 }
 
 GRID_INLET(0) {
