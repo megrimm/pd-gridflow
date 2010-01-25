@@ -676,10 +676,8 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete (BFObject *bself) {
 	try {
-		#ifndef __WIN32__ /* mysterious crash on Win32 */
-			delete bself->self;
-		#endif
-	    bself->self = (FObject *)0xdeadbeef;
+	     delete bself->self;
+	     bself->self = (FObject *)0xdeadbeef;
 	} catch (Barf &oozy) {oozy.error(bself);}
 }
 
