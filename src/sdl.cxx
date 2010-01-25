@@ -30,15 +30,19 @@
 #include <signal.h>
 #include <SDL/SDL.h>
 
+#define pd_anything pd_typedmess
+
 struct FormatSDL;
 void FormatSDL_call(FormatSDL *self);
-static bool in_use = false;
+static int in_use = 0;
 static bool full_screen = false;
 static int mousex,mousey,mousem;
-SDL_Surface *screen;
-FObject *instance;
+static P<Dim> dim;
+static t_class *sdl_global_class; /* this pointer is also a dummy pd object */
 
-static t_symbol *keyboard[SDLK_LAST];
+SDL_Surface *screen;
+
+static t_symbol *keyboard[SDLK_LAST+1];
 
 static void KEYS_ARE (int i, const char *s__) {
 	char *s_ = strdup(s__);
@@ -82,7 +86,14 @@ static void report_pointer () {
 	SETFLOAT(a+0,mousey);
 	SETFLOAT(a+1,mousex);
 	SETFLOAT(a+2,mousem);
-	outlet_anything(instance->outlets[0],gensym("position"),COUNT(a),a);
+	post("#sdl %p",gensym("#sdl")->s_thing);
+	pd_anything(gensym("#sdl")->s_thing,gensym("position"),COUNT(a),a);
+}
+
+void resize_window (int sx, int sy) {
+	dim = new Dim(sy,sx,3);
+	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
+	if (!screen) RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
 }
 
 static void HandleEvent () {
@@ -108,7 +119,8 @@ static void HandleEvent () {
 			int k = event.key.keysym.sym;
 			if (k<0 || k>=SDLK_LAST) RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
 			SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
-			outlet_anything(instance->outlets[0],sel,4,at);
+			post("#sdl %p",gensym("#sdl")->s_thing);
+			pd_anything(gensym("#sdl")->s_thing,sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
 			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
@@ -127,22 +139,34 @@ static void HandleEvent () {
 	}
 }
 
+static t_clock *cloque;
+
+static void start () {
+	screen=0;
+	if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
+	atexit(SDL_Quit);
+	resize_window(320,240);
+	cloque = clock_new(&sdl_global_class,(t_method)FormatSDL_call);
+	clock_delay(cloque,0);
+}
+static void stop () {
+	clock_unset(cloque);
+	clock_free(cloque);
+	SDL_Quit();
+}
 \class FormatSDL : Format {
 	P<BitPacking> bit_packing;
-	P<Dim> dim;
-	t_clock *clock;
-	void resize_window (int sx, int sy);
 	void call ();
 	\decl 0 setcursor (int shape);
 	\decl 0 hidecursor ();
 	\decl 0 title (string title);
+	\decl 0 position   (...) {outlet_anything(outlets[0],gensym("position"),  argc,argv);}
+	\decl 0 keypress   (...) {outlet_anything(outlets[0],gensym("keypress"),  argc,argv);}
+	\decl 0 keyrelease (...) {outlet_anything(outlets[0],gensym("keyrelease"),argc,argv);}
 	\constructor (t_symbol *mode) {
-		if (in_use) RAISE("only one FormatSDL object at a time; sorry");
-		in_use=true;
-		dim=0;screen=0;
-		if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
-		atexit(SDL_Quit);
-		resize_window(320,240);
+		pd_bind((t_pd *)bself,gensym("#sdl"));
+		if (!in_use) start();
+		in_use++;
 		SDL_PixelFormat *f = screen->format;
 		uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
 		switch (f->BytesPerPixel) {
@@ -152,39 +176,22 @@ static void HandleEvent () {
 			break;
 		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 		}
-		instance=this;
-		clock = clock_new(this,(t_method)FormatSDL_call);
-		clock_delay(clock,0);
 		_0_title(0,0,string("GridFlow SDL"));
 	}
 	\grin 0 int
 	~FormatSDL () {
-		clock_unset(clock);
-		clock_free(clock);
-		SDL_Quit();
-		instance=0;
-		in_use=false;
+		pd_unbind((t_pd *)bself,gensym("#sdl"));
+		if (!--in_use) stop();
 	}
 };
 
-\def 0 title (string title) {
-	SDL_WM_SetCaption(title.data(),title.data());
-}
-
-void FormatSDL::call() {HandleEvent(); clock_delay(clock,20);}
+\def 0 title (string title) {SDL_WM_SetCaption(title.data(),title.data());}
+void FormatSDL::call() {HandleEvent(); clock_delay(cloque,20);}
 void FormatSDL_call(FormatSDL *self) {self->call();}
 
-void FormatSDL::resize_window (int sx, int sy) {
-	dim = new Dim(sy,sx,3);
-	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
-	if (!screen) RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
-}
-
 GRID_INLET(0) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
+	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3) RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 	int sx = in->dim->get(1), osx = dim->get(1);
 	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_chunk(1);
@@ -211,4 +218,5 @@ GRID_INLET(0) {
 void startup_sdl () {
 	\startall
 	build_keyboard();
+	sdl_global_class = class_new(gensym("#io.sdl.global"),0,0,sizeof(t_pd),CLASS_DEFAULT,A_NULL);
 }
