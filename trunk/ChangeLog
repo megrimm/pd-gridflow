@@ -5,7 +5,7 @@ version 0.9.7 (2010.01...):
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
- * added [gf/getpid] [#make_arrow] [doc_same]
+ * added [gf/getpid] [#make_arrow] [doc_same] [many]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
  * quicktimehw: use normal 'get' method
@@ -19,10 +19,11 @@ version 0.9.7 (2010.01...):
  * [#out quartz]: added methods: title, move, set_geometry
    (compatible with [#io.x11])
  * fixed help file window resize (osx)
-
-handle_def can delay definition of the wrapper until 
-
-
+ * got gridflow menuitems to work with pd devel 0.43
+ * support multiple [#out sdl] objects (acting like a single object)
+ * fixed many Win32-specific bugs
+ * introduced Win32 precompiled distribution
+ 
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
@@ -60,6 +61,8 @@ version 0.9.6 (2009.11.05):
  * removed [send39] : GridFlow requires PureData 0.40 these days.
  * added GridFlow About in Help menu
  * GridFlow menu items available in all windows instead of just the main
+ * introduced OSX-PPC precompiled distribution
+ * introduced Ubuntu 9.10 precompiled distribution
 
 version 0.9.5 (2009.10.18):
 
@@ -84,10 +87,11 @@ version 0.9.5 (2009.10.18):
    ulimit -s unlimited or somesuch
  * added [# c2p] and [# p2c] (polar transforms)
  * added new examples: polar.pd, radial_blur.pd
- * fixed more OSX bugs
+ * fixed more OSX-specific bugs
  * fixed [#grade] bug (thanks to mescalinum)
  * removed support for gem 0.89 and some 0.90 versions
  * renamed [#labeling] to [#labelling] (kept an alias)
+ * introduced OSX-Intel precompiled distribution
 
 version 0.9.4 (2008.07.04):
 
