@@ -1,4 +1,4 @@
-#N canvas 648 0 632 642 10;
+#N canvas 633 21 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 3 618 doc_c 0..;
 #X msg 40 648 open x11;
@@ -60,10 +60,6 @@ simplify matters \; this doesn't reduce flexibility).;
 #X obj 14 1232 doc_oo 0;
 #X obj 97 1232 doc_m o0 grid;
 #X text 232 1232 grid(rows columns rgb);
-#X text 232 1254 resizes the window to the size of the grid \; encodes
-that grid in the display's pixel format \; also displays it if autodraw
-&gt \; 0 the values must be in range 0-255 \, or else they will be
-"wrapped".;
 #X obj 97 1533 doc_m o0 position;
 #X text 232 1533 \$1=y \$2=x \$3=buttons;
 #X text 232 1555 This is emitted every time the cursor moves inside
@@ -93,13 +89,6 @@ whether the result is odd.;
 #X obj 97 1463 doc_m o0 keyrelease;
 #X text 232 1328 \$1=y \$2=x \$3=buttons \$4=keyname;
 #X text 232 1463 \$1=y \$2=x \$3=buttons \$4=keyname;
-#X text 232 1350 Similar to position above \, but this is emitted when
-a keyboard key is pressed while this format handler's window is active.
-Keynames follow the X11 standard \, similarly to PureData's [keyname]
-object. The only exception is that keynames that are digits get prefixed
-by a capital D so that they don't get mistaken for actual numbers.
-NOTE: This message form may become longer in the future \, but the
-already defined parts will stay the same.;
 #X text 232 1485 Same as keypress but when a key gets released instead.
 NOTE: This message form may become longer in the future \, but the
 already defined parts will stay the same.;
@@ -127,6 +116,17 @@ doesn't have any borders \, for example. however \, this is "dangerous"
 \, as you can lock yourself out of your computer. On Linux you can
 escape that using Ctrl+Alt+F1 or similar. Another problem is that it
 prevents the window from getting 'keypress' 'keyrelease' events.;
+#X text 232 1350 This is emitted when a keyboard key is pressed while
+this format handler's window is active. Keynames follow the X11 standard
+\, similarly to PureData's [keyname] object. The only exception is
+that keynames that are digits get prefixed by a capital D so that they
+don't get mistaken for actual numbers. NOTE: This message form may
+become longer in the future \, but the already defined parts will stay
+the same.;
+#X text 232 1254 Resizes the window to the size of the grid \; Encodes
+that grid in the display's pixel format \; Also displays it if autodraw
+is greater than 0 \; The values must be in range 0-255 \, or else they
+will be "wrapped".;
 #X connect 16 1 17 0;
 #X connect 18 1 19 0;
 #X connect 20 1 21 0;
@@ -135,25 +135,25 @@ prevents the window from getting 'keypress' 'keyrelease' events.;
 #X connect 26 1 27 0;
 #X connect 26 1 28 0;
 #X connect 35 1 36 0;
-#X connect 35 1 37 0;
-#X connect 38 1 39 0;
-#X connect 38 1 40 0;
-#X connect 38 1 41 0;
-#X connect 38 1 42 0;
-#X connect 38 1 43 0;
-#X connect 38 1 44 0;
-#X connect 38 1 45 0;
-#X connect 38 1 46 0;
-#X connect 38 1 47 0;
-#X connect 38 1 48 0;
-#X connect 38 1 49 0;
-#X connect 38 1 50 0;
-#X connect 38 1 51 0;
-#X connect 38 1 52 0;
-#X connect 38 1 53 0;
-#X connect 38 1 54 0;
-#X connect 38 1 55 0;
+#X connect 35 1 73 0;
+#X connect 37 1 38 0;
+#X connect 37 1 39 0;
+#X connect 37 1 40 0;
+#X connect 37 1 41 0;
+#X connect 37 1 42 0;
+#X connect 37 1 43 0;
+#X connect 37 1 44 0;
+#X connect 37 1 45 0;
+#X connect 37 1 46 0;
+#X connect 37 1 47 0;
+#X connect 37 1 48 0;
+#X connect 37 1 49 0;
+#X connect 37 1 50 0;
+#X connect 37 1 51 0;
+#X connect 37 1 52 0;
+#X connect 37 1 53 0;
+#X connect 37 1 54 0;
+#X connect 55 1 57 0;
+#X connect 55 1 72 0;
 #X connect 56 1 58 0;
-#X connect 56 1 60 0;
-#X connect 57 1 59 0;
-#X connect 57 1 61 0;
+#X connect 56 1 59 0;
