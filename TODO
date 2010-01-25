@@ -30,6 +30,7 @@ $Id$
 [ ] videodev,quicktime,etc: height,width vs size
 
 Later
+[ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
 [ ] cellular_1d.pd: should get a circular buffer and a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
