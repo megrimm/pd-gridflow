@@ -1166,6 +1166,17 @@ static void propertybang_properties(t_gobj *z, t_glist *owner) {
 };
 \end class {install("gf/propertybang",1,1); class_setpropertiesfn(canvas_class,propertybang_properties);}
 
+/* hack because hexloader is a myth */
+\class InvTimes : FObject {
+	float b;
+	\constructor (float b=1) {this->b=b;}
+	\decl 0 float (float a)            {                 outlet_float(outlets[0],b/a);}
+	\decl 0 list    (float a, float b) {this->b=b; outlet_float(outlets[0],b/a);}
+	\decl 1 float (float b) {this->b=b;}
+	\decl 1 list    (float b) {this->b=b;}
+};
+\end class {install("inv*",2,1);}
+
 void startup_flow_objects2 () {
 	\startall
 }
