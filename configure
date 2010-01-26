@@ -440,8 +440,17 @@ Feature.add {
 		if (!png_check_sig) return 1;
 		return 0;}`}}
 Feature.add {
+	tag :libv4l
+	name "Video4linux Driver Interface Library"
+	uses_h ["libv4l2.h"]
+	uses_o ["src/libv4l.o"]
+	test proc {
+		c_test "
+		#include <libv4l2.h>
+		int main () {return v4l2_open==0;}"}}
+Feature.add {
 	tag :videodev
-	name "Video4linux Digitizer Driver Interface"
+	name "Video4linux Driver Interface Version 1 (kernel)"
 	uses_h ["linux/videodev.h"]
 	uses_o ["src/videodev.o"]
 	test proc {
