@@ -881,7 +881,7 @@ extern FClass ciFObject, ciFormat;
 static inline int vasprintf(char **buf, const char *s, va_list args) {
 	int n = vsnprintf(0,0,s,args);
 	*buf = (char *)malloc(n+1);
-	vsnprintf(*buf,n,s,args);
+	vsnprintf(*buf,n+1,s,args);
 	return n;
 }
 #endif
