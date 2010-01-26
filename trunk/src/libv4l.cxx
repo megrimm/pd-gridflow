@@ -45,25 +45,12 @@ static bool debug=1;
 #define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
 #define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
 static string flags_to_s(int value, int n, const char **table) {
-	char foo[256];
-	*foo = 0;
-	for(int i=0; i<n; i++) {
-		if ((value & (1<<i)) == 0) continue;
-		if (*foo) strcat(foo," | ");
-		strcat(foo,table[i]);
-	}
-	if (!*foo) strcat(foo,"0");
-	return string(foo);
-}
+	std::ostringstream buf; buf << "("; bool empty=true;
+	for(int i=0; i<n; i++) if ((value & (1<<i)) != 0) {buf << (empty ? "(" : " ") << table[i];}
+	buf << ")"; return buf.str();}
 static string choice_to_s(int value, int n, const char **table) {
-	if (value < 0 || value >= n) {
-		char foo[64];
-		sprintf(foo,"(Unknown #%d)",value);
-		return string(foo);
-	} else {
-		return string(table[value]);
-	}
-}
+	if (value < 0 || value >= n) {std::ostringstream buf; buf << "(Unknown #" << value << ")"; return buf.str();}
+	else	return string(table[value]);}
 static void gfpost(v4l2_input *self) {std::ostringstream buf; buf << "[v4l2_input] ";
 	WH(index,"%u");
 	WH(name,"\"%.32s\"");
@@ -101,8 +88,7 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	WH(fmt.pix.bytesperline,"0x%08x");
 	WH(fmt.pix.sizeimage,"0x%08x");
 	WH(fmt.pix.colorspace,"0x%08x");
-	WH(fmt.pix.priv,"0x%08x");
-}
+	WH(fmt.pix.priv,"0x%08x");}
 
 /* **************************************************************** */
 
@@ -112,18 +98,14 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	int current_channel, current_tuner;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	bool has_frequency, has_tuner, has_norm;
 	int fd;
-    v4l2_format              fmt;
-    v4l2_buffer              buf;
-    v4l2_requestbuffers      req;
+	v4l2_format         fmt;
+	v4l2_buffer         buf;
+	v4l2_requestbuffers req;
 
 	\constructor (string mode, string filename) {
 		queuesize=0; queuemax=2; next_frame=0; bit_packing=0; dim=0;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
-		has_frequency=false;
-		has_tuner=false;
-		has_norm=false;
 		image=0;
 		fd = v4l2_open(filename.data(),0);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
@@ -153,7 +135,6 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	\attr uint16 colour();
 	\attr uint16 contrast();
 
-	\attr uint16 framerate();
 	\attr uint16 white_mode(); /* 0..1 */
 	\attr uint16 white_red();
 	\attr uint16 white_blue();
@@ -174,10 +155,6 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
   (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 \def 0 get (t_symbol *s=0) {
-	// this is abnormal for a get-function
-	if (s==gensym("frequency") && !has_frequency  ) return;
-	if (s==gensym("tuner")     && !has_tuner      ) return;
-	if (s==gensym("norm")      && !has_norm       ) return;
 	FObject::_0_get(argc,argv,s);
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
@@ -202,15 +179,9 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	if (debug) gfpost(&fmt);
 }
 
-void FormatLibV4L::dealloc_image () {
-	if (!image) return;
-	munmap(image, vmbuf.size);
-	image=0;
-}
-
+void FormatLibV4L::dealloc_image () {if (image) {munmap(image,vmbuf.size); image=0;}}
 void FormatLibV4L::alloc_image () {
-	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-	//gfpost(&vmbuf);
+	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf); //gfpost(&vmbuf);
 	//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
 	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 	if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
@@ -238,8 +209,8 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 	int sx = dim->get(1)>>downscale;
 	int bs = dim->prod(1)>>downscale;
 	uint8 b2[bs];
-	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
-	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
+	post("sy=%d sx=%d bs=%d",sy,sx,bs);
+	post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
 	if (vp.palette==V4L2_PIX_FMT_YVU420) {
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
 		if (cs=="y") {
@@ -363,10 +334,8 @@ GRID_INLET(0) {
 	v4l2_tuner vtuner;
 	vtuner.index = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOC_G_TUNER, &vtuner)) RAISE("no tuner #%d", value);
-	vtuner.mode = VIDEO_MODE_NTSC; //???
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOC_S_TUNER, &vtuner);
-	has_norm = (vtuner.mode<=3);
 	int meuh;
 	has_frequency = (v4l2_ioctl(fd, VIDIOC_G_FREQUENCY, &meuh)>=0);
 }
@@ -375,25 +344,21 @@ GRID_INLET(0) {
 #define warn(fmt,stuff...) post("warning: " fmt,stuff)
 
 \def 0 channel (int value) {
-	v4l2_channel vchan;
-	vchan.channel = value;
-	current_channel = value;
+	v4l2_input vchan;
+	vchan.index = current_channel = value;
 	if (0> IOCTL(fd, VIDIOC_G_INPUT, &vchan)) warn("no channel #%d", value);
 	//gfpost(&vchan);
 	WIOCTL(fd, VIDIOC_S_INPUT, &vchan);
-	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
-	has_tuner = (vcaps.type & VID_TYPE_TUNER && vchan.tuners > 1);
 }
 \def int channel () {return current_channel;}
 
 \def 0 transfer (string sym, int queuemax=2) {
-	if (sym=="mmap") {
-		dealloc_image();
-		alloc_image();
-		queuemax=min(8,min(queuemax,vmbuf.frames));
-		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
-		this->queuemax=queuemax;
-	} else RAISE("don't know that transfer mode");
+	if (sym!="mmap") RAISE("don't know that transfer mode");
+	dealloc_image();
+	alloc_image();
+	queuemax=min(8,min(queuemax,vmbuf.frames));
+	post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
+	this->queuemax=queuemax;
 }
 
 \def uint16 brightness ()                 {return v4l2_get_control(fd,V4L2_CID_BRIGHTNESS);}
@@ -434,17 +399,6 @@ GRID_INLET(0) {
 	if (palette==V4L2_PIX_FMT_RGB24) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
 	    bit_packing = new BitPacking(is_le(),3,3,masks);} else this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
-}
-
-\def uint16 framerate() {
-	struct video_window vwin; WIOCTL(fd, VIDIOCGWIN, &vwin);
-	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
-}
-\def 0 framerate(uint16 framerate) {
-	struct video_window vwin; WIOCTL(fd, VIDIOCGWIN, &vwin);
-	vwin.flags &= ~PWC_FPS_FRMASK;
-	vwin.flags |= (framerate << PWC_FPS_SHIFT) & PWC_FPS_FRMASK;
-	WIOCTL(fd, VIDIOCSWIN, &vwin);
 }
 
 \def int auto_gain()        {return v4l2_get_control(fd,V4L2_CID_AUTOGAIN);}
