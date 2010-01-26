@@ -133,7 +133,8 @@ class Feature
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
 		uses_h.each {|h|
-			find_h h or
+			h[0..0] == "$" or
+                find_h h or
 				/framework/ =~ (uses_so||[]).join(" ") or
 				raise "where is #{h} ?"
 		} if uses_h
@@ -351,11 +352,11 @@ Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
-		#a=["-lSDL","-lpthread"]; a << "-lobjc" if OSX
-		a=["$$(sdl-config --libs)"]
+		a=["-lSDL","-lpthread"]; a << "-lobjc" if OSX
+		#a=["$$(sdl-config --libs)"]
 		a
 	}
-	#uses_h ["SDL/SDL.h"]
+	uses_h ["SDL/SDL.h"]
 	#uses_h ["$$(sdl-config --cflags)"]
 	uses_o ["src/sdl.o"]
 	test proc {
