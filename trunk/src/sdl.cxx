@@ -86,7 +86,6 @@ static void report_pointer () {
 	SETFLOAT(a+0,mousey);
 	SETFLOAT(a+1,mousex);
 	SETFLOAT(a+2,mousem);
-	post("#sdl %p",gensym("#sdl")->s_thing);
 	pd_anything(gensym("#sdl")->s_thing,gensym("position"),COUNT(a),a);
 }
 
@@ -105,7 +104,6 @@ static void HandleEvent () {
 			int mod = event.key.keysym.mod;
 			if (event.type==SDL_KEYDOWN && (key==SDLK_F11 || key==SDLK_ESCAPE || key=='f')) {
 				full_screen = !full_screen;
-				post("full_screen=%d",full_screen);
 				SDL_WM_ToggleFullScreen(screen);
 				break;
 			}
