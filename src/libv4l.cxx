@@ -44,13 +44,6 @@ static bool debug=1;
 #define WHYX(_name_,_fieldy_,_fieldx_) oprintf(buf, "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
 #define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
 #define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
-/*
-static const char *video_mode_choice[] = {
-	OPT( 0,PAL,  "pal")
-	OPT( 1,NTSC, "ntsc")
-	OPT( 2,SECAM,"secam")
-	OPT( 3,AUTO, "auto")
-};*/
 static string flags_to_s(int value, int n, const char **table) {
 	char foo[256];
 	*foo = 0;
@@ -150,7 +143,6 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 
 	\attr int channel();
 	\attr int tuner();
-	//\attr int norm();
 	\decl 0 size (int sy, int sx);
 	\decl 0 transfer (string sym, int queuemax=2);
 
@@ -160,17 +152,12 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	\attr uint16 hue();
 	\attr uint16 colour();
 	\attr uint16 contrast();
-	\attr uint16 whiteness();
 
 	\attr uint16 framerate();
 	\attr uint16 white_mode(); /* 0..1 */
 	\attr uint16 white_red();
 	\attr uint16 white_blue();
-	\attr uint16 white_speed();
-	\attr uint16 white_delay();
 	\attr int    auto_gain();
-	\attr int    noise_reduction(); /* 0..3 */
-	\attr int    compression();     /* 0..3 */
 	\attr t_symbol *name;
 
 	\decl 0 get (t_symbol *s=0);
@@ -253,7 +240,7 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 	uint8 b2[bs];
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
 	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
-	if (vp.palette==VIDEO_PALETTE_YUV420P) {
+	if (vp.palette==V4L2_PIX_FMT_YVU420) {
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
 		if (cs=="y") {
 			out.send(sy*sx,buf);
@@ -352,22 +339,6 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 // U = - 38*R -  74*G + 112*B
 // V =  112*R -  94*G -  18*B
 
-// strange that read2 is not used and read3 is used instead
-static int read2(int fd, uint8 *image, int n) {
-	int r=0;
-	while (n>0) {
-		int rr=read(fd,image,n);
-		if (rr<0) return rr; else {r+=rr; image+=rr; n-=rr;}
-	}
-	return r;
-}
-
-static int read3(int fd, uint8 *image, int n) {
-	int r=read(fd,image,n);
-	if (r<0) return r;
-	return n;
-}
-
 \def 0 bang () {
 	if (!image) alloc_image();
 	while(queuesize<queuemax) frame_ask();
@@ -387,21 +358,6 @@ GRID_INLET(0) {
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
-
-/*\def 0 norm (int value) {
-	v4l2_tuner vtuner;
-	vtuner.index = current_tuner;
-	if (value<0 || value>3) RAISE("norm must be in range 0..3");
-	if (0> IOCTL(fd, VIDIOC_G_TUNER, &vtuner)) {post("no tuner #%d", value); return;}
-	vtuner.mode = value; gfpost(&vtuner); WIOCTL(fd, VIDIOC_S_TUNER, &vtuner);
-}*/
-
-/*\def int norm () {
-	v4l2_tuner vtuner;
-	vtuner.index = current_tuner;
-	if (0> IOCTL(fd, VIDIOC_G_TUNER, &vtuner)) {post("no tuner #%d", current_tuner); return -1;}
-	return vtuner.mode;
-}*/
 
 \def 0 tuner (int value) {
 	v4l2_tuner vtuner;
@@ -467,7 +423,7 @@ GRID_INLET(0) {
 	if (c=="magic") {} else
 	   RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
 	WIOCTL(fd, VIDIOCGPICT, &vp);
-	int palette = (palettes&(1<<V4L2_PIX_FMT_RGB24 )) ? V4L2_PIX_FMT_RGB24 : VIDEO_PALETTE_YUV420P;
+	int palette = (palettes&(1<<V4L2_PIX_FMT_RGB24 )) ? V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_YVU420;
 	vp.palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
@@ -491,38 +447,16 @@ GRID_INLET(0) {
 	WIOCTL(fd, VIDIOCSWIN, &vwin);
 }
 
-\def int auto_gain() {int auto_gain=0; WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
-\def 0   auto_gain   (int auto_gain)  {WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
+\def int auto_gain()        {return v4l2_get_control(fd,V4L2_CID_AUTOGAIN);}
+\def 0   auto_gain (int auto_gain) {v4l2_set_control(fd,V4L2_CID_AUTOGAIN,auto_gain);}
 
-\def uint16 white_mode () {
-	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
-	if (pwcwb.mode==PWC_WB_AUTO)   return 0;
-	if (pwcwb.mode==PWC_WB_MANUAL) return 1;
-	return 2;
-}
-\def 0 white_mode (uint16 white_mode) {
-	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
-	if      (white_mode==0) pwcwb.mode = PWC_WB_AUTO;
-	else if (white_mode==1) pwcwb.mode = PWC_WB_MANUAL;
-	else {error("unknown mode number %d", white_mode); return;}
-	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+\def uint16 white_mode () {return v4l2_get_control(fd,V4L2_CID_AUTO_WHITE_BALANCE);}
+\def 0 white_mode (uint16 white_mode) {v4l2_set_control(fd,V4L2_CID_AUTO_WHITE_BALANCE,white_mode);}
 
 \def uint16 white_red()        {return v4l2_get_control(fd,V4L2_CID_RED_BALANCE);}
-\def 0 white_red(uint16 white_red)    {v4l2_get_control(fd,V4L2_CID_RED_BALANCE,white_red);}
+\def 0 white_red(uint16 white_red)    {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_red);}
 \def uint16 white_blue()       {return v4l2_get_control(fd,V4L2_CID_RED_BALANCE);}
-\def 0 white_blue(uint16 white_blue)  {v4l2_get_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
-
-\def uint16 white_speed() {struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
-\def uint16 white_delay() {struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
-\def 0 white_speed(uint16 white_speed) {struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-					      pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-\def 0 white_delay(uint16 white_delay) {struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-					      pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-
-\def int noise_reduction() {int noise_reduction; WIOCTL(fd, VIDIOCPWCGDYNNOISE, &noise_reduction); return noise_reduction;}
-\def 0 noise_reduction(int noise_reduction) {    WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);}
-\def int compression()     {int compression;     WIOCTL(fd, VIDIOCPWCSCQUAL,    &compression    ); return compression;    }
-\def 0 compression(int compression) {            WIOCTL(fd, VIDIOCPWCGCQUAL,    &compression    );}
+\def 0 white_blue(uint16 white_blue)  {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
 
 void FormatLibV4L::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
@@ -536,7 +470,7 @@ void FormatLibV4L::initialize2 () {
 	name = gensym(namebuf);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	palettes=0;
-	int checklist[] = {V4L2_PIX_FMT_RGB24,VIDEO_PALETTE_YUV420P};
+	int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
 #if 1
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
 		int p = checklist[i];
