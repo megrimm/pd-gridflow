@@ -144,7 +144,7 @@ def handle_decl(line)
 	else
 	  Out.print "#{m.rettype} #{m.selector}(VA"
 	  Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
-	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);\n"
+	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);"
 	end
 end
 
