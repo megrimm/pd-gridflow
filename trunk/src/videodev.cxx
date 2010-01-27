@@ -38,7 +38,7 @@
 #include <sstream>
 
 //#define error post
-static bool debug=1;
+static bool debug=0;
 
 /* **************************************************************** */
 
@@ -55,7 +55,7 @@ typedef video_mmap       VideoMmap      ;
 #define WHYX(_name_,_fieldy_,_fieldx_) oprintf(buf, "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
 #define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
 #define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
-/*static const char *video_type_flags[] = {
+static const char *video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
 	FLAG( 2,TELETEXT,      "Does teletext")
@@ -70,7 +70,7 @@ typedef video_mmap       VideoMmap      ;
 	FLAG(11,MPEG_ENCODER,  "Can encode MPEG streams")
 	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
-};*/
+};
 static const char *tuner_flags[] = {
 	FLAG(0,PAL,      "")
 	FLAG(1,NTSC,     "")
@@ -486,8 +486,7 @@ GRID_INLET(0) {
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {
 		post("no tuner #%d", value);
 	} else {
-		vtuner.mode = value;
-		gfpost(&vtuner);
+		vtuner.mode = value; //gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }
@@ -503,8 +502,7 @@ GRID_INLET(0) {
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
-	vtuner.mode = VIDEO_MODE_NTSC; //???
-	gfpost(&vtuner);
+	vtuner.mode = VIDEO_MODE_NTSC; //??? //gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	has_norm = (vtuner.mode<=3);
 	int meuh;
