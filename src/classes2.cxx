@@ -1153,7 +1153,8 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 /* because of potential conflict with [iemguts/propertybang], this has to be done in precisely the same manner as it does. */
 /* this also means that there can only be one [gf.propertybang] or [iemguts/propertybang] per abstraction. */
 static void propertybang_properties(t_gobj *z, t_glist *owner) {
-  pd_bang(canvas_realizedollar((t_canvas*)z, gensym("$0 propertybang"))->s_thing);
+  t_pd *patate = canvas_realizedollar((t_canvas*)z, gensym("$0 propertybang"))->s_thing;
+  if (patate) pd_bang(patate);
 }
 \class GFPropertyBang : FObject {
   t_symbol *d0name;
