@@ -1164,7 +1164,7 @@ static void propertybang_properties(t_gobj *z, t_glist *owner) {
     pd_bind((t_pd *)bself,d0name);
   }
 };
-\end class {install("gf/propertybang",1,1); class_setpropertiesfn(canvas_class,propertybang_properties);}
+\end class {install("gf/propertybang",1,1); /* class_setpropertiesfn(canvas_class,propertybang_properties); */}
 
 /* hack because hexloader is a myth */
 \class InvTimes : FObject {
