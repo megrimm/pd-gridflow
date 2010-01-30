@@ -117,7 +117,6 @@ static void HandleEvent () {
 			int k = event.key.keysym.sym;
 			if (k<0 || k>=SDLK_LAST) RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
 			SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
-			post("#sdl %p",gensym("#sdl")->s_thing);
 			pd_anything(gensym("#sdl")->s_thing,sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
