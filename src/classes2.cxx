@@ -159,6 +159,22 @@ void Args::process_args (int argc, t_atom *argv) {
 }
 \end class {install("args",1,1);}
 
+#define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
+\class GFSetArgs : FObject {
+	t_canvas *canvas;
+	\constructor () {canvas = canvas_getrootfor(mom);}
+	void mom_changed () {/*glist_retext(canvas_getrootfor(mom),(t_object *)mom);*/}
+	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
+	\decl 0 add2     (...) {BOF;                  binbuf_add(b,argc,argv);                     mom_changed();}
+	\decl 0 add      (...) {BOF;                  binbuf_add(b,argc,argv); binbuf_addsemi(b);  mom_changed();}
+	\decl 0 addsemi  (...) {BOF;                                           binbuf_addsemi(b);  mom_changed();}
+	\decl 0 addcomma (...) {BOF;                  t_atom a; SETCOMMA(&a); binbuf_add(b,1,&a);  mom_changed();}
+	/* il manque adddollar, adddollsym, et en gros, ça va être juste insuffisant pour une foule de cas,
+	 * parce qu'on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
+	 * et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut. */
+};
+\end class {install("setargs",1,1);}
+
 //****************************************************************
 
 namespace {
@@ -1140,41 +1156,26 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	static t_symbol *sym;
 	\constructor () {}
 	\decl 0 bang () {
-      #ifdef __WIN32__
-        RAISE("getppid unsupported on win32");
-      #else
-	    outlet_float(outlets[1],getppid());
-      #endif
-      outlet_float(outlets[0],getpid());
+	    #ifdef __WIN32__
+		RAISE("getppid unsupported on win32");
+	    #else
+		outlet_float(outlets[1],getppid());
+	    #endif
+	    outlet_float(outlets[0],getpid());
 	}
 };
 \end class {install("gf/getpid",1,2);}
 
-/* because of potential conflict with [iemguts/propertybang], this has to be done in precisely the same manner as it does. */
-/* this also means that there can only be one [gf.propertybang] or [iemguts/propertybang] per abstraction. */
-static void propertybang_properties(t_gobj *z, t_glist *owner) {
-  t_pd *patate = canvas_realizedollar((t_canvas*)z, gensym("$0 propertybang"))->s_thing;
-  if (patate) pd_bang(patate);
-}
-\class GFPropertyBang : FObject {
-  t_symbol *d0name;
-  ~GFPropertyBang () {pd_unbind((t_pd *)bself,d0name);}
-  \decl 0 bang () {outlet_bang(outlets[0]);}
-  \constructor () {
-    d0name = canvas_realizedollar(glist_getcanvas(canvas_getcurrent()),gensym("$0 propertybang"));
-    pd_bind((t_pd *)bself,d0name);
-  }
-};
-\end class {install("gf/propertybang",1,1); /* class_setpropertiesfn(canvas_class,propertybang_properties); */}
+extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 
 /* hack because hexloader is a myth */
 \class InvTimes : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
-	\decl 0 float (float a)            {                 outlet_float(outlets[0],b/a);}
-	\decl 0 list    (float a, float b) {this->b=b; outlet_float(outlets[0],b/a);}
+	\decl 0 float (float a)          {           outlet_float(outlets[0],b/a);}
+	\decl 0 list  (float a, float b) {this->b=b; outlet_float(outlets[0],b/a);}
 	\decl 1 float (float b) {this->b=b;}
-	\decl 1 list    (float b) {this->b=b;}
+	\decl 1 list  (float b) {this->b=b;}
 };
 \end class {install("inv*",2,1);}
 
