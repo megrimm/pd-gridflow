@@ -101,8 +101,13 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 
 \def 0 open(t_symbol *mode, string filename) {
 	const char *fmode;
+	#if __WIN32__
+	if (mode==gensym("in"))  fmode="rb"; else
+	if (mode==gensym("out")) fmode="wb"; else
+	#else
 	if (mode==gensym("in"))  fmode="r"; else
 	if (mode==gensym("out")) fmode="w"; else
+	#endif
 	RAISE("bad mode");
 	if (f) _0_close(0,0);
 	if (mode==gensym("in")) {filename = gf_find_file(filename);}
