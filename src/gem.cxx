@@ -23,6 +23,7 @@
 
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
+
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
 struct imageStruct {
   imageStruct(); ~imageStruct();
@@ -163,10 +164,15 @@ GRID_INLET(1) {
 		BitPacking *bp;
 		switch (im.format) {
 		  case GL_RGBA: bp = bp_rgba; break;
+		  #ifdef GL_VERSION_1_2
 		  case GL_BGRA: bp = bp_bgra; break;
+		  #endif
 		  default: ::post("can't produce grid from pix format %d",im.format); return;}
 		switch (im.type) {
-		  case GL_UNSIGNED_BYTE: case GL_UNSIGNED_INT_8_8_8_8: break; /*ok*/
+		  case GL_UNSIGNED_BYTE: break; /*ok*/
+		  #ifdef GL_VERSION_1_2
+		  case GL_UNSIGNED_INT_8_8_8_8: break; /*ok*/
+		  #endif
 		  default: ::post("can't produce grid from pix type %d",  im.type  ); return;}
 		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
 		int32 v[] = { im.ysize, im.xsize, channels };
