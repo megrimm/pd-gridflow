@@ -25,15 +25,25 @@ require "rbconfig"
 $CFLAGS  = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
-
-# require "win32/process" if CONFIG["arch"] =~ /mingw/
+WIN = !!( CONFIG["arch"] =~ /mingw/ )
+# require "win32/process" if WIN
 LOG = File.open "./config.log", "w"
 
-Red   = "\e[0;1;31m"
-Green = "\e[0;1;32m"
-Light = "\e[0m"
-Dark  = "\e[0;1;30m"
-Yellow = "\e[0;1;33;44m"
+if WIN then # where is ANSI.SYS ?
+  Red = ""
+  Green = ""
+  Light = ""
+  Dark = ""
+  Yellow = ""
+  White = ""
+else # use ANSI / VT100 colours
+  Red   = "\e[0;1;31m"
+  Green = "\e[0;1;32m"
+  Light = "\e[0m"
+  Dark  = "\e[0;1;30m"
+  Yellow = "\e[0;1;33;44m"
+  White = "\e[0;1m"
+end
 
 $verbose=false
 LOG.puts "-"*64
@@ -239,8 +249,7 @@ Feature.add {
 	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
 	defines :GCC_VERSION => proc {
-		m = /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		m[1]
+		/GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
 		#"3.666"
 	}
 	# how does this handle two test procs again?
@@ -813,7 +822,7 @@ for s in [
 "just move your gridflow directory to \"lib/pd/extra\".",
 "If you get stuck, you could contact the author about it,",
 "but first make sure you read \"doc/install.html\". ",
-""] do puts "\e[1m#{s}\e[0m" end
+""] do puts "#{White}#{s}#{Light}" end
 
 #--------------------------------#
 END {
