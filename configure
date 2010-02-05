@@ -361,8 +361,10 @@ Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
-		a=["-lSDL","-lpthread"]; a << "-lobjc" if OSX
-		#a=["$$(sdl-config --libs)"]
+		a=["-lSDL","-lpthread"]
+		a=["-lSDL","-lpthreadGC2"] if WIN
+		a=["-lSDL","-lpthread","-lobjc"] if OSX
+		#a=["$$(sdl-config --libs)"] # can't really work because of exec and stuff.
 		a
 	}
 	uses_h ["SDL/SDL.h"]
@@ -578,7 +580,7 @@ Feature.add {
 	name "OpenGL (for GEM support)"
 	uses_feature [:puredata]
 	uses_o ["src/gem.o"]
-        uses_so $LIBX11DIR+["-lGL"]
+        uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_GEM"]
 	test proc {
