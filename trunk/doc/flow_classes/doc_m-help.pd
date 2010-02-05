@@ -61,7 +61,7 @@ will be accepted \, and only those with 3 elements in the last dimension
 will be accepted \, but it is up to us to think of that last dimension
 to represent rgb \, it is up to us to think that this last dimension
 is channels \, and that the other dimensions are rows and columns.
-however \, to ease the reading \, thinks like "(rows columns 3)" and
+however \, to ease the reading \, things like "(rows columns 3)" and
 "rgb image" will be said even though much of GridFlow itself doesn't
 care about it.;
 #X connect 9 1 11 0;
