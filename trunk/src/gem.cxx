@@ -46,11 +46,33 @@ struct imageStruct {
   public:
   GLboolean upsidedown;
 };
+#ifdef __WIN32__
+#define GEM_VECTORALIGNMENT 128
+imageStruct::imageStruct() : type(GL_UNSIGNED_BYTE), format(GL_RGBA), notowned(0),data(NULL),pdata(NULL),datasize(0), upsidedown(0) {}
+imageStruct::~imageStruct() {}
+void imageStruct::clear() {if (pdata) delete[] pdata; data=pdata=0; datasize=0;}
+unsigned char *imageStruct::allocate() {return allocate(xsize*ysize*csize);}
+unsigned char *imageStruct::allocate(size_t size) {
+  if (pdata) {delete [] pdata; pdata=0;}
+  size_t array_size= size+(GEM_VECTORALIGNMENT/8-1);
+  try {pdata = new unsigned char[array_size];}
+  catch (const std::bad_alloc &e) {error("out of memory!"); data=pdata=0; datasize=0; return 0;}
+  size_t alignment = (reinterpret_cast<size_t>(pdata))&(GEM_VECTORALIGNMENT/8-1);
+  size_t offset    = (alignment == 0?0:(GEM_VECTORALIGNMENT/8-alignment));
+  data = pdata+offset;
+  datasize=array_size-offset;
+  notowned=0;
+  return data; 
+}
+#endif
 struct pixBlock {
   pixBlock();
   imageStruct image;
   int newimage, newfilm;
 };
+#ifdef __WIN32__
+pixBlock::pixBlock() : newimage(0), newfilm(0) {}
+#endif
 class TexCoord {
  public:
   TexCoord() : s(0.f), t(0.f) {}
