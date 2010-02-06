@@ -12,7 +12,7 @@
 #X obj 31 256 fps detailed;
 #X obj 31 143 t a a;
 #X text 179 68 next;
-#N canvas 0 0 450 632 game 1;
+#N canvas 0 0 450 632 game 0;
 #X obj 28 64 inlet matrix;
 #X obj 28 141 outlet matrix;
 #X text 18 14 this part at the left defines the rule of the game (this
