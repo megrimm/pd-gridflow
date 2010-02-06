@@ -173,15 +173,25 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4l2_pix_format &f = fmt.fmt.pix;
 	if (sy && sx) {f.height=sy; f.width=sx;}
+        f.pixelformat = V4L2_PIX_FMT_RGB24;
+        f.field       = V4L2_FIELD_NONE /* V4L2_FIELD_INTERLACED */;
 	if (debug) gfpost(&fmt);
 	WIOCTL(fd, VIDIOC_S_FMT, &fmt);
-	WIOCTL(fd, VIDIOC_G_FMT, &fmt);
+	if (int(f.width)!=sy || int(f.height)!=sx)
+                post("note: camera driver rejected (%d %d) resolution in favour of (%d %d)",
+			sy,sx,f.height,f.width);
+	sy = f.height;
+	sx = f.width;
 	if (debug) gfpost(&fmt);
 }
 
 void FormatLibV4L::dealloc_image () {if (image) {munmap(image,vmbuf.size); image=0;}}
 void FormatLibV4L::alloc_image () {
-	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf); //gfpost(&vmbuf);
+	CLEAR(req);
+        req.count = 2;
+        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.memory = V4L2_MEMORY_MMAP;
+        WIOCTL2(fd, VIDIOC_REQBUFS, &req); //gfpost(&req);
 	//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
 	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 	if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
@@ -353,12 +363,15 @@ GRID_INLET(0) {
 \def int channel () {return current_channel;}
 
 \def 0 transfer (string sym, int queuemax=2) {
+	RAISE("de que c'est?");
+/*
 	if (sym!="mmap") RAISE("don't know that transfer mode");
 	dealloc_image();
 	alloc_image();
 	queuemax=min(8,min(queuemax,vmbuf.frames));
 	post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
 	this->queuemax=queuemax;
+*/
 }
 
 \def uint16 brightness ()                 {return v4l2_get_control(fd,V4L2_CID_BRIGHTNESS);}
