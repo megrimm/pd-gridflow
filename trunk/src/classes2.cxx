@@ -476,8 +476,7 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 	install("gf.display",1,0);
 #else
 	install("display",1,0);
-	t_class *qlass = fclass->bfclass;
-	class_setwidget(qlass,Display::newwb());
+	class_setwidget(fclass->bfclass,Display::newwb());
 	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n\
 		$canvas delete ${self}TEXT \n\
 		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
