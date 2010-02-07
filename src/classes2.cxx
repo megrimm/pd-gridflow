@@ -384,7 +384,7 @@ public:
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
 		bself->te_xpix+=dx; bself->te_ypix+=dy;
-		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+		sys_vgui(".x%x.c move {%s || %sTEXT || %sIMAGE} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
 		canvas_fixlinesfor(glist, (t_text *)x);
 	}
 	static void selectfn(BLAH, int state) {INIT L
@@ -392,7 +392,7 @@ public:
 		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 	static void deletefn(BLAH) {INIT L
-		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
+		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
 };
@@ -530,8 +530,8 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		int chans = buf->dim->get(2);
 		#define FOO(T) {T *data = (T *)*buf; \
 		for (int y=0; y<sy; y++) for (int x=0; x<sx; x++) { \
-			for (int c=0; c<3; c++) oprintf(os,"\\x%02x",data[i++]); \
-			if (chans==4) i++;}}
+			for (int c=0; c<3; c++) oprintf(os,"\\x%02x",data[i+c]); \
+			i+=chans;}}
 		TYPESWITCH(buf->nt,FOO,)
 		os << "\"\n";
 		sys_gui(os.str().data());
@@ -561,7 +561,7 @@ GRID_INLET(0) {
 		$canvas delete $self \n\
 		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
 		$canvas create rectangle $x $y [expr $x+7  ]       $y      -fill red -tags $self -outline $outline \n\
-		$canvas create image     $x $y -tags $self -image $self -anchor nw\n\
+		$canvas create image     $x $y -tags ${self}IMAGE -image $self -anchor nw\n\
 	}\n");
 }
 
