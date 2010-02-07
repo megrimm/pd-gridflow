@@ -363,10 +363,13 @@ string ssprintf(const char *fmt, ...) {
 #define THISCLASS GUI_FObject
 class GUI_FObject : public FObject {
 public:
-	bool selected,vis;
+	bool selected,vis,use_queue;
 	int sy; int sx;
 	t_symbol *rsym;
 	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {
+		selected = false;
+		vis = false;
+		use_queue = true;
 		rsym = symprintf("gf%08x",this);
 		pd_bind((t_pd *)bself,rsym);
 	}
@@ -383,8 +386,8 @@ public:
 		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
-		bself->te_xpix+=dx; bself->te_ypix+=dy;
-		sys_vgui(".x%x.c move {%s || %sTEXT || %sIMAGE} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+		bself->te_xpix+=dx; bself->te_ypix+=dy; const char *r = self->rsym->s_name;
+		sys_vgui(".x%x.c move {%s || %sTEXT || %sIMAGE} %d %d\n",glist_getcanvas(glist),r,r,r,dx,dy);
 		canvas_fixlinesfor(glist, (t_text *)x);
 	}
 	static void selectfn(BLAH, int state) {INIT L
@@ -394,6 +397,15 @@ public:
 	static void deletefn(BLAH) {INIT L
 		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
+	}
+	virtual void show() = 0;
+	void changed() {
+		if (use_queue) {post("use queue"); sys_queuegui(bself,mom,redraw);}
+		else {post("don't use queue"); show();}
+	}
+	static void redraw(t_gobj *bself, t_glist *meuh) {L
+		GUI_FObject *self = (GUI_FObject *)((BFObject *)bself)->self;
+		self->show();
 	}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
@@ -442,7 +454,6 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
-	void changed() {sys_queuegui(bself,mom,redraw);}
  	void show() {
 		std::ostringstream quoted;
 		std::string ss = text.str();
@@ -515,26 +526,30 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 \class GridTkImage : GUI_FObject {
 	P<Grid> buf;
 	\constructor () {
-		sy = 64; sx = 40;
+		sy = 48; sx = 64;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
+		changed();
+		use_queue = false; /* for now... */
 	}
 	//~GridTkImage () {}
 	\grin 0
-	void changed() {sys_queuegui(bself,mom,redraw);}
-	static void redraw(t_gobj *bself, t_glist *meuh) {L GridTkImage *self = (GridTkImage *)((BFObject *)bself)->self; self->show();}
- 	void show() {
-		L
+	void sendbuf () {
 		std::ostringstream os;
 		oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
 		int i=0;
 		int chans = buf->dim->get(2);
+		int xs = buf->dim->get(1);
+		int ys = buf->dim->get(0);
 		#define FOO(T) {T *data = (T *)*buf; \
-		for (int y=0; y<sy; y++) for (int x=0; x<sx; x++) { \
-			for (int c=0; c<3; c++) oprintf(os,"\\x%02x",data[i+c]); \
-			i+=chans;}}
+		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans) \
+			oprintf(os,"\\x%02x\\x%02x\\x%02x",data[i],data[i+1],data[i+2]);}
 		TYPESWITCH(buf->nt,FOO,)
 		os << "\"\n";
 		sys_gui(os.str().data());
+	}
+ 	void show() {
+		L
+		if (buf) sendbuf();
 		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
 			selected?"#0000ff":"#000000",glist_getcanvas(mom));
