@@ -351,6 +351,26 @@ string ssprintf(const char *fmt, ...) {
 }
 \end class {install("gf.print",1,0); add_creator3(fclass,"print");}
 
+//****************************************************************
+
+#define ciGUI_FObject ciFObject
+class GUI_FObject : public FObject {
+public:
+	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {}
+};
+#define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
+	t_widgetbehavior *wb = new t_widgetbehavior; \
+	wb->w_getrectfn    = getrectfn;  \
+	wb->w_displacefn   = displacefn; \
+	wb->w_selectfn     = selectfn;   \
+	wb->w_activatefn   = 0;          \
+	wb->w_deletefn     = deletefn;   \
+	wb->w_visfn        = visfn;      \
+	wb->w_clickfn      = 0;          \
+	return wb;}
+
+//****************************************************************
+
 #ifdef DESIRE
 t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
 void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
@@ -361,7 +381,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #undef L
 #define L if (0) post("%s",__PRETTY_FUNCTION__);
 #define BLAH t_gobj *x, t_glist *glist
-\class Display : FObject {
+\class Display : GUI_FObject {
 	bool selected,vis;
 	t_symbol *rsym;
 	int y,x,sy,sx;
@@ -431,17 +451,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		self->vis = !!flag;
 		self->changed(); // is this ok?
 	}
-	static t_widgetbehavior *newwb () {
-		t_widgetbehavior *wb = new t_widgetbehavior;
-		wb->w_getrectfn    = getrectfn;
-		wb->w_displacefn   = displacefn;
-		wb->w_selectfn     = selectfn;
-		wb->w_activatefn   = 0;
-		wb->w_deletefn     = deletefn;
-		wb->w_visfn        = visfn;
-		wb->w_clickfn      = 0;
-		return wb;
-	}
+	NEWWB
 	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 };
 #undef INIT
@@ -496,20 +506,36 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 
 #undef INIT
 #define INIT BFObject *bself = (BFObject*)x; GridTkImage *self = (GridTkImage *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
-\class GridTkImage : FObject {
+\class GridTkImage : GUI_FObject {
 	bool selected,vis;
 	t_symbol *rsym;
 	int sy; int sx;
+	P<Grid> buf;
 	\constructor () {
 		sy = 64; sx = 40;
 		rsym = symprintf("tkimage:%08x",this);
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
+	}
+	~GridTkImage () {
+		pd_unbind((t_pd *)bself,rsym);
+		sys_unqueuegui(bself);
 	}
 	\grin 0
 	void changed() {sys_queuegui(bself,mom,redraw);}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L GridTkImage *self = (GridTkImage *)((BFObject *)bself)->self; self->show();}
  	void show() {
 		L
+		std::ostringstream os;
+		oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
+		int i=0;
+		int chans = buf->dim->get(2);
+		#define FOO(T) {T *data = (T *)*buf; \
+		for (int y=0; y<sy; y++) for (int x=0; x<sx; x++) { \
+			for (int c=0; c<3; c++) oprintf(os,"\\x%02x",data[i++]); \
+			if (chans==4) i++;}}
+		TYPESWITCH(buf->nt,FOO,)
+		os << "\"\n";
+		sys_gui(os.str().data());
 		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
 			selected?"#0000ff":"#000000",glist_getcanvas(mom));
@@ -535,17 +561,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		self->vis = !!flag;
 		self->changed(); // is this ok?
 	}
-	static t_widgetbehavior *newwb () {
-		t_widgetbehavior *wb = new t_widgetbehavior;
-		wb->w_getrectfn    = getrectfn;
-		wb->w_displacefn   = displacefn;
-		wb->w_selectfn     = selectfn;
-		wb->w_activatefn   = 0;
-		wb->w_deletefn     = deletefn;
-		wb->w_visfn        = visfn;
-		wb->w_clickfn      = 0;
-		return wb;
-	}
+	NEWWB
 };
 GRID_INLET(0) {
 	if (in->dim->n != 3)
@@ -555,21 +571,10 @@ GRID_INLET(0) {
 	sx = in->dim->get(1);
 	sy = in->dim->get(0);
 	in->set_chunk(0);
+	buf=new Grid(in->dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
-	std::ostringstream os;
-	oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
-	int i=0;
-	int chans = in->dim->get(2);
-	for (int y=0; y<sy; y++) {
-	  for (int x=0; x<sx; x++) {
-	    for (int c=0; c<3; c++) {
-		oprintf(os,"\\x%02x",data[i++]);
-	    }
-	    if (chans==4) i++;
-	  }
-	}
-	os << "\"\n";
-	sys_gui(os.str().data());
+	COPY((T *)*buf+dex,data,n);
+	changed();
 } GRID_END
 \end class {
 	install("#tkimage",1,0);
