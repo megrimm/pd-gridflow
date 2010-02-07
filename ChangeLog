@@ -1,11 +1,12 @@
 /* $Id$ */
 
-version 0.9.7 (2010.01...):
+version 0.9.7 (2010.02...):
 
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
- * added [gf/getpid] [#make_arrow] [doc_same] [many]
+ * added [gf/getpid] [#make_arrow] [doc_same] [#many] [#to_iem] [doremi]
+ * added [#tkimage]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
  * quicktimehw: use normal 'get' method
@@ -23,7 +24,8 @@ version 0.9.7 (2010.01...):
  * support multiple [#out sdl] objects (acting like a single object)
  * fixed many Win32-specific bugs
  * introduced Win32 precompiled distribution
- 
+ * add Help menu item "GridFlow Examples" (a preset "Open..." dialogue)
+
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
