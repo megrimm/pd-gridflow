@@ -1,6 +1,12 @@
 $Id$
 
 0.9.7:
+[ ] [#import (...) f] converts floats to int to float (wtf)
+[ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
+[ ] handle_braces error causes crash?
+[ ] GridFlow does something nasty with \1 \2 \3 etc... probably because of handle_braces
+[ ] [listread] has a different outlet_atom than [foreach] does
+[ ] [#out window]: window specifiers are fairly broken
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
 [ ] bug: see #io.ppm-test.pd
@@ -19,23 +25,19 @@ $Id$
 [ ] quicktime PNG encoding: does it work?
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] get rid of doc/stuff.txt ?
-[ ] #line_to_polygon is buggy
-[ ] #draw_polygon init_lines() not sufficiently called
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
-[ ] with pwc, 720x480 crashes
 [ ] what to do with [#motion_detection] ?
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 [ ] bugs/bugfixes from roman, claude, federico, etc
 [ ] videodev,quicktime,etc: height,width vs size
-
-Later
+[ ] even after all the latest bugfixes, i still get invalid command name ".x8685500.c" with [display]
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
 [ ] cellular_1d.pd: should get a circular buffer and a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
-<matju> oof -> error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
+[ ] error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 [ ] kill [listappend], [listprepend], [listlength], ... ?
 [ ] doc attributes: [doc_a] [doc_aa] ?
 [ ] [doc_ii] links to [doc_cc]
@@ -66,10 +68,10 @@ Later
 [ ] make [#draw_points] [#edit_polygon]
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] add [#out png]
-[ ] compenser pour les ajustements progressifs ou soudains de luminosité
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
+[ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
 
 OpenCV
 [ ] cvOpticalFlow
@@ -117,7 +119,7 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
-[ ] [#import~] [#export~]
+[ ] [#from~] [#to~]
 [ ] [#expr]
 [ ] [#line]? [#pipe]? [#delay]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
