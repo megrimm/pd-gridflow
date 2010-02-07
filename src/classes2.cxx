@@ -559,21 +559,13 @@ GRID_INLET(0) {
 	std::ostringstream os;
 	oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
 	int i=0;
+	int chans = in->dim->get(2);
 	for (int y=0; y<sy; y++) {
 	  for (int x=0; x<sx; x++) {
 	    for (int c=0; c<3; c++) {
-		int v = data[i++];
-		/*
-		 * if     (v=='\n') os << "\\n";
-		else if (v=='{') os << "\\x7b";
-		else if (v=='}') os << "\\x7d";
-		else if (v==0) os << "\\x00";
-		//else if (strchr("\\[]\"$",v)) os << "\\" << (char)v;
-		else if (strchr("[]\"$",v)) os << "\\" << (char)v;
-		else os << (char)v;
-		*/
-		oprintf(os,"\\x%02x",v);
+		oprintf(os,"\\x%02x",data[i++]);
 	    }
+	    if (chans==4) i++;
 	  }
 	}
 	os << "\"\n";
