@@ -310,6 +310,7 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 
 //****************************************************************
 
+/*
 string ssprintf(const char *fmt, ...) {
 	std::ostringstream os;
 	va_list va;
@@ -318,6 +319,7 @@ string ssprintf(const char *fmt, ...) {
 	va_end(va);
 	return os.str();
 }
+*/
 
 \class GFPrint : FObject {
 	t_symbol *prefix;
@@ -355,22 +357,21 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #endif
 
 //#ifdef DESIRE
-static void display_redraw(t_gobj *client, t_glist *glist);
 #define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
 #undef L
 #define L if (0) post("%s",__PRETTY_FUNCTION__);
 #define BLAH t_gobj *x, t_glist *glist
 \class Display : FObject {
-	bool selected;
+	bool selected,vis;
 	t_symbol *rsym;
 	int y,x,sy,sx;
-	bool vis;
 	std::ostringstream text;
 	t_pd *gp;
+	static void display_redraw(t_gobj *client, t_glist *glist);
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		std::ostringstream os;
-		rsym = gensym(const_cast<char *>(ssprintf("display:%08x",this).data()));
+		rsym = symprintf("tkimage:%08x",this);
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
@@ -391,7 +392,7 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
-	void changed() {sys_queuegui(bself,mom,display_redraw);}
+	void changed() {sys_queuegui(bself,mom,redraw);}
  	void show() {
 		std::ostringstream quoted;
 		std::string ss = text.str();
@@ -413,7 +414,6 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
 		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
 		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
-		//post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
 		bself->te_xpix+=dx; bself->te_ypix+=dy;
@@ -443,9 +443,9 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 		wb->w_clickfn      = 0;
 		return wb;
 	}
+	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 };
 #undef INIT
-static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
 	string sel = string(argv[0]).data()+3;
@@ -484,14 +484,96 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 		set sx [expr $x2-$x1+2]; incr x -1 \n\
 		set sy [expr $y2-$y1+4]; incr y -1 \n\
 		$canvas delete ${self} \n\
-		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
-		$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline \n\
 		$canvas lower $self ${self}TEXT \n\
 		pd \"$self set_size $sy $sx;\" \n\
 	}\n");
 #endif
 }
 //#endif // ndef DESIRE
+
+//****************************************************************
+
+#undef INIT
+#define INIT BFObject *bself = (BFObject*)x; GridTkImage *self = (GridTkImage *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+\class GridTkImage : FObject {
+	bool selected,vis;
+	t_symbol *rsym;
+	int sy; int sx;
+	\constructor () {
+		sy = 64; sx = 40;
+		rsym = symprintf("tkimage:%08x",this);
+		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
+	}
+	\grin 0
+	void changed() {sys_queuegui(bself,mom,redraw);}
+	static void redraw(t_gobj *bself, t_glist *meuh) {L GridTkImage *self = (GridTkImage *)((BFObject *)bself)->self; self->show();}
+ 	void show() {
+		sys_vgui("set canvas %s\n\
+		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+333]         $y      -fill red -tags $self -outline $outline \n\
+		$canvas lower $self ${self}TEXT \n\
+		pd \"$self set_size $sy $sx;\" \n",rsym->s_name);
+//		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",rsym->s_name,
+//			text_xpix(bself,mom),
+//			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
+	}
+	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
+		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
+		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
+	}
+	static void displacefn(BLAH, int dx, int dy) {INIT L
+		bself->te_xpix+=dx; bself->te_ypix+=dy;
+		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+		canvas_fixlinesfor(glist, (t_text *)x);
+	}
+	static void selectfn(BLAH, int state) {INIT L
+		self->selected=!!state;
+		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+	}
+	static void deletefn(BLAH) {INIT L
+		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
+		canvas_deletelinesfor(glist, (t_text *)x);
+	}
+	static void visfn(BLAH, int flag) {INIT L
+		self->vis = !!flag;
+		self->changed(); // is this ok?
+	}
+	static t_widgetbehavior *newwb () {
+		t_widgetbehavior *wb = new t_widgetbehavior;
+		wb->w_getrectfn    = getrectfn;
+		wb->w_displacefn   = displacefn;
+		wb->w_selectfn     = selectfn;
+		wb->w_activatefn   = 0;
+		wb->w_deletefn     = deletefn;
+		wb->w_visfn        = visfn;
+		wb->w_clickfn      = 0;
+		return wb;
+	}
+};
+GRID_INLET(0) {
+	if (in->dim->n != 3)
+		RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)
+		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in->dim->get(2));
+	sx = in->dim->get(1);
+	sy = in->dim->get(0);
+	in->set_chunk(0);
+} GRID_FINISH {
+	std::ostringstream os;
+	oprintf(os,"image create photo %s -data {P5\n%d %d\n255\n",rsym->s_name,sx,sy);
+	for (int y=0; y<sy; y++) {
+		for (int x=0; x<sx; x++) os << " " << x*y << " " << x*17 << " " << y*17;
+		os << "\n";
+	}
+	os << "}\n";
+	sys_gui(os.str().data());
+} GRID_END
+\end class {
+	install("#tkimage",1,0);
+	class_setwidget(fclass->bfclass,GridTkImage::newwb());
+}
 
 //****************************************************************
 
