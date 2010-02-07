@@ -356,6 +356,10 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 
 //#ifdef DESIRE
 static void display_redraw(t_gobj *client, t_glist *glist);
+#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+#undef L
+#define L if (0) post("%s",__PRETTY_FUNCTION__);
+#define BLAH t_gobj *x, t_glist *glist
 \class Display : FObject {
 	bool selected;
 	t_symbol *rsym;
@@ -406,32 +410,40 @@ static void display_redraw(t_gobj *client, t_glist *glist);
 			text_xpix(bself,mom),
 			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
 	}
+	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
+		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
+		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
+		//post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
+	}
+	static void displacefn(BLAH, int dx, int dy) {INIT L
+		bself->te_xpix+=dx; bself->te_ypix+=dy;
+		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+		canvas_fixlinesfor(glist, (t_text *)x);
+	}
+	static void selectfn(BLAH, int state) {INIT L
+		self->selected=!!state;
+		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+	}
+	static void deletefn(BLAH) {INIT L
+		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
+		canvas_deletelinesfor(glist, (t_text *)x);
+	}
+	static void visfn(BLAH, int flag) {INIT L
+		self->vis = !!flag;
+		self->changed(); // is this ok?
+	}
+	static t_widgetbehavior *newwb () {
+		t_widgetbehavior *wb = new t_widgetbehavior;
+		wb->w_getrectfn    = getrectfn;
+		wb->w_displacefn   = displacefn;
+		wb->w_selectfn     = selectfn;
+		wb->w_activatefn   = 0;
+		wb->w_deletefn     = deletefn;
+		wb->w_visfn        = visfn;
+		wb->w_clickfn      = 0;
+		return wb;
+	}
 };
-#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
-#undef L
-#define L if (0) post("%s",__PRETTY_FUNCTION__);
-static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {INIT
-	*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
-	*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
-	//post("getrect: (%d %d %d %d)",*x1,*y1,*x2,*y2);
-}
-static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {INIT L
-	bself->te_xpix+=dx; bself->te_ypix+=dy;
-	sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
-	canvas_fixlinesfor(glist, (t_text *)x);
-}
-static void display_selectfn(t_gobj *x, t_glist *glist, int state) {INIT L
-	self->selected=!!state;
-	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
-}
-static void display_deletefn(t_gobj *x, t_glist *glist) {INIT L
-	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
-	canvas_deletelinesfor(glist, (t_text *)x);
-}
-static void display_visfn(t_gobj *x, t_glist *glist, int flag) {INIT L
-	self->vis = !!flag;
-	self->changed(); // is this ok?
-}
 #undef INIT
 static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
@@ -465,15 +477,7 @@ static void display_redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Dis
 #else
 	install("display",1,0);
 	t_class *qlass = fclass->bfclass;
-	t_widgetbehavior *wb = new t_widgetbehavior;
-	wb->w_getrectfn    = display_getrectfn;
-	wb->w_displacefn   = display_displacefn;
-	wb->w_selectfn     = display_selectfn;
-	wb->w_activatefn   = 0;
-	wb->w_deletefn     = display_deletefn;
-	wb->w_visfn        = display_visfn;
-	wb->w_clickfn      = 0;
-	class_setwidget(qlass,wb);
+	class_setwidget(qlass,Display::newwb());
 	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n\
 		$canvas delete ${self}TEXT \n\
 		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
@@ -923,11 +927,12 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 xid (t_symbol *t, t_symbol *u);
 };
 \def 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
-\def 0 xid (t_symbol *t, t_symbol *u) {
+\def 0 xid (t_symbol *t, t_symbol *u) {MOM
 	outlet_symbol(outlets[0],t);
 	outlet_symbol(outlets[1],u);
+	outlet_symbol(outlets[2],symprintf(".x%lx",m));
 }
-\end class {install("gf/canvas_xid",1,2);}
+\end class {install("gf/canvas_xid",1,3);}
 
 \class GFCanvasHeHeHe : FObject {
 	int n;
