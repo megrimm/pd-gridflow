@@ -15,7 +15,7 @@ LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
-ifeq ($(OS),darwin)
+ifeq ($(OS),Darwin)
   CFLAGS += -mmacosx-version-min=10.4 -fPIC
   LDSOFLAGS += -headerpad_max_install_names
   PDSUF = .pd_darwin
@@ -34,6 +34,7 @@ else
 endif
 PD_LIB = gridflow$(PDSUF)
 
+# this fixes a bug with g++ and objective-c include paths on OSX
 ifeq ($(CPLUS_INCLUDE_PATH),)
   SNAFU =
 else
