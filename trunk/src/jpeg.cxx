@@ -24,14 +24,15 @@
 //!@#$ not handling abort on compress
 //!@#$ not handling abort on decompress
 
+#include <stdio.h> /* must come first since when jpeglib.h became loaded before gridflow.hxx.fcs */
+extern "C" {
+#include <jpeglib.h> /* load this before the gridflow header, because of name conflict of convert() with <winsock2.h> on win32 */
+#undef EXTERN /* redefined by gridflow header */
+};
 #include "gridflow.hxx.fcs"
 /* removing macros (removing warnings) */
 #undef HAVE_PROTOTYPES
 #undef HAVE_STDLIB_H
-#undef EXTERN
-extern "C" {
-#include <jpeglib.h>
-};
 
 \class FormatJPEG : Format {
 	P<BitPacking> bit_packing;
