@@ -353,10 +353,41 @@ string ssprintf(const char *fmt, ...) {
 
 //****************************************************************
 
+#define INIT BFObject *bself = (BFObject*)x; \
+	THISCLASS *self = (THISCLASS *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+#undef L
+#define L if (0) post("%s",__PRETTY_FUNCTION__);
+#define BLAH t_gobj *x, t_glist *glist
+
 #define ciGUI_FObject ciFObject
+#define THISCLASS GUI_FObject
 class GUI_FObject : public FObject {
 public:
+	bool selected,vis;
+	int sy; int sx;
+	t_symbol *rsym;
 	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {}
+	static void visfn(BLAH, int flag) {INIT L
+		self->vis = !!flag;
+		self->changed(); // is this ok?
+	}
+	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
+		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
+		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
+	}
+	static void displacefn(BLAH, int dx, int dy) {INIT L
+		bself->te_xpix+=dx; bself->te_ypix+=dy;
+		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
+		canvas_fixlinesfor(glist, (t_text *)x);
+	}
+	static void selectfn(BLAH, int state) {INIT L
+		self->selected=!!state;
+		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+	}
+	static void deletefn(BLAH) {INIT L
+		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
+		canvas_deletelinesfor(glist, (t_text *)x);
+	}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
 	t_widgetbehavior *wb = new t_widgetbehavior; \
@@ -369,6 +400,8 @@ public:
 	wb->w_clickfn      = 0;          \
 	return wb;}
 
+#undef THISCLASS
+
 //****************************************************************
 
 #ifdef DESIRE
@@ -377,14 +410,8 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #endif
 
 //#ifdef DESIRE
-#define INIT BFObject *bself = (BFObject*)x; Display *self = (Display *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
-#undef L
-#define L if (0) post("%s",__PRETTY_FUNCTION__);
-#define BLAH t_gobj *x, t_glist *glist
 \class Display : GUI_FObject {
-	bool selected,vis;
-	t_symbol *rsym;
-	int y,x,sy,sx;
+	int y,x;
 	std::ostringstream text;
 	t_pd *gp;
 	static void display_redraw(t_gobj *client, t_glist *glist);
@@ -430,31 +457,9 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#000000",
 			glist_getcanvas(mom),quoted.str().data());
 	}
-	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
-		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
-		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
-	}
-	static void displacefn(BLAH, int dx, int dy) {INIT L
-		bself->te_xpix+=dx; bself->te_ypix+=dy;
-		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
-		canvas_fixlinesfor(glist, (t_text *)x);
-	}
-	static void selectfn(BLAH, int state) {INIT L
-		self->selected=!!state;
-		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
-	}
-	static void deletefn(BLAH) {INIT L
-		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
-		canvas_deletelinesfor(glist, (t_text *)x);
-	}
-	static void visfn(BLAH, int flag) {INIT L
-		self->vis = !!flag;
-		self->changed(); // is this ok?
-	}
 	NEWWB
 	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
 };
-#undef INIT
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
 	string sel = string(argv[0]).data()+3;
@@ -504,12 +509,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 
 //****************************************************************
 
-#undef INIT
-#define INIT BFObject *bself = (BFObject*)x; GridTkImage *self = (GridTkImage *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
 \class GridTkImage : GUI_FObject {
-	bool selected,vis;
-	t_symbol *rsym;
-	int sy; int sx;
 	P<Grid> buf;
 	\constructor () {
 		sy = 64; sx = 40;
@@ -539,27 +539,6 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
 			selected?"#0000ff":"#000000",glist_getcanvas(mom));
-	}
-	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
-		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
-		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
-	}
-	static void displacefn(BLAH, int dx, int dy) {INIT L
-		bself->te_xpix+=dx; bself->te_ypix+=dy;
-		sys_vgui(".x%x.c move {%s || %sTEXT} %d %d\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name,dx,dy);
-		canvas_fixlinesfor(glist, (t_text *)x);
-	}
-	static void selectfn(BLAH, int state) {INIT L
-		self->selected=!!state;
-		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
-	}
-	static void deletefn(BLAH) {INIT L
-		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",c,self->rsym->s_name,self->rsym->s_name);
-		canvas_deletelinesfor(glist, (t_text *)x);
-	}
-	static void visfn(BLAH, int flag) {INIT L
-		self->vis = !!flag;
-		self->changed(); // is this ok?
 	}
 	NEWWB
 };
