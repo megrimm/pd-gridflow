@@ -406,10 +406,9 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		t_canvas *c = glist_getcanvas(mom);
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",rsym->s_name,
-			text_xpix(bself,mom),
-			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",
+			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#000000",
+			glist_getcanvas(mom),quoted.str().data());
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
 		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
@@ -510,14 +509,10 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	void changed() {sys_queuegui(bself,mom,redraw);}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L GridTkImage *self = (GridTkImage *)((BFObject *)bself)->self; self->show();}
  	void show() {
-		sys_vgui("set canvas %s\n\
-		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
-		$canvas create rectangle $x $y [expr $x+333]         $y      -fill red -tags $self -outline $outline \n\
-		$canvas lower $self ${self}TEXT \n\
-		pd \"$self set_size $sy $sx;\" \n",rsym->s_name);
-//		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",rsym->s_name,
-//			text_xpix(bself,mom),
-//			text_ypix(bself,mom),selected?"#0000ff":"#000000",c,quoted.str().data());
+		L
+		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
+			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
+			selected?"#0000ff":"#000000",glist_getcanvas(mom));
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
 		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
@@ -560,19 +555,38 @@ GRID_INLET(0) {
 	sx = in->dim->get(1);
 	sy = in->dim->get(0);
 	in->set_chunk(0);
-} GRID_FINISH {
+} GRID_FLOW {
 	std::ostringstream os;
-	oprintf(os,"image create photo %s -data {P5\n%d %d\n255\n",rsym->s_name,sx,sy);
+	oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
+	int i=0;
 	for (int y=0; y<sy; y++) {
-		for (int x=0; x<sx; x++) os << " " << x*y << " " << x*17 << " " << y*17;
-		os << "\n";
+	  for (int x=0; x<sx; x++) {
+	    for (int c=0; c<3; c++) {
+		int v = data[i++];
+		/*
+		 * if     (v=='\n') os << "\\n";
+		else if (v=='{') os << "\\x7b";
+		else if (v=='}') os << "\\x7d";
+		else if (v==0) os << "\\x00";
+		//else if (strchr("\\[]\"$",v)) os << "\\" << (char)v;
+		else if (strchr("[]\"$",v)) os << "\\" << (char)v;
+		else os << (char)v;
+		*/
+		oprintf(os,"\\x%02x",v);
+	    }
+	  }
 	}
-	os << "}\n";
+	os << "\"\n";
 	sys_gui(os.str().data());
 } GRID_END
 \end class {
 	install("#tkimage",1,0);
 	class_setwidget(fclass->bfclass,GridTkImage::newwb());
+	sys_gui("proc tkimage_update {self x y sx sy fg bg outline canvas} {\n\
+		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+7  ]       $y      -fill red -tags $self -outline $outline \n\
+		$canvas create image     $x $y -image $self -anchor nw\n\
+	}\n");
 }
 
 //****************************************************************
