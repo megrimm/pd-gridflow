@@ -366,7 +366,14 @@ public:
 	bool selected,vis;
 	int sy; int sx;
 	t_symbol *rsym;
-	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {}
+	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {
+		rsym = symprintf("gf%08x",this);
+		pd_bind((t_pd *)bself,rsym);
+	}
+	~GUI_FObject() {
+		pd_unbind((t_pd *)bself,rsym);
+		sys_unqueuegui(bself);
+	}
 	static void visfn(BLAH, int flag) {INIT L
 		self->vis = !!flag;
 		self->changed(); // is this ok?
@@ -418,22 +425,18 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		std::ostringstream os;
-		rsym = symprintf("tkimage:%08x",this);
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
 		SETFLOAT(a,20);
 		pd_typedmess(gp,gensym("maxrows"),1,a);
 		text << "...";
-		pd_bind((t_pd *)bself,rsym);
 		SETPOINTER(a,(t_gpointer *)bself);
 		pd_typedmess(gp,gensym("dest"),1,a);
  		changed();
 	}
 	~Display () {
-		pd_unbind((t_pd *)bself,rsym);
 		pd_free(gp);
-		sys_unqueuegui(bself);
 	}
 	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
@@ -453,7 +456,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier -12} .x%x.c \"%s\"\n",
+		sys_vgui("display_update %s %d %d #000000 #dddddd %s {Courier -12} .x%x.c \"%s\"\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#000000",
 			glist_getcanvas(mom),quoted.str().data());
 	}
@@ -497,7 +500,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
 		set sx [expr $x2-$x1+2]; incr x -1 \n\
 		set sy [expr $y2-$y1+4]; incr y -1 \n\
-		$canvas delete ${self} \n\
+		$canvas delete $self \n\
 		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline \n\
 		$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline \n\
 		$canvas lower $self ${self}TEXT \n\
@@ -513,13 +516,9 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	P<Grid> buf;
 	\constructor () {
 		sy = 64; sx = 40;
-		rsym = symprintf("tkimage:%08x",this);
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 	}
-	~GridTkImage () {
-		pd_unbind((t_pd *)bself,rsym);
-		sys_unqueuegui(bself);
-	}
+	//~GridTkImage () {}
 	\grin 0
 	void changed() {sys_queuegui(bself,mom,redraw);}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L GridTkImage *self = (GridTkImage *)((BFObject *)bself)->self; self->show();}
@@ -556,12 +555,13 @@ GRID_INLET(0) {
 	changed();
 } GRID_END
 \end class {
-	install("#tkimage",1,0);
+	install("#tkimage",1,1);
 	class_setwidget(fclass->bfclass,GridTkImage::newwb());
 	sys_gui("proc tkimage_update {self x y sx sy fg bg outline canvas} {\n\
+		$canvas delete $self \n\
 		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
 		$canvas create rectangle $x $y [expr $x+7  ]       $y      -fill red -tags $self -outline $outline \n\
-		$canvas create image     $x $y -image $self -anchor nw\n\
+		$canvas create image     $x $y -tags $self -image $self -anchor nw\n\
 	}\n");
 }
 
