@@ -399,10 +399,7 @@ public:
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
 	virtual void show() = 0;
-	void changed() {
-		if (use_queue) {post("use queue"); sys_queuegui(bself,mom,redraw);}
-		else {post("don't use queue"); show();}
-	}
+	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L
 		GUI_FObject *self = (GUI_FObject *)((BFObject *)bself)->self;
 		self->show();
@@ -529,30 +526,32 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		sy = 48; sx = 64;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
-		use_queue = false; /* for now... */
+		//use_queue = false; /* for now... */
 	}
 	//~GridTkImage () {}
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
-		oprintf(os,"image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
+		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
 		int i=0;
 		int chans = buf->dim->get(2);
 		int xs = buf->dim->get(1);
 		int ys = buf->dim->get(0);
+		char fub[xs*ys*12+1];
 		#define FOO(T) {T *data = (T *)*buf; \
 		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans) \
-			oprintf(os,"\\x%02x\\x%02x\\x%02x",data[i],data[i+1],data[i+2]);}
+			sprintf(fub+(y*xs+x)*12,"\\x%02x\\x%02x\\x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);}
 		TYPESWITCH(buf->nt,FOO,)
-		os << "\"\n";
-		sys_gui(os.str().data());
+		//fub[xs*ys*12]=0;
+		sys_gui(fub);
+		sys_gui("\"\n");
 	}
- 	void show() {
-		L
+ 	void show() {L
 		if (buf) sendbuf();
 		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
 			selected?"#0000ff":"#000000",glist_getcanvas(mom));
+		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
 	NEWWB
 };
