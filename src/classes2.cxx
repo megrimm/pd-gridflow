@@ -520,7 +520,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 
 //****************************************************************
 
-\class GridTkImage : GUI_FObject {
+\class GridSee : GUI_FObject {
 	P<Grid> buf;
 	\constructor () {
 		sy = 48+9; sx = 64+5;
@@ -528,7 +528,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		changed();
 		//use_queue = false; /* for now... */
 	}
-	//~GridTkImage () {}
+	//~GridSee () {}
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
@@ -557,7 +557,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		if (buf) sendbuf();
 		t_glist *c = glist_getcanvas(mom);
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
-		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
+		sys_vgui("gridsee_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#000000",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
@@ -575,10 +575,10 @@ GRID_INLET(0) {
 	changed();
 } GRID_END
 \end class {
-	install("#tkimage",1,1);
-	class_setwidget(fclass->bfclass,GridTkImage::newwb());
+	install("#see",1,1);
+	class_setwidget(fclass->bfclass,GridSee::newwb());
 	#define ETC "-tags $self -outline $outline"
-	sys_gui("proc tkimage_update {self x y sx sy fg bg outline canvas} {\n\
+	sys_gui("proc gridsee_update {self x y sx sy fg bg outline canvas} {\n\
 	    $canvas delete $self ${self}IMAGE\n\
 	    $canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "ETC"\n\
 	    $canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "ETC"\n\
