@@ -353,11 +353,12 @@ string ssprintf(const char *fmt, ...) {
 
 //****************************************************************
 
-#define INIT BFObject *bself = (BFObject*)x; \
-	THISCLASS *self = (THISCLASS *)bself->self; t_canvas *c = glist_getcanvas(glist); c=c;
+#define INIT1 BFObject *bself = (BFObject*)x; THISCLASS *self = (THISCLASS *)bself->self; self=self;
+#define INIT INIT1 t_canvas *c = glist_getcanvas(glist); c=c;
 #undef L
 #define L if (0) post("%s",__PRETTY_FUNCTION__);
 #define BLAH t_gobj *x, t_glist *glist
+#define pd_anything pd_typedmess
 
 #define ciGUI_FObject ciFObject
 #define THISCLASS GUI_FObject
@@ -398,6 +399,18 @@ public:
 		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
+	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
+		//post("click1 %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit);
+		//glist_grab(self->mom,(t_gobj *)bself,motionfn,keyfn,xpix,ypix);
+		return 0;
+	}
+	static void motionfn(void *x, float dx, float dy) {INIT1
+		//post("motionfn %d %d",dx,dy);
+	}
+	static void keyfn(void *x, float key) {INIT1
+		//post("keyfn %d",key);
+	}
+	static void activatefn(BLAH, int state) {INIT post("activate %d",state);}
 	virtual void show() = 0;
 	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L
@@ -410,10 +423,10 @@ public:
 	wb->w_getrectfn    = getrectfn;  \
 	wb->w_displacefn   = displacefn; \
 	wb->w_selectfn     = selectfn;   \
-	wb->w_activatefn   = 0;          \
+	wb->w_activatefn   = activatefn; \
 	wb->w_deletefn     = deletefn;   \
 	wb->w_visfn        = visfn;      \
-	wb->w_clickfn      = 0;          \
+	wb->w_clickfn      = clickfn;    \
 	return wb;}
 
 #undef THISCLASS
@@ -434,7 +447,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		std::ostringstream os;
-		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
+		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
 		SETFLOAT(a,20);
@@ -520,15 +533,80 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 
 //****************************************************************
 
+// copied from [#io.sdl] :
+static t_symbol *keyboard[128];
+static void KEYS_ARE (int i, const char *s__) {
+	char *s_ = strdup(s__);
+	char *s = s_;
+	while (*s) {
+		char *t = strchr(s,' ');
+		if (t) *t=0;
+		keyboard[i] = gensym(s);
+		if (!t) break;
+		s=t+1; i++;
+	}
+	free(s_);
+}
+
+\class MouseSpy : FObject {
+	int y,x,flags;
+	t_symbol *rcv;
+	t_pd *snd;
+	\constructor (t_symbol *rcv_=0) {
+		snd=0; rcv=rcv_?rcv_:symprintf(".x%x",mom); pd_bind((t_pd *)bself,rcv);
+	}
+	~MouseSpy () {pd_unbind((t_pd *)bself,rcv);}
+	void event (const char *ss, t_symbol *key=0) {
+		t_atom a[4];
+		SETFLOAT(a+0,y);
+		SETFLOAT(a+1,x);
+		SETFLOAT(a+2,flags&511);
+		if (key) SETSYMBOL(a+3,key);
+		t_symbol *s = gensym(ss);
+		if (snd) pd_anything((t_pd *)snd,s,key?4:3,a);
+		else outlet_anything(outlets[0] ,s,key?4:3,a);
+	}
+	\decl 0 mouse   (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags|=  128<<but ;          event("position");}
+	\decl 0 mouseup (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags&=~(128<<but);          event("position");}
+	\decl 0 motion  (int x_, int y_, int flags_      ) {y=y_; x=x_; flags&=~12; flags|=flags_*2; event("position");}
+	\decl 0 key     (int on, int ascii, int drop) {
+		t_symbol *key = ascii>=0 && ascii<128 ? keyboard[ascii] : symprintf("%c",ascii);
+		event(on ? "keypress" : "keyrelease",key);
+	}
+	\decl 0 anything (...) {}
+	
+};
+\end class {
+	install("gf/mouse_spy",1,1);
+	// copied from [#io.sdl] :
+	KEYS_ARE(8,"BackSpace Tab");
+	KEYS_ARE(13,"Return");
+	KEYS_ARE(19,"Pause");
+	KEYS_ARE(27,"Escape");
+	KEYS_ARE(32,"space exclam quotedbl numbersign dollar percent ampersand apostrophe");
+	KEYS_ARE(40,"parenleft parenright asterisk plus comma minus period slash");
+	KEYS_ARE(48,"D0 D1 D2 D3 D4 D5 D6 D7 D8 D9");
+	KEYS_ARE(58,"colon semicolon less equal greater question at");
+	KEYS_ARE(91,"bracketleft backslash bracketright asciicircum underscore grave quoteleft");
+	KEYS_ARE(65,"a b c d e f g h i j k l m n o p q r s t u v w x y z");
+	KEYS_ARE(97,"a b c d e f g h i j k l m n o p q r s t u v w x y z");
+	KEYS_ARE(127,"Delete");
+}
+
 \class GridSee : GUI_FObject {
+	MouseSpy *spy;
 	P<Grid> buf;
 	\constructor () {
 		sy = 48+9; sx = 64+5;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
 		//use_queue = false; /* for now... */
+		t_atom a[1]; SETSYMBOL(a,symprintf(".x%x",mom));
+		//pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
+		//spy = (MouseSpy *)pd_newest();
+		//spy->snd = (t_pd *)bself;
 	}
-	//~GridSee () {}
+	~GridSee () {pd_free((t_pd *)spy);}
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
