@@ -1037,7 +1037,7 @@ BUILTIN_SYMBOLS(FOO)
 		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open}\n"
 		 "}\n"
 		 "catch {gridflow_add_to_help .mbar.help}\n"
-		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]]}}\n"
+		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
 		 "catch {rename menu_addstd menu_addstd_old\n"
 		   "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}}\n");
 	delete[] dirresult;
