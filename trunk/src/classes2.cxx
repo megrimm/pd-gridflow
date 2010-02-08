@@ -538,15 +538,15 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		int ys = buf->dim->get(0);
 		sx = xs+5;
 		sy = ys+9;
-		char fub[xs*ys*12+1];
-		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,xs,ys);
+		char fub[xs*ys*6+1];
+		fub[0]=0; /* necessary because of 0x0 images */
+		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* ",rsym->s_name,xs,ys);
 		#define FOO(T) {T *data = (T *)*buf; \
 		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans) \
-			sprintf(fub+(y*xs+x)*12,"\\x%02x\\x%02x\\x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);}
+			sprintf(fub+(y*xs+x)*6,"%02x%02x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);}
 		TYPESWITCH(buf->nt,FOO,)
-		//fub[xs*ys*12]=0;
 		sys_gui(fub);
-		sys_gui("\"\n");
+		sys_gui("]\"\n");
 	}
  	void show() {L
 		int osx=sx, osy=sy;
