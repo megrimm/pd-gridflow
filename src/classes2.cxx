@@ -532,18 +532,22 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
-		int i=0;
+		int i=0,j=0,t=0;
 		int chans = buf->dim->get(2);
 		int xs = buf->dim->get(1);
 		int ys = buf->dim->get(0);
 		sx = xs+5;
 		sy = ys+9;
 		char fub[xs*ys*6+1];
-		fub[0]=0; /* necessary because of 0x0 images */
+		fub[xs*ys*6]=0;
 		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* ",rsym->s_name,xs,ys);
+		char tab[]="0123456789abcdef";
 		#define FOO(T) {T *data = (T *)*buf; \
-		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans) \
-			sprintf(fub+(y*xs+x)*6,"%02x%02x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);}
+		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans, j+=6) {\
+			t=unsigned(data[i+0]); fub[j+0]=tab[(t>>4)&15]; fub[j+1]=tab[t&15]; \
+			t=unsigned(data[i+1]); fub[j+2]=tab[(t>>4)&15]; fub[j+3]=tab[t&15]; \
+			t=unsigned(data[i+2]); fub[j+4]=tab[(t>>4)&15]; fub[j+5]=tab[t&15]; }}
+//			sprintf(fub+(y*xs+x)*6,"%02x%02x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);} 
 		TYPESWITCH(buf->nt,FOO,)
 		sys_gui(fub);
 		sys_gui("]\"\n");
@@ -575,7 +579,7 @@ GRID_INLET(0) {
 	class_setwidget(fclass->bfclass,GridTkImage::newwb());
 	#define ETC "-tags $self -outline $outline"
 	sys_gui("proc tkimage_update {self x y sx sy fg bg outline canvas} {\n\
-	    $canvas delete $self \n\
+	    $canvas delete $self ${self}IMAGE\n\
 	    $canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "ETC"\n\
 	    $canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "ETC"\n\
 	    $canvas create rectangle $x            $y                [expr {$x+7}    ] [expr {$y+2}    ] -fill white "ETC"\n\
