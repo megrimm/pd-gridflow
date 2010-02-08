@@ -382,8 +382,8 @@ public:
 		self->changed(); // is this ok?
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
-		*x1 = bself->te_xpix-1; *x2 = bself->te_xpix+1+self->sx;
-		*y1 = bself->te_ypix-1; *y2 = bself->te_ypix+1+self->sy;
+		*x1 = bself->te_xpix; *x2 = bself->te_xpix+self->sx;
+		*y1 = bself->te_ypix; *y2 = bself->te_ypix+self->sy;
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
 		bself->te_xpix+=dx; bself->te_ypix+=dy; const char *r = self->rsym->s_name;
@@ -523,7 +523,7 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 \class GridTkImage : GUI_FObject {
 	P<Grid> buf;
 	\constructor () {
-		sy = 48; sx = 64;
+		sy = 48+9; sx = 64+5;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
 		//use_queue = false; /* for now... */
@@ -532,12 +532,14 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
-		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,sx,sy);
 		int i=0;
 		int chans = buf->dim->get(2);
 		int xs = buf->dim->get(1);
 		int ys = buf->dim->get(0);
+		sx = xs+5;
+		sy = ys+9;
 		char fub[xs*ys*12+1];
+		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,xs,ys);
 		#define FOO(T) {T *data = (T *)*buf; \
 		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans) \
 			sprintf(fub+(y*xs+x)*12,"\\x%02x\\x%02x\\x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);}
@@ -547,10 +549,12 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 		sys_gui("\"\n");
 	}
  	void show() {L
+		int osx=sx, osy=sy;
 		if (buf) sendbuf();
-		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",
-			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,
-			selected?"#0000ff":"#000000",glist_getcanvas(mom));
+		t_glist *c = glist_getcanvas(mom);
+		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
+		sys_vgui("tkimage_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
+			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#000000",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
 	NEWWB
@@ -560,8 +564,6 @@ GRID_INLET(0) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)
 		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in->dim->get(2));
-	sx = in->dim->get(1);
-	sy = in->dim->get(0);
 	in->set_chunk(0);
 	buf=new Grid(in->dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
@@ -571,11 +573,14 @@ GRID_INLET(0) {
 \end class {
 	install("#tkimage",1,1);
 	class_setwidget(fclass->bfclass,GridTkImage::newwb());
+	#define ETC "-tags $self -outline $outline"
 	sys_gui("proc tkimage_update {self x y sx sy fg bg outline canvas} {\n\
-		$canvas delete $self \n\
-		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
-		$canvas create rectangle $x $y [expr $x+7  ]       $y      -fill red -tags $self -outline $outline \n\
-		$canvas create image     $x $y -tags ${self}IMAGE -image $self -anchor nw\n\
+	    $canvas delete $self \n\
+	    $canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "ETC"\n\
+	    $canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "ETC"\n\
+	    $canvas create rectangle $x            $y                [expr {$x+7}    ] [expr {$y+2}    ] -fill white "ETC"\n\
+	    $canvas create rectangle $x            [expr {$y+$sy-2}] [expr {$x+7}    ] [expr {$y+$sy}  ] -fill white "ETC"\n\
+	    $canvas create image     [expr {$x+3}] [expr {$y+5}]     -tags ${self}IMAGE -image $self -anchor nw\n\
 	}\n");
 }
 
