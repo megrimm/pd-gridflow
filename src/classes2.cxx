@@ -613,9 +613,9 @@ static void KEYS_ARE (int i, const char *s__) {
 	}
 	~GridSee () {pd_free((t_pd *)spy);}
 	#undef FOO
-	#define FOO(A,B,C) y-=bself->te_ypix, x-=bself->te_xpix; \
-		if (!(y<0 && y>=sy && x<0 && x>=sx)) return; \
-		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); B; \
+	#define FOO(A,B,C) y-=bself->te_ypix+4; x-=bself->te_xpix+2; \
+		if (!(y>=0 && y<=sy-9 && x>=0 && x<=sx-5)) return; \
+		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); A; \
 		outlet_anything(outlets[0],gensym(B),C,a);
 	\decl 0 position   (int y, int x, int flags             ) {FOO(                ,"position",  3);}
 	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {FOO(SETSYMBOL(a+3,k),"keypress",  4);}
