@@ -410,7 +410,7 @@ public:
 	static void keyfn(void *x, float key) {INIT1
 		//post("keyfn %d",key);
 	}
-	static void activatefn(BLAH, int state) {INIT post("activate %d",state);}
+	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
 	virtual void show() = 0;
 	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
 	static void redraw(t_gobj *bself, t_glist *meuh) {L
@@ -569,12 +569,16 @@ static void KEYS_ARE (int i, const char *s__) {
 	\decl 0 mouse   (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags|=  128<<but ;          event("position");}
 	\decl 0 mouseup (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags&=~(128<<but);          event("position");}
 	\decl 0 motion  (int x_, int y_, int flags_      ) {y=y_; x=x_; flags&=~12; flags|=flags_*2; event("position");}
-	\decl 0 key     (int on, int ascii, int drop) {
-		t_symbol *key = ascii>=0 && ascii<128 ? keyboard[ascii] : symprintf("%c",ascii);
+	\decl 0 key     (int on, t_atom ascii, int drop) {
+		t_symbol *key;
+		if (ascii.a_type==A_SYMBOL) key = ascii.a_symbol;
+		else {
+			int i = ascii.a_float;
+			key = (i<0 || i>=128 || !keyboard[i]) ? symprintf("%c",i) : keyboard[i];
+		}
 		event(on ? "keypress" : "keyrelease",key);
 	}
-	\decl 0 anything (...) {}
-	
+	\decl void anything (...) {}
 };
 \end class {
 	install("gf/mouse_spy",1,1);
@@ -594,7 +598,7 @@ static void KEYS_ARE (int i, const char *s__) {
 }
 
 \class GridSee : GUI_FObject {
-	MouseSpy *spy;
+	BFObject *spy;
 	P<Grid> buf;
 	\constructor () {
 		sy = 48+9; sx = 64+5;
@@ -602,11 +606,21 @@ static void KEYS_ARE (int i, const char *s__) {
 		changed();
 		//use_queue = false; /* for now... */
 		t_atom a[1]; SETSYMBOL(a,symprintf(".x%x",mom));
-		//pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
-		//spy = (MouseSpy *)pd_newest();
-		//spy->snd = (t_pd *)bself;
+		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
+		spy = (BFObject *)pd_newest();
+		if (!spy) RAISE("no spy?");
+		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
 	~GridSee () {pd_free((t_pd *)spy);}
+	#undef FOO
+	#define FOO(A,B,C) y-=bself->te_ypix, x-=bself->te_xpix; \
+		if (!(y<0 && y>=sy && x<0 && x>=sx)) return; \
+		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); B; \
+		outlet_anything(outlets[0],gensym(B),C,a);
+	\decl 0 position   (int y, int x, int flags             ) {FOO(                ,"position",  3);}
+	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {FOO(SETSYMBOL(a+3,k),"keypress",  4);}
+	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {FOO(SETSYMBOL(a+3,k),"keyrelease",4);}
+	#undef FOO
 	\grin 0
 	void sendbuf () {
 		std::ostringstream os;
