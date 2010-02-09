@@ -25,6 +25,7 @@ version 0.9.7 (2010.02...):
  * fixed many Win32-specific bugs
  * introduced Win32 precompiled distribution
  * add Help menu item "GridFlow Examples" (a preset "Open..." dialogue)
+ * added support for multiple cameras on OSX (up to 4)
 
 version 0.9.6 (2009.11.05):
 
