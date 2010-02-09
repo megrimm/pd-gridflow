@@ -185,6 +185,8 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   int m_newFrame; 
   SeqGrabComponent m_sg;
   SGChannel m_vc;
+  SGDeviceList deviceList;
+  int nDevices;
   short m_pixelDepth;
   Rect rect;
   GWorldPtr m_srcGWorld;
@@ -192,14 +194,13 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   Ptr m_baseAddr;
   long m_rowBytes;
   int m_quality;
-//int m_colorspace;
-  \constructor (t_symbol *mode) {
+  \constructor (t_symbol *mode, int device) {
 	//vdc = SGGetVideoDigitizerComponent(c);
 	dim = new Dim(240,320,4);
 	OSErr e;
 	rect.top=rect.left=0;
 	rect.bottom=dim->v[0]; rect.right=dim->v[1];
-	int n=0;
+	int n=0, i, j;
 	Component c = 0;
 	ComponentDescription cd;
 	cd.componentType = SeqGrabComponentType;
@@ -213,16 +214,16 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		ComponentDescription cd2;
 		Ptr name=0,info=0,icon=0;
 		GetComponentInfo(c,&cd2,&name,&info,&icon);
-		post("Component #%d",n);
+		//post("Component #%d",n);
 		char *t = (char *)&cd.componentType;
-		post(" type='%c%c%c%c'",t[3],t[2],t[1],t[0]);
+		//post(" type='%c%c%c%c'",t[3],t[2],t[1],t[0]);
 		t = (char *)&cd.componentSubType;
-		post("  subtype='%c%c%c%c'",t[3],t[2],t[1],t[0]);
-		post("  name=%08x, *name='%*s'",name, *name, name+1);
-		post("  info=%08x, *info='%*s'",info, *name, info+1);
+		//post("  subtype='%c%c%c%c'",t[3],t[2],t[1],t[0]);
+		//post("  name=%08x, *name='%*s'",name, *name, name+1);
+		//post("  info=%08x, *info='%*s'",info, *name, info+1);
 		n++;
 	}
-	post("number of components: %d",n);
+	//post("  number of components: %d",n);
 	m_sg = OpenDefaultComponent(SeqGrabComponentType, 0);
 	if(!m_sg) RAISE("could not open default component");
 	e=SGInitialize(m_sg);
@@ -233,18 +234,43 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	if(e!=noErr) post("could not make new SG channel");
 	e=SGSetChannelBounds(m_vc, &rect);
 	if(e!=noErr) post("could not set SG ChannelBounds");
+	
+    e=SGGetChannelDeviceList(m_vc, sgDeviceListIncludeInputs, &deviceList);
+    if (e!=noErr) post("could not get device list");
+    else {
+        nDevices = (*deviceList)->count;
+        //post("  number of available devices: %d", nDevices); 
+        //post("  current device: %d", (*deviceList)->selectedIndex);
+        //for (int i=0; i<nDevices; i++) post("  Device %d: %s", i, (*deviceList)->entry[i].name);
+    }
+    
+    // treat the device list in reverse order
+    device = nDevices-1-device;
+    e=SGSetChannelDevice(m_vc, (*deviceList)->entry[device].name);
+	if(e!=noErr) RAISE("could not set channel device");
+	else {
+        char *s1, s2[MAXPDSTRING];
+        s1 = (char *)(*deviceList)->entry[device].name;
+        for (i=1, j=0; i<=*s1; i++) {
+            if (isalnum(s1[i])) s2[j++] = s1[i];
+            else if (s1[i] == ' ') s2[j++] = '_';
+        }
+        s2[j++] = '\0';
+        name = gensym(s2);
+	}
+	
 	e=SGSetChannelUsage(m_vc, seqGrabPreview);
 	if(e!=noErr) post("could not set SG ChannelUsage");
-        e=SGSetDataProc(m_sg,NewSGDataUPP(callback),0);
+	e=SGSetDataProc(m_sg,NewSGDataUPP(callback),0);
 	if (e!=noErr) post("could not set SG DataProc");
-	//  m_rowBytes = m_vidXSize*4;
 	switch (3) {
 	  case 0: e=SGSetChannelPlayFlags(m_vc, channelPlayNormal); break;
 	  case 1: e=SGSetChannelPlayFlags(m_vc, channelPlayHighQuality); break;
 	  case 2: e=SGSetChannelPlayFlags(m_vc, channelPlayFast); break;
 	  case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
 	}
-	int dataSize = dim->prod();
+
+	int dataSize = dim->prod();             
 	buf = new uint8[dataSize];
 	buf2 = new uint8[dataSize];
 	m_rowBytes = dim->prod(1);
@@ -258,7 +284,6 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	if (e!=noErr) RAISE("error #%d at QTNewGWorldFromPtr",e);
 	if (!m_srcGWorld) RAISE("Could not allocate off screen");
 	SGSetGWorld(m_sg,(CGrafPtr)m_srcGWorld, NULL);
-	//SGStartPreview(m_sg);
 	e=SGStartRecord(m_sg);
 	if (e!=noErr) RAISE("error #%d at SGStartRecord",e);
   }
@@ -271,9 +296,9 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   }
   \decl 0 bang ();
   \grin 0 int
+  
+  \attr t_symbol *name;
 };
-
-// /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Components.h
 
 static int nn(int c) {return c?c:' ';}
 
