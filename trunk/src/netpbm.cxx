@@ -87,30 +87,6 @@ GRID_INLET(0) {
 \classinfo {install_format("#io.ppm",6,"ppm pgm pnm pam");}
 \end class FormatNetPBM
 
-/*FormatPPM.subclass("#io:tk",1,1) {
-	install_rgrid 0
-	def initialize(mode)
-		@id = sprintf("x%08x",object_id)
-		@filename = "/tmp/tk-#{$$}-#{@id}.ppm"
-		if mode!=:out then raise "only #out" end
-		super(mode,:file,@filename)
-		GridFlow.gui "toplevel .#{@id}\n"
-		GridFlow.gui "wm title . GridFlow/Tk\n"
-		GridFlow.gui "image create photo gf#{@id} -width 320 -height 240\n"
-		GridFlow.gui "pack [label .#{@id}.im -image #{@id}]\n"
-	end
-	def _0_rgrid_end
-		super
-		@stream.seek 0,IO::SEEK_SET
-		GridFlow.gui "image create photo #{@id} -file #{@filename}\n"
-	end
-	def delete
-		GridFlow.gui "destroy .#{@id}\n"
-		GridFlow.gui "image delete #{@id}\n"
-	end
-	alias close delete
-}*/
-
 void startup_netpbm () {
 	pm_init(0,0);
 	\startall
