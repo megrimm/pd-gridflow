@@ -456,6 +456,7 @@ Feature.add {
 		return 0;}`}}
 Feature.add {
 	tag :libv4l
+	status :disabled
 	name "Video4linux Driver Interface Library"
 	uses_h ["libv4l2.h"]
 	uses_o ["src/libv4l.o"]
@@ -553,6 +554,7 @@ Feature.add {
 	name "DesireData"
 	uses_h ["m_pd.h"]
 	defines ["HAVE_DESIREDATA"]
+	#uses_feature :puredata
 	test proc {
 		c_test %`
 			#include#
