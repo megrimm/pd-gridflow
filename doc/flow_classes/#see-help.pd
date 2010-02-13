@@ -1,0 +1,53 @@
+#N canvas 231 21 632 724 10;
+#X obj 0 0 doc_h;
+#X obj 3 276 doc_c;
+#X obj 0 690 doc_f;
+#X obj 53 35 loadbang;
+#X obj 53 75 #in violoncelle.mov;
+#X obj 53 95 #scale_to (120 160);
+#X obj 53 115 #see;
+#X obj 53 55 metro 30;
+#X text 197 40 Video output from within a patch;
+#X obj 53 248 display;
+#X obj 3 316 doc_i 1;
+#X obj 3 400 doc_o 1;
+#X obj 14 346 doc_ii 0;
+#X obj 14 430 doc_oo 0;
+#X obj 97 346 doc_m i0 grid;
+#X text 232 346 Dim(rows columns rgb);
+#X text 232 531 See [#io.x11] for more info.;
+#X text 232 509 Same as keypress but when a key gets released instead.
+;
+#X text 232 487 See [#io.x11] for more info.;
+#X text 232 623 See [#io.x11] for more info.;
+#X obj 97 430 doc_m o0 keypress;
+#X obj 97 509 doc_m o0 keyrelease;
+#X obj 97 553 doc_m o0 position;
+#X text 232 575 This is emitted every time the cursor moves inside
+the object. However \, button press/release handling is only supported
+for button 1 (left click).;
+#X text 232 430 \$1 = y \, \$2 = x \, \$3 = button1 \, \$4 = keyname
+;
+#X obj 97 645 doc_m o0 shown;
+#X text 232 452 This is emitted when a keyboard key is pressed while
+the mouse cursor is inside the object.;
+#X text 232 553 \$1 = y \, \$2 = x \, \$3 = button1;
+#X text 232 645 This is emitted each time the grid is updated (for
+every frame).;
+#X text 232 368 Displays a frame.;
+#X connect 3 0 7 0;
+#X connect 4 0 5 0;
+#X connect 5 0 6 0;
+#X connect 6 0 9 0;
+#X connect 7 0 4 0;
+#X connect 14 1 15 0;
+#X connect 14 1 29 0;
+#X connect 20 1 24 0;
+#X connect 20 1 26 0;
+#X connect 20 1 18 0;
+#X connect 21 1 17 0;
+#X connect 21 1 16 0;
+#X connect 22 1 27 0;
+#X connect 22 1 23 0;
+#X connect 22 1 19 0;
+#X connect 25 1 28 0;
