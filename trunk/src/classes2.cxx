@@ -1030,9 +1030,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 //****************************************************************
 \class ForEach : FObject {
 	\constructor () {}
-	\decl 0 list (...);
+	\decl 0 list (...) {for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);}
 };
-\def 0 list (...) {for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);}
 \end class {install("foreach",1,1);}
 
 //****************************************************************
@@ -1042,28 +1041,25 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasFileName : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 bang () {MOM; outlet_symbol(outlets[0],m->gl_name ? m->gl_name : gensym("empty"));}
 };
-\def 0 bang () {MOM; outlet_symbol(outlets[0],m->gl_name ? m->gl_name : gensym("empty"));}
 \end class {install("gf/canvas_filename",1,1);}
 \class GFCanvasDollarZero : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(m)->ce_dollarzero);}
 };
-\def 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(m)->ce_dollarzero);}
 \end class {install("gf/canvas_dollarzero",1,1);}
 \class GFCanvasGetPos : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 bang () {MOM;
+		t_atom a[2];
+		SETFLOAT(a+0,m->gl_obj.te_xpix);
+		SETFLOAT(a+1,m->gl_obj.te_ypix);
+		outlet_list(outlets[0],&s_list,2,a);
+	}
 };
-\def 0 bang () {MOM;
-	t_atom a[2];
-	SETFLOAT(a+0,m->gl_obj.te_xpix);
-	SETFLOAT(a+1,m->gl_obj.te_ypix);
-	outlet_list(outlets[0],&s_list,2,a);
-}
 \end class {install("gf/canvas_getpos",1,1);}
 \class GFCanvasSetPos : FObject {
 	int n;
@@ -1088,17 +1084,21 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasEditMode : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
 };
-\def 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
 \end class {install("gf/canvas_edit_mode",1,1);}
+\class GFCanvasIsSelected : FObject { /* contributed by "rumence" of Slovakia, on IRC */
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang () {MOM; outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));}
+};
+\end class {install("gf/canvas_is_selected",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasSetGOP : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 float (float gop);
+	\decl 0 float (float gop) {MOM; canvas_setgraph(m,int(gop),0);}
 };
-\def 0 float (float gop) {MOM; canvas_setgraph(m,int(gop),0);}
 \end class {install("gf/canvas_setgop",1,0);}
 \class GFCanvasXID : FObject {
 	int n;
@@ -1109,15 +1109,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		pd_bind((t_pd *)bself,name);
 	}
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
-	\decl 0 bang ();
-	\decl 0 xid (t_symbol *t, t_symbol *u);
-};
-\def 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
-\def 0 xid (t_symbol *t, t_symbol *u) {MOM
+	\decl 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
+	\decl 0 xid (t_symbol *t, t_symbol *u) {MOM
 	outlet_symbol(outlets[0],t);
 	outlet_symbol(outlets[1],u);
 	outlet_symbol(outlets[2],symprintf(".x%lx",m));
 }
+};
 \end class {install("gf/canvas_xid",1,3);}
 
 \class GFCanvasHeHeHe : FObject {
@@ -1144,35 +1142,32 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n; last=0;}
 	void hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),bself);}
 	~GFCanvasHoHoHo () {hide();}
-	\decl 0 list (int x1, int y1, int x2, int y2);
+	\decl 0 list (int x1, int y1, int x2, int y2) {MOM;
+		hide();
+		sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,bself);
+	}
 };
-\def 0 list (int x1, int y1, int x2, int y2) {MOM;
-	hide();
-	sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,bself);
-}
 \end class {install("gf/canvas_hohoho",1,0);}
 
 #define canvas_each(y,x) for (t_gobj *y=x->gl_list; y; y=y->g_next)
 \class GFCanvasCount : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang ();
+	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
 };
-\def 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
 \end class {install("gf/canvas_count",1,1);}
 
 \class GFCanvasLoadbang : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 float (float m);
-};
-\def 0 float (float z) {MOM;
-	int k=0;
-	canvas_each(y,m) {
-		k++;
-		if (k>=z && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
+	\decl 0 float (float z) {MOM;
+		int k=0;
+		canvas_each(y,m) {
+			k++;
+			if (k>=z && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
+		}
 	}
-}
+};
 \end class {install("gf/canvas_loadbang",1,0);};
 
 \class GFLOL : FObject {
