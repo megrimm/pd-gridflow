@@ -6,7 +6,7 @@ version 0.9.7 (2010.02...):
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid] [#make_arrow] [doc_same] [#many] [#to_iem] [doremi]
- * added [#tkimage]
+ * added [#see] [gf/mouse_spy] [gf/canvas_is_selected]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
  * quicktimehw: use normal 'get' method
