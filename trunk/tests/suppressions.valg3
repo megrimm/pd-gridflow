@@ -149,6 +149,23 @@
    fun:alsa_getdevs
 }
 {
+   alsa12
+   Memcheck:Addr1
+   fun:vfprintf
+   fun:__vsprintf_chk
+   fun:__sprintf_chk
+   fun:alsa_getdevs
+}
+{
+   alsa13
+   Memcheck:Addr1
+   fun:_IO_default_xsputn
+   fun:vfprintf
+   fun:__vsprintf_chk
+   fun:__sprintf_chk
+   fun:alsa_getdevs
+}
+{
    dlopen1
    Memcheck:Cond
    obj:/lib/ld-2.3.6.so
