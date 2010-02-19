@@ -2191,24 +2191,21 @@ GRID_INLET(0) {
 		this->n=n;
 		ninlets_set(this->n);
 	}
-	\decl void _n_float (int inlet, float f);
-	\decl void _n_list  (int inlet, float f);
-	\decl 0 bang ();
+	\decl void _n_set   (int inlet, float f) {
+		#define FOO(T) ((T *)*a)[inlet] = (T)f;
+		TYPESWITCH(a->nt,FOO,);
+		#undef FOO
+	}
+	\decl void _n_float (int inlet, float f) {_n_set(argc,argv,inlet,f); _0_bang(argc,argv);}
+	\decl void _n_list  (int inlet, float f) {_n_set(argc,argv,inlet,f); _0_bang(argc,argv);}
+	\decl 0 bang () {
+		out=new GridOutlet(this,0,a->dim,a->nt);
+		#define FOO(T) out->send(n,(T *)*a);
+		TYPESWITCH(a->nt,FOO,);
+		#undef FOO
+	}
 	//\grin 0
 };
-\def void _n_float (int inlet, float f) {
-#define FOO(T) ((T *)*a)[inlet] = (T)f;
-TYPESWITCH(a->nt,FOO,);
-#undef FOO
-	_0_bang(argc,argv);
-}
-\def void _n_list (int inlet, float f) {_n_float(argc,argv,inlet,f);}
-\def 0 bang () {
-	out=new GridOutlet(this,0,a->dim,a->nt);
-#define FOO(T) out->send(n,(T *)*a);
-TYPESWITCH(a->nt,FOO,);
-#undef FOO
-}
 \end class {install("#pack",1,1); add_creator("@pack");}
 
 \class GridUnpack : FObject {
