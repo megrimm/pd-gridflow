@@ -1,6 +1,48 @@
 $Id$
 
-0.9.7:
+==10546== Invalid write of size 4
+==10546==    at 0x6F0CF8B: gfmemcopy(unsigned char*, unsigned char const*, long) (gridflow.cxx.fcs:233)
+==10546==    by 0x6F1FF2F: void GridOutlet::send_2<int>(long, int*) (gridflow.hxx.fcs:303)
+==10546==    by 0x6FA179E: void GridRedim::grin_0<int>(GridInlet*, long, long, int*) (gridflow.hxx.fcs:756)
+==10546==    by 0x6FA186E: void GridRedim::grinw_0<int>(GridInlet*, long, long, int*) (classes1.cxx.fcs:1014)
+==10546==    by 0x6F192C1: GridInlet::finish() (gridflow.hxx.fcs:669)
+==10546==    by 0x6F194E4: GridOutlet::finish() (grid.cxx.fcs:283)
+==10546==    by 0x6F1FF6E: void GridOutlet::send_2<int>(long, int*) (grid.cxx.fcs:272)
+==10546==    by 0x6F99131: GridPack::_0_bang(int, t_atom2*) (gridflow.hxx.fcs:756)
+==10546==    by 0x6F14E60: BFObject_anything(BFObject*, int, _symbol*, int, t_atom2*) (gridflow.cxx.fcs:610)
+==10546==    by 0x80C3B81: pd_defaultfloat (m_class.c:83)
+==10546==    by 0x6F581FE: void GridUnpack::grinw_0<int>(GridInlet*, long, long, int*) (classes1.cxx.fcs:2221)
+==10546==    by 0x6F1CE9A: void GridInlet::flow<int>(long, int*) (gridflow.hxx.fcs:669)
+==10546==  Address 0x5869490 is 0 bytes after a block of size 15,376 alloc'd
+==10546==    at 0x4023E2E: memalign (vg_replace_malloc.c:532)
+==10546==    by 0x6F1A0B8: GridOutlet::create_buf() (gridflow.hxx.fcs:598)
+==10546==    by 0x6F20237: void GridOutlet::send_2<int>(long, int*) (grid.cxx.fcs:268)
+==10546==    by 0x6FA1575: void GridRedim::grin_0<int>(GridInlet*, long, long, int*) (gridflow.hxx.fcs:756)
+==10546==    by 0x6FA186E: void GridRedim::grinw_0<int>(GridInlet*, long, long, int*) (classes1.cxx.fcs:1014)
+==10546==    by 0x6F1CE9A: void GridInlet::flow<int>(long, int*) (gridflow.hxx.fcs:669)
+==10546==    by 0x6F1D146: void GridOutlet::send_direct<int>(long, int*) (grid.cxx.fcs:228)
+==10546==    by 0x6F18A6B: GridOutlet::flush() (grid.cxx.fcs:237)
+==10546==    by 0x6F194C0: GridOutlet::finish() (grid.cxx.fcs:282)
+==10546==    by 0x6F1FF6E: void GridOutlet::send_2<int>(long, int*) (grid.cxx.fcs:272)
+==10546==    by 0x6F99131: GridPack::_0_bang(int, t_atom2*) (gridflow.hxx.fcs:756)
+==10546==    by 0x6F14E60: BFObject_anything(BFObject*, int, _symbol*, int, t_atom2*) (gridflow.cxx.fcs:610)
+
+0.9.7 (à publier le 19 février):
+[ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
+[ ] try to finish [#many]
+[ ] [#see] and [gf/mouse_spy] (presque finis)
+[ ] [#import] bug (see atelier)
+[ ] [#scale_by] or [#redim] bug (see atelier)
+[ ] helpfiles for new stuff
+[ ] win32 test05 (just without mmx)
+[ ] win32 color_correction.pd crash
+[ ] tag + release source
+[ ] osx-intel binary
+[ ] osx-ppc binary
+[ ] ubuntu binary
+[ ] win32 binary
+
+0.9.8:
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
 [ ] handle_braces error causes crash?
@@ -8,7 +50,8 @@ $Id$
 [ ] [listread] has a different outlet_atom than [foreach] does
 [ ] [#out window]: window specifiers are fairly broken
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [#in libv4l] and/or [#in unicap] and/or [#in videojack]
+[ ] [#in libv4l]
+[ ] [#in unicap] and/or [#in videojack] ?
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
