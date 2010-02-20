@@ -480,12 +480,17 @@ extern "C" int sys_hostfontsize(int fontsize);
 			else quoted << (char)s[i];
 		}
 		// used to have {Courier -12} but this changed to use pdtk_canvas_new
-		sys_vgui("display_update %s %d %d #000000 #dddddd %s %d .x%x.c \"%s\"\n",
+		sys_vgui("display_update %s %d %d #000000 #ffffc8 %s %d .x%x.c \"%s\"\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#aaaaaa",
 			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
 	}
 	NEWWB
 	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
+	/* outline colour #aaaaaa instead of #000000 (really just that!) */
+	static void selectfn(BLAH, int state) {INIT L
+		self->selected=!!state;
+		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
+	}
 };
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void anything (...) {
@@ -532,7 +537,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 		" $x2 [expr {$y2-2}] [expr {$x2-2}] $y2"
 		" [expr {$x+2}] $y2 $x [expr {$y2-2}]"
 		" $x $y -fill $bg -tags $self -outline $outline\n"
-		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline\n"
+		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline black\n"
 		"$canvas lower $self ${self}TEXT \n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
