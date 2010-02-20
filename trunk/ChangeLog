@@ -6,7 +6,7 @@ version 0.9.7 (2010.02...):
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid] [#make_arrow] [doc_same] [#many] [#to_iem] [doremi]
- * added [#see] [gf/mouse_spy] [gf/canvas_is_selected]
+ * added [#see] [gf/mouse_spy] [gf/canvas_is_selected] [qwerty_piano]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
  * quicktimehw: use normal 'get' method
@@ -26,6 +26,9 @@ version 0.9.7 (2010.02...):
  * introduced Win32 precompiled distribution
  * add Help menu item "GridFlow Examples" (a preset "Open..." dialogue)
  * added support for multiple cameras on OSX (up to 4)
+ * [#color]: fixed some bugs (hidden numberbox, triplicata, wrong values)
+ * [#color]: use [nbx] on the right side instead of floatatom on the left
+ * [#pack]: add 'set' method
 
 version 0.9.6 (2009.11.05):
 
