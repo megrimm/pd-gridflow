@@ -37,6 +37,16 @@
 #include "pwc-ioctl.h"
 #include <sstream>
 
+#ifdef HAVE_LIBV4L1 // never defined (yet)
+#include <libv4l1.h>
+#define open   v4l1_open
+#define close  v4l1_close
+#define ioctl  v4l1_ioctl
+#define mmap   v4l1_mmap
+#define munmap v4l1_munmap
+#define read   v4l1_read
+#endif
+
 //#define error post
 static bool debug=0;
 
@@ -133,6 +143,7 @@ static string choice_to_s(int value, int n, const char **table) {
 		return string(table[value]);
 	}
 }
+void post(std::ostringstream &o) {string os = o.str(); post("%s",os.data());}
 static void gfpost(VideoChannel *self) {std::ostringstream buf; buf << "[VideoChannel] ";
 	WH(channel,"%d");
 	WH(name,"\"%.32s\"");
@@ -140,7 +151,7 @@ static void gfpost(VideoChannel *self) {std::ostringstream buf; buf << "[VideoCh
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
 	WH(norm,"%d");
-	post("%s",buf.str().data());}
+	post(buf);}
 static void gfpost(VideoTuner *self) {std::ostringstream buf; buf << "[VideoTuner] ";
 	WH(tuner,"%d");
 	WH(name,"\"%.32s\"");
@@ -149,25 +160,25 @@ static void gfpost(VideoTuner *self) {std::ostringstream buf; buf << "[VideoTune
 	WHFLAGS(flags,tuner_flags);
 	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
-	post("%s",buf.str().data());}
+	post(buf);}
 static void gfpost(VideoWindow *self) {std::ostringstream buf; buf << "[VideoWindow] ";
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
-	post("%s",buf.str().data());}
+	post(buf);}
 static void gfpost(VideoMbuf *self) {std::ostringstream buf; buf << "[VideoMBuf] ";
 	WH(size,"%d");
 	WH(frames,"%d");
 	oprintf(buf,"offsets=[");
 	for (int i=0; i<self->frames; i++) oprintf(buf,"%d%s",self->offsets[i],i+1==self->frames?"]":", ");
-	post("%s",buf.str().data());}
+	post(buf);}
 static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap] ";
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
-	post("%s",buf.str().data());}
+	post(buf);}
 
 /* **************************************************************** */
 
@@ -661,21 +672,19 @@ void FormatVideoDev::initialize2 () {
 	name = gensym(namebuf);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	palettes=0;
+	std::ostringstream supp;
+	supp << "camera supports palettes :";
+#if 1 /* keep this at "1" most of the time, because at "0" it crashes certain camera drivers ! */
 	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUV420P};
-#if 1
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
 		int p = checklist[i];
 #else
-	for (size_t p=0; p<17; p++) {
+	for (size_t p=1; p<17; p++) {
 #endif
 		vp.palette = p;
-		ioctl(fd, VIDIOCSPICT,&vp);
-		ioctl(fd, VIDIOCGPICT,&vp);
-		if (vp.palette == p) {
-			palettes |= 1<<p;
-			post("palette %d supported",p);
-		}
+		if (ioctl(fd, VIDIOCSPICT,&vp)>=0) {palettes |= 1<<p; supp << " " << p;}
 	}
+	post(supp);
 	_0_colorspace(0,0,gensym("rgb"));
 	_0_channel(0,0,0);
 }
