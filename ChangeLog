@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.7 (2010.02...):
+version 0.9.7 (2010.02.20):
 
  * fixed colours in [#from_pix] OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
@@ -26,9 +26,12 @@ version 0.9.7 (2010.02...):
  * introduced Win32 precompiled distribution
  * add Help menu item "GridFlow Examples" (a preset "Open..." dialogue)
  * added support for multiple cameras on OSX (up to 4)
+ * added camera name display for OSX
  * [#color]: fixed some bugs (hidden numberbox, triplicata, wrong values)
  * [#color]: use [nbx] on the right side instead of floatatom on the left
  * [#pack]: add 'set' method
+ * [display]: use system font; changed box size (spacing) to match the look
+   of objectboxes; but chopped lower corners of the box to make look distinct.
 
 version 0.9.6 (2009.11.05):
 
