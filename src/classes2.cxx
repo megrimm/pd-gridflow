@@ -481,7 +481,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 		}
 		// used to have {Courier -12} but this changed to use pdtk_canvas_new
 		sys_vgui("display_update %s %d %d #000000 #dddddd %s %d .x%x.c \"%s\"\n",
-			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#000000",
+			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#aaaaaa",
 			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
 	}
 	NEWWB
@@ -522,12 +522,17 @@ extern "C" int sys_hostfontsize(int fontsize);
 		"$canvas delete ${self}TEXT \n"
 		/*"$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n"*/
 		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
-		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n"
-		"set sx [expr $x2-$x1+2] \n"
-		"set sy [expr $y2-$y1+4] \n"
-		"$canvas delete $self \n"
-		"$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline \n"
-		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline \n"
+		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {}\n"
+		"set sx [expr $x2-$x1+2]\n"
+		"set sy [expr $y2-$y1+4]\n"
+		"$canvas delete $self\n"
+		/*"$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline\n"*/
+		"set x2 [expr {$x+$sx}]; set y2 [expr {$y+$sy}]\n"
+		"$canvas create polygon $x $y $x2 $y"
+		" $x2 [expr {$y2-2}] [expr {$x2-2}] $y2"
+		" [expr {$x+2}] $y2 $x [expr {$y2-2}]"
+		" $x $y -fill $bg -tags $self -outline $outline\n"
+		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline\n"
 		"$canvas lower $self ${self}TEXT \n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
