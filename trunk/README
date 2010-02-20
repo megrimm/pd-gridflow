@@ -8,7 +8,7 @@
 Computer/Processor: GridFlow is mainly made on PC. This includes AMD 
 K6/K7/K8 (Athlon/Opteron/etc), Intel P2/P3/P4 and other Pentiums, Intel 
 CoreDuo, etc.; the absolute minimum is 386. However, it has also been 
-built recently for Macintosh PowerPC (G3/G4/G5) recently.
+built for Macintosh PowerPC (G3/G4/G5) recently.
 
 Operating System: GridFlow is mainly made on Ubuntu. We have also used 
 Debian, SuSE, Mandrake, OSX. Microsoft Windows is not supported, but if 
