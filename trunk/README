@@ -5,9 +5,14 @@
 .-o--------------------------------------------------------------
 | Hardware and Software you Probably Need
 
-Computer/Processor: GridFlow is mainly made on PC. This includes AMD K6/K7/K8 (Athlon/Opteron/etc), Intel P2/P3/P4 and other Pentiums, Intel CoreDuo, etc.; the absolute minimum is 386. However, it has also been built recently for Macintosh PowerPC (G3/G4/G5) recently.
+Computer/Processor: GridFlow is mainly made on PC. This includes AMD 
+K6/K7/K8 (Athlon/Opteron/etc), Intel P2/P3/P4 and other Pentiums, Intel 
+CoreDuo, etc.; the absolute minimum is 386. However, it has also been 
+built recently for Macintosh PowerPC (G3/G4/G5) recently.
 
-Operating System: GridFlow is mainly made on Ubuntu. We have also used Debian, SuSE, Mandrake, OSX. Microsoft Windows is not supported, but if you do want to try to add support for that, try CygWin and/or MinGW.
+Operating System: GridFlow is mainly made on Ubuntu. We have also used 
+Debian, SuSE, Mandrake, OSX. Microsoft Windows is not supported, but if 
+you do want to try to add support for that, try CygWin and/or MinGW.
 
 Required Software:
 	Ruby 1.8 or 1.9
@@ -23,7 +28,8 @@ Multimedia Components (optional):
 	libjpeg
 	libpng
 	libmpeg3 (.mpg reader, HeroineWarrior's)
-	libquicktime (.mov reader/writer, Burkhard Plaum's or HeroineWarrior's) 
+	libquicktime (.mov reader/writer, Burkhard Plaum's or 
+		HeroineWarrior's)
 	libmpeg (.mpg reader, Greg Ward's, old)
 	Apple QuickTime (.mov reader/writer and camera interface)
 	Ascii Art Library (aalib)
@@ -39,10 +45,10 @@ Multimedia Components (optional):
 .-o--------------------------------------------------------------
 | Downloading from SVN
 
-The SVN has the absolute latest version of GridFlow, but it's not guaranteed to be working, whereas 
-the actual releases are more tested.
-However you may have various reasons to use the SVN edition, so here's how:
-Make sure you have the svn program installed.
+The SVN has the absolute latest version of GridFlow, but it's not 
+guaranteed to be working, whereas the actual releases are more tested. 
+However you may have various reasons to use the SVN edition, so here's 
+how: Make sure you have the svn program installed.
 
 cd pd/extra
 svn checkout http://gridflow.ca/svn/trunk
@@ -53,19 +59,25 @@ svn update
 
 .-o--------------------------------------------------------------
 | Installation instructions (incl. compilation)
-	Install Ruby.
-	Download GridFlow from the website and uncompress it, or get it from the SVN server.
-	Run ./configure from the gridflow directory. Make sure it detects all the components
-	you want to use with GridFlow. In MacOS you would normally use FINK to install those extra components: ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs 
 
-	In Debian (lenny) or Ubuntu (8.04), do
-		apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
-				libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
-				ruby nasm libglib1.2-dev
+  Install Ruby.
 
-	At least with Ubuntu you can add those, but haven't tried with Debian yet:
-		apt-get install libcv-dev libdc1394-13-dev
+  Download GridFlow from the website and uncompress it, or get it 
+    from the SVN server.
 
+  Run ./configure from the gridflow directory. Make sure it 
+    detects all the components you want to use with GridFlow.
+    In MacOS you would normally use FINK to install those extra components:
+        ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs
+        libmpeg libmpeg-shlibs
+
+    In Debian (lenny) or Ubuntu (8.04), do
+	apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
+		libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
+		ruby nasm libglib1.2-dev
+
+    At least with Ubuntu you can add those, but haven't tried with Debian yet:
+	apt-get install libcv-dev libdc1394-13-dev
 
 	Note: you may have to set CPLUS_INCLUDE_PATH and C_INCLUDE_PATH
 to indicate where to find *.h files, and you 

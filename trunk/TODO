@@ -43,6 +43,7 @@ $Id$
 [ ] win32 binary
 
 0.9.8:
+[ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
 [ ] handle_braces error causes crash?
