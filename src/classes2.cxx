@@ -436,6 +436,8 @@ public:
 #ifdef DESIRE
 t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
 void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
+#else
+extern "C" int sys_hostfontsize(int fontsize);
 #endif
 
 //#ifdef DESIRE
@@ -477,9 +479,10 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		sys_vgui("display_update %s %d %d #000000 #dddddd %s {Courier -12} .x%x.c \"%s\"\n",
+		// used to have {Courier -12} but this changed to use pdtk_canvas_new
+		sys_vgui("display_update %s %d %d #000000 #dddddd %s %d .x%x.c \"%s\"\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#000000",
-			glist_getcanvas(mom),quoted.str().data());
+			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
 	}
 	NEWWB
 	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
@@ -515,18 +518,19 @@ void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
 #else
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
-	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n\
-		$canvas delete ${self}TEXT \n\
-		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
-		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
-		set sx [expr $x2-$x1+2]; incr x -1 \n\
-		set sy [expr $y2-$y1+4]; incr y -1 \n\
-		$canvas delete $self \n\
-		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline \n\
-		$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline \n\
-		$canvas lower $self ${self}TEXT \n\
-		pd \"$self set_size $sy $sx;\" \n\
-	}\n");
+	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n"
+		"$canvas delete ${self}TEXT \n"
+		/*"$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n"*/
+		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
+		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n"
+		"set sx [expr $x2-$x1+2] \n"
+		"set sy [expr $y2-$y1+4] \n"
+		"$canvas delete $self \n"
+		"$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline \n"
+		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline $outline \n"
+		"$canvas lower $self ${self}TEXT \n"
+		"pd \"$self set_size $sy $sx;\" \n"
+	"}\n");
 #endif
 }
 //#endif // ndef DESIRE
