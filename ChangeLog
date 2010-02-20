@@ -32,6 +32,7 @@ version 0.9.7 (2010.02.20):
  * [#pack]: add 'set' method
  * [display]: use system font; changed box size (spacing) to match the look
    of objectboxes; but chopped lower corners of the box to make look distinct.
+ * [#redim]: fixed occasional crash that happened for some grid sizes
 
 version 0.9.6 (2009.11.05):
 
