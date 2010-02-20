@@ -259,13 +259,15 @@ void GridOutlet::send_2(long n, T *data) {
 #undef FOO
 	} else {
 		dex += n;
-		if (n > MIN_PACKET_SIZE || bufi + n > MAX_PACKET_SIZE) flush();
 		if (n > MIN_PACKET_SIZE) {
+			flush();
 			//post("send_direct %d",n);
 			send_direct(n,data);
 		} else {
 			//post("send_indirect %d",n);
 			if (!buf) create_buf();
+			int32 v = buf->dim->prod();
+			if (bufi + n > v) flush();
 			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
