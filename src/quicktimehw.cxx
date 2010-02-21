@@ -201,7 +201,7 @@ GRID_INLET(0) {
 \def 0 width  (int32 v) {RAISE("use size instead");}
 \def 0 frames (int32 v) {RAISE("read-only");}
 
-\classinfo {install_format("#io.quicktime",6,"mov MOV avi AVI");
+\classinfo {install_format("#io.quicktime",6,"mov avi");
 //  def self.info; %[codecs: #{@codecs.keys.join' '}] end
 //#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #ifdef LQT_VERSION
