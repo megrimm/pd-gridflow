@@ -76,7 +76,7 @@
 //	return INT2NUM(nframe);
 }
 
-\classinfo {install_format("#io.mpeg",4,"mpg mpeg");}
+\classinfo {install_format("#io.mpeg",4,"mpg mpeg mpe");}
 \end class FormatMPEG3
 void startup_mpeg3 () {
 	\startall
