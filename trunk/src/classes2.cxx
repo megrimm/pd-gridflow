@@ -383,8 +383,8 @@ public:
 		self->changed(); // is this ok?
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
-		*x1 = bself->te_xpix; *x2 = bself->te_xpix+self->sx;
-		*y1 = bself->te_ypix; *y2 = bself->te_ypix+self->sy;
+		*x1 = text_xpix(bself,glist); *x2 = *x1+self->sx;
+		*y1 = text_ypix(bself,glist); *y2 = *y1+self->sy;
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
 		bself->te_xpix+=dx; bself->te_ypix+=dy; const char *r = self->rsym->s_name;
@@ -459,9 +459,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 		pd_typedmess(gp,gensym("dest"),1,a);
  		changed();
 	}
-	~Display () {
-		pd_free(gp);
-	}
+	~Display () {pd_free(gp);}
 	\decl void anything (...);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
