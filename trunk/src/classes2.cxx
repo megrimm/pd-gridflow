@@ -399,15 +399,15 @@ public:
 		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
-	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
+	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT L
 		//post("click1 %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit);
 		//glist_grab(self->mom,(t_gobj *)bself,motionfn,keyfn,xpix,ypix);
 		return 0;
 	}
-	static void motionfn(void *x, float dx, float dy) {INIT1
+	static void motionfn(void *x, float dx, float dy) {INIT1 L
 		//post("motionfn %d %d",dx,dy);
 	}
-	static void keyfn(void *x, float key) {INIT1
+	static void keyfn(void *x, float key) {INIT1 L
 		//post("keyfn %d",key);
 	}
 	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
@@ -560,14 +560,23 @@ static void KEYS_ARE (int i, const char *s__) {
 	free(s_);
 }
 
+static t_symbol *s_default;
 \class MouseSpy : FObject {
 	int y,x,flags;
 	t_symbol *rcv;
 	t_pd *snd;
-	\constructor (t_symbol *rcv_=0) {
-		snd=0; rcv=rcv_?rcv_:symprintf(".x%x",mom); pd_bind((t_pd *)bself,rcv);
+	\constructor (t_symbol *rcv_=s_default) {
+		snd=0;
+		rcv=rcv_!=gensym("default")?rcv_:symprintf(".x%x",mom);
+		if (rcv)   pd_bind((t_pd *)bself,rcv);
 	}
-	~MouseSpy () {pd_unbind((t_pd *)bself,rcv);}
+	void set_rcv (t_symbol *rcv_=0) {
+		//post("set_rcv %08x",long(rcv));
+		if (rcv) pd_unbind((t_pd *)bself,rcv);
+		rcv=rcv_;
+		if (rcv)   pd_bind((t_pd *)bself,rcv);
+	}
+	~MouseSpy () {if (rcv) pd_unbind((t_pd *)bself,rcv);}
 	void event (const char *ss, t_symbol *key=0) {
 		t_atom a[4];
 		SETFLOAT(a+0,y);
@@ -594,6 +603,7 @@ static void KEYS_ARE (int i, const char *s__) {
 };
 \end class {
 	install("gf/mouse_spy",1,1);
+	s_default = gensym("default");
 	// copied from [#io.sdl] :
 	KEYS_ARE(8,"BackSpace Tab");
 	KEYS_ARE(13,"Return");
@@ -617,7 +627,7 @@ static void KEYS_ARE (int i, const char *s__) {
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
 		//use_queue = false; /* for now... */
-		t_atom a[1]; SETSYMBOL(a,symprintf(".x%x",mom));
+		t_atom a[1]; SETSYMBOL(a,symprintf(".x%x",glist_getcanvas(mom)));
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
 		spy = (BFObject *)pd_newest();
 		if (!spy) RAISE("no spy?");
