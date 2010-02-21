@@ -112,7 +112,7 @@ static bool gfeof(FILE *f) {
 
 \def 0 quality (short quality) {this->quality = min(max((int)quality,0),100);}
 
-\classinfo {install_format("#io.jpeg",6,"jpeg jpg");}
+\classinfo {install_format("#io.jpeg",6,"jpeg jpg jpe");}
 \end class FormatJPEG
 void startup_jpeg () {
 	\startall
