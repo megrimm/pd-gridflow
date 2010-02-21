@@ -24,6 +24,7 @@
 #include "gridflow.hxx.fcs"
 #include <string>
 #include <map>
+#include <algorithm>
 #include <errno.h>
 #define L _L_
 
@@ -78,6 +79,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 	if (!t) outlet_symbol(outlets[2],gensym(s));
 	else {
 		*t = 0;
+		for (char *u=t+1; *u; u++) *u=tolower(*u);
 		outlet_symbol(outlets[1],gensym(t+1));
 		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
 		if (u==suffix_table.end()) outlet_bang(outlets[0]);
