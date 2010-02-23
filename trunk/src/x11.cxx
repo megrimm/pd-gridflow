@@ -372,7 +372,7 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	return 42; /* it seems that the return value is ignored. */
 }
 
-bool FormatX11::alloc_image (int sx, int sy) {_L_
+bool FormatX11::alloc_image (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
