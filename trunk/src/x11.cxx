@@ -196,12 +196,12 @@ void FormatX11_call(FormatX11 *p);
 		clock_delay(clock,0);
 		show_section(0,0,sx,sy);
 		if ((mode&4)!=0) {
-		  Window root; int x,y; unsigned sx,sy,sb,depth;
-		  XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
+			Window root; int x,y; unsigned sx,sy,sb,depth;
+			XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
 			post("sx=%d sy=%d",sx,sy);
-      _0_out_size(argc,argv,sy,sx);
+			_0_out_size(argc,argv,sy,sx);
 		}
-  }
+	}
 
 	\decl 0 bang ();
 	void call ();
@@ -220,7 +220,7 @@ void FormatX11_call(FormatX11 *p);
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
-  if ((mode&2)==0) return;
+	if ((mode&2)==0) return;
 	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
@@ -250,6 +250,7 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 	    if (shared_memory) {
 #ifdef HAVE_X11_SHARED_MEMORY
 		XSync(display,False);
+		//fprintf(stderr,"show_section: display=%p window=0x%lx imagegc=%p ximage=%p (%d,%d,%d,%d)\n",display,window,imagegc,ximage,x,y,sx,sy);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		XFlush(display);
 		//XPutImage( display,window,imagegc,ximage,x,y,x,y,sx,sy);
@@ -371,7 +372,7 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	return 42; /* it seems that the return value is ignored. */
 }
 
-bool FormatX11::alloc_image (int sx, int sy) {
+bool FormatX11::alloc_image (int sx, int sy) {_L_
 	dim = new Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
@@ -439,6 +440,7 @@ bool FormatX11::alloc_image (int sx, int sy) {
 #endif
 	int status = XInitImage(ximage);
 	if (status!=1) post("XInitImage returned: %d", status);
+	//_L_ fprintf(stderr,"alloc_image: %p %p\n",ximage,image);
 	return true;
 retry:
 	post("couldn't allocate image buffer for output... retrying...");
