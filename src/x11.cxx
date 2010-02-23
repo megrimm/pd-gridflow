@@ -497,9 +497,9 @@ void FormatX11::resize_window (int sx, int sy) {
 			KeyPressMask|KeyReleaseMask);
 
 		if (is_owner) XMapRaised(display, window);
-		imagegc = XCreateGC(display, window, 0, NULL);
 		if (visual->c_class == PseudoColor) prepare_colormap();
 	}
+	if (!imagegc) imagegc = XCreateGC(display, window, 0, NULL);
 	XSync(display,0);
 }
 
