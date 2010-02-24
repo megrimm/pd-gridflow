@@ -33,7 +33,9 @@ version 0.9.7 (2010.02.20):
  * [display]: use system font; changed box size (spacing) to match the look
    of objectboxes; but chopped lower corners of the box to make look distinct.
  * [#redim]: fixed occasional crash that happened for some grid sizes
-
+ * [#in],[#out]: auto-detect non-lowercase suffixes
+ * [#out x11]: now 'root' option is working again.
+ 
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
