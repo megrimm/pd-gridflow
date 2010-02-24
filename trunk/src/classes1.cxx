@@ -2,7 +2,7 @@
 	$Id: flow_objects.c 4548 2009-10-31 20:26:25Z matju $
 
 	GridFlow
-	Copyright (c) 2001-2009 by Mathieu Bouchard
+	Copyright (c) 2001-2010 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -111,12 +111,12 @@ GridHandler *stromgol; // remove this asap
 		}
 	}
 	~GridImport() {}
-	\decl 0 reset();
+	\decl 0 reset() {int32 foo[1]={0}; if (out) while (out->dim) out->send(1,foo);}
 	\decl 0 symbol(t_symbol *x);
 	\decl 0 to_ascii(...);
-	\decl 0 bang();
+	\decl 0 bang() {_0_list(0,0);}
 	//\decl 0 list(...);
-	\decl 1 per_message();
+	\decl 1 per_message() {dim=0; dim_grid=0;}
 	\grin 0
 	\grin 1 int32
 	template <class T> void process (long n, T *data) {
@@ -152,17 +152,13 @@ GRID_INPUT(1,dim_grid) {
 	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
 	process(n,(uint8 *)s.data());
 }
-
-\def 0 bang() {_0_list(0,0);}
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 	in[0]->from_list(argc,argv,cast);
 	if (!argc && !dim) out = new GridOutlet(this,0,new Dim(0),cast);
 }
-\def 1 per_message() {dim=0; dim_grid=0;}
 
-\def 0 reset() {int32 foo[1]={0}; if (out) while (out->dim) out->send(1,foo);}
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
 
 //****************************************************************
@@ -227,11 +223,11 @@ GRID_INLET(0) {
 	int maxrows;
 	int columns;
 	t_pd *dest;
-	\decl 0 dest (void *p);
-	\decl void end_hook ();
+	\decl 0 dest (void *p) {dest = (t_pd *)p;}
+	\decl void end_hook () {}
 	\decl 0 base (int x);
 	\decl 0 trunc (int x);
-	\decl 0 maxrows (int y);
+	\decl 0 maxrows (int y) {maxrows = y;}
 	void puts (const char *s) {
 		if (!dest) post("%s",s);
 		else {
@@ -289,14 +285,11 @@ GRID_INLET(0) {
 		return r.str();
 	}
 };
-\def 0 dest (void *p) {dest = (t_pd *)p;}
-\def void end_hook () {}
 \def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
 \def 0 trunc (int x) {
 	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
 	trunc = x;
 }
-\def 0 maxrows (int y) {maxrows = y;}
 template <class T> void GridPrint::make_columns (int n, T *data) {
 	long maxv=0;
 	long minv=0;
@@ -393,7 +386,7 @@ GRID_INLET(0) {
 		DELBUF(to2);
 	}
 	\decl 0 bang ();
-	\decl 1 reassign ();
+	\decl 1 reassign () {put_at=0;}
 	\decl 1 put_at (...);
 	\grin 0 int
 	\grin 1
@@ -549,7 +542,6 @@ GRID_INLET(1) {
 	SETSYMBOL(a+1,gensym("#"));
 	pd_list((t_pd *)bself,&s_list,2,a);
 }
-\def 1 reassign () {put_at=0;}
 \def 1 put_at (...) {
 	if (argv[0].a_type==A_LIST) put_at=convert(argv[0],(Grid **)0);
 	else {
@@ -897,7 +889,7 @@ GRID_INPUT(1,r) {} GRID_END
 		this->to  =to;
 		this->step=step;
 	}
-	\decl 0 set (Grid *r=0);
+	\decl 0 set (Grid *r=0) {from=new Grid(argv[0]);}
 	\decl 0 bang ();
 	\grin 0 int
 	\grin 1 int
@@ -957,7 +949,6 @@ void GridFor::trigger (T bogus) {
 #undef FOO
 }
 
-\def 0 set (Grid *r) { from=new Grid(argv[0]); }
 GRID_INPUT(2,step) {} GRID_END
 GRID_INPUT(1,to) {} GRID_END
 GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
@@ -1158,13 +1149,10 @@ GRID_INLET(0) {
 		this->dim1 = dim1;
 		this->dim2 = dim2;
 	}
-	\decl 1 float (int dim1);
-	\decl 2 float (int dim2);
+	\decl 1 float (int dim1) {this->dim1=dim1;}
+	\decl 2 float (int dim2) {this->dim2=dim2;}
 	\grin 0
 };
-
-\def 1 float (int dim1) { this->dim1=dim1; }
-\def 2 float (int dim2) { this->dim2=dim2; }
 
 GRID_INLET(0) {
 	int32 v[in->dim->n];
@@ -1209,11 +1197,9 @@ GRID_INLET(0) {
 	\attr int dim1; // dimension to act upon
 	int d; // temporaries
 	\constructor (int dim1=0) {this->dim1 = dim1;}
-	\decl 1 float (int dim1);
+	\decl 1 float (int dim1) {this->dim1=dim1;}
 	\grin 0
 };
-
-\def 1 float (int dim1) { this->dim1=dim1; }
 
 GRID_INLET(0) {
 	d=dim1;
@@ -1353,7 +1339,7 @@ GRID_INPUT(1,offset) {} GRID_END
 //****************************************************************
 \class GridLabelling : FObject {
 	\grin 0
-	\attr int form();
+	\attr int form() {return form_val;}
 	\attr int form_val;
 	\constructor (int form=0) {form_val=form; initialize3();}
 	void initialize3() {noutlets_set(form_val ? 2 : 4);}
@@ -1425,7 +1411,6 @@ GRID_INLET(0) {
 	DELBUF(dat);
 } GRID_END
 
-\def int form() {return form_val;}
 \def 0 form(int form) {
 	if (form<0 || form>1) RAISE("form must be 0 or 1, not %d",form);
 	form_val=form;
@@ -2155,7 +2140,7 @@ GRID_INLET(0) {
 \class GridNoiseGateYuvs : FObject {
 	\grin 0
 	int thresh;
-	\decl 1 float(int v);
+	\decl 1 float(int v) {thresh=v;}
 	\constructor (int v=0) {thresh=v;}
 };
 
@@ -2176,7 +2161,6 @@ GRID_INLET(0) {
 	out->send(n,tada);
 } GRID_END
 
-\def 1 float(int v) {thresh=v;}
 \end class {install("#noise_gate_yuvs",2,1);}
 
 //****************************************************************
@@ -2238,7 +2222,7 @@ GRID_INLET(0) {
 		angle=0;
 		_0_axis(0,0,from,to,n);
 	}
-	\decl 1 float(int angle);
+	\decl 1 float(int angle) {this->angle = angle;}
 };
 \def 0 float (int scale) {
 	int32 rotator[n*n];
@@ -2257,7 +2241,6 @@ GRID_INLET(0) {
 	this->  to =   to;
 	this->   n =    n;
 }
-\def 1 float(int angle) {this->angle = angle;}
 \end class {install("#rotatificator",2,1);}
 
 static void expect_min_one_dim (P<Dim> d) {
@@ -2270,7 +2253,7 @@ static void expect_min_one_dim (P<Dim> d) {
 	\attr PtrGrid sums;
 	\attr PtrGrid counts;
 	\constructor (int v) {_1_float(0,0,v); r.constrain(expect_min_one_dim);}
-	\decl 1 float (int v);
+	\decl 1 float (int v) {numClusters = v;}
 	\grin 0 int32
 	\grin 2
 	template <class T> void make_stats (long n, int32 *ldata, T *rdata) {
@@ -2306,7 +2289,6 @@ GRID_INLET(0) {
 	TYPESWITCH(r->nt,FOO,)
 	#undef FOO
 } GRID_END
-\def 1 float (int v) {numClusters = v;}
 GRID_INPUT(2,r) {
 } GRID_END
 
