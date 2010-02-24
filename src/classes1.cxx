@@ -1339,11 +1339,12 @@ GRID_INPUT(1,offset) {} GRID_END
 //****************************************************************
 \class GridLabelling : FObject {
 	\grin 0
-	\attr int form() {return form_val;}
+	\attr int form();
 	\attr int form_val;
 	\constructor (int form=0) {form_val=form; initialize3();}
 	void initialize3() {noutlets_set(form_val ? 2 : 4);}
 };
+\def int form () {return form_val;}
 struct Stats {
 	int64 yy,yx,xx,y,x,area;
 	int64 x1,x2;
