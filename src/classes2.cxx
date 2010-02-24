@@ -2,7 +2,7 @@
 	$Id: flow_objects.c 4097 2008-10-03 19:49:03Z matju $
 
 	GridFlow
-	Copyright (c) 2001-2009 by Mathieu Bouchard
+	Copyright (c) 2001-2010 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -320,7 +320,9 @@ string ssprintf(const char *fmt, ...) {
 	std::ostringstream text;
 	text << prefix->s_name << ":";
 	t_symbol *s = gensym("_0_list");
-	if      (argv[0]==s && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
+	t_symbol *f = gensym("_0_float");
+	if      (argv[0]==f && argc==2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
+	else if (argv[0]==s && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
 	else if (argv[0]==s && argc==2 && argv[1].a_type==A_SYMBOL ) {text << " symbol" ;}
 	else if (argv[0]==s && argc==2 && argv[1].a_type==A_POINTER) {text << " pointer";}
 	else if (argv[0]==s && argc==1) {text << " bang";}
@@ -469,7 +471,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 \def void anything (...) {
 	string sel = string(argv[0]).data()+3;
 	text.str("");
-	if (sel != "float") {text << sel; if (argc>1) text << " ";}
+	if (sel=="float") {} else if (sel=="list" && argc==2) {} else {text << sel; if (argc>1) text << " ";}
 	long nl=0;
 	for (int i=1; i<argc; i++) {
 		text << argv[i];
