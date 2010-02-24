@@ -100,13 +100,13 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
 \def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
-	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_SYMBOL)        outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
 	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_float);
 	else outlet_anything(o,&s_list,argc,argv);
 }
 void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	if (!argc) pd_bang(o);
-	else if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_SYMBOL)       pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
 	else if (argv[0].a_type==A_FLOAT && argc==1) pd_float(o,argv[0].a_float);
 	else pd_typedmess(o,&s_list,argc,argv);
 }
@@ -183,31 +183,28 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 \class ListReverse : FObject {
 	\constructor () {}
-	\decl 0 list(...);
+	\decl 0 list(...) {
+		for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
+		outlet_list(bself->te_outlet,&s_list,argc,argv);
+	}
 };
-\def 0 list (...) {
-	for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
-	outlet_list(bself->te_outlet,&s_list,argc,argv);
-}
 \end class {install("listreverse",1,1);}
 
 \class ListFlatten : FObject {
 	std::vector<t_atom2> contents;
 	\constructor () {}
-	\decl 0 list(...);
 	void traverse (int argc, t_atom2 *argv) {
 		for (int i=0; i<argc; i++) {
 			if (argv[i].a_type==A_LIST) traverse(binbuf_getnatom(argv[i]),(t_atom2 *)binbuf_getvec(argv[i]));
 			else contents.push_back(argv[i]);
 		}
 	}
+	\decl 0 list(...) {
+		traverse(argc,argv);
+		outlet_list(bself->te_outlet,&s_list,contents.size(),&contents[0]);
+		contents.clear();
+	}
 };
-\def 0 list (...) {
-	traverse(argc,argv);
-	outlet_list(bself->te_outlet,&s_list,contents.size(),&contents[0]);
-	contents.clear();
-
-}
 \end class {install("listflatten",1,1);}
 
 // does not do recursive comparison of lists.
@@ -225,33 +222,20 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 	t_atom *at;
 	~ListFind() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
-	\decl 0 list(...);
-	\decl 1 list(...);
-	\decl 0 float(float f);
-	\decl 0 symbol(t_symbol *s);
+	\decl 0 list(...) {if (argc<1) RAISE("empty input"); else find(argv);}
+	\decl 1 list(...) {
+		if (at) delete[] at;
+		ac = argc;
+		at = new t_atom[argc];
+		for (int i=0; i<argc; i++) at[i] = argv[i];
+	}
+	\decl 0 float( float     f) {find(argv);}
+	\decl 0 symbol(t_symbol *s) {find(argv);}
+	void find (t_atom *a) {
+		int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+		outlet_float(outlets[0],i==ac?-1:i);
+	}
 };
-\def 1 list (...) {
-	if (at) delete[] at;
-	ac = argc;
-	at = new t_atom[argc];
-	for (int i=0; i<argc; i++) at[i] = argv[i];
-}
-\def 0 list (...) {
-	if (argc<1) RAISE("empty input");
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(outlets[0],i==ac?-1:i);
-}
-\def 0 float (float f) {
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(outlets[0],i==ac?-1:i);
-}
-\def 0 symbol (t_symbol *s) {
-	int i=0; for (; i<ac; i++) if (atom_eq(at[i],argv[0])) break;
-	outlet_float(outlets[0],i==ac?-1:i);
-}
-//doc:_1_list,"list to search into"
-//doc:_0_float,"float to find in that list"
-//doc_out:_0_float,"position of the incoming float in the stored list"
 \end class {install("listfind",2,1);}
 
 void outlet_atom2 (t_outlet *self, t_atom *av) {
@@ -266,21 +250,19 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 	t_atom *at;
 	~ListRead() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
-	\decl 0 float(float f);
-	\decl 1 list(...);
+	\decl 0 float(float f) {
+		int i = int(f);
+		if (i<0) i+=ac;
+		if (i<0 || i>=ac) {outlet_bang(outlets[0]); return;} /* out-of-range */
+		outlet_atom2(outlets[0],&at[i]);
+	}
+	\decl 1 list(...) {
+		if (at) delete[] at;
+		ac = argc;
+		at = new t_atom[argc];
+		for (int i=0; i<argc; i++) at[i] = argv[i];
+	}
 };
-\def 0 float(float f) {
-	int i = int(f);
-	if (i<0) i+=ac;
-	if (i<0 || i>=ac) {outlet_bang(outlets[0]); return;} /* out-of-range */
-	outlet_atom2(outlets[0],&at[i]);
-}
-\def 1 list (...) {
-	if (at) delete[] at;
-	ac = argc;
-	at = new t_atom[argc];
-	for (int i=0; i<argc; i++) at[i] = argv[i];
-}
 \end class {install("listread",2,1);}
 
 \class Range : FObject {
@@ -295,15 +277,13 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 		noutlets_set(1+nmosusses);
 	}
 	~Range () {delete[] mosusses;}
-	\decl 0 float(float f);
-	\decl 0 list(float f);
+	\decl 0 float(float f) {
+		int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
+		outlet_float(outlets[i],f);
+	}
+	\decl 0 list(float f) {_0_float(argc,argv,f);}
 	\decl void _n_float(int i, float f);
 };
-\def 0 list(float f) {_0_float(argc,argv,f);}
-\def 0 float(float f) {
-	int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
-	outlet_float(outlets[i],f);
-}
  // precedence problem in dispatcher... does this problem still exist?
 \def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
 \end class {install("range",1,1);}
@@ -333,10 +313,9 @@ string ssprintf(const char *fmt, ...) {
 		SETPOINTER(a,(t_gpointer *)bself);
 	}
 	~GFPrint () {pd_free(gp);}
-	\decl 0 grid(...);
+	\decl 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 	\decl void anything (...);
 };
-\def 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 \def void anything(...) {
 	std::ostringstream text;
 	text << prefix->s_name << ":";
@@ -413,10 +392,7 @@ public:
 	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
 	virtual void show() = 0;
 	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
-	static void redraw(t_gobj *bself, t_glist *meuh) {L
-		GUI_FObject *self = (GUI_FObject *)((BFObject *)bself)->self;
-		self->show();
-	}
+	static void redraw(BLAH) {L INIT1 self->show();}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
 	t_widgetbehavior *wb = new t_widgetbehavior; \
@@ -445,7 +421,6 @@ extern "C" int sys_hostfontsize(int fontsize);
 	int y,x;
 	std::ostringstream text;
 	t_pd *gp;
-	static void display_redraw(t_gobj *client, t_glist *glist);
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		std::ostringstream os;
@@ -483,7 +458,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
 	}
 	NEWWB
-	static void redraw(t_gobj *bself, t_glist *meuh) {L Display *self = (Display *)((BFObject *)bself)->self; self->show();}
+	static void redraw(BLAH) {L INIT1 self->show();}
 	/* outline colour #aaaaaa instead of #000000 (really just that!) */
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
@@ -982,29 +957,23 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class UserTime : FObject {
 	clock_t time;
 	\constructor () {_0_bang(argc,argv);}
-	\decl 0 bang ();
-	\decl 1 bang ();
+	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
+	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
 };
-\def 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
-\def 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
 	\constructor () {_0_bang(argc,argv);}
-	\decl 0 bang ();
-	\decl 1 bang ();
+	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
+	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
 };
-\def 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
-\def 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
 	\constructor () {_0_bang(argc,argv);}
-	\decl 0 bang ();
-	\decl 1 bang ();
+	\decl 0 bang () {time=rdtsc();}
+	\decl 1 bang () {outlet_float(outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 };
-\def 0 bang () {time=rdtsc();}
-\def 1 bang () {outlet_float(outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 \end class {install("tsctime",2,1);
 	struct timeval t0,t1;
 	uint64 u0,u1;
@@ -1031,14 +1000,11 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		}
 		format = o.str();
 	}
-	\decl 0 bang ();
-	\decl 0 float (float f);
-	\decl 0 symbol (t_symbol *s);
+	\decl 0 bang  ()             {_0_list(0,0);}
+	\decl 0 float (float f)      {_0_list(argc,argv);}
+	\decl 0 symbol (t_symbol *s) {_0_list(argc,argv);}
 	\decl 0 list (...);
 };
-\def 0 bang () {_0_list(0,0);}
-\def 0 float (float f) {_0_list(argc,argv);}
-\def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
 
 \def 0 list (...) {
 	std::ostringstream o;
