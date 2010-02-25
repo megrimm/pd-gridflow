@@ -205,11 +205,11 @@ say hpgl_track_position "remember last mentioned hpgl coordinate"
 say interval_overlap    "test whether two intervals of floats overlap"
 say norecurse           "simple spigot for preventing control-recursion"
 say #make_arrow         "make an arrow polygon from 2 points (for use with hpgl)"
-say #many               "create and organise many identical GUI objects"
+say #many               "\[#many\]: create and organise many identical GUI objects"
 say #see                "\[#see\]: view video output within patch and collect mouse/key info"
 say #to_iem             "convert grid(3) to IEMGUI colour code"
 say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\]"
-say doremi              "gui object for displaying midi notes"
+say doremi              "\[doremi\]: gui object for displaying midi notes"
 say gf/mouse_spy        "tell mouse/key events of a single patch window in \[#out window\] format"
 
 # never finished (2007)
