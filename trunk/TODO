@@ -2,12 +2,13 @@ $Id$
 
 0.9.7 (à publier le 24 février):
 [ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
-[ ] try to finish [#many]
-[ ] [#see] and [gf/mouse_spy] (presque finis)
+[ ] continue [#many]...
+[x] [#see] and [gf/mouse_spy] (presque finis)
 [ ] [#import] bug (see atelier)
-[ ] [#scale_by] or [#redim] bug (see atelier)
+[x] [#scale_by] or [#redim] bug (see atelier)
 [ ] helpfiles for new stuff
-[ ] win32 test05 (just without mmx)
+[x] win32 test05 (--no-mmx)
+[ ] win32 test06 (--no-pentium)
 [ ] win32 color_correction.pd crash
 [ ] tag + release source
 [ ] osx-intel binary
@@ -17,6 +18,7 @@ $Id$
 
 0.9.8:
 [x] [#out x11 ... root] crashes
+[ ] unify [print] and [display] source code
 [ ] is there a GC (graphics context) leak in [#io.x11] ?
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
