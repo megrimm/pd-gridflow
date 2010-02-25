@@ -617,7 +617,7 @@ static t_symbol *s_empty;
 	#define FOO(A,B,C) t_canvas *can = mom; /* and not glist_getcanvas(mom) */ \
 		post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can)); \
 		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2; \
-		if (!(y>=0 && y<=sy-9 && x>=0 && x<=sx-5)) return; \
+		if (!(y>=0 && y<sy-9 && x>=0 && x<sx-5)) return; \
 		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); A; \
 		outlet_anything(outlets[0],gensym(B),C,a);
 	\decl 0 position   (int y, int x, int flags             ) {FOO(                ,"position",  3);}
