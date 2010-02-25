@@ -30,10 +30,9 @@
 #include <errno.h>
 #include <CoreServices/CoreServices.h>
 
+#if 0
 typedef ComponentInstance VideoDigitizerComponent, VDC;
 typedef ComponentResult   VideoDigitizerError,     VDE;
-
-#if 0
 //enum {VDCType='vdig', vdigInterfaceRev=2 };
 //enum {ntscIn=0, currentIn=0, palIn, secamIn, ntscReallyIn };
 //enum {compositeIn, sVideoIn, rgbComponentIn, rgbComponentSyncIn, yuvComponentIn, yuvComponentSyncIn, tvTunerIn, sdiIn};
@@ -195,7 +194,6 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   long m_rowBytes;
   int m_quality;
   \constructor (t_symbol *mode, int device) {
-	//vdc = SGGetVideoDigitizerComponent(c);
 	dim = new Dim(240,320,4);
 	OSErr e;
 	rect.top=rect.left=0;
@@ -235,30 +233,31 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	e=SGSetChannelBounds(m_vc, &rect);
 	if(e!=noErr) post("could not set SG ChannelBounds");
 	
-    e=SGGetChannelDeviceList(m_vc, sgDeviceListIncludeInputs, &deviceList);
-    if (e!=noErr) post("could not get device list");
-    else {
-        nDevices = (*deviceList)->count;
-        //post("  number of available devices: %d", nDevices); 
-        //post("  current device: %d", (*deviceList)->selectedIndex);
-        //for (int i=0; i<nDevices; i++) post("  Device %d: %s", i, (*deviceList)->entry[i].name);
-    }
+	e=SGGetChannelDeviceList(m_vc, sgDeviceListIncludeInputs, &deviceList);
+	if (e!=noErr) post("could not get device list");
+	else {
+		nDevices = (*deviceList)->count;
+		//post("  number of available devices: %d", nDevices); 
+		//post("  current device: %d", (*deviceList)->selectedIndex);
+		//for (int i=0; i<nDevices; i++)
+			//post("  Device %d: %s", i, (*deviceList)->entry[i].name);
+	}
     
-    // treat the device list in reverse order
-    device = nDevices-1-device;
-    e=SGSetChannelDevice(m_vc, (*deviceList)->entry[device].name);
+	// treat the device list in reverse order
+	device = nDevices-1-device;
+	e=SGSetChannelDevice(m_vc, (*deviceList)->entry[device].name);
 	if(e!=noErr) RAISE("could not set channel device");
 	else {
-        char *s1, s2[MAXPDSTRING];
-        s1 = (char *)(*deviceList)->entry[device].name;
-        for (i=1, j=0; i<=*s1; i++) {
-            if (isalnum(s1[i])) s2[j++] = s1[i];
-            else if (s1[i] == ' ') s2[j++] = '_';
-        }
-        s2[j++] = '\0';
-        name = gensym(s2);
+		char *s1, s2[MAXPDSTRING];
+		s1 = (char *)(*deviceList)->entry[device].name;
+		for (i=1, j=0; i<=*s1; i++) {
+			if (isalnum(s1[i])) s2[j++] = s1[i];
+			else if (s1[i] == ' ') s2[j++] = '_';
+		}
+		s2[j] = '\0';
+		name = gensym(s2);
 	}
-	
+
 	e=SGSetChannelUsage(m_vc, seqGrabPreview);
 	if(e!=noErr) post("could not set SG ChannelUsage");
 	e=SGSetDataProc(m_sg,NewSGDataUPP(callback),0);
@@ -302,46 +301,12 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 
 static int nn(int c) {return c?c:' ';}
 
-/*
-pascal Boolean pix_videoDarwin :: SeqGrabberModalFilterProc (DialogPtr theDialog, const EventRecord *theEvent, short *itemHit, long refCon){
-    Boolean	handled = false;
-    if ((theEvent->what == updateEvt) &&
-        ((WindowPtr) theEvent->message == (WindowPtr) refCon)) {
-        BeginUpdate ((WindowPtr) refCon);
-        EndUpdate ((WindowPtr) refCon);
-        handled = true;
-    } 
-    WindowRef awin = GetDialogWindow(theDialog);
-    ShowWindow (awin);
-    SetWindowClass(awin,kUtilityWindowClass);
-    //ChangeWindowAttributes(awin,kWindowStandardHandlerAttribute,0);
-    //SGPanelEvent(m_sg,m_vc,theDialog,0,theEvent,itemHit,&handled);
-    //AEProcessAppleEvent (theEvent);
-    return handled;
-}
-void pix_videoDarwin :: DoVideoSettings() {
-    Rect newActiveVideoRect;
-    Rect curBounds, curVideoRect, newVideoRect;
-    ComponentResult err;
-    SGModalFilterUPP seqGragModalFilterUPP;
-    err = SGGetChannelBounds (m_vc, &curBounds);
-    err = SGGetVideoRect (m_vc, &curVideoRect);
-    err = SGPause (m_sg, true);
-    seqGragModalFilterUPP = (SGModalFilterUPP)NewSGModalFilterUPP(SeqGrabberModalFilterProc);
-    err = SGSettingsDialog(m_sg, m_vc, 0, NULL, seqGrabSettingsPreviewOnly, seqGragModalFilterUPP, (long)m_srcGWorld);
-    DisposeSGModalFilterUPP(seqGragModalFilterUPP);
-    err = SGGetVideoRect (m_vc, &newVideoRect);
-    err = SGGetSrcVideoBounds (m_vc, &newActiveVideoRect);
-    err = SGPause (m_sg, false);
-}
-*/
-
 \def 0 bang () {
-    GridOutlet out(this,0,dim);
-    int n = dim->prod()/4;
-    for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
-    out.send(dim->prod(),buf2);
-    SGIdle(m_sg);
+	GridOutlet out(this,0,dim);
+	int n = dim->prod()/4;
+	for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
+	out.send(dim->prod(),buf2);
+	SGIdle(m_sg);
 }
 
 GRID_INLET(0) {
