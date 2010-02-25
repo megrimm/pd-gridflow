@@ -210,6 +210,7 @@ say #see                "\[#see\]: view video output within patch and collect mo
 say #to_iem             "convert grid(3) to IEMGUI colour code"
 say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\]"
 say doremi              "gui object for displaying midi notes"
+say gf/mouse_spy        "tell mouse/key events of a single patch window in \[#out window\] format"
 
 # never finished (2007)
 if 0 {
@@ -244,7 +245,6 @@ say doc_same
 # experimental undocumented
 
 if 0 {
-say doque_caca
 say gf.display
 say gf.nbxhsl
 say gf.not_open
@@ -263,11 +263,8 @@ say gf/canvas_setpos
 say gf/canvas_xid
 say gf/getpid
 say gf/lol
-say gf/mouse_spy
 say gf/string_<
 say gf/string_replace
 say memstat
 say setargs
-say #io.tk "..."
-#say #to_array           ""
 }
