@@ -337,7 +337,8 @@ string ssprintf(const char *fmt, ...) {
 #define INIT1 BFObject *bself = (BFObject*)x; THISCLASS *self = (THISCLASS *)bself->self; self=self;
 #define INIT INIT1 t_canvas *c = glist_getcanvas(glist); c=c;
 #undef L
-#define L if (0) post("%s",__PRETTY_FUNCTION__);
+#define L             if (1) post("%s",   __PRETTY_FUNCTION__);
+#define LL(A,ARGS...) if (1) post("%s(%p,%p"A")",__FUNCTION__,bself,self,ARGS);
 #define BLAH t_gobj *x, t_glist *glist
 #define pd_anything pd_typedmess
 
@@ -359,7 +360,7 @@ public:
 		pd_unbind((t_pd *)bself,rsym);
 		sys_unqueuegui(bself);
 	}
-	static void visfn(BLAH, int flag) {INIT L
+	static void visfn(BLAH, int flag) {INIT LL(",%d",flag);
 		self->vis = !!flag;
 		self->changed(); // is this ok?
 	}
@@ -380,7 +381,7 @@ public:
 		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
-	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT L
+	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
 		//post("click1 %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit);
 		//glist_grab(self->mom,(t_gobj *)bself,motionfn,keyfn,xpix,ypix);
 		return 0;
@@ -394,7 +395,7 @@ public:
 	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
 	virtual void show() = 0;
 	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
-	static void redraw(BLAH) {L INIT1 self->show();}
+	static void redraw(BLAH) {INIT1 self->show();}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
 	t_widgetbehavior *wb = new t_widgetbehavior; \
@@ -460,7 +461,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
 	}
 	NEWWB
-	static void redraw(BLAH) {L INIT1 self->show();}
+	static void redraw(BLAH) {INIT1 self->show();}
 	/* outline colour #aaaaaa instead of #000000 (really just that!) */
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
@@ -538,13 +539,14 @@ static void KEYS_ARE (int i, const char *s__) {
 }
 
 static t_symbol *s_default;
+static t_symbol *s_empty;
 \class MouseSpy : FObject {
 	int y,x,flags;
 	t_symbol *rcv;
 	t_pd *snd;
 	\constructor (t_symbol *rcv_=s_default) {
-		snd=0;
-		rcv=rcv_!=gensym("default")?rcv_:symprintf(".x%x",mom);
+		snd = 0;
+		rcv = rcv_==s_default?symprintf(".x%x",mom):s_empty?0:rcv_;
 		if (rcv)   pd_bind((t_pd *)bself,rcv);
 	}
 	void set_rcv (t_symbol *rcv_=0) {
@@ -581,6 +583,7 @@ static t_symbol *s_default;
 \end class {
 	install("gf/mouse_spy",1,1);
 	s_default = gensym("default");
+	s_empty   = gensym("empty");
 	// copied from [#io.sdl] :
 	KEYS_ARE(8,"BackSpace Tab");
 	KEYS_ARE(13,"Return");
@@ -604,15 +607,16 @@ static t_symbol *s_default;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
 		//use_queue = false; /* for now... */
-		t_atom a[1]; SETSYMBOL(a,symprintf(".x%x",glist_getcanvas(mom)));
+		t_atom a[1]; SETSYMBOL(a,s_empty);
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
 		spy = (BFObject *)pd_newest();
 		if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
 	~GridSee () {pd_free((t_pd *)spy);}
-	#undef FOO
-	#define FOO(A,B,C) y-=bself->te_ypix+4; x-=bself->te_xpix+2; \
+	#define FOO(A,B,C) t_canvas *can = mom; /* and not glist_getcanvas(mom) */ \
+		post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can)); \
+		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2; \
 		if (!(y>=0 && y<=sy-9 && x>=0 && x<=sx-5)) return; \
 		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); A; \
 		outlet_anything(outlets[0],gensym(B),C,a);
@@ -651,6 +655,11 @@ static t_symbol *s_default;
 		sys_vgui("gridsee_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#000000",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
+	}
+	static void visfn(BLAH, int flag) {INIT1
+		GUI_FObject::visfn(x,glist,flag);//super
+		MouseSpy *ms = (MouseSpy *)self->spy->self;
+		if (flag) ms->set_rcv(flag ? symprintf(".x%x",glist_getcanvas(self->mom)) : 0);
 	}
 	NEWWB
 };
