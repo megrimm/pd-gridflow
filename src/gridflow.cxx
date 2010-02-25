@@ -2,7 +2,7 @@
 	$Id: rubyext.c 3621 2008-04-19 01:47:38Z matju $
 
 	GridFlow
-	Copyright (c) 2001-2009 by Mathieu Bouchard
+	Copyright (c) 2001-2010 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -984,7 +984,7 @@ void allow_big_stack () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
-    post("GridFlow " GF_VERSION ", Copyright (c) 2001-2009 Mathieu Bouchard");
+    post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
