@@ -30,9 +30,10 @@
 #include <errno.h>
 #include <CoreServices/CoreServices.h>
 
-#if 0
 typedef ComponentInstance VideoDigitizerComponent, VDC;
 typedef ComponentResult   VideoDigitizerError,     VDE;
+
+#if 0
 //enum {VDCType='vdig', vdigInterfaceRev=2 };
 //enum {ntscIn=0, currentIn=0, palIn, secamIn, ntscReallyIn };
 //enum {compositeIn, sVideoIn, rgbComponentIn, rgbComponentSyncIn, yuvComponentIn, yuvComponentSyncIn, tvTunerIn, sdiIn};
