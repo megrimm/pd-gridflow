@@ -5,6 +5,14 @@ a=[]
   m=/install\(\"([^"]+)/.match(line)
   a<<m[1] if m
 }
+a-=%[
+  cv/#CalcOpticalFlowBM
+  cv/#CalcOpticalFlowHS
+  cv/#CalcOpticalFlowLK
+  cv/#CalcOpticalFlowPyrLK
+  inv0x2a
+  inv0x2b
+].split(/\s+/)
 
 b=Dir["../abstractions/*.pd"].map{|x|
   x.gsub(/^\.\.\/abstractions\//,"").gsub(/\.pd$/,"")
