@@ -155,11 +155,10 @@ GRID_INLET(1) {
 	/*!@#$ it would be nice to skip the bitpacking when we can */
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
-	long sy = in->dim->v[0];
 	BitPacking *bp = in->dim->get(2)==3 ? bit_packing3 : bit_packing4;
 	imageStruct &im = m_pixBlock.image;
-	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);}
-        else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bp->pack(sx,data,buf+y*sx*im.csize);}
+	im.upsidedown = !yflip;
+	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
