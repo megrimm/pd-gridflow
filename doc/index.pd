@@ -112,7 +112,7 @@
 #X obj 60 1849 #line_to_polygon;
 #X text 180 1849 convert line (as point pair) to polygon (rotated rectangle);
 #X obj 90 1881 #make_arrow;
-#X text 180 1881 make an arrow polygon from 2 points (for use with hpgl);
+#X text 180 1881 make an arrow "polygon" from 2 points (for use with line mode of [#draw_polygon]);
 #X obj 90 1913 #make_cross;
 #X text 180 1913 make cross-shaped polygon;
 #X obj 107 1945 #many tgl 3 3;
@@ -238,9 +238,9 @@
 #X obj 114 3942 cv/#And;
 #X text 180 3942 OpenCV bitwise AND;
 #X obj 72 3974 cv/#ApproxPoly;
-#X text 180 3974 ;
+#X text 180 3974 OpenCV polygon approximator;
 #X obj 60 4006 cv/#CornerHarris;
-#X text 180 4006 ;
+#X text 180 4006 OpenCV Harris corner-detector;
 #X obj 114 4038 cv/#Div;
 #X text 180 4038 OpenCV division;
 #X obj 90 4070 cv/#Ellipse;
