@@ -158,9 +158,8 @@ GRID_INLET(1) {
 	long sy = in->dim->v[0];
 	BitPacking *bp = in->dim->get(2)==3 ? bit_packing3 : bit_packing4;
 	imageStruct &im = m_pixBlock.image;
-	bool f = yflip^im.upsidedown;
-	if (f) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);}
-        else   {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bp->pack(sx,data,buf+y*sx*im.csize);}
+	if (yflip) {for (long y=     dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);}
+        else       {for (long y=sy-1-dex/sxc; n; data+=sxc, n-=sxc, y--) bp->pack(sx,data,buf+y*sx*im.csize);}
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
@@ -202,12 +201,13 @@ GRID_INLET(1) {
 		GridOutlet out(this,0,new Dim(3,v),cast);
 		long sxc = im.xsize*channels;
 		long sy = v[0];
+		bool f = yflip^im.upsidedown;
 		//if (channels==4 && im.format==GL_RGBA) {
-		//	for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(yflip?y:sy-1-y));
+		//	for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
 		//} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
-				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(yflip?y:sy-1-y); \
+				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
 				bp->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
