@@ -86,7 +86,7 @@ category "Stuff"
 say args             "pick up the arguments of an abstraction instance, including nested lists and init-messages"
 say ascii            "write integer as decimal in ascii codes"
 say class_exists     "figure out whether a class has been loaded by pd"
-say display          "print message or grid inside of the patch"
+say display          "\[display\]: print message or grid inside of the patch"
 say gf.error         "emit error message from the perspective of the current abstraction instance in its parent patch"
 say gf.suffix_lookup "find the objectclass corresponding "
 say range            "multiple moses in cascade"
@@ -193,14 +193,81 @@ say expect           "currently does like list.== (will do more than that in the
 say #hello           "make 7 colour bars"
 say #window          "a \[#out window\] that can be toggled to appear and disappear"
 
-say #apply_colormap_channelwise ""
-say #cluster_avg ""
-say #draw_hpgl ""
-say #extract_diagonal ""
-say #reinterval ""
-say hpgl_find_bbox ""
-say hpgl_font_render ""
-say hpgl_op ""
-say hpgl_track_position ""
-say interval_overlap ""
-say norecurse ""
+say #cluster_avg "computes several averages at once according to a table of indices"
+say #draw_hpgl "plot lines given in HPGL format, using \[#draw_polygon\]"
+say #extract_diagonal "extract the main diagonal from a matrix"
+say #reinterval "change the scale of values from one interval to another"
+say hpgl_find_bbox "find the bounding box of a sequence of hpgl commands"
+say hpgl_font_render "include hpgl files from disk for drawing text"
+say hpgl_op "use \[#\] on hpgl commands"
+
+say hpgl_track_position "remember last mentioned hpgl coordinate"
+say interval_overlap    "test whether two intervals of floats overlap"
+say norecurse           "simple spigot for preventing control-recursion"
+say #make_arrow         "make an arrow polygon from 2 points (for use with hpgl)"
+say #many               "create and organise many identical GUI objects"
+say #see                "\[#see\]: view video output within patch and collect mouse/key info"
+say #to_iem             "convert grid(3) to IEMGUI colour code"
+say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\]"
+say doremi              "gui object for displaying midi notes"
+
+# never finished (2007)
+if 0 {
+  say cv/#CalcOpticalFlowBM
+  say cv/#CalcOpticalFlowHS
+  say cv/#CalcOpticalFlowLK
+  say cv/#CalcOpticalFlowPyrLK
+}
+
+# doc: many of them can't even be listed normally in the doc index
+if 0 {
+say doc_add
+say doc_also
+say doc_below
+say doc_bottom
+say doc_c
+say doc_cc
+say doc_editmode
+say doc_exist
+say doc_f
+say doc_h
+say doc_i
+say doc_ii
+say doc_layout
+say doc_m
+say doc_make
+say doc_o
+say doc_oo
+say doc_same
+}
+
+# experimental undocumented
+
+if 0 {
+say doque_caca
+say gf.display
+say gf.nbxhsl
+say gf.not_open
+say gf.print
+say gf/canvas_count
+say gf/canvas_dollarzero
+say gf/canvas_edit_mode
+say gf/canvas_filename
+say gf/canvas_getpos
+say gf/canvas_hehehe
+say gf/canvas_hohoho
+say gf/canvas_is_selected
+say gf/canvas_loadbang
+say gf/canvas_setgop
+say gf/canvas_setpos
+say gf/canvas_xid
+say gf/getpid
+say gf/lol
+say gf/mouse_spy
+say gf/string_<
+say gf/string_replace
+say memstat
+say setargs
+say #io.tk "..."
+#say #to_array           ""
+}
