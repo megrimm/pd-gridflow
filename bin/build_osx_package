@@ -1,68 +1,68 @@
 #!/bin/bash
 
-# This won't work for GridFlow < 0.9.6
+# run from outside gridflow-svn/
+# with version number as $1
 #
-# For now, this has to be executed from "outside" the source folder
-# It it sort of destructive... it will "transform" that folder in
-# the actual package...
-#
-# First, decompress the source code in it's own little place:
-#     mkdir my_gf_binary
-#     tar -xzf gridflow-X.X.X.tar.gz -C my_gf_binary/
-#     cd my_gf_binary/
-#
-# Then, run it like that:
-#     build_osx_package gridflow-X.X.X
-#
-# It will create gridflow-X.X.X-macosx104-i386.tar.gz
+# ex: build_osx_package 0.9.7
 
 
 if [ -z "$1" ]; then
-    echo Usage: $0 dir_name
+    echo Usage: $0  version_no  [arch]
     exit
 fi
 
-PACKAGE="$1-macosx104-i386.tar.gz"
+if [ "$2" = "ppc" ]; then
+    ARCH="ppc"
+else
+    ARCH="i386"
+fi
+
+
+VERSION="gridflow-$1"
+PACKAGE="gridflow-$1-macosx104-$ARCH.tar.gz"
 GF_README="/usr/src/gridflow/GRIDFLOW_BIN/README.txt"
 
-mv $1 gridflow
-mkdir $1
-mv gridflow $1
-cd $1/gridflow
+mkdir $VERSION
+cd $VERSION
+cp -R ../gridflow-svn ./gridflow
+cd gridflow
 
 
-export CPLUS_INCLUDE_PATH=/usr/src/pd-0.42-5/src
-export LD_LIBRARY_PATH=/sw/lib:/usr/local/lib
-export LIBRARY_PATH=/sw/lib:/usr/local/lib
+rm -rf Makefile TODO bin bundled config* src tests tmp
 
-./configure --no-pentium --no-mmx --no-gcc64 --no-videodev --no-dc1394 --no-mpeg3 --no-opencv --no-desiredata && make && rm -rf Makefile TODO bin bundled config* src tests tmp
+for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do 
+    rm -rf $i
+done
 
 
 #-------------------------------------------------------------------------------
-BUNDLED_LIBS="/usr/X11/lib/libX11.6.dylib /usr/X11/lib/libXext.6.dylib /sw/lib/libaa.1.dylib /sw/lib/libnetpbm.10.dylib"
-PDEXT_LIBS="/usr/local/lib/libfftw3f.3.dylib /usr/local/lib/libfftw3.3.dylib /usr/X11/lib/libpng12.0.dylib /sw/lib/libjpeg.62.dylib /sw/lib/libSDL-1.2.0.dylib"
 BUNDLED_PREFIX="/Library/Pd/gridflow/libs"
-PDEXT_PREFIX="@executable_path/../../lib"
-
-for LIB in $BUNDLED_LIBS; do
-    install_name_tool -change $LIB $BUNDLED_PREFIX/`echo $LIB | sed 's/.*\///'` gridflow.pd_darwin
-done
-
-for LIB in $PDEXT_LIBS; do
-    install_name_tool -change $LIB $PDEXT_PREFIX/`echo $LIB | sed 's/.*\///'` gridflow.pd_darwin
-done
-
-#-------------------------------------------------------------------------------
-
+BUNDLED_LIBS="/sw/lib/ncurses/libncurses.5.dylib /sw/lib/libaa.1.dylib \
+/sw/lib/libnetpbm.10.dylib /usr/local/lib/libfftw3f.3.dylib \
+/usr/local/lib/libfftw3.3.dylib /usr/X11/lib/libpng12.0.dylib \
+/sw/lib/libjpeg.62.dylib /sw/lib/libSDL-1.2.0.dylib"
 
 mkdir libs
 cp $BUNDLED_LIBS ./libs/
+
+for LIB in $BUNDLED_LIBS; do
+    FILENAME=`echo $LIB | sed 's/.*\///'`
+    install_name_tool -id $BUNDLED_PREFIX/$FILENAME ./libs/$FILENAME
+    install_name_tool -change $LIB $BUNDLED_PREFIX/$FILENAME gridflow.pd_darwin
+done
+
+# should do a 2nd pass of install_name_tool for libs that depend on libs...
+install_name_tool -change  /sw/lib/ncurses/libncurses.5.dylib  $BUNDLED_PREFIX/libncurses.5.dylib  ./libs/libaa.1.dylib
+
+#-------------------------------------------------------------------------------
+
+
 cd ..
 cp $GF_README .
 cd ..
 
 
-tar -czf $PACKAGE $1
+tar -czf $PACKAGE $VERSION
 
 echo
 echo Done !
