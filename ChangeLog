@@ -35,7 +35,11 @@ version 0.9.7 (2010.02.20):
  * [#redim]: fixed occasional crash that happened for some grid sizes
  * [#in],[#out]: auto-detect non-lowercase suffixes
  * [#out x11]: now 'root' option is working again.
- 
+ * [print] [gf.print] and [display]: hide "float" and "list" where they should.
+ * made some more new helpfiles
+ * [#from_pix]: auto-flip images coming from osx's [pix_image], etc...
+ * [#to_pix]: auto-flip image for osx
+
 version 0.9.6 (2009.11.05):
 
  * MAJOR revision of the manual (no more xml nor html: all helpfiles)
