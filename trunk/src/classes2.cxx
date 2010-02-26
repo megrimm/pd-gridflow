@@ -337,8 +337,8 @@ string ssprintf(const char *fmt, ...) {
 #define INIT1 BFObject *bself = (BFObject*)x; THISCLASS *self = (THISCLASS *)bself->self; self=self;
 #define INIT INIT1 t_canvas *c = glist_getcanvas(glist); c=c;
 #undef L
-#define L             if (1) post("%s",   __PRETTY_FUNCTION__);
-#define LL(A,ARGS...) if (1) post("%s(%p,%p"A")",__FUNCTION__,bself,self,ARGS);
+#define L             if (0) post("%s",   __PRETTY_FUNCTION__);
+#define LL(A,ARGS...) if (0) post("%s(%p,%p"A")",__FUNCTION__,bself,self,ARGS);
 #define BLAH t_gobj *x, t_glist *glist
 #define pd_anything pd_typedmess
 
