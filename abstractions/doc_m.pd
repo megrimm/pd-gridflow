@@ -1,6 +1,6 @@
 #N canvas 90 97 836 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect auto_gain 4 9 1 9 -261615
--1 0;
+#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect grid 4 9 1 9 -261615 -1
+0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
 #X obj 9 214 gf/string_replace o o/;
@@ -15,7 +15,7 @@
 #X obj 317 297 gf/canvas_edit_mode 1;
 #X obj 317 335 sel 0 1;
 #X msg 317 373 wire_hide;
-#X obj 662 217 print doc_m:\$1:\$2;
+#X obj 650 214 print doc_m:\$1:\$2;
 #X obj 317 278 t b b;
 #X obj 432 240 gf/canvas_getpos 0;
 #X msg 432 259 \$2;
@@ -104,7 +104,6 @@
 #X connect 6 0 59 0;
 #X connect 7 0 5 0;
 #X connect 10 0 21 0;
-#X connect 11 0 15 0;
 #X connect 12 0 13 0;
 #X connect 12 0 57 0;
 #X connect 13 0 14 0;
