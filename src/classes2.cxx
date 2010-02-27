@@ -472,7 +472,9 @@ extern "C" int sys_hostfontsize(int fontsize);
 \def void anything (...) {
 	string sel = string(argv[0]).data()+3;
 	text.str("");
-	if (sel=="float") {} else if (sel=="list" && argc==2) {} else {text << sel; if (argc>1) text << " ";}
+	if (sel=="float") {}
+	else if (sel=="list" && argc>=2 && argv[1].a_type==A_FLOAT) {}
+	else {text << sel; if (argc>1) text << " ";}
 	long nl=0;
 	for (int i=1; i<argc; i++) {
 		text << argv[i];
