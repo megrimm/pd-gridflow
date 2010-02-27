@@ -1,0 +1,29 @@
+#N canvas 594 131 632 385 10;
+#X obj 0 0 doc_h;
+#X obj 0 356 doc_f;
+#X obj 53 63 gf/getpid;
+#X obj 53 46 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X floatatom 104 82 5 0 0 0 - - -;
+#X floatatom 53 82 5 0 0 0 - - -;
+#X obj 3 118 doc_c 0;
+#X obj 3 158 doc_i 1;
+#X obj 3 259 doc_o 2;
+#X obj 14 188 doc_ii 0;
+#X obj 14 289 doc_oo 0;
+#X obj 14 311 doc_oo 1;
+#X obj 97 188 doc_m i0 bang;
+#X obj 97 289 doc_m o0 float;
+#X obj 97 311 doc_m o1 float;
+#X text 232 188 query process IDs. on Linux systems \, those are normally
+integer numbers ranging from 1 to 32767 this class was only tested
+on Linux. the right-outlet will not work on Windows.;
+#X text 232 289 ID of the PureData server process;
+#X text 232 311 ID of the process that started the PureData server
+process. (whatever that might be);
+#X connect 2 0 5 0;
+#X connect 2 1 4 0;
+#X connect 3 0 2 0;
+#X connect 12 1 15 0;
+#X connect 13 1 16 0;
+#X connect 14 1 17 0;
