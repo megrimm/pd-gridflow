@@ -230,7 +230,7 @@ GRID_INLET(1) {
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
-\end class {install("#from_pix",2,1); add_creator("#import_pix");}
+\end class {install("#from_pix",1,1); add_creator("#import_pix");}
 
 //------------------------------------------------------------------------
 
