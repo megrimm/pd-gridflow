@@ -1093,7 +1093,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n) {this->n=n;}
 	\decl 0 bang () {MOM; outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));}
 };
-\end class {install("gf/canvas_is_selected",1,1);}
+\end class {install("gf/canvas_isselected",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasSetGOP : FObject {
 	int n;
