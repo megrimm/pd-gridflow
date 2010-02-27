@@ -614,8 +614,8 @@ static t_symbol *s_empty;
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
 	~GridSee () {pd_free((t_pd *)spy);}
+	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
 	#define FOO(A,B,C) t_canvas *can = mom; /* and not glist_getcanvas(mom) */ \
-		post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can)); \
 		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2; \
 		if (!(y>=0 && y<sy-9 && x>=0 && x<sx-5)) return; \
 		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); A; \
