@@ -1,5 +1,9 @@
 /* $Id$ */
 
+version 0.9.8 (2010.04...):
+
+...
+
 version 0.9.7 (2010.02.26):
 
  * fixed colours in [#from_pix] OSX
