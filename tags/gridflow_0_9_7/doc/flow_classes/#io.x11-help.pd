@@ -1,0 +1,159 @@
+#N canvas 633 21 632 642 10;
+#X obj 0 0 doc_h;
+#X obj 3 618 doc_c 0..;
+#X msg 40 648 open x11;
+#X msg 40 668 open x11 here;
+#X msg 40 708 open x11 local 0;
+#X text 178 649 synonym of "open x11 here".;
+#X text 181 668 connects to the default X11 server \, according to
+your environment variable "DISPLAY".;
+#X text 182 708 connects to a display server on this machine.;
+#X msg 39 739 open x11 remote foo.org 0;
+#X text 201 738 connects to a remote X11 display server using TCP.
+Port number will be 6000 plus the display number \, because of the
+X11 standard.;
+#X text 141 38 supports 15 \, 16 \, 24 \, 32-bit truecolor displays
+;
+#X text 141 57 now also support 8-bit indexed displays \, using a private
+colormap configured as 3:3:2 RGB. When using 8-bit you can specify
+the "use_stripes" option to use a completely different color scheme
+involving R \, G \, B diagonal stripes \, a kind of 6:6:6 RGB spread
+over three pixels.;
+#X text 141 129 If you are using Windows or MacOS 10: you will have
+to install a X11 server. This will emulate Unix display on your OS.
+(note: Unix systems also need a X11 server \, but it's built-in and
+handles the video driver directly). In the case of MacOS 10 and QNX
+that both use non-X11 display technology on top of a basically Unix
+OS \, the OS comes with a X11 server \, but it may be on a "bundled
+software" CD.;
+#X msg 37 794 open x11 display foo.org:0;
+#X obj 3 854 doc_i 1;
+#X obj 14 884 doc_ii 0;
+#X obj 97 906 doc_m i0 grid;
+#X text 232 906 with [#out] \, displays a frame;
+#X obj 97 884 doc_m i0 bang;
+#X text 232 884 with [#in] \, captures a frame;
+#X obj 97 970 doc_m i0 out_size;
+#X text 232 970 \$1=height \$2=width. changes the window's size \,
+just like sending a grid dim(height \, width \, 3) would. this affects
+the size of screen captures too.;
+#X obj 97 1038 doc_m i0 setcursor;
+#X text 232 1038 \$1=cursor_id. \$1=cursor_id. Selects one of the 64
+predefined cursors of X11. (Note that if your cursor table has them
+numbered from 0 to 126 using only even numbers \, then those cursor
+numbers are all doubled compared to the ones GridFlow uses.);
+#X obj 97 928 doc_m i0 hidecursor;
+#X text 232 928 This makes the cursor invisible.;
+#X obj 3 2021 doc_also;
+#X obj 103 2021 #io.quartz;
+#X obj 175 2021 #io.sdl;
+#X text 141 227 Destroying the object (or sending "close") should close
+the window.;
+#X obj 35 65 #out x11;
+#X text 140 259 because of the design of Xlib \, or if any of the connections
+involved crashes \, then the whole program has to be terminated. (don't
+you love xlib). Something similar happens if you close any of the windows
+yourself \, but IIRC this could be fixed.;
+#X text 140 330 only one window may be used per x11 connection (to
+simplify matters \; this doesn't reduce flexibility).;
+#X obj 3 1202 doc_o 1;
+#X obj 14 1232 doc_oo 0;
+#X obj 97 1232 doc_m o0 grid;
+#X text 232 1232 grid(rows columns rgb);
+#X obj 97 1533 doc_m o0 position;
+#X text 232 1533 \$1=y \$2=x \$3=buttons;
+#X text 232 1555 This is emitted every time the cursor moves inside
+the window connected to this format handler. This is also emitted when
+the cursor is dragging from inside to outside the window. This is also
+emitted when a mouse button is pressed.;
+#X text 232 1629 The y and x coordinates are relative to the upper
+right corner of the window. Specific button states may be extracted
+from the button value by applying [>> buttonnumber] and then checking
+whether the result is odd.;
+#X text 232 1690 0: Shift;
+#X text 232 1712 1: Caps Lock;
+#X text 232 1734 2: Control;
+#X text 232 1756 3: Alternate;
+#X text 232 1778 4: NumLock;
+#X text 232 1800 5: (unknown);
+#X text 232 1822 6: Meta or Window Key;
+#X text 232 1844 7: Scroll Lock;
+#X text 232 1866 8: Left Mouse Button;
+#X text 232 1888 9: Middle Mouse Button or Mouse Wheel Click;
+#X text 232 1910 10: Right Mouse Button;
+#X text 232 1932 11: Wheel Up;
+#X text 232 1954 12: Wheel Down;
+#X text 232 1976 NOTE: This message form may become longer in the future
+\, but the already defined parts will stay the same.;
+#X obj 97 1328 doc_m o0 keypress;
+#X obj 97 1463 doc_m o0 keyrelease;
+#X text 232 1328 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1463 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1485 Same as keypress but when a key gets released instead.
+NOTE: This message form may become longer in the future \, but the
+already defined parts will stay the same.;
+#X obj 0 2041 doc_f;
+#X obj 97 950 doc_m i0 move;
+#X obj 97 1112 doc_m i0 shared_memory;
+#X obj 97 1172 doc_m i0 xvideo;
+#X obj 97 1132 doc_m i0 title;
+#X obj 97 1152 doc_m i0 warp;
+#X obj 97 1018 doc_m i0 set_geometry;
+#X text 208 795 other syntax for 'remote'.;
+#X text 141 480 there is one last argument that may be added to every
+"open" message of [#in x11]. if you don't put it \, a new toplevel
+window is created. if you put "root" then the screen's wallpaper will
+be used instead (it may fail to work with some popular window managers).
+You can also put a window number \, e.g. 0x28003ff \, you may connect
+to an existing window. you can find out the number of a window by using
+a tool like xwininfo \, part of X11 standard tools. (This used to work
+also for [#out x11]. it's a bug);
+#X msg 38 824 open x11 here override_redirect;
+#X text 237 823 if you need borderless untouchable windows.;
+#X text 140 377 then you can add override_redirect option to open a
+window that will not be handled by the window manager \, so that it
+doesn't have any borders \, for example. however \, this is "dangerous"
+\, as you can lock yourself out of your computer. On Linux you can
+escape that using Ctrl+Alt+F1 or similar. Another problem is that it
+prevents the window from getting 'keypress' 'keyrelease' events.;
+#X text 232 1350 This is emitted when a keyboard key is pressed while
+this format handler's window is active. Keynames follow the X11 standard
+\, similarly to PureData's [keyname] object. The only exception is
+that keynames that are digits get prefixed by a capital D so that they
+don't get mistaken for actual numbers. NOTE: This message form may
+become longer in the future \, but the already defined parts will stay
+the same.;
+#X text 232 1254 Resizes the window to the size of the grid \; Encodes
+that grid in the display's pixel format \; Also displays it if autodraw
+is greater than 0 \; The values must be in range 0-255 \, or else they
+will be "wrapped".;
+#X connect 16 1 17 0;
+#X connect 18 1 19 0;
+#X connect 20 1 21 0;
+#X connect 22 1 23 0;
+#X connect 24 1 25 0;
+#X connect 26 1 27 0;
+#X connect 26 1 28 0;
+#X connect 35 1 36 0;
+#X connect 35 1 73 0;
+#X connect 37 1 38 0;
+#X connect 37 1 39 0;
+#X connect 37 1 40 0;
+#X connect 37 1 41 0;
+#X connect 37 1 42 0;
+#X connect 37 1 43 0;
+#X connect 37 1 44 0;
+#X connect 37 1 45 0;
+#X connect 37 1 46 0;
+#X connect 37 1 47 0;
+#X connect 37 1 48 0;
+#X connect 37 1 49 0;
+#X connect 37 1 50 0;
+#X connect 37 1 51 0;
+#X connect 37 1 52 0;
+#X connect 37 1 53 0;
+#X connect 37 1 54 0;
+#X connect 55 1 57 0;
+#X connect 55 1 72 0;
+#X connect 56 1 58 0;
+#X connect 56 1 59 0;
