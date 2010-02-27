@@ -3,12 +3,18 @@
 version 0.9.7 (2010.02.20):
 
  * fixed colours in [#from_pix] OSX
+ * [#from_pix]: auto-flip images coming from osx's [pix_image], etc...
+ * [#to_pix]: auto-flip image for osx
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid] [#make_arrow] [doc_same] [#many] [#to_iem] [doremi]
  * added [#see] [gf/mouse_spy] [gf/canvas_is_selected] [qwerty_piano]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
+ * [display]: use system font; changed box size (spacing) to match the look
+   of objectboxes; but chopped lower corners of the box to make look distinct.
+ * [print] [gf.print] and [display]: hide "float" and "list" where they should.
+ * made some more new helpfiles
  * quicktimehw: use normal 'get' method
  * when object can't create, print creator name and arguments
  * [#]: avoid grid-abort in case of wrong dimensions
@@ -30,15 +36,9 @@ version 0.9.7 (2010.02.20):
  * [#color]: fixed some bugs (hidden numberbox, triplicata, wrong values)
  * [#color]: use [nbx] on the right side instead of floatatom on the left
  * [#pack]: add 'set' method
- * [display]: use system font; changed box size (spacing) to match the look
-   of objectboxes; but chopped lower corners of the box to make look distinct.
  * [#redim]: fixed occasional crash that happened for some grid sizes
  * [#in],[#out]: auto-detect non-lowercase suffixes
  * [#out x11]: now 'root' option is working again.
- * [print] [gf.print] and [display]: hide "float" and "list" where they should.
- * made some more new helpfiles
- * [#from_pix]: auto-flip images coming from osx's [pix_image], etc...
- * [#to_pix]: auto-flip image for osx
 
 version 0.9.6 (2009.11.05):
 
