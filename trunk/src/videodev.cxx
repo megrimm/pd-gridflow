@@ -2,7 +2,7 @@
 	$Id: videodev.c 4620 2009-11-01 21:16:58Z matju $
 
 	GridFlow
-	Copyright (c) 2001-2009 by Mathieu Bouchard
+	Copyright (c) 2001-2010 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -23,7 +23,8 @@
 
 /* bt878 on matju's comp supports only palette 4 */
 /* bt878 on heri's comp supports palettes 3, 6, 7, 8, 9, 13 */
-/* pwc supports palettes 12 and 15 */
+/* pwc supports palettes 12 and 15 on most computers, but...
+ * apparently not all of them. but I can't tell which. it remains a mystery. */
 
 #include "gridflow.hxx.fcs"
 #include <errno.h>
