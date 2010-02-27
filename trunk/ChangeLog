@@ -1,14 +1,14 @@
 /* $Id$ */
 
-version 0.9.7 (2010.02.20):
+version 0.9.7 (2010.02.26):
 
  * fixed colours in [#from_pix] OSX
  * [#from_pix]: auto-flip images coming from osx's [pix_image], etc...
- * [#to_pix]: auto-flip image for osx
+ * [#to_pix]: auto-flip image for OSX
  * [#fft]: fixed the 1-D mode ("skip $1")
  * doc: fixed some layout bugs (gop)
  * added [gf/getpid] [#make_arrow] [doc_same] [#many] [#to_iem] [doremi]
- * added [#see] [gf/mouse_spy] [gf/canvas_is_selected] [qwerty_piano]
+ * added [#see] [gf/mouse_spy] [gf/canvas_isselected] [qwerty_piano]
  * [display]: fixed problems with braces, backslashes, nested lists (A_LIST)
  * [display]: fixed gop mode; use sys_queuegui
  * [display]: use system font; changed box size (spacing) to match the look
@@ -25,7 +25,7 @@ version 0.9.7 (2010.02.20):
  * [#out quartz]: no more spinning beach ball of death !
  * [#out quartz]: added methods: title, move, set_geometry
    (compatible with [#io.x11])
- * fixed help file window resize (osx)
+ * fixed help file window resize (OSX)
  * got gridflow menuitems to work with pd devel 0.43
  * support multiple [#out sdl] objects (acting like a single object)
  * fixed many Win32-specific bugs
