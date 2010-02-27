@@ -1,17 +1,18 @@
 $Id$
 
-0.9.7 (à publier le 24 février):
-[ ] (vendredi) [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
-[ ] [#import] bug (see atelier)
-[ ] helpfiles for new stuff
+0.9.7 (à publier le 26 février):
 [ ] tag + release source
-[ ] turn off debugging in GUI_FObject
 [ ] osx-intel binary
 [ ] osx-ppc binary
 [ ] ubuntu binary
 [ ] win32 binary (--no-pentium pour être conservateur)
 
 0.9.8:
+[ ] (vendredi) [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
+    COULDN'T REPRODUCE THIS BUG !!!
+[ ] [#import] bug (see atelier)
+[ ] do the rest of doc updates that were planned for 0.9.7
+    (including perhaps some of the updates of stuff new in 0.9.7)
 [ ] win32 color_correction.pd crash
 [ ] continue [#many]...
 [ ] unify [print] and [display] source code
