@@ -520,18 +520,14 @@ bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 #else
 #define TRACE
 #endif
+#define FOO(A) case A##_e:   packer->as_##A(this,n,(A *)in,out); break;
 template <class T> void BitPacking::  pack(long n, T *in, uint8 *out) {TRACE
-	switch (NumberTypeE_type_of(in)) {
-	case uint8_e:   packer->as_uint8(this,n,(uint8 *)in,out); break;
-	case int16_e:   packer->as_int16(this,n,(int16 *)in,out); break;
-	case int32_e:   packer->as_int32(this,n,(int32 *)in,out); break;
-	default: RAISE("argh");}}
+	switch (NumberTypeE_type_of( in)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
+#undef FOO
+#define FOO(A) case A##_e: unpacker->as_##A(this,n,in,(A *)out); break;
 template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {TRACE
-	switch (NumberTypeE_type_of(out)) {
-	case uint8_e: unpacker->as_uint8(this,n,in,(uint8 *)out); break;
-	case int16_e: unpacker->as_int16(this,n,in,(int16 *)out); break;
-	case int32_e: unpacker->as_int32(this,n,in,(int32 *)out); break;
-	default: RAISE("argh");}}
+	switch (NumberTypeE_type_of(out)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
+#undef FOO
 
 // i'm sorry... see the end of grid.c for an explanation...
 //static
