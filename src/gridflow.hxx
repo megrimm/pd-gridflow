@@ -67,7 +67,7 @@ typedef std::string string;
 #define A_LIST    t_atomtype(13) /* (t_binbuf *) */
 #endif
 #define A_GRID    t_atomtype(14) /* (Grid *)    */
-#define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
+#define A_GRIDOUT t_atomtype(15) /* (GridOutlet *) */
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
 struct Grid;
 struct GridOutlet;
@@ -455,8 +455,14 @@ struct BitPacking : CObject {
 	bool is_le();
 	bool eq(BitPacking *o);
 // main entrances to Packers/Unpackers
-	template <class T> void   pack(long n, T *in, uint8 *out);
-	template <class T> void unpack(long n, uint8 *in, T *out);
+	#define FOO(A) case A##_e:   packer->as_##A(this,n,(A *)in,out); break;
+	template <class T> void   pack(long n, T *in, uint8 *out) {
+		switch (NumberTypeE_type_of( in)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
+	#undef FOO
+	#define FOO(A) case A##_e: unpacker->as_##A(this,n,in,(A *)out); break;
+	template <class T> void unpack(long n, uint8 *in, T *out) {
+		switch (NumberTypeE_type_of(out)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
+	#undef FOO
 };
 
 int high_bit(uint32 n);

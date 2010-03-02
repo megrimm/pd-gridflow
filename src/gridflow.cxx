@@ -514,31 +514,14 @@ end:;
 
 bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 
+/*
 #undef TRACE
 #ifdef DEBUG
 #define TRACE static int use=0; use++; if ((use%10000)==0) post_BitPacking(this);
 #else
 #define TRACE
 #endif
-#define FOO(A) case A##_e:   packer->as_##A(this,n,(A *)in,out); break;
-template <class T> void BitPacking::  pack(long n, T *in, uint8 *out) {TRACE
-	switch (NumberTypeE_type_of( in)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
-#undef FOO
-#define FOO(A) case A##_e: unpacker->as_##A(this,n,in,(A *)out); break;
-template <class T> void BitPacking::unpack(long n, uint8 *in, T *out) {TRACE
-	switch (NumberTypeE_type_of(out)) {FOO(uint8) FOO(int16) FOO(int32) default: RAISE("argh");}}
-#undef FOO
-
-// i'm sorry... see the end of grid.c for an explanation...
-//static
-void make_hocus_pocus () {
-//	exit(1);
-#define FOO(S) \
-	((BitPacking*)0)->  pack(0,(S *)0,(uint8 *)0); \
-	((BitPacking*)0)->unpack(0,(uint8 *)0,(S *)0);
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-}
+*/
 
 #ifdef __WIN32__
 #define lstat stat
