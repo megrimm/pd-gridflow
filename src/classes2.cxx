@@ -549,7 +549,6 @@ static t_symbol *s_empty;
 		rcv = r==s_empty?0:r;
 		if (rcv) pd_bind((t_pd *)bself,rcv);
 	}
-	~MouseSpyProxy () {post("-MouseSpyProxy");}
 	\decl void anything (...) {
 		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3); // this is getting tiring
 		if (snd) pd_anything(snd,sel,argc-1,argv+1);
@@ -575,7 +574,7 @@ static t_symbol *s_empty;
 	int y,x,flags;
 	t_pd *snd;
 	BFObject *proxy;
-	\constructor (t_symbol *rcv_=s_default) {post("+MouseSpy");
+	\constructor (t_symbol *rcv_=s_default) {
 		snd = 0;
 		t_atom a[1]; SETSYMBOL(a,rcv_==s_default?symprintf(".x%x",mom):rcv_);
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy_proxy"),1,a);
