@@ -548,11 +548,11 @@ static t_symbol *s_empty;
 	t_clock *clock;
 	t_symbol *rcv;
 	t_pd *snd;
-	\constructor (t_symbol *r=0) {
-		rcv=r;
+	\constructor (t_symbol *r=s_empty) {
+		rcv = r==s_empty?0:r;
 		if (rcv) pd_bind((t_pd *)bself,rcv);
 		snd=0;
-		post("+MouseSpyProxy");
+		post("+MouseSpyProxy r=%s rcv=%s",r->s_name,rcv?rcv->s_name:"rien");
 	}
 	~MouseSpyProxy () {post("-MouseSpyProxy");}
 	\decl void anything (...) {
@@ -568,7 +568,7 @@ static t_symbol *s_empty;
 	static void bye (void *x) {INIT1
 		post("->bye");
 		clock_free(self->clock);
-		pd_unbind((t_pd *)bself,self->rcv);
+		if (self->rcv) pd_unbind((t_pd *)bself,self->rcv);
 		pd_free((t_pd *)x);
 		post("<-bye");
 	}
@@ -587,7 +587,7 @@ static t_symbol *s_empty;
 	BFObject *proxy;
 	\constructor (t_symbol *rcv_=s_default) {post("+MouseSpy");
 		snd = 0;
-		t_atom a[1]; SETSYMBOL(a,rcv_==s_default?symprintf(".x%x",mom):s_empty?0:rcv_);
+		t_atom a[1]; SETSYMBOL(a,rcv_==s_default?symprintf(".x%x",mom):rcv_);
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy_proxy"),1,a);
 		proxy = (BFObject *)pd_newest();
 		((MouseSpyProxy *)proxy->self)->snd = (t_pd *)bself;
