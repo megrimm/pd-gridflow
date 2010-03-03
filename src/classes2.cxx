@@ -542,22 +542,63 @@ static void KEYS_ARE (int i, const char *s__) {
 
 static t_symbol *s_default;
 static t_symbol *s_empty;
-\class MouseSpy : FObject {
-	int y,x,flags;
+
+/* because of recursion problem with pd_unbind and bindlist_anything */
+\class MouseSpyProxy : FObject {
+	t_clock *clock;
 	t_symbol *rcv;
 	t_pd *snd;
-	\constructor (t_symbol *rcv_=s_default) {
-		snd = 0;
-		rcv = rcv_==s_default?symprintf(".x%x",mom):s_empty?0:rcv_;
-		if (rcv)   pd_bind((t_pd *)bself,rcv);
+	\constructor (t_symbol *r=0) {
+		rcv=r;
+		if (rcv) pd_bind((t_pd *)bself,rcv);
+		snd=0;
+		post("+MouseSpyProxy");
+	}
+	~MouseSpyProxy () {post("-MouseSpyProxy");}
+	\decl void anything (...) {
+		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3); // this is getting tiring
+		post("MouseSpyProxy anything bself=%p snd=%p sel=%s",bself,snd,sel->s_name);
+		if (snd) pd_anything(snd,sel,argc-1,argv+1);
 	}
 	void set_rcv (t_symbol *rcv_=0) {
-		//post("set_rcv %08x",long(rcv));
 		if (rcv) pd_unbind((t_pd *)bself,rcv);
 		rcv=rcv_;
 		if (rcv)   pd_bind((t_pd *)bself,rcv);
 	}
-	~MouseSpy () {if (rcv) pd_unbind((t_pd *)bself,rcv);}
+	static void bye (void *x) {INIT1
+		post("->bye");
+		clock_free(self->clock);
+		pd_unbind((t_pd *)bself,self->rcv);
+		pd_free((t_pd *)x);
+		post("<-bye");
+	}
+	void delayed_free () {
+		post("->delayed_free");
+		snd = 0;
+		clock = clock_new(bself,(void(*)())MouseSpyProxy::bye);
+		clock_delay(clock,0);
+		post("<-delayed_free");
+	}
+};
+\end class {install("gf/mouse_spy_proxy",1,1);}
+\class MouseSpy : FObject {
+	int y,x,flags;
+	t_pd *snd;
+	BFObject *proxy;
+	\constructor (t_symbol *rcv_=s_default) {post("+MouseSpy");
+		snd = 0;
+		t_atom a[1]; SETSYMBOL(a,rcv_==s_default?symprintf(".x%x",mom):s_empty?0:rcv_);
+		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy_proxy"),1,a);
+		proxy = (BFObject *)pd_newest();
+		((MouseSpyProxy *)proxy->self)->snd = (t_pd *)bself;
+	}
+	void set_rcv (t_symbol *rcv_=0) {((MouseSpyProxy *)proxy->self)->set_rcv(rcv_);}
+	~MouseSpy () {
+		post("-MouseSpy");
+		((MouseSpyProxy *)proxy->self)->delayed_free();
+		//pd_free((t_pd *)proxy);
+		//if (rcv) pd_unbind((t_pd *)bself,rcv);
+	}
 	void event (const char *ss, t_symbol *key=0) {
 		t_atom a[4];
 		SETFLOAT(a+0,y);
