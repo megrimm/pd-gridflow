@@ -515,7 +515,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 		" $x2 [expr {$y2-2}] [expr {$x2-2}] $y2"
 		" [expr {$x+2}] $y2 $x [expr {$y2-2}]"
 		" $x $y -fill $bg -tags $self -outline $outline\n"
-		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags $self -outline black\n"
+		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags ${self}i0 -outline black\n"
 		"$canvas lower $self ${self}TEXT \n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
