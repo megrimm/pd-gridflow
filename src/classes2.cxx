@@ -545,15 +545,13 @@ static t_symbol *s_empty;
 	t_symbol *rcv;
 	t_pd *snd;
 	\constructor (t_symbol *r=s_empty) {
+		snd=0;
 		rcv = r==s_empty?0:r;
 		if (rcv) pd_bind((t_pd *)bself,rcv);
-		snd=0;
-		post("+MouseSpyProxy r=%s rcv=%s",r->s_name,rcv?rcv->s_name:"rien");
 	}
 	~MouseSpyProxy () {post("-MouseSpyProxy");}
 	\decl void anything (...) {
 		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3); // this is getting tiring
-		post("MouseSpyProxy anything bself=%p snd=%p sel=%s",bself,snd,sel->s_name);
 		if (snd) pd_anything(snd,sel,argc-1,argv+1);
 	}
 	void set_rcv (t_symbol *rcv_=0) {
@@ -562,18 +560,14 @@ static t_symbol *s_empty;
 		if (rcv)   pd_bind((t_pd *)bself,rcv);
 	}
 	static void bye (void *x) {INIT1
-		post("->bye");
 		clock_free(self->clock);
 		if (self->rcv) pd_unbind((t_pd *)bself,self->rcv);
 		pd_free((t_pd *)x);
-		post("<-bye");
 	}
 	void delayed_free () {
-		post("->delayed_free");
 		snd = 0;
 		clock = clock_new(bself,(void(*)())MouseSpyProxy::bye);
 		clock_delay(clock,0);
-		post("<-delayed_free");
 	}
 };
 \end class {install("gf/mouse_spy_proxy",1,1);}
@@ -589,12 +583,7 @@ static t_symbol *s_empty;
 		((MouseSpyProxy *)proxy->self)->snd = (t_pd *)bself;
 	}
 	void set_rcv (t_symbol *rcv_=0) {((MouseSpyProxy *)proxy->self)->set_rcv(rcv_);}
-	~MouseSpy () {
-		post("-MouseSpy");
-		((MouseSpyProxy *)proxy->self)->delayed_free();
-		//pd_free((t_pd *)proxy);
-		//if (rcv) pd_unbind((t_pd *)bself,rcv);
-	}
+	~MouseSpy () {((MouseSpyProxy *)proxy->self)->delayed_free();}
 	void event (const char *ss, t_symbol *key=0) {
 		t_atom a[4];
 		SETFLOAT(a+0,y);
