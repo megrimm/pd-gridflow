@@ -376,7 +376,7 @@ public:
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
 		sys_vgui(".x%x.c itemconfigure {%sR || %sTEXT} -outline %s\n",c,
-			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
 	}
 	static void deletefn(BLAH) {INIT L
 		if (self->vis) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
@@ -463,7 +463,6 @@ extern "C" int sys_hostfontsize(int fontsize);
 	}
 	NEWWB
 	static void redraw(BLAH) {INIT1 self->show();}
-	/* outline colour #aaaaaa instead of #000000 (really just that!) */
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
 		sys_vgui(".x%x.c itemconfigure %sR -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
@@ -505,17 +504,12 @@ extern "C" int sys_hostfontsize(int fontsize);
 	class_setwidget(fclass->bfclass,Display::newwb());
 	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n"
 		"$canvas delete $self\n"
-		/*"$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n"*/
 		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
 		"$canvas addtag $self withtag ${self}TEXT\n"
 		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {}\n"
-		"set sx [expr $x2-$x1+2]\n"
-		"set sy [expr $y2-$y1+4]\n"
-		/*"$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline\n"*/
-		"set x2 [expr {$x+$sx}]; set y2 [expr {$y+$sy}]\n"
-		"$canvas create polygon $x $y $x2 $y"
-		" $x2 [expr {$y2-2}] [expr {$x2-2}] $y2"
-		" [expr {$x+2}] $y2 $x [expr {$y2-2}]"
+		"set sx [expr $x2-$x1+2]; set x2 [expr {$x+$sx}]\n"
+		"set sy [expr $y2-$y1+4]; set y2 [expr {$y+$sy}]\n"
+		"$canvas create polygon $x $y $x2 $y $x2 [expr {$y2-2}] [expr {$x2-2}] $y2 [expr {$x+2}] $y2 $x [expr {$y2-2}]"
 		" $x $y -fill $bg -tags [list $self ${self}R] -outline $outline\n"
 		"$canvas create rectangle $x $y [expr $x+7] [expr $y+2] -fill white -tags [list $self ${self}i0] -outline black\n"
 		"$canvas lower ${self}R ${self}TEXT\n"
@@ -698,7 +692,7 @@ static t_symbol *s_empty;
 		t_glist *c = glist_getcanvas(mom);
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
 		sys_vgui("gridsee_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
-			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#000000",c);
+			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#aaaaaa",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
 	static void visfn(BLAH, int flag) {INIT1
@@ -723,17 +717,19 @@ GRID_INLET(0) {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
 	#define ETC ""
-	sys_gui("proc gridsee_update {self x y sx sy fg bg outline canvas} {\n"
+	sys_gui("proc gridsee_update {self x1 y1 sx sy fg bg outline canvas} {\n"
 	    "$canvas delete $self\n"
-	    "$canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "
-		"-tags [list $self ${self}R] -outline $outline\n"
-	    "$canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "
-		"-tags [list $self ${self}RR] -outline $outline\n"
-	    "$canvas create rectangle $x            $y                [expr {$x+7}    ] [expr {$y+2}    ] -fill white "
-		"-tags [list $self ${self}i0] -outline $outline\n"
-	    "$canvas create rectangle $x            [expr {$y+$sy-2}] [expr {$x+7}    ] [expr {$y+$sy}  ] -fill white "
-		"-tags [list $self ${self}o0] -outline $outline\n"
-	    "$canvas create image     [expr {$x+3}] [expr {$y+5}]     -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
+	    "set x2 [expr {$x1+$sx}]\n"
+	    "set y2 [expr {$y1+$sy}]\n"
+	    "$canvas create rectangle $x1            $y1            [expr {$x2}  ] $y2            -fill $bg   "
+		"-tags [list $self ${self}R ] -outline $outline\n"
+	    "$canvas create rectangle [expr {$x1+2}] [expr {$y1+4}] [expr {$x2-2}] [expr {$y2-4}] -fill black "
+		"-tags [list $self ${self}RR] -outline black\n"
+	    "$canvas create rectangle $x1            $y1            [expr {$x1+7}] [expr {$y1+2}] -fill white "
+		"-tags [list $self ${self}i0] -outline black\n"
+	    "$canvas create rectangle $x1            [expr {$y2-2}] [expr {$x1+7}] $y2            -fill white "
+		"-tags [list $self ${self}o0] -outline black\n"
+	    "$canvas create image     [expr {$x1+3}] [expr {$y1+5}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
 }
 
