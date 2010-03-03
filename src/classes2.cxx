@@ -369,16 +369,17 @@ public:
 		*y1 = text_ypix(bself,glist); *y2 = *y1+self->sy;
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
-		bself->te_xpix+=dx; bself->te_ypix+=dy; const char *r = self->rsym->s_name;
-		sys_vgui(".x%x.c move {%s || %sTEXT || %sIMAGE} %d %d\n",glist_getcanvas(glist),r,r,r,dx,dy);
+		bself->te_xpix+=dx; bself->te_ypix+=dy;
+		sys_vgui(".x%x.c move %s %d %d\n",glist_getcanvas(glist),self->rsym->s_name,dx,dy);
 		canvas_fixlinesfor(glist, (t_text *)x);
 	}
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
-		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+		sys_vgui(".x%x.c itemconfigure {%sR || %sTEXT} -outline %s\n",c,
+			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 	static void deletefn(BLAH) {INIT L
-		if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT %sIMAGE\n",c,self->rsym->s_name,self->rsym->s_name);
+		if (self->vis) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
 	}
 	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
@@ -465,7 +466,8 @@ extern "C" int sys_hostfontsize(int fontsize);
 	/* outline colour #aaaaaa instead of #000000 (really just that!) */
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
-		sys_vgui(".x%x.c itemconfigure %s -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
+		sys_vgui(".x%x.c itemconfigure %sR -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
+		sys_vgui(".x%x.c itemconfigure %sTEXT -fill %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 };
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
@@ -502,21 +504,21 @@ extern "C" int sys_hostfontsize(int fontsize);
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
 	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n"
-		"$canvas delete ${self}TEXT \n"
+		"$canvas delete $self\n"
 		/*"$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n"*/
 		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
+		"$canvas addtag $self withtag ${self}TEXT\n"
 		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {}\n"
 		"set sx [expr $x2-$x1+2]\n"
 		"set sy [expr $y2-$y1+4]\n"
-		"$canvas delete $self\n"
 		/*"$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg   -tags $self -outline $outline\n"*/
 		"set x2 [expr {$x+$sx}]; set y2 [expr {$y+$sy}]\n"
 		"$canvas create polygon $x $y $x2 $y"
 		" $x2 [expr {$y2-2}] [expr {$x2-2}] $y2"
 		" [expr {$x+2}] $y2 $x [expr {$y2-2}]"
-		" $x $y -fill $bg -tags $self -outline $outline\n"
-		"$canvas create rectangle $x $y [expr $x+7]   [expr $y+2]   -fill white -tags ${self}i0 -outline black\n"
-		"$canvas lower $self ${self}TEXT \n"
+		" $x $y -fill $bg -tags [list $self ${self}R] -outline $outline\n"
+		"$canvas create rectangle $x $y [expr $x+7] [expr $y+2] -fill white -tags [list $self ${self}i0] -outline black\n"
+		"$canvas lower ${self}R ${self}TEXT\n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
 #endif
@@ -720,15 +722,19 @@ GRID_INLET(0) {
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
-	#define ETC "-tags $self -outline $outline"
-	sys_gui("proc gridsee_update {self x y sx sy fg bg outline canvas} {\n\
-	    $canvas delete $self ${self}IMAGE\n\
-	    $canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "ETC"\n\
-	    $canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "ETC"\n\
-	    $canvas create rectangle $x            $y                [expr {$x+7}    ] [expr {$y+2}    ] -fill white "ETC"\n\
-	    $canvas create rectangle $x            [expr {$y+$sy-2}] [expr {$x+7}    ] [expr {$y+$sy}  ] -fill white "ETC"\n\
-	    $canvas create image     [expr {$x+3}] [expr {$y+5}]     -tags ${self}IMAGE -image $self -anchor nw\n\
-	}\n");
+	#define ETC ""
+	sys_gui("proc gridsee_update {self x y sx sy fg bg outline canvas} {\n"
+	    "$canvas delete $self\n"
+	    "$canvas create rectangle $x            $y                [expr {$x+$sx}  ] [expr {$y+$sy}  ] -fill $bg   "
+		"-tags [list $self ${self}R] -outline $outline\n"
+	    "$canvas create rectangle [expr {$x+2}] [expr {$y+4}]     [expr {$x+$sx-2}] [expr {$y+$sy-4}] -fill black "
+		"-tags [list $self ${self}RR] -outline $outline\n"
+	    "$canvas create rectangle $x            $y                [expr {$x+7}    ] [expr {$y+2}    ] -fill white "
+		"-tags [list $self ${self}i0] -outline $outline\n"
+	    "$canvas create rectangle $x            [expr {$y+$sy-2}] [expr {$x+7}    ] [expr {$y+$sy}  ] -fill white "
+		"-tags [list $self ${self}o0] -outline $outline\n"
+	    "$canvas create image     [expr {$x+3}] [expr {$y+5}]     -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
+	"}\n");
 }
 
 //****************************************************************
