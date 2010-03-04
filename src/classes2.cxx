@@ -1322,6 +1322,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 }
 #endif
 
+//int propertiesfn_offset;
 \end class {
 	install("gf/lol",1,1);
 #ifndef DESIRE
@@ -1329,6 +1330,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	unsigned long *lol = (unsigned long *)text_class;
 	int i=0;
 	while (lol[i]!=0xDECAFFED) i++;
+	//propertiesfn_offset = i*sizeof(unsigned long);
 	*((char *)(lol+i+1) + 6) = 1;
 	class_setpropertiesfn(text_class,0);
 	t_object *bogus = (t_object *)pd_new(text_class);
