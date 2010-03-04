@@ -1385,7 +1385,11 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	}
 };
 \end class {install("gf/getpid",1,2);}
-
+\class GFSelector : FObject {
+	\constructor () {}
+	\decl void anything (...) {outlet_symbol(outlets[0],gensym(argv[0].a_symbol->s_name+3));}
+};
+\end class {install("gf/selector",1,1);}
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 
 /* hack because hexloader is a myth */
