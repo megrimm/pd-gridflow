@@ -927,10 +927,21 @@ static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	pd_typedmess((t_pd *)self,argv[0].a_symbol,argc-1,argv+1);
 }
 
+struct _inlet {t_pd i_pd; struct _inlet *i_next;};
+extern int propertiesfn_offset;
+static t_pd *text_firstinlet (t_object *self) {
+	//int i = propertiesfn_offset+sizeof(long)+sizeof(int)+2;
+	int n = obj_ninlets(self);
+	for (t_inlet *in = self->ob_inlet; in; in = in->i_next) n--;
+	//post("firstin=%d n=%d offsetof=%d",((char *)self)[i],n,offsetof(t_class,c_firstin));
+	return n ? (t_pd *)self : (t_pd *)self->ob_inlet;
+}
 static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"else: no last"); return;}
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
-	pd_typedmess((t_pd *)g,argv[0].a_symbol,argc-1,argv+1);
+	post("tolast: class=%s",pd_class(g)->c_name->s_name);
+	t_pd *r = text_firstinlet((t_text *)g);
+	pd_typedmess(r,argv[0].a_symbol,argc-1,argv+1);
 }
 
 // those are not really leaks but deleting them make them disappear from valgrind
