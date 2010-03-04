@@ -939,7 +939,7 @@ static t_pd *text_firstinlet (t_object *self) {
 static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"else: no last"); return;}
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
-	post("tolast: class=%s",pd_class(g)->c_name->s_name);
+	//post("tolast: class=%s",pd_class(g)->c_name->s_name);
 	t_pd *r = text_firstinlet((t_text *)g);
 	pd_typedmess(r,argv[0].a_symbol,argc-1,argv+1);
 }
