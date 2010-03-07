@@ -7,8 +7,21 @@ $Id$
 [ ] ubuntu binary
 [ ] win32 binary (--no-pentium pour être conservateur)
 
-0.9.8:
-[ ] (vendredi) [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
+0.9.8 assigned to Patrick:
+[ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
+[ ] [#io.quicktimecamera] minsize, size, maxsize
+[ ] [#io.quartz] position/keypress/keyrelease
+[ ] [#io.quartz] setcursor/hidecursor
+[ ] [#io.quartz] fullscreen mode
+
+0.9.8 unassigned:
+[ ] [#out x11] fullscreen mode
+[ ] find_file in same folder
+[ ] [range] name conflict.
+[ ] [#many] when $1 is abstraction :
+    error: canvas: no method for 'receive'
+    error: canvas: no method for 'send'
+[ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
     COULDN'T REPRODUCE THIS BUG !!!
 [ ] [#import] bug (see atelier)
 [ ] do the rest of doc updates that were planned for 0.9.7
@@ -110,8 +123,7 @@ OpenCV
 
 Common Video Framework
 [ ] a common library for all video IO (cameras, files, web), which is the project of Thomas H and Johannes.
-[ ] a six-way converter for GEM/PDP/GridFlow. There are already converters between GEM and PDP and between GEM and GridFlow
-    but there is none between PDP and GridFlow and then some things could be easier to install and run in a cross-platform way.
+[ ] PDP<->GridFlow converter
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
 [ ] threads for video?
 [ ] GEM geos vs 3DP: how do they compare?
