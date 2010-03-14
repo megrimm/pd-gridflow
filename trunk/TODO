@@ -1,6 +1,6 @@
 $Id$
 
-0.9.7 (à publier le 26 février):
+0.9.8 (à publier en mars):
 [ ] tag + release source
 [ ] osx-intel binary
 [ ] osx-ppc binary
@@ -13,6 +13,7 @@ $Id$
 [ ] [#io.quartz] position/keypress/keyrelease
 [ ] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
+[ ] [#io.quicktime out] grid, codec, quality.
 
 0.9.8 unassigned:
 [ ] [#out x11] fullscreen mode
@@ -99,10 +100,12 @@ $Id$
 [ ] make [#draw_points] [#edit_polygon]
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] add [#out png]
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
+
+0.9.9 (not for 0.9.8):
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 
 OpenCV
 [ ] cvOpticalFlow
