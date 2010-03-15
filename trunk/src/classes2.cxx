@@ -1385,6 +1385,17 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	}
 };
 \end class {install("gf/getpid",1,2);}
+\class GFGetCwd : FObject {
+	static t_symbol *sym;
+	\constructor () {}
+	\decl 0 bang () {
+	    char bof[PATH_MAX];
+	    if (!getcwd(bof,sizeof(bof))) RAISE("getcwd: %s",strerror(errno));
+	    outlet_symbol(outlets[0],gensym(bof));
+	}
+};
+\end class {install("gf/getcwd",1,1);}
+
 \class GFSelector : FObject {
 	\constructor () {}
 	\decl void anything (...) {outlet_symbol(outlets[0],gensym(argv[0].a_symbol->s_name+3));}
