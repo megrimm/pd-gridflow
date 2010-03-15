@@ -29,6 +29,8 @@
 #include <string.h>
 #include <errno.h>
 #include <CoreServices/CoreServices.h>
+#include <map>
+std::map<long,const char *> oserr_table;
 
 typedef ComponentInstance VideoDigitizerComponent, VDC;
 typedef ComponentResult   VideoDigitizerError,     VDE;
@@ -443,5 +445,7 @@ GRID_INLET(0) {
 }
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
+	#define OSERR(a,b,c) oserr_table[a] = b c;
+	#include "MacErrors2.i"
 	\startall
 }
