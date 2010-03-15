@@ -13,7 +13,7 @@ f.each {|line|
     if table[m[2]] then
       puts "#{m[2]} est en double"
     else
-      g.puts "OSERR(#{m[2]},\"#{m[1]}\",\"#{m[3]}\")"
+      g.puts "OSERR(#{m[2]},\"#{m[1]}\",#{m[3].inspect})"
       table[m[2]] = [m[1],m[3]]
     end
   end
