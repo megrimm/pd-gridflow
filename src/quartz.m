@@ -26,10 +26,6 @@
 	Their intersection is C or almost. They add quite different sets of features.
 	I need Objective C here because the Cocoa API is for Objective C and Java only,
 	and the Objective C one was the easiest to integrate in GridFlow.
-
-	The next best possibility may be using RubyCocoa, a port of the Cocoa API to Ruby;
-	However I haven't checked whether Quartz is wrapped, and how easy it is to
-	process images.
 */
 
 #include <stdio.h>
@@ -142,6 +138,7 @@ void FormatQuartz_call(FormatQuartz *self);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
+		_0_move(0,0,0,0);
 	}
 	~FormatQuartz () {
 		clock_unset(clock);

@@ -242,8 +242,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		nDevices = (*deviceList)->count;
 		//post("  number of available devices: %d", nDevices); 
 		//post("  current device: %d", (*deviceList)->selectedIndex);
-		//for (int i=0; i<nDevices; i++)
-			//post("  Device %d: %s", i, (*deviceList)->entry[i].name);
+		//for (int i=0; i<nDevices; i++) post("  Device %d: %s", i, (*deviceList)->entry[i].name);
 	}
     
 	// treat the device list in reverse order
