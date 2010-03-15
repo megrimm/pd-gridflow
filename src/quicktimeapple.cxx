@@ -323,6 +323,16 @@ GRID_INLET(0) {
 } GRID_END
 \end class FormatQuickTimeCamera {install_format("#io.quicktimecamera",4,"");}
 
+//******************************************************************************
+
+const char *oserr_find(long err)
+{
+	std::map<long,const char *>::iterator it = oserr_table.find(err);
+	return (it == oserr_table.end()) ? "undefined error..." : it->second;
+}
+
+#define ERR(str)  RAISE("(%s)\nerror #%d : %s", str, err, oserr_find(err))
+
 \class FormatQuickTimeApple : Format {
 	Movie movie;
 	TimeValue time;
@@ -333,13 +343,13 @@ GRID_INLET(0) {
 	int nframe, nframes;
 	\constructor (t_symbol *mode, string filename) {
 		/*vdc=0;*/ movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
-		int err;
+		long err;
 		filename = gf_find_file(filename);
 		FSSpec fss;
 		FSRef fsr;
-		err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);      if (err) goto err;
-		err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL); if (err) goto err;
-		err = OpenMovieFile(&fss,&movie_file,fsRdPerm);                       if (err) goto err;
+		err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);      if (err) ERR("FSPathMakeRef");
+		err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL); if (err) ERR("FSGetCatalogInfo");
+		err = OpenMovieFile(&fss,&movie_file,fsRdPerm);                       if (err) ERR("OpenMovieFile");
 		NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
 		Rect r;
 		GetMovieBox(movie, &r);
@@ -353,11 +363,8 @@ GRID_INLET(0) {
 		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 		buffer = new uint8[dim->prod()];
 		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
-		if (err) goto err;
+		if (err) ERR("QTNewGWorldFromPtr");
 		return;
-	err:
-	//	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err, rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
-		RAISE("can't open file `%s': error #%d (0x%08x)", filename.data(), err, err);
 	}
 	~FormatQuickTimeApple() {
 		if (movie) {
@@ -445,7 +452,7 @@ GRID_INLET(0) {
 }
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
-	#define OSERR(a,b,c) oserr_table[a] = b c;
+	#define OSERR(a,b,c) oserr_table[a] = b ": " c;
 	#include "MacErrors2.i"
 	\startall
 }
