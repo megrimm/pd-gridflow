@@ -1,11 +1,7 @@
 $Id$
 
-0.9.8 (à publier en mars):
-[ ] tag + release source
-[ ] osx-intel binary
-[ ] osx-ppc binary
-[ ] ubuntu binary
-[ ] win32 binary (--no-pentium pour être conservateur)
+0.9.8 (à publier en mars ou avril):
+[ ] bbogart's bug (de mars 2010)
 
 0.9.8 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
@@ -17,13 +13,10 @@ $Id$
 
 0.9.8 unassigned:
 [ ] [#out x11] fullscreen mode
-[ ] find_file in same folder
 [ ] [range] name conflict.
 [ ] [#many] when $1 is abstraction :
     error: canvas: no method for 'receive'
     error: canvas: no method for 'send'
-[ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
-    COULDN'T REPRODUCE THIS BUG !!!
 [ ] [#import] bug (see atelier)
 [ ] do the rest of doc updates that were planned for 0.9.7
     (including perhaps some of the updates of stuff new in 0.9.7)
@@ -102,6 +95,9 @@ $Id$
 [ ] add [#out png]
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
+[ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
+[ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
+    COULDN'T REPRODUCE THIS BUG !!!
 
 0.9.9 (not for 0.9.8):
 [ ] regular dc1394 options
