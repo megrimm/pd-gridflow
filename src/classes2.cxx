@@ -37,6 +37,7 @@ extern t_class *text_class;
 #include <errno.h>
 #include <sys/time.h>
 #include <string>
+#include <fcntl.h>
 
 typedef int (*comparator_t)(const void *, const void *);
 
@@ -1244,7 +1245,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		// was #00aa66 {3 5 3 5}
 		sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
 			long(can),long(t),long(can),x1,y1,x2,y2,long(t));
-	}
+		}
 #else
 	post("doesn't work with DesireData");
 #endif
@@ -1402,6 +1403,27 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 };
 \end class {install("gf/selector",1,1);}
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
+
+\class FindFile : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 symbol (t_symbol *s) {MOM
+	    int fd;
+	    char bof[MAXPDSTRING], *bofp;
+	    fd=open_via_path(canvas_getdir(m)->s_name,s->s_name,"",bof,&bofp,MAXPDSTRING,1);
+	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],symprintf("%s/%s",bof,bofp)); return;}
+	    canvas_makefilename(m,s->s_name,bof,MAXPDSTRING);
+	    fd = open(bof,0,O_RDONLY);
+	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(bof)); return;}
+	    string a = string(s->s_name);
+	    string b = gf_find_file(a);
+	    if (a!=b) {outlet_symbol(outlets[0],gensym(a.data())); return;}
+	    fd = open(s->s_name,0,O_RDONLY);
+	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(bof)); return;}
+	    outlet_bang(outlets[1]);
+	}
+};
+\end class {install("gf/find_file",1,2);}
 
 /* hack because hexloader is a myth */
 \class InvTimes : FObject {
