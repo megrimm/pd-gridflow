@@ -45,6 +45,8 @@
 - (int) imageWidth;
 - (uint8 *) imageData;
 - (int) imageDataSize;
+- (void) mouseMoved: (NSEvent *)theEvent;
+- (BOOL) acceptsFirstResponder;
 @end
 
 @implementation GFView
@@ -56,7 +58,6 @@
 
 - (id) imageHeight: (int)h width: (int)w {
 	if (imheight==h && imwidth==w) return self;
-	//post("new size: y=%d x=%d",h,w);
 	imheight=h;
 	imwidth=w;
 	if (imdata) delete imdata;
@@ -94,6 +95,12 @@
 	[self unlockFocus];
 	return self;
 }
+
+- (void) mouseMoved: (NSEvent *)theEvent {    /// doesn't work...
+	post("mouseMoved");	
+}
+- (BOOL) acceptsFirstResponder {return YES;}
+
 @end
 
 /* workaround: bus error in gcc */
@@ -117,6 +124,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	NSWindow *window;
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
+	int mouse_state;
 	t_clock *clock;
 	\constructor (t_symbol *mode) {
 		NSRect r = {{0,0}, {320,240}};
@@ -134,11 +142,13 @@ void FormatQuartz_call(FormatQuartz *self);
 		clock = clock_new(this,(t_method)FormatQuartz_call);
 		clock_delay(clock,0);
 		[window makeFirstResponder: widget];
+		[window setAcceptsMouseMovedEvents: YES];
 		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
 		_0_move(0,0,0,0);
+		mouse_state = 0;
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -149,16 +159,27 @@ void FormatQuartz_call(FormatQuartz *self);
 		[window close];
 	}
 	void call ();
+	void report_pointer(int y, int x, int state);
 	\decl 0 title (string title="");
 	\decl 0 move (int y, int x);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\grin 0
 };
 
+void FormatQuartz::report_pointer(int y, int x, int state) {
+	t_atom a[3];
+	SETFLOAT(a+0,y);
+	SETFLOAT(a+1,x);
+	SETFLOAT(a+2,state);
+	outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+}
+
 static NSDate *distantFuture, *distantPast;
 
 void FormatQuartz::call() {
-	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
+	BOOL wasMouseEvent = NO;
+	NSPoint p;
+	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask | NSMouseMovedMask
 		// untilDate: distantFuture // blocking
 		untilDate: distantPast // nonblocking
 		inMode: NSDefaultRunLoopMode
@@ -166,6 +187,28 @@ void FormatQuartz::call() {
 	if (e) {
 		NSLog(@"%@", e);
 		[NSApp sendEvent: e];
+		p = [this->window mouseLocationOutsideOfEventStream];
+		
+		switch ([e type]) {
+		case NSLeftMouseDown:
+			this->mouse_state += 256;  wasMouseEvent = YES; break;
+		case NSLeftMouseUp:
+			this->mouse_state -= 256;  wasMouseEvent = YES; break;
+		case NSOtherMouseDown:
+			this->mouse_state += 512;  wasMouseEvent = YES; break;
+		case NSOtherMouseUp:
+			this->mouse_state -= 512;  wasMouseEvent = YES; break;
+		case NSRightMouseDown:
+			this->mouse_state += 1024; wasMouseEvent = YES; break;
+		case NSRightMouseUp:
+			this->mouse_state -= 1024; wasMouseEvent = YES; break;
+		case NSLeftMouseDragged:
+		case NSRightMouseDragged:
+		case NSOtherMouseDragged:
+			wasMouseEvent = YES; break;
+		}
+		int img_h = [this->widget imageHeight];
+		if (wasMouseEvent) report_pointer(img_h - (int)p.y, (int)p.x, this->mouse_state);
 	}
 	[NSApp updateWindows];
 	[this->window flushWindowIfNeeded];
@@ -212,20 +255,22 @@ GRID_INLET(0) {
 	GFView_display(widget);
 } GRID_END
 
+#define MAC_MENUBARHEIGHT  22    // there must be a better way to handle this...
+#define MAC_BOTTOMLEFT_TO_TOPLEFT  ([[[NSScreen screens] objectAtIndex:0] frame].size.height - MAC_MENUBARHEIGHT - y)
+
 \def 0 title (string title="") {
     NSString *str = [[NSString alloc] initWithCString:title.c_str()];
     [window setTitle: str];
 }
 
 \def 0 move (int y, int x) {
-    int new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - 22 - y;
+    int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT;
     NSPoint pos = { x, new_y };
     [window setFrameTopLeftPoint: pos];
 }
 
 \def 0 set_geometry (int y, int x, int sy, int sx) {
-    int new_y;
-    new_y = [[[NSScreen screens] objectAtIndex:0] frame].size.height - 22 - y - sy;
+    int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT - sy;
     NSRect r = {{x, new_y}, {sx, sy}};
     [window setFrame: r display: YES];
 }
