@@ -1414,12 +1414,18 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],symprintf("%s/%s",bof,bofp)); return;}
 	    canvas_makefilename(m,s->s_name,bof,MAXPDSTRING);
 	    fd = open(bof,0,O_RDONLY);
+	    //post("(2) fd=%d for %s",fd,bof);
 	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(bof)); return;}
-	    string a = string(s->s_name);
-	    string b = gf_find_file(a);
-	    if (a!=b) {outlet_symbol(outlets[0],gensym(a.data())); return;}
+
+	    string b = gf_find_file(string(s->s_name));
+	    fd = open(b.data(),0,O_RDONLY);
+	    //post("(3) fd=%d for %s",fd,b.data());
+	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(b.data())); return;}
+
 	    fd = open(s->s_name,0,O_RDONLY);
-	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(bof)); return;}
+	    //post("(4) fd=%d for %s",fd,s->s_name);
+	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],s); return;}
+
 	    outlet_bang(outlets[1]);
 	}
 };
