@@ -708,23 +708,23 @@ GRID_INLET(0) {
 //   L: matrix of size si by sj
 //   R: matrix of size sj by sk
 //  LR: matrix of size si by sk
-template <class T> void inner_child_a (T *as, T *bs, int sj, int sk, int chunk) {
-	for (int j=0; j<chunk; j++, as+=sk, bs+=sj) op_put->map(sk,as,*bs);}
-template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) {
-	for (int j=0; j<chunk; j++, as+=sk, bs+=sj) op_put->map(sk,as,*bs);}
+#define FOO for (int j=0; j<chunk; j++, as+=sk, bs+=sj) op_put->map(sk,as,*bs);
+template <class T> void inner_child_a (T *as, T *bs, int sj, int sk, int chunk) {FOO}
+template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) {FOO}
+#undef FOO
 
 // Inner product in a Module on the (+,*) Ring
-//      | BBBBB
-//      j BBBBB
-//      | BBBBB
-// --j--*---k---
-// AAAAA  CCCCC
-template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
-template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
-template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {
-	for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}}
+//     | BBBBB
+//     j BBBBB
+//     | BBBBB
+// -j--*---k---
+// AAA i CCCCC
+// AAA | CCCCC
+#define FOO for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}
+template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {FOO}
+template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {FOO}
+template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {FOO}
+#undef FOO
 
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
