@@ -105,7 +105,7 @@ static inline float32 gf_abs(float32 a) {return fabs(a);}
 static inline float64 gf_abs(float64 a) {return fabs(a);}
 
 // integer powers in log(b) time. T is assumed Integer
-template <class T> static inline T ipow(T a, T b) {T r=1; for(;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}}
+template <class T> static inline T ipow(T a, T b) {T r=1; if (b<0) return 0; for(;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}}
 static inline float32 ipow(float32 a, float32 b) {return pow(a,b);}
 static inline float64 ipow(float64 a, float64 b) {return pow(a,b);}
 
