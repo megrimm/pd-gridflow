@@ -168,7 +168,9 @@ void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim *dim=0) {
 		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
 		  case CV_32S: out->send(c*n,  (int32 *)meuh); break;
 		  case CV_32F: out->send(c*n,(float32 *)meuh); break;
+		  #ifndef HAVE_LITE
 		  case CV_64F: out->send(c*n,(float64 *)meuh); break;
+		  #endif
 		}
 	}
 }
