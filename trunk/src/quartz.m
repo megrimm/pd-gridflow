@@ -46,6 +46,7 @@
 - (uint8 *) imageData;
 - (int) imageDataSize;
 - (BOOL) acceptsFirstResponder;
+- (void)keyDown:(NSEvent *)e;
 @end
 
 @implementation GFView
@@ -97,6 +98,10 @@
 
 - (BOOL) acceptsFirstResponder {return YES;}
 
+- (void)keyDown:(NSEvent *)e {
+	fprintf(stderr,"GFView keyDown...\n");	
+}
+
 @end
 
 /* workaround: bus error in gcc */
@@ -131,18 +136,17 @@ void FormatQuartz_call(FormatQuartz *self);
 			backing: NSBackingStoreBuffered
 			defer: YES];
 		widget = [[GFView alloc] initWithFrame: r];
+		wc = [[NSWindowController alloc] initWithWindow: window];
 		[window setContentView: widget];
 		[window setTitle: @"GridFlow"];
 		[window makeKeyAndOrderFront: nil];
 		[window orderFrontRegardless];
-		wc = [[NSWindowController alloc] initWithWindow: window];
+		[window makeFirstResponder: widget];
+		[window setBackgroundColor: [NSColor clearColor]];
 		clock = clock_new(this,(t_method)FormatQuartz_call);
 		clock_delay(clock,0);
-		[window makeFirstResponder: widget];
 		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
-		NSColor *color = [NSColor clearColor];
-		[window setBackgroundColor: color];
 		_0_move(0,0,0,0);
 		mouse_state = 0;
 		mouse_lastpos.x = 0;
@@ -190,10 +194,14 @@ void FormatQuartz::call() {
 		
 	p = [this->window mouseLocationOutsideOfEventStream];
 	p.y = [this->widget imageHeight] - p.y;
-	if (p.y != l->y || p.x != l->x) // mouse moved
-		VALIDATE_MOUSEEVENT;    // inside our window ?
+	if ([this->window isKeyWindow]) {
+		if (p.y != l->y || p.x != l->x) // mouse moved
+			VALIDATE_MOUSEEVENT;    // inside our window ?
+	}
 	if (e) {
-		//NSLog(@"%@", e);
+		//fprintf(stderr,"isKeyWindow ? %s\n", [this->window isKeyWindow]?"yes":"no");//
+		//fprintf(stderr,"isMainWindow ? %s\n", [this->window isMainWindow]?"yes":"no");//
+		NSLog(@"%@", e);
 		[NSApp sendEvent: e];
 		switch ([e type]) {
 		case NSLeftMouseDown:
