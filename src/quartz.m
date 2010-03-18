@@ -45,7 +45,6 @@
 - (int) imageWidth;
 - (uint8 *) imageData;
 - (int) imageDataSize;
-- (void) mouseMoved: (NSEvent *)theEvent;
 - (BOOL) acceptsFirstResponder;
 @end
 
@@ -96,9 +95,6 @@
 	return self;
 }
 
-- (void) mouseMoved: (NSEvent *)theEvent {    /// doesn't work...
-	post("mouseMoved");	
-}
 - (BOOL) acceptsFirstResponder {return YES;}
 
 @end
@@ -124,6 +120,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	NSWindow *window;
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
+	NSPoint mouse_lastpos;
 	int mouse_state;
 	t_clock *clock;
 	\constructor (t_symbol *mode) {
@@ -142,13 +139,14 @@ void FormatQuartz_call(FormatQuartz *self);
 		clock = clock_new(this,(t_method)FormatQuartz_call);
 		clock_delay(clock,0);
 		[window makeFirstResponder: widget];
-		[window setAcceptsMouseMovedEvents: YES];
 		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
 		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
 		NSColor *color = [NSColor clearColor];
 		[window setBackgroundColor: color];
 		_0_move(0,0,0,0);
 		mouse_state = 0;
+		mouse_lastpos.x = 0;
+		mouse_lastpos.y = 0;
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -172,48 +170,56 @@ void FormatQuartz::report_pointer(int y, int x, int state) {
 	SETFLOAT(a+1,x);
 	SETFLOAT(a+2,state);
 	outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	this->mouse_lastpos.y = y;
+	this->mouse_lastpos.x = x;
 }
 
 static NSDate *distantFuture, *distantPast;
 
+#define VALIDATE_MOUSEEVENT  if ((p.y >= 0 && p.y <= [this->widget imageHeight]) && \
+                                 (p.x >= 0 && p.x <= [this->widget imageWidth])) wasMouseEvent = YES
+
 void FormatQuartz::call() {
 	BOOL wasMouseEvent = NO;
-	NSPoint p;
-	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask | NSMouseMovedMask
+	NSPoint p, *l=&this->mouse_lastpos;
+	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
 		// untilDate: distantFuture // blocking
-		untilDate: distantPast // nonblocking
+		untilDate: distantPast      // nonblocking
 		inMode: NSDefaultRunLoopMode
 		dequeue: YES];
-	if (e) {
-		NSLog(@"%@", e);
-		[NSApp sendEvent: e];
-		p = [this->window mouseLocationOutsideOfEventStream];
 		
+	p = [this->window mouseLocationOutsideOfEventStream];
+	p.y = [this->widget imageHeight] - p.y;
+	if (p.y != l->y || p.x != l->x) // mouse moved
+		VALIDATE_MOUSEEVENT;    // inside our window ?
+	if (e) {
+		//NSLog(@"%@", e);
+		[NSApp sendEvent: e];
 		switch ([e type]) {
 		case NSLeftMouseDown:
-			this->mouse_state += 256;  wasMouseEvent = YES; break;
+			this->mouse_state += 256;  VALIDATE_MOUSEEVENT; break;
 		case NSLeftMouseUp:
-			this->mouse_state -= 256;  wasMouseEvent = YES; break;
+			this->mouse_state -= 256;  VALIDATE_MOUSEEVENT; break;
 		case NSOtherMouseDown:
-			this->mouse_state += 512;  wasMouseEvent = YES; break;
+			this->mouse_state += 512;  VALIDATE_MOUSEEVENT; break;
 		case NSOtherMouseUp:
-			this->mouse_state -= 512;  wasMouseEvent = YES; break;
+			this->mouse_state -= 512;  VALIDATE_MOUSEEVENT; break;
 		case NSRightMouseDown:
-			this->mouse_state += 1024; wasMouseEvent = YES; break;
+			this->mouse_state += 1024; VALIDATE_MOUSEEVENT; break;
 		case NSRightMouseUp:
-			this->mouse_state -= 1024; wasMouseEvent = YES; break;
+			this->mouse_state -= 1024; VALIDATE_MOUSEEVENT; break;
 		case NSLeftMouseDragged:
 		case NSRightMouseDragged:
 		case NSOtherMouseDragged:
-			wasMouseEvent = YES; break;
+			wasMouseEvent = YES; break; // don't VALIDATE_MOUSEEVENT for when dragging outside the window
 		}
-		int img_h = [this->widget imageHeight];
-		if (wasMouseEvent) report_pointer(img_h - (int)p.y, (int)p.x, this->mouse_state);
 	}
+	if (wasMouseEvent) report_pointer((int)p.y, (int)p.x, this->mouse_state);
 	[NSApp updateWindows];
 	[this->window flushWindowIfNeeded];
 	clock_delay(clock,20);
 }
+
 void FormatQuartz_call(FormatQuartz *self) {self->call();}
 
 template <class T, class S>

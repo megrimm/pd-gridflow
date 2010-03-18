@@ -7,6 +7,7 @@ version 0.9.8 (2010.03...):
  * small fixes to colouring of [display] and [#see]
  * added [gf/selector] [gf/getcwd] [gf/find_file]
  * OSX: print real error messages instead of error #-43, etc.
+ * OSX: [#io.quartz] reports position
  * [#in]: lookup file in -path and the dir of the patch containing [#in]
 
 version 0.9.7 (2010.02.26):
