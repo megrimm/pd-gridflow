@@ -1002,6 +1002,7 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	\startall
 	startup_flow_objects();
+	startup_flow_objects3();
 	startup_flow_objects2();
 	startup_format();
 	STARTUP_LIST()
