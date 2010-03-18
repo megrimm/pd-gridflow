@@ -246,16 +246,15 @@ GRID_INLET(0) {
 		if (trunc<0) trunc=this->trunc;
 		std::string f = format(NumberTypeE_type_of(data));
 		for (int i=0; i<n; i++) {
-			if (base!=2) oprintf(s,f.data(),data[i]);
-			else {
+			if (base==2 || base==8 || base==16) {
+				static char digits[] = "0123456789ABCDEF";
+				int chunk = highest_bit((uint32)base);
 				T x = gf_abs(data[i]);
-				int ndigits = 1+highest_bit(uint64(x));
+				int ndigits = 1 + highest_bit(uint64(x))/chunk;
 				for (int j=columns-ndigits-(data[i]!=x); j>=0; j--) s<<' ';
 				if (data[i]!=x) s<<'-';
-				for (int j=ndigits-1; j>=0; j--) {
-					s<<char('0'+(((long)x>>j)&1));
-				}
-			}
+				for (int j=ndigits-1; j>=0; j--) s<<digits[((uint64)x>>(j*chunk))&(base-1)];
+			} else oprintf(s,f.data(),data[i]);
 			if (i<n-1) s << sep;
 			if (s.tellp()>trunc) return;
 		}
