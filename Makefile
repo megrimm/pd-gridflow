@@ -12,7 +12,7 @@ RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
+OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),Darwin)
@@ -20,6 +20,7 @@ ifeq ($(OS),Darwin)
   LDSOFLAGS += -headerpad_max_install_names
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
+  # -undefined dynamic_lookup # is used by smlib. this might be a good idea for future use.
 else
   ifeq ($(OS),nt)
     PDSUF = .dll

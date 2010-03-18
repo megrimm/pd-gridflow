@@ -887,6 +887,7 @@ int handle_braces(int ac, t_atom *av) {
 
 void startup_number();
 void startup_flow_objects();
+void startup_flow_objects3();
 void startup_flow_objects2();
 void startup_format();
 STARTUP_LIST(void)
