@@ -6,7 +6,8 @@ $Id$
 0.9.8 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quartz] position/keypress/keyrelease
+[x] [#io.quartz] position
+[ ] [#io.quartz] keypress/keyrelease
 [ ] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
 [ ] [#io.quicktime out] grid, codec, quality.
