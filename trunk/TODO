@@ -6,6 +6,7 @@ $Id$
 0.9.8 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
+[ ] [#io.quicktimecamera] colorspace rgb (, y, yuv)
 [x] [#io.quartz] position
 [ ] [#io.quartz] keypress/keyrelease
 [ ] [#io.quartz] setcursor/hidecursor
@@ -21,24 +22,24 @@ $Id$
 [ ] [#import] bug (see atelier)
 [ ] do the rest of doc updates that were planned for 0.9.7
     (including perhaps some of the updates of stuff new in 0.9.7)
+[ ] remove RAISE from grid.cxx, because of all the problems it causes.
+    generally, be a lot more careful about exception handling, because
+    assuming an operation works, is as troublesome when using throw/catch as when you don't,
+    because if you assume an operation works, you're not really _using_ throw/catch.
 [ ] win32 color_correction.pd crash
+[ ] [#camera] [#cast] setting ? or not ?
 [ ] continue [#many]...
 [ ] unify [print] and [display] source code
-[ ] is there a GC (graphics context) leak in [#io.x11] ?
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
 [ ] handle_braces error causes crash?
 [ ] GridFlow does something nasty with \1 \2 \3 etc... probably because of handle_braces
 [ ] [listread] has a different outlet_atom than [foreach] does
-[ ] [#out window]: window specifiers are fairly broken
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] [#in libv4l]
-[ ] [#in unicap] and/or [#in videojack] ?
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
-[ ] [#print] funny sign in base 8 and 16
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [#io....] help files aren't visible from anywhere
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
@@ -87,7 +88,6 @@ $Id$
 [ ] reintroduce set_mode(0)
 [ ] [#fold] is slowwww
 [ ] [route3] is like [route] but doesn't trim.
-[ ] #out x11 doesn't accept 0-sized grids
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
@@ -99,10 +99,13 @@ $Id$
 [ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
 [ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
     COULDN'T REPRODUCE THIS BUG !!!
+[ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
 
-0.9.9 (not for 0.9.8):
+0.9.9 or later (not for 0.9.8):
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
+[ ] [#in unicap] and/or [#in videojack] ?
+[ ] [#in libv4l]
 
 OpenCV
 [ ] cvOpticalFlow
@@ -163,7 +166,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [@convolve] actually cross-convolution? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
-[ ] numop ** can freeze GF
 [ ] osx: [#store] crash instead of raising
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] when file not found, mpeg error messages are wrong, they say the filename is "".
