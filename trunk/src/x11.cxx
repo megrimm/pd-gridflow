@@ -49,6 +49,14 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 struct FormatX11;
 void FormatX11_call(FormatX11 *p);
 
+typedef struct {
+    long flags;
+    long functions;
+    long decorations;
+    long input_mode;
+    long state;
+} MotifWmHints;
+
 \class FormatX11 : Format {
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
@@ -57,20 +65,21 @@ void FormatX11_call(FormatX11 *p);
 	Colormap colormap;/* for 256-color mode */
 	short depth;
 	bool use_stripes; /* use alternate conversion in 256-color mode */
-	bool shared_memory;
-	bool xvideo;
+	bool shared_memory, xvideo;
+	Atom XA_NET_WM_STATE;
+	Atom XA_NET_WM_STATE_FULLSCREEN;
+	Atom XA_MotifHints;
 /* at the Window level */
 	Window window;    /* X11 window number */
 	Window parent;    /* X11 window number of the parent */
 	GC imagegc;       /* X11 graphics context (like java.awt.Graphics) */
 	XImage *ximage;   /* X11 image descriptor */
 	uint8 *image;     /* the real data (that XImage binds to) */
-	bool is_owner;
+	bool fullscreen, border, is_owner, lock_size, override_redirect;
+	MotifWmHints motifWmHints;
 	int32 pos[2];
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	bool lock_size;
-	bool override_redirect;
 	t_clock *clock;
 	std::string title;
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -201,6 +210,7 @@ void FormatX11_call(FormatX11 *p);
 			post("sx=%d sy=%d",sx,sy);
 			_0_out_size(argc,argv,sy,sx);
 		}
+		_0_border(0,0,1);
 	}
 
 	\decl 0 bang ();
@@ -210,14 +220,84 @@ void FormatX11_call(FormatX11 *p);
 	\decl 0 hidecursor ();
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 move (int y, int x);
-	\decl 0 shared_memory (bool toggle);
-	\decl 0 xvideo        (bool toggle);
+	\decl 0 move2 (int y, int x);
+	\decl 0 shared_memory (bool toggle=1);
+	\decl 0 xvideo        (bool toggle=1);
 	\decl 0 title (string title="");
 	\decl 0 warp (int y, int x);
+	\decl 0 fullscreen (bool toggle=1); // not working
+	\decl 0 border     (bool toggle=1);
 	\grin 0 int
 };
 
 /* ---------------------------------------------------------------- */
+
+\def 0 fullscreen (bool toggle=1) {
+	fullscreen=toggle;
+	XEvent xev; typeof(xev.xclient) &xc = xev.xclient;
+        xc.type = ClientMessage;
+        xc.serial = 0;
+        xc.send_event = True;
+        xc.message_type = XA_NET_WM_STATE;
+        xc.window = window;
+        xc.format = 32;
+        xc.data.l[0] = toggle;
+        xc.data.l[1] = XA_NET_WM_STATE_FULLSCREEN;
+        xc.data.l[2] = 0;
+        xc.data.l[3] = 0;
+        xc.data.l[4] = 0;
+        if (!XSendEvent(display,root_window,False,SubstructureRedirectMask|SubstructureNotifyMask,&xev))
+            RAISE("can't set fullscreen");
+        XFlush(display);
+}
+
+// from Motif:
+#define MWM_HINTS_FUNCTIONS     (1L << 0)
+#define MWM_HINTS_DECORATIONS   (1L << 1)
+#define MWM_HINTS_INPUT_MODE    (1L << 2)
+#define MWM_HINTS_STATUS        (1L << 3)
+
+#define MWM_FUNC_ALL            (1L << 0)
+#define MWM_FUNC_RESIZE         (1L << 1)
+#define MWM_FUNC_MOVE           (1L << 2)
+#define MWM_FUNC_MINIMIZE       (1L << 3)
+#define MWM_FUNC_MAXIMIZE       (1L << 4)
+#define MWM_FUNC_CLOSE          (1L << 5)
+
+#define MWM_DECOR_ALL           (1L << 0)
+#define MWM_DECOR_BORDER        (1L << 1)
+#define MWM_DECOR_RESIZEH       (1L << 2)
+#define MWM_DECOR_TITLE         (1L << 3)
+#define MWM_DECOR_MENU          (1L << 4)
+#define MWM_DECOR_MINIMIZE      (1L << 5)
+#define MWM_DECOR_MAXIMIZE      (1L << 6)
+
+//void vo_x11_decoration(Display * vo_Display, Window w, int d)
+\def 0 border (bool toggle=1) {
+    border=toggle;
+    //if (vo_fsmode & 8) XSetTransientForHint(display,window,root_window);
+    XA_MotifHints = XInternAtom(display, "_MOTIF_WM_HINTS", 0);
+    if (XA_MotifHints == None) RAISE("can't find XA_MotifHints");
+    #if 0
+    if (border) {
+        MotifWmHints *mhints = NULL;
+	Atom mtype; int mformat; unsigned long mn, mb;
+        XGetWindowProperty(display,window,XA_MotifHints,0,20,False,XA_MotifHints,&mtype,&mformat,&mn,&mb,(unsigned char **)&mhints);
+        if (mhints) {
+            if (mhints->flags & MWM_HINTS_DECORATIONS) olddecor = mhints->decorations;
+            if (mhints->flags & MWM_HINTS_FUNCTIONS)   oldfuncs = mhints->functions;
+            XFree(mhints);
+        }
+    }
+    #endif
+    memset(&motifWmHints, 0, sizeof(MotifWmHints));
+    motifWmHints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
+    if (toggle) {motifWmHints.functions = MWM_FUNC_MOVE|MWM_FUNC_MINIMIZE; motifWmHints.decorations = MWM_DECOR_ALL;}
+    //motifWmHints.decorations = toggle | MWM_DECOR_MENU;
+    XChangeProperty(display,window,XA_MotifHints,XA_MotifHints,32,PropModeReplace,(unsigned char *)&motifWmHints,4);
+    XChangeProperty(display,window,XA_MotifHints,XA_MotifHints,32,PropModeReplace,(unsigned char *)&motifWmHints,5);
+    XFlush(display);
+}
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
 	if ((mode&2)==0) return;
@@ -582,6 +662,9 @@ void FormatX11::prepare_colormap() {
 
 void FormatX11::open_display(const char *disp_string) {
 	display = XOpenDisplay(disp_string);
+	#define XA_INIT(x) XA##x = XInternAtom(display, #x, False) /* mplayer guys know how to write code. */
+	XA_INIT(_NET_WM_STATE);
+	XA_INIT(_NET_WM_STATE_FULLSCREEN);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 	// btw don't expect too much from Xlib error handling.
 	// Xlib, you are so free of the ravages of intelligence...
@@ -639,6 +722,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 \def 0 move (int y, int x) {
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
+	XFlush(display);
+}
+\def 0 move2 (int y, int x) {
+	Window root_return,parent_return;
+	Window *children_return;
+	unsigned int nchildren_return;
+	XQueryTree(display,window,&root_return,&parent_return,&children_return,&nchildren_return);
+	post("window=%08x root=%08x parent=%08x",window,root_return,parent_return);
+	XMoveWindow(display,parent_return,x,y);
 	XFlush(display);
 }
 
