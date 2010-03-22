@@ -9,6 +9,9 @@ version 0.9.8 (2010.03...):
  * OSX: print real error messages instead of error #-43, etc.
  * OSX: [#io.quartz] reports position
  * [#in]: lookup file in -path and the dir of the patch containing [#in]
+ * removed annoying posts/errors when loading helpfiles
+ * [#print]: fix bug with negative numbers in base 8 and 16
+ * [# **]: fixed crash with negative numbers
 
 version 0.9.7 (2010.02.26):
 
