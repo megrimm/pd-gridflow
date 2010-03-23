@@ -272,29 +272,13 @@ typedef struct {
 #define MWM_DECOR_MINIMIZE      (1L << 5)
 #define MWM_DECOR_MAXIMIZE      (1L << 6)
 
-//void vo_x11_decoration(Display * vo_Display, Window w, int d)
 \def 0 border (bool toggle=1) {
     border=toggle;
-    //if (vo_fsmode & 8) XSetTransientForHint(display,window,root_window);
     XA_MotifHints = XInternAtom(display, "_MOTIF_WM_HINTS", 0);
-    if (XA_MotifHints == None) RAISE("can't find XA_MotifHints");
-    #if 0
-    if (border) {
-        MotifWmHints *mhints = NULL;
-	Atom mtype; int mformat; unsigned long mn, mb;
-        XGetWindowProperty(display,window,XA_MotifHints,0,20,False,XA_MotifHints,&mtype,&mformat,&mn,&mb,(unsigned char **)&mhints);
-        if (mhints) {
-            if (mhints->flags & MWM_HINTS_DECORATIONS) olddecor = mhints->decorations;
-            if (mhints->flags & MWM_HINTS_FUNCTIONS)   oldfuncs = mhints->functions;
-            XFree(mhints);
-        }
-    }
-    #endif
     memset(&motifWmHints, 0, sizeof(MotifWmHints));
     motifWmHints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
-    if (toggle) {motifWmHints.functions = MWM_FUNC_MOVE|MWM_FUNC_MINIMIZE; motifWmHints.decorations = MWM_DECOR_ALL;}
-    //motifWmHints.decorations = toggle | MWM_DECOR_MENU;
-    XChangeProperty(display,window,XA_MotifHints,XA_MotifHints,32,PropModeReplace,(unsigned char *)&motifWmHints,4);
+    motifWmHints.functions = MWM_FUNC_MOVE|MWM_FUNC_MINIMIZE;
+    if (toggle) {motifWmHints.decorations = MWM_DECOR_ALL;}
     XChangeProperty(display,window,XA_MotifHints,XA_MotifHints,32,PropModeReplace,(unsigned char *)&motifWmHints,5);
     XFlush(display);
 }
@@ -725,12 +709,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	XFlush(display);
 }
 \def 0 move2 (int y, int x) {
-	Window root_return,parent_return;
-	Window *children_return;
-	unsigned int nchildren_return;
-	XQueryTree(display,window,&root_return,&parent_return,&children_return,&nchildren_return);
-	post("window=%08x root=%08x parent=%08x",window,root_return,parent_return);
-	XMoveWindow(display,parent_return,x,y);
+	Window root,parent1,parent2;
+	Window *children; unsigned int nchildren;
+	if (XQueryTree(display,window ,&root,&parent1,&children,&nchildren)) XFree(children); else post("no parent1");
+	if (XQueryTree(display,parent1,&root,&parent2,&children,&nchildren)) XFree(children); else post("no parent2");
+	post("window=%08x root=%08x parent1=%08x parent2=%08x",window,root,parent1,parent2);
+	post("xmove1: %d",XMoveWindow(display,parent1,x,y));
 	XFlush(display);
 }
 
