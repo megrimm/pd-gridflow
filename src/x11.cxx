@@ -57,6 +57,8 @@ typedef struct {
     long state;
 } MotifWmHints;
 
+#define XA_INIT(x) XA##x = XInternAtom(display, #x, False) /* mplayer guys know how to write code. */
+
 \class FormatX11 : Format {
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
@@ -220,17 +222,28 @@ typedef struct {
 	\decl 0 hidecursor ();
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 move (int y, int x);
-	\decl 0 move2 (int y, int x);
 	\decl 0 shared_memory (bool toggle=1);
 	\decl 0 xvideo        (bool toggle=1);
 	\decl 0 title (string title="");
 	\decl 0 warp (int y, int x);
 	\decl 0 fullscreen (bool toggle=1); // not working
 	\decl 0 border     (bool toggle=1);
+//	\decl 0 raise ();
 	\grin 0 int
 };
 
 /* ---------------------------------------------------------------- */
+
+//\def 0 raise () {
+	//Window root,parent1; Window *children; unsigned int nchildren;
+	//if (XQueryTree(display,window,&root,&parent1,&children,&nchildren)) XFree(children); else post("no parent1");
+	//XRaiseWindow(display,parent1);
+	//XWindowChanges changes; memset(&changes,0,sizeof(XWindowChanges)); /* avoid valgrind undef */
+	//changes.stack_mode = Above;
+	//XReconfigureWMWindow(display,window,DefaultScreen(display),CWStackMode,&changes);
+	//XConfigureWindow(display,window,CWStackMode,&changes);
+	//XFlush(display);
+//}
 
 \def 0 fullscreen (bool toggle=1) {
 	fullscreen=toggle;
@@ -280,6 +293,19 @@ typedef struct {
     motifWmHints.functions = MWM_FUNC_MOVE|MWM_FUNC_MINIMIZE;
     if (toggle) {motifWmHints.decorations = MWM_DECOR_ALL;}
     XChangeProperty(display,window,XA_MotifHints,XA_MotifHints,32,PropModeReplace,(unsigned char *)&motifWmHints,5);
+/*
+    Atom XA_INIT(_WIN_LAYER);
+    XClientMessageEvent xev;
+    memset(&xev, 0, sizeof(xev));
+    xev.type = ClientMessage;
+    xev.display = display;
+    xev.window = window;
+    xev.message_type = XA_WIN_LAYER;
+    xev.format = 32;
+    xev.data.l[0] = 10;
+    xev.data.l[1] = CurrentTime;
+    XSendEvent(display,root_window,False,SubstructureNotifyMask,(XEvent *)&xev);
+*/
     XFlush(display);
 }
 
@@ -646,7 +672,6 @@ void FormatX11::prepare_colormap() {
 
 void FormatX11::open_display(const char *disp_string) {
 	display = XOpenDisplay(disp_string);
-	#define XA_INIT(x) XA##x = XInternAtom(display, #x, False) /* mplayer guys know how to write code. */
 	XA_INIT(_NET_WM_STATE);
 	XA_INIT(_NET_WM_STATE_FULLSCREEN);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
@@ -679,42 +704,31 @@ void FormatX11::open_display(const char *disp_string) {
 
 Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level) {
 	if (level>2) return 0xDeadBeef;
-	Window root_r, parent_r;
-	Window *children_r;
-	unsigned int nchildren_r;
-	XQueryTree(display,xid,&root_r,&parent_r,&children_r,&nchildren_r);
+	Window root, parent;
+	Window *children;
+	unsigned int nchildren;
+	XQueryTree(display,xid,&root,&parent,&children,&nchildren);
 	Window target = 0xDeadBeef;
-	for (int i=0; i<(int)nchildren_r; i++) {
-		Atom actual_type_r;
-		int actual_format_r;
-		unsigned long nitems_r, bytes_after_r;
-		unsigned char *prop_r;
-		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
-		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
+	for (int i=0; i<(int)nchildren; i++) {
+		Atom actual_type;
+		int actual_format;
+		unsigned long nitems, bytes_after;
+		unsigned char *prop;
+		XGetWindowProperty(display,children[i],key,0,666,0,AnyPropertyType,&actual_type,&actual_format,&nitems,&bytes_after,&prop);
 		uint32 value_l = strlen(value);
-		bool match = prop_r && nitems_r>=value_l &&
-			strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
-		XFree(prop_r);
-		if (match) {target=children_r[i]; break;}
-		target = search_window_tree(children_r[i],key,value,level+1);
+		bool match = prop && nitems>=value_l && strncmp((char *)prop+nitems-value_l,value,value_l)==0;
+		XFree(prop);
+		if (match) {target=children[i]; break;}
+		target = search_window_tree(children[i],key,value,level+1);
 		if (target != 0xDeadBeef) break;
 	}
-	if (children_r) XFree(children_r);
+	if (children) XFree(children);
 	return target;
 }
 
 \def 0 move (int y, int x) {
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
-	XFlush(display);
-}
-\def 0 move2 (int y, int x) {
-	Window root,parent1,parent2;
-	Window *children; unsigned int nchildren;
-	if (XQueryTree(display,window ,&root,&parent1,&children,&nchildren)) XFree(children); else post("no parent1");
-	if (XQueryTree(display,parent1,&root,&parent2,&children,&nchildren)) XFree(children); else post("no parent2");
-	post("window=%08x root=%08x parent1=%08x parent2=%08x",window,root,parent1,parent2);
-	post("xmove1: %d",XMoveWindow(display,parent1,x,y));
 	XFlush(display);
 }
 
