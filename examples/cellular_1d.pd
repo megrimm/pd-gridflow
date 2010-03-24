@@ -52,7 +52,7 @@
 0;
 #X obj -7 0 cnv 15 640 30 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X text -3 15 Copyright 2002 Mathieu Bouchard;
+#X text -3 15 Copyright 2002,2010 Mathieu Bouchard;
 #X text -3 1 Cellular_1d;
 #X text 383 215 <-- number of new lines per frame;
 #X text 173 38 <-- make single dot;
