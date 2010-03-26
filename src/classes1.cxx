@@ -565,27 +565,33 @@ GRID_INLET(0) {
 			op->name,op->size,in->dim->to_s(),r->dim->to_s());
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	//if (out->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",out->inlets[0]->dim->to_s());
+	if (!out->buf) out->create_buf(); /* force it now (hack) */
 } GRID_FLOW {
+	long moton = out->buf->dim->prod();
 	T *rdata = (T *)*r;
 	long loop = r->dim->prod();
-	T tada[n];
-	COPY(tada,data,n);
-	if (loop>1) {
-		if (dex+n <= loop) {
-			op->zip(n/op->size,tada,rdata+dex);
-		} else {
-			// !@#$ should prebuild and reuse this array when "loop" is small
-			T data2[n];
-			long ii = mod(dex,loop);
-			long m = min(loop-ii,n);
-			COPY(data2,rdata+ii,m);
-			long nn = m+((n-m)/loop)*loop;
-			for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
-			if (n>nn) COPY(data2+nn,rdata,n-nn);
-			op->zip(n/op->size,tada,data2);
-		}
-	} else op->map(n,tada,*rdata);
-	out->send(n,tada);
+	while (n) {
+		long pn = min(moton,n);
+		T tada[pn];
+		COPY(tada,data,pn);
+		if (loop>1) {
+			if (dex+pn <= loop) {
+				op->zip(pn/op->size,tada,rdata+dex);
+			} else {
+				// !@#$ should prebuild and reuse this array when "loop" is small
+				T data2[pn];
+				long ii = mod(dex,loop);
+				long m = min(loop-ii,pn);
+				COPY(data2,rdata+ii,m);
+				long nn = m+((pn-m)/loop)*loop;
+				for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
+				if (pn>nn) COPY(data2+nn,rdata,pn-nn);
+				op->zip(pn/op->size,tada,data2);
+			}
+		} else op->map(pn,tada,*rdata);
+		out->send(pn,tada);
+		n-=pn;
+	}
 } GRID_END
 
 GRID_INPUT2(1,r) {} GRID_END
