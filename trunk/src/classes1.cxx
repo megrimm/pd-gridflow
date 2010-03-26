@@ -549,14 +549,10 @@ GRID_INLET(1) {
 \class GridOp : FObject {
 	\attr Numop *op;
 	PtrGrid r;
-	\constructor (Numop *op, Grid *r=0) {
-		this->op=op;
-		this->r=r?r:new Grid(new Dim(),int32_e,true);
-	}
+	\constructor (Numop *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(new Dim(),int32_e,true);}
 	\grin 0
 	\grin 1
 };
-
 GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
@@ -575,12 +571,10 @@ GRID_INLET(0) {
 		T tada[pn];
 		COPY(tada,data,pn);
 		if (loop>1) {
-			if (dex+pn <= loop) {
-				op->zip(pn/op->size,tada,rdata+dex);
-			} else {
+			if (dex+pn <= loop) op->zip(pn/op->size,tada,rdata+dex); else {
 				// !@#$ should prebuild and reuse this array when "loop" is small
 				T data2[pn];
-				long ii = mod(dex,loop);
+				long ii = mod(out->dex,loop);
 				long m = min(loop-ii,pn);
 				COPY(data2,rdata+ii,m);
 				long nn = m+((pn-m)/loop)*loop;
@@ -593,7 +587,6 @@ GRID_INLET(0) {
 		n-=pn; data+=pn;
 	}
 } GRID_END
-
 GRID_INPUT2(1,r) {} GRID_END
 \end class {install("#",2,1); add_creator("@");}
 
