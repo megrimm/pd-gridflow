@@ -571,7 +571,7 @@ GRID_INLET(0) {
 		T tada[pn];
 		COPY(tada,data,pn);
 		if (loop>1) {
-			if (dex+pn <= loop) op->zip(pn/op->size,tada,rdata+dex); else {
+			if (dex+pn <= loop) op->zip(pn/op->size,tada,rdata+out->dex); else {
 				// !@#$ should prebuild and reuse this array when "loop" is small
 				T data2[pn];
 				long ii = mod(out->dex,loop);
