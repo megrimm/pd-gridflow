@@ -590,7 +590,7 @@ GRID_INLET(0) {
 			}
 		} else op->map(pn,tada,*rdata);
 		out->send(pn,tada);
-		n-=pn;
+		n-=pn; data+=pn;
 	}
 } GRID_END
 
