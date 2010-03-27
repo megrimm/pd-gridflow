@@ -278,8 +278,8 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 		string foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
 		SETSYMBOL(a,gensym(foo.data()));
 		outlet_anything(outlets[0],gensym("palette"),1,a);
-		SETSYMBOL(a,gensym(use_mmap ? "mmap" : "read")); outlet_anything(outlets[0],gensym("transfer"),1,a);
-		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),2,a);
+		SETSYMBOL(a,gensym(use_mmap ? "mmap" : "read"));  outlet_anything(outlets[0],gensym("transfer"),1,a);
+		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),    2,a);
 	}
 }
 
@@ -347,7 +347,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	uint8 b2[bs];
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
 	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
-	if (vp.palette==VIDEO_PALETTE_YUV420P) {
+	if (vp.palette==VIDEO_PALETTE_YUV420P || vp.palette==VIDEO_PALETTE_YUYV) {
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
 		if (cs=="y") {
 			out.send(sy*sx,buf);
@@ -390,6 +390,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		} else if (cs=="magic") {
+			if (vp.palette==VIDEO_PALETTE_YUYV) RAISE("can't convert YUYV (YUV422) to magic");
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf        +4*sx*y;
 				uint8 *bufu = buf+4*sx*sy+  sx*y;
@@ -433,9 +434,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (cs=="magic") {
-			RAISE("magic colorspace not supported with a RGB palette");
-		}
+		} else if (cs=="magic") RAISE("magic colorspace not supported with a RGB palette");
 	} else {
 		RAISE("unsupported palette %d",vp.palette);
 	}
@@ -593,6 +592,7 @@ GRID_INLET(0) {
 	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24 )) ? VIDEO_PALETTE_RGB24  :
 	              (palettes&(1<<VIDEO_PALETTE_RGB32 )) ? VIDEO_PALETTE_RGB32  :
 	              (palettes&(1<<VIDEO_PALETTE_RGB565)) ? VIDEO_PALETTE_RGB565 :
+	              (palettes&(1<<VIDEO_PALETTE_YUYV  )) ? VIDEO_PALETTE_YUYV :
                       VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, &vp);
@@ -601,12 +601,10 @@ GRID_INLET(0) {
 		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-        if (palette==VIDEO_PALETTE_RGB565) {uint32 masks[3]={0x00f800,0x0007e0,0x00001f};
-	    bit_packing = new BitPacking(is_le(),2,3,masks);} else
-	if (palette==VIDEO_PALETTE_RGB24 ) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
-	    bit_packing = new BitPacking(is_le(),3,3,masks);} else
-	if (palette==VIDEO_PALETTE_RGB32 ) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
-	    bit_packing = new BitPacking(is_le(),4,3,masks);} else
+	#define RGB(R,G,B,bytes) {uint32 masks[3]={R,G,B}; bit_packing = new BitPacking(is_le(),bytes,3,masks);}
+        if (palette==VIDEO_PALETTE_RGB565) RGB(0x00f800,0x0007e0,0x00001f,2) else
+	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3) else
+	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4) else
 	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
