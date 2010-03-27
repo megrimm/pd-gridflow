@@ -664,13 +664,16 @@ GRID_INLET(0) {
 void FormatVideoDev::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
-	char namebuf[33];
-	memcpy(namebuf,vcaps.name,sizeof(vcaps.name));
+	char buf[33];
+	memcpy(buf,vcaps.name,32);
 	int i;
-	for (i=32; i>=1; i--) if (!namebuf[i] || !isspace(namebuf[i])) break;
-	namebuf[i]=0;
-	while (--i>=0) if (isspace(namebuf[i])) namebuf[i]='_';
-	name = gensym(namebuf);
+	for (i=31; buf[i] && !isspace(buf[i]); i--) buf[i--]=0;
+	for (i=0; buf[i]; i++) {
+		if (isspace(buf[i])) buf[i]='_';
+		if (buf[i]=='(') buf[i]='[';
+		if (buf[i]==')') buf[i]=']';
+	}
+	name = gensym(buf);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	palettes=0;
 	std::ostringstream supp;
