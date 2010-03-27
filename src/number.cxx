@@ -367,8 +367,8 @@ Numop op_table3[] = {
 	DECL_OP(clipsub,"clip-", 0),
 	DECL_OP_NOFOLD(abssub,"abs-", OP_COMM),
 	DECL_OP_NOFOLD(sqsub, "sq-",  OP_COMM),
-	DECL_OP_NOFOLD(avg,   "avg",  OP_COMM),
-	DECL_OP_NOFOLD(hypot, "hypot",OP_COMM), // huh, almost OP_ASSOC
+	DECL_OP(avg,   "avg",  OP_COMM),
+	DECL_OP(hypot, "hypot",OP_COMM), // huh, almost OP_ASSOC
 	DECL_OP_NOFOLD(sqrt, "sqrt", 0),
 	DECL_OP_NOFOLD(rand, "rand", 0),
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
