@@ -165,6 +165,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	\decl 0 title (string title="");
 	\decl 0 move (int y, int x);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
+	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
 	\grin 0
 };
 
