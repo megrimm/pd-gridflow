@@ -14,8 +14,11 @@ $Id$
 [ ] [#io.quicktime out] grid, codec, quality.
 
 0.9.8 unassigned:
-[ ] [#out x11] fullscreen mode
+[ ] [#] damages videodev_effects.pd's [pd sort_me_out]
+[ ] [#see] mouse coords when drag outside of window
+[ ] [#see] border size change
 [ ] [range] name conflict.
+[ ] [#fft] sign crash
 [ ] [#many] when $1 is abstraction :
     error: canvas: no method for 'receive'
     error: canvas: no method for 'send'
@@ -60,7 +63,7 @@ $Id$
 [ ] videodev,quicktime,etc: height,width vs size
 [ ] even after all the latest bugfixes, i still get invalid command name ".x8685500.c" with [display]
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
-[ ] cellular_1d.pd: should get a circular buffer and a variable width
+[ ] cellular_1d.pd: should get a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
@@ -100,6 +103,11 @@ $Id$
 [ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
     COULDN'T REPRODUCE THIS BUG !!!
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
+[ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
+[ ] make single abstraction that replaces all picture converters and more.
+[ ] various_effects.pd doesn't completely support greyscale. other patches don't necessarily, either.
+    make more efforts to make colorspaces switchable.
+[ ] [#greyscale_to_rgb] at [#out] level.
 
 0.9.9 or later (not for 0.9.8):
 [ ] regular dc1394 options
