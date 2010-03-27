@@ -1,16 +1,13 @@
-#N canvas 679 0 632 642 10;
-#X obj 354 172 #out window;
+#N canvas 594 0 632 685 10;
 #X text 13 34 This object imports a grid \, usually an image \, video
 or live stream.;
 #X msg 362 126 open working.jpg;
 #X obj 354 106 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 55 181 <--click here;
-#X text 232 759 "loop 0" - turns off the loop option. The video stops
+#X text 232 755 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
-#X text 232 1060 Signals the end of a file and when a file is unreadable.
-;
-#X text 232 1038 Displays the resulting grid when connected to [#out
+#X text 232 1024 Displays the resulting grid when connected to [#out
 window];
 #N canvas 82 93 663 454 quicktime 0;
 #X text 9 9 The following messages can be used to set parameters for
@@ -75,7 +72,6 @@ codec parameters and after setting framerate and codec.;
 #X obj 17 120 metro 33.3;
 #X obj 356 234 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 356 280 #out window;
 #X obj 356 258 #in sewing.jpg;
 #X text 378 234 <--click here;
 #X text 183 947 For info about messages specifically for quickTime
@@ -148,41 +144,41 @@ not mmap.;
 #X text 68 265 <-- sends a bang upon reaching;
 #X text 97 278 the end of the file;
 #X obj 17 305 #out window \, title video;
-#X text 232 724 "loop 1" - Restarts a video each time it reaches the
+#X text 232 720 "loop 1" - Restarts a video each time it reaches the
 end (default setting).;
 #X obj 41 248 route bang;
 #X msg 24 147 open violoncelle.mov;
 #X obj 0 0 doc_h;
-#X obj 3 450 doc_i 1;
-#X obj 3 1008 doc_o 2;
-#X obj 14 480 doc_ii 0;
-#X obj 14 1038 doc_oo 0;
-#X obj 14 1060 doc_oo 1;
+#X obj 3 446 doc_i 1;
+#X obj 3 994 doc_o 2;
+#X obj 14 476 doc_ii 0;
+#X obj 14 1024 doc_oo 0;
+#X obj 14 1046 doc_oo 1;
 #X obj 3 332 doc_c 1..2;
-#X text 164 389 auto-open with auto-detect of the format-handler;
+#X text 165 389 auto-open with auto-detect of the format-handler;
 #X text 207 409 auto-open with manual choice of the format-handler
 ;
-#X obj 97 794 doc_m i0 open;
-#X obj 97 851 doc_m i0 set;
-#X obj 97 667 doc_m i0 close;
-#X obj 97 829 doc_m i0 rewind;
-#X obj 97 724 doc_m i0 loop;
-#X obj 97 645 doc_m i0 float int;
-#X obj 97 1038 doc_m o0 grid;
-#X obj 97 1060 doc_m o1 bang;
-#X obj 3 1127 doc_also;
-#X obj 103 1127 #out;
-#X obj 32 370 #in;
-#X obj 33 391 #in filename.suffix;
+#X obj 97 790 doc_m i0 open;
+#X obj 97 847 doc_m i0 set;
+#X obj 97 663 doc_m i0 close;
+#X obj 97 825 doc_m i0 rewind;
+#X obj 97 720 doc_m i0 loop;
+#X obj 97 641 doc_m i0 float int;
+#X obj 97 1024 doc_m o0 grid;
+#X obj 97 1046 doc_m o1 bang;
+#X obj 3 1226 doc_also;
+#X obj 103 1226 #out;
+#X obj 34 371 #in;
+#X obj 34 391 #in filename.suffix;
 #X obj 34 411 #in handler filename.suffix;
-#X text 64 369 nothing opened \, you have to open by yourself;
-#X text 232 794 \$1=filename. sends it as a resource to [#in]. For
+#X text 66 370 nothing opened \, you have to open by yourself;
+#X text 232 790 \$1=filename. sends it as a resource to [#in]. For
 example: "open sewing.jpg".;
-#X obj 97 480 doc_m i0 bang;
-#X obj 97 1082 doc_m o1 float int;
-#X text 232 1082 frame number of the frame currently being viewed.
+#X obj 97 476 doc_m i0 bang;
+#X obj 97 1081 doc_m o1 float int;
+#X text 232 1081 frame number of the frame currently being viewed.
 Applies to formats that have frame numbers \, i.e. video.;
-#X text 232 480 A bang reads a frame and sends it through the outlet.
+#X text 232 476 A bang reads a frame and sends it through the outlet.
 Since frames from videos and live streams are read as a series of individual
 grids \, successive bangs advance through the frames. A bang reads
 a frame and sends it through the outlet. Since frames from videos and
@@ -193,44 +189,58 @@ read from a file \, reading another picture will continue if there
 are several pictures in the same file \, but if the end of file is
 reached instead \, it will rewind and send the first picture again.
 ;
-#X obj 0 1147 doc_f;
-#X text 232 667 Closes the video input device. Only necessary when
+#X obj 0 1246 doc_f;
+#X text 232 663 Closes the video input device. Only necessary when
 you are using a live capture device.;
-#X text 232 829 Will rewind video to the beginning.;
-#X text 232 851 select the video frame numbered \$1 \, where 0 is the
+#X text 232 825 Will rewind video to the beginning.;
+#X text 232 847 select the video frame numbered \$1 \, where 0 is the
 first frame. A bang must be sent to [#in] in order to display the frame.
 this only works with video file formats.;
-#X text 232 645 same as set \$1 \, bang;
-#X obj 97 702 doc_m i0 load;
-#X text 232 702 shortcut for open \$1 \, bang \, close;
-#X connect 2 0 9 0;
-#X connect 3 0 9 0;
-#X connect 9 0 0 0;
-#X connect 10 0 17 0;
-#X connect 11 0 17 0;
-#X connect 12 0 17 0;
-#X connect 13 0 17 0;
-#X connect 15 0 17 0;
-#X connect 17 0 36 0;
-#X connect 17 1 14 0;
-#X connect 17 1 38 0;
+#X text 232 641 same as set \$1 \, bang;
+#X obj 97 698 doc_m i0 load;
+#X text 232 698 shortcut for open \$1 \, bang \, close;
+#X obj 97 1116 doc_m o1 not_open;
+#X text 232 1046 Signals that the requested operation cannot be performed
+because the end of the file was reached.;
+#X text 232 1116 Signals that the requested operation cannot be performed
+because [#in] is in closed mode. This could mean a «close» message
+was previously sent \, or no «open» (or equivalent) was ever done
+\, or the file was not found \, or the file was read-protected \, or
+the device is locked by another object or application that opened it
+(busy) \, or any other reason.;
+#X obj 139 1226 #camera;
+#X obj 354 172 #out window \, title working;
+#X obj 356 280 #out window \, title sewing;
+#X connect 1 0 7 0;
+#X connect 2 0 7 0;
+#X connect 7 0 76 0;
+#X connect 8 0 15 0;
+#X connect 9 0 15 0;
+#X connect 10 0 15 0;
+#X connect 11 0 15 0;
+#X connect 13 0 15 0;
+#X connect 15 0 33 0;
+#X connect 15 1 12 0;
+#X connect 15 1 35 0;
+#X connect 17 0 18 0;
+#X connect 18 0 15 0;
 #X connect 19 0 20 0;
-#X connect 20 0 17 0;
-#X connect 21 0 23 0;
-#X connect 23 0 22 0;
-#X connect 32 0 17 0;
-#X connect 38 0 16 0;
-#X connect 39 0 17 0;
-#X connect 49 1 63 0;
-#X connect 50 1 71 0;
+#X connect 20 0 77 0;
+#X connect 29 0 15 0;
+#X connect 35 0 14 0;
+#X connect 36 0 15 0;
+#X connect 46 1 60 0;
+#X connect 47 1 68 0;
+#X connect 48 1 66 0;
+#X connect 49 1 67 0;
+#X connect 50 1 34 0;
+#X connect 50 1 4 0;
 #X connect 51 1 69 0;
-#X connect 52 1 70 0;
-#X connect 53 1 37 0;
-#X connect 53 1 5 0;
-#X connect 54 1 72 0;
-#X connect 55 1 7 0;
-#X connect 56 1 6 0;
-#X connect 57 1 58 0;
-#X connect 64 1 67 0;
-#X connect 65 1 66 0;
-#X connect 73 1 74 0;
+#X connect 52 1 5 0;
+#X connect 53 1 73 0;
+#X connect 54 1 55 0;
+#X connect 54 1 75 0;
+#X connect 61 1 64 0;
+#X connect 62 1 63 0;
+#X connect 70 1 71 0;
+#X connect 72 1 74 0;
