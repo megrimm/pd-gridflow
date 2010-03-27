@@ -341,21 +341,26 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
 	/* picture is converted here. */
-	int sy = dim->get(0)>>downscale;
-	int sx = dim->get(1)>>downscale;
-	int bs = dim->prod(1)>>downscale;
+	int sy = dim->get(0);
+	int sx = dim->get(1);
+	int bs = dim->prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
-	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
-	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,cs.data());
+	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
 	if (vp.palette==VIDEO_PALETTE_YUV420P || vp.palette==VIDEO_PALETTE_YUYV) {
-		GridOutlet out(this,0,cs=="magic"?new Dim(sy,sx,3):(Dim *)dim,cast);
+		uint8 *bufy, *bufu, *bufv;
+		bufy = buf; bufu = buf+sx*sy; bufv = buf+sx*sy*5/4;
+		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 		if (cs=="y") {
-			out.send(sy*sx,buf);
+			for(int y=0; y<sy; bufy+=sx, y++) {
+				for (int x=0,xx=0; x<sx; x+=2,xx+=2) {
+					b2[xx+0]=clip(((bufy[x+0]-16)*298)>>8);
+					b2[xx+1]=clip(((bufy[x+1]-16)*298)>>8);
+				}
+				out.send(bs,b2);
+			}
+			//out.send(sy*sx,buf);
 		} else if (cs=="rgb") {
-			for(int y=0; y<sy; y++) {
-				uint8 *bufy = buf+sx* y;
-				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
-				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+			for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {
 				int Y1,Y2,U,V;
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					Y1=bufy[x]   - 16;
@@ -372,10 +377,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		} else if (cs=="yuv") {
-			for(int y=0; y<sy; y++) {
-				uint8 *bufy = buf+sx* y;
-				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
-				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+			for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {
 				int U,V;
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					U=bufu[x/2];
@@ -391,11 +393,9 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			}
 		} else if (cs=="magic") {
 			if (vp.palette==VIDEO_PALETTE_YUYV) RAISE("can't convert YUYV (YUV422) to magic");
-			for(int y=0; y<sy; y++) {
-				uint8 *bufy = buf        +4*sx*y;
-				uint8 *bufu = buf+4*sx*sy+  sx*y;
-				uint8 *bufv = buf+5*sx*sy+  sx*y;
-				for (int x=0,xx=0; x<sx; x++,xx+=3) {
+			int sx2 = sx/2;
+			for(int y=0; y<sy/2; bufy+=2*sx, bufu+=sx2, bufv+=sx2, y++) {
+ 				for (int x=0,xx=0; x<sx2; x++,xx+=3) {
 					b2[xx+0]=bufy[x+x];
 					b2[xx+1]=bufu[x];
 					b2[xx+2]=bufv[x];
