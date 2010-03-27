@@ -609,6 +609,7 @@ GRID_INLET(0) {
 	COPY(v,in->dim->v,yi);
 	COPY(v+yi,in->dim->v+an-bn,bn);
 	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
+	if (!op->on(*data)->fold) RAISE("operator %s does not support fold",op->name);
 	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
 	in->set_chunk(yi);
 	if (in->dim->prod(yi)==0) {
@@ -649,6 +650,7 @@ GRID_INLET(0) {
 	int bn = seed?seed->dim->n:0;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
 	if (seed) SAME_DIM(bn,in->dim,an-bn,seed->dim,0);
+	if (!op->on(*data)->scan) RAISE("operator %s does not support scan",op->name);
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(an-bn-1);
 } GRID_FLOW {
