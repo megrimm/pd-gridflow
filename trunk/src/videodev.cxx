@@ -341,10 +341,12 @@ static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 #define YUV2R(Y,U,V) clip( (298*(Y-16)               + 409*(V-128))>>8)
 #define YUV2G(Y,U,V) clip( (298*(Y-16) - 100*(U-128) - 208*(V-128))>>8)
 #define YUV2B(Y,U,V) clip( (298*(Y-16) + 516*(U-128)              )>>8)
+#define YUV2RGB(b,Y,U,V) (b)[0]=YUV2R(Y,U,V); (b)[1]=YUV2G(Y,U,V); (b)[2]=YUV2B(Y,U,V);
 // these too, from one kind of YUV to another.
 #define YUV2Y(Y,U,V) clip( (298*(Y-16)                            )>>8)
 #define YUV2U(Y,U,V) clip(((             293*(U-128)              )>>8)+128)
 #define YUV2V(Y,U,V) clip(((                           293*(V-128))>>8)+128)
+#define YUV2YUV(b,Y,U,V) (b)[0]=YUV2Y(Y,U,V); (b)[1]=YUV2U(Y,U,V); (b)[2]=YUV2V(Y,U,V);
 void FormatVideoDev::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
@@ -356,6 +358,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
 	if (vp.palette==VIDEO_PALETTE_YUV420P || vp.palette==VIDEO_PALETTE_YUYV) {
 		uint8 *bufy, *bufu, *bufv;
+		#define GET420(x) do {Y1=bufy[x+0]; U=bufu[x/2]; Y2=bufy[x+1]; V=bufv[x/2];} while (0)
 		if (vp.palette==VIDEO_PALETTE_YUV420P) {bufy = buf; bufu = buf+sx*sy; bufv = buf+sx*sy*5/4;}
 		else                                   {bufy = buf; bufu = buf+1    ; bufv = buf+3        ;}
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
@@ -370,23 +373,15 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			out.send(sy*sx,buf);
 		} else if (cs=="rgb") {
 			for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {
-				int Y1,Y2,U,V;
-				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
-					Y1=bufy[x+0]; U=bufu[x/2]; Y2=bufy[x+1]; V=bufv[x/2];
-					b2[xx+0]=YUV2R(Y1,U,V); b2[xx+1]=YUV2G(Y1,U,V); b2[xx+2]=YUV2B(Y1,U,V);
-					b2[xx+3]=YUV2R(Y2,U,V); b2[xx+4]=YUV2G(Y2,U,V); b2[xx+5]=YUV2B(Y2,U,V);
-				}
-				out.send(bs,b2);
+			    int Y1,Y2,U,V;
+			    for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
+			    out.send(bs,b2);
 			}
 		} else if (cs=="yuv") {
 			for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {
-				int Y1,Y2,U,V;
-				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
-					Y1=bufy[x+0]; U=bufu[x/2]; Y2=bufy[x+1]; V=bufv[x/2];
-					b2[xx+0]=YUV2Y(Y1,U,V); b2[xx+1]=YUV2U(Y1,U,V); b2[xx+2]=YUV2V(Y1,U,V);
-					b2[xx+3]=YUV2Y(Y2,U,V); b2[xx+4]=YUV2U(Y2,U,V); b2[xx+5]=YUV2V(Y2,U,V);
-				}
-				out.send(bs,b2);
+			    int Y1,Y2,U,V;
+			    for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
+			    out.send(bs,b2);
 			}
 		} else if (cs=="magic") {
 			if (vp.palette==VIDEO_PALETTE_YUYV) RAISE("can't convert YUYV (YUV422) to magic");
