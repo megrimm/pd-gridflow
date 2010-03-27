@@ -677,7 +677,7 @@ void FormatVideoDev::initialize2 () {
 	std::ostringstream supp;
 	supp << "camera supports palettes :";
 #if 1 /* keep this at "1" most of the time, because at "0" it crashes certain camera drivers ! */
-	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUV420P};
+	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUVV,VIDEO_PALETTE_YUV420P};
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
 		int p = checklist[i];
 #else
