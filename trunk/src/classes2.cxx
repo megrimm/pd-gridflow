@@ -665,13 +665,13 @@ static t_symbol *s_empty;
 		fub[xs*ys*6]=0;
 		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* ",rsym->s_name,xs,ys);
 		char tab[]="0123456789abcdef";
+		#define HEX(i,j) t=unsigned(data[i]); fub[j+0]=tab[(t>>4)&15]; fub[j+1]=tab[t&15];
 		#define FOO(T) {T *data = (T *)*buf; \
-		for (int y=0; y<ys; y++) for (int x=0; x<xs; x++, i+=chans, j+=6) {\
-			t=unsigned(data[i+0]); fub[j+0]=tab[(t>>4)&15]; fub[j+1]=tab[t&15]; \
-			t=unsigned(data[i+1]); fub[j+2]=tab[(t>>4)&15]; fub[j+3]=tab[t&15]; \
-			t=unsigned(data[i+2]); fub[j+4]=tab[(t>>4)&15]; fub[j+5]=tab[t&15]; }}
-//			sprintf(fub+(y*xs+x)*6,"%02x%02x%02x",(unsigned)data[i],(unsigned)data[i+1],(unsigned)data[i+2]);} 
+		  if(chans>2) for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=6) {HEX(i+0,j+0)HEX(i+1,j+2)HEX(i+2,j+4)}\
+		  else        for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=6) {HEX(i  ,j+0)HEX(i  ,j+2)HEX(i  ,j+4)}}
 		TYPESWITCH(buf->nt,FOO,)
+		#undef FOO
+		#undef HEX
 		sys_gui(fub);
 		sys_gui("]\"\n");
 	}
@@ -692,10 +692,9 @@ static t_symbol *s_empty;
 	NEWWB
 };
 GRID_INLET(0) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)
-		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in->dim->get(2));
+	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2)<1 || in->dim->get(2)>4)
+		RAISE("expecting 1 to 4 channels: y, ya, rgb, rgba (got %d)",in->dim->get(2));
 	in->set_chunk(0);
 	buf=new Grid(in->dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
