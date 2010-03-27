@@ -1,31 +1,25 @@
-#N canvas 596 0 624 607 10;
-#X obj 76 478 tgl 15 0 empty empty crosshair_of_centroid 20 7 0 8 -241291
+#N canvas 614 0 627 627 10;
+#X obj 76 508 tgl 15 0 empty empty crosshair_of_centroid 20 7 0 8 -241291
 -1 -1 0 1;
-#X obj 66 301 # max 0;
-#X obj 27 369 shunt 2;
-#X obj 66 191 #downscale_by 2 smoothly;
-#X obj 27 477 shunt 2;
-#X obj 76 370 tgl 15 0 empty empty gamma_correction 18 7 0 8 -241291
+#X obj 66 361 # max 0;
+#X obj 66 231 #downscale_by 2 smoothly;
+#X obj 27 507 shunt 2;
+#X obj 76 276 tgl 15 0 empty empty frame_difference 18 7 0 8 -241291
 -1 -1 0 1;
-#X obj 76 216 tgl 15 0 empty empty frame_difference 18 7 0 8 -241291
+#X obj 27 77 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
+#X obj 27 212 shunt 2;
+#X obj 76 213 tgl 15 0 empty empty smaller_picture 18 7 0 8 -241291
 -1 -1 0 1;
-#X obj 27 47 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
-#X obj 27 172 shunt 2;
-#X obj 27 534 #out window;
-#X obj 76 173 tgl 15 0 empty empty smaller_picture 18 7 0 8 -241291
+#X obj 94 343 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
 -1 -1 0 1;
-#X obj 27 572 print;
-#X obj 94 283 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
--1 -1 0 1;
-#X obj 27 325 shunt 2;
-#X obj 157 444 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
+#X obj 27 395 shunt 2;
+#X obj 157 474 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
 1;
-#X obj 27 424 shunt 2;
-#X obj 27 553 fps detailed;
-#X obj 76 425 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+#X obj 27 454 shunt 2;
+#X obj 76 455 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
-#X obj 66 282 # -;
-#X obj 76 326 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+#X obj 66 342 # -;
+#X obj 76 396 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
 #N canvas 372 198 399 273 motion 0;
 #X obj 15 113 # << 2;
@@ -57,15 +51,15 @@
 #X connect 11 0 12 1;
 #X connect 12 0 2 1;
 #X connect 13 0 5 0;
-#X restore 66 263 pd motion detection;
-#X obj 112 426 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -241291 -1
--1 1;
-#X obj 27 64 metro 33.3667;
-#X obj 27 215 shunt 2;
-#X obj 130 231 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
+#X restore 66 323 pd motion detection;
+#X obj 112 456 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -241291 -1
 -1 0;
-#X floatatom 169 570 5 0 0 0 - - -;
-#X floatatom 213 570 5 0 0 0 - - -;
+#X obj 27 94 metro 33.3667;
+#X obj 27 275 shunt 2;
+#X obj 121 291 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
+-1 0;
+#X floatatom 169 600 5 0 0 0 - - -;
+#X floatatom 213 600 5 0 0 0 - - -;
 #N canvas 547 147 477 267 crosshair 0;
 #X obj 12 224 outlet;
 #X obj 12 9 inlet;
@@ -88,21 +82,20 @@
 #X connect 8 0 0 0;
 #X connect 9 0 6 0;
 #X connect 9 1 7 1;
-#X restore 66 515 pd crosshair;
-#X obj 27 515 t a;
-#X text 146 245 emboss;
-#X text 147 231 hilite;
-#X obj 194 231 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
+#X restore 66 545 pd crosshair;
+#X text 137 305 emboss;
+#X text 138 291 hilite;
+#X obj 177 291 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
 -1 0;
-#X text 213 231 motion;
-#X text 214 245 presence;
-#X obj 169 532 #moment;
-#X obj 169 513 #rgb_to_greyscale;
-#X obj 66 496 #t;
-#X obj 66 344 #fade (16 4 1);
-#X obj 169 551 #unpack;
-#X text 89 492 (use with "hilite" mode above);
-#X obj 54 139 #camera 0 \, size 240 320;
+#X text 196 291 motion;
+#X text 197 305 presence;
+#X obj 169 562 #moment;
+#X obj 169 543 #rgb_to_greyscale;
+#X obj 66 526 #t;
+#X obj 66 414 #fade (16 4 1);
+#X obj 169 581 #unpack;
+#X text 89 522 (use with "hilite" mode above);
+#X obj 54 179 #camera 0 \, size 240 320;
 #N canvas 351 187 480 500 sort_me_out 0;
 #X obj 196 295 # * 255;
 #X obj 117 472 outlet;
@@ -176,66 +169,128 @@
 #X connect 28 0 1 0;
 #X connect 29 0 0 0;
 #X connect 30 0 1 0;
-#X restore 66 443 pd sort_me_out;
-#X text 120 301 noise reduction (on hilite only);
+#X restore 66 473 pd sort_me_out;
+#X text 112 361 noise reduction (on hilite only);
 #X obj 0 0 doc_demo;
-#X text 0 22 Copyright 2001 \, 2002 Mathieu Bouchard;
-#X obj 66 388 #gamma 512;
-#X floatatom 132 388 5 0 0 0 - - -;
-#X obj 27 83 shunt;
-#X obj 63 84 tgl 15 0 empty empty use_camera 18 7 0 8 -241291 -1 -1
-1 1;
-#X obj 27 120 #store;
-#X obj 69 120 #in pure-data.jpg;
-#X obj 69 101 loadbang;
-#X connect 0 0 4 1;
-#X connect 1 0 13 0;
-#X connect 2 0 15 0;
-#X connect 2 1 45 0;
-#X connect 3 0 23 0;
-#X connect 4 0 28 0;
-#X connect 4 1 36 0;
-#X connect 5 0 2 1;
-#X connect 6 0 23 1;
-#X connect 7 0 22 0;
-#X connect 8 0 23 0;
-#X connect 8 1 3 0;
-#X connect 9 0 16 0;
-#X connect 10 0 8 1;
-#X connect 12 0 18 1;
-#X connect 13 0 2 0;
-#X connect 13 1 37 0;
-#X connect 14 0 41 2;
-#X connect 15 0 4 0;
-#X connect 15 1 41 0;
-#X connect 16 0 11 0;
-#X connect 17 0 15 1;
-#X connect 18 0 1 0;
-#X connect 19 0 13 1;
-#X connect 20 0 18 0;
-#X connect 21 0 41 1;
+#X text 0 27 Copyright 2001 \, 2002 Mathieu Bouchard;
+#X obj 27 113 shunt;
+#X obj 63 114 tgl 15 0 empty empty use_camera 18 7 0 8 -241291 -1 -1
+0 1;
+#X obj 27 160 #store;
+#X obj 69 160 #in pure-data.jpg;
+#X obj 69 141 loadbang;
+#X obj 312 455 #out window;
+#X obj 312 493 print;
+#X obj 312 474 fps detailed;
+#X obj 27 575 s \$0-continue;
+#X obj 312 94 r \$0-continue;
+#X obj 348 159 tgl 15 0 empty empty posterise 18 8 0 8 -241291 -1 -1
+0 1;
+#X obj 429 184 hsl 59 15 2 8 0 0 empty empty empty -2 -6 0 8 -260818
+-1 -1 5800 1;
+#X obj 339 348 # ^;
+#X obj 366 349 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -260818
+-1 -1 0 1;
+#X obj 348 219 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
+1;
+#X text 347 313 munchies (XOR effect) in the colour domain;
+#X text 365 217 color wrapping;
+#X obj 339 237 # %;
+#X obj 348 330 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
+1;
+#X obj 339 132 # inv+ 255;
+#X obj 348 115 tgl 15 0 empty empty negative 18 8 0 8 -241291 -1 -1
+0 1;
+#X obj 340 280 # /;
+#X obj 339 259 # * 255;
+#X obj 366 238 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -260818
+-1 -1 0 1;
+#X obj 360 183 #posterize;
+#X obj 312 113 shunt;
+#X obj 312 157 shunt;
+#X obj 312 218 shunt;
+#X floatatom 426 201 5 0 0 0 - - -;
+#X text 336 22 made by merging former videodev_effects.pd and binary_operations.pd
+;
+#X obj 348 395 tgl 15 0 empty empty gamma_correction 18 7 0 8 -241291
+-1 -1 0 1;
+#X obj 339 413 #gamma 512;
+#X floatatom 405 413 5 0 0 0 - - -;
+#X obj 312 394 shunt;
+#X text 0 42 note that some of those effects require the camera or
+at least something animated.;
+#X obj 312 329 shunt;
+#X connect 0 0 3 1;
+#X connect 1 0 9 0;
+#X connect 2 0 18 0;
+#X connect 3 0 47 0;
+#X connect 3 1 30 0;
+#X connect 4 0 18 1;
+#X connect 5 0 17 0;
+#X connect 6 0 18 0;
+#X connect 6 1 2 0;
+#X connect 7 0 6 1;
+#X connect 8 0 13 1;
+#X connect 9 0 11 0;
+#X connect 9 1 31 0;
+#X connect 10 0 35 2;
+#X connect 11 0 3 0;
+#X connect 11 1 35 0;
+#X connect 12 0 11 1;
+#X connect 13 0 1 0;
+#X connect 14 0 9 1;
+#X connect 15 0 13 0;
+#X connect 16 0 35 1;
+#X connect 17 0 39 0;
+#X connect 18 0 9 0;
+#X connect 18 1 15 0;
+#X connect 19 0 15 1;
 #X connect 22 0 47 0;
-#X connect 23 0 13 0;
-#X connect 23 1 20 0;
-#X connect 24 0 20 1;
-#X connect 27 0 28 0;
-#X connect 28 0 9 0;
-#X connect 31 0 20 2;
-#X connect 34 0 27 1;
-#X connect 34 0 38 0;
-#X connect 35 0 34 0;
-#X connect 36 0 27 0;
-#X connect 36 1 35 0;
-#X connect 37 0 2 0;
-#X connect 38 0 25 0;
-#X connect 38 1 26 0;
-#X connect 40 0 8 0;
-#X connect 41 0 4 0;
-#X connect 45 0 15 0;
-#X connect 46 0 45 1;
-#X connect 47 0 49 0;
-#X connect 47 1 40 0;
-#X connect 48 0 47 1;
-#X connect 49 0 8 0;
-#X connect 50 0 49 1;
-#X connect 51 0 50 0;
+#X connect 25 0 15 2;
+#X connect 28 0 22 1;
+#X connect 28 0 32 0;
+#X connect 29 0 28 0;
+#X connect 30 0 22 0;
+#X connect 30 1 29 0;
+#X connect 31 0 11 0;
+#X connect 32 0 20 0;
+#X connect 32 1 21 0;
+#X connect 34 0 6 0;
+#X connect 35 0 3 0;
+#X connect 39 0 41 0;
+#X connect 39 1 34 0;
+#X connect 40 0 39 1;
+#X connect 41 0 6 0;
+#X connect 42 0 41 1;
+#X connect 43 0 42 0;
+#X connect 44 0 46 0;
+#X connect 46 0 45 0;
+#X connect 48 0 64 0;
+#X connect 49 0 65 1;
+#X connect 50 0 63 1;
+#X connect 50 0 67 0;
+#X connect 51 0 72 0;
+#X connect 52 0 51 1;
+#X connect 53 0 66 1;
+#X connect 56 0 61 0;
+#X connect 57 0 74 1;
+#X connect 58 0 65 0;
+#X connect 59 0 64 1;
+#X connect 60 0 74 0;
+#X connect 61 0 60 0;
+#X connect 62 0 60 1;
+#X connect 62 0 56 1;
+#X connect 63 0 66 0;
+#X connect 64 0 65 0;
+#X connect 64 1 58 0;
+#X connect 65 0 66 0;
+#X connect 65 1 63 0;
+#X connect 66 0 74 0;
+#X connect 66 1 56 0;
+#X connect 69 0 72 1;
+#X connect 70 0 44 0;
+#X connect 71 0 70 1;
+#X connect 72 0 44 0;
+#X connect 72 1 70 0;
+#X connect 74 0 72 0;
+#X connect 74 1 51 0;
