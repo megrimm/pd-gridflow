@@ -228,6 +228,7 @@ typedef struct {
 	\decl 0 warp (int y, int x);
 	\decl 0 fullscreen (bool toggle=1); // not working
 	\decl 0 border     (bool toggle=1);
+	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
 //	\decl 0 raise ();
 	\grin 0 int
 };
@@ -616,12 +617,8 @@ GRID_INLET(0) {
 		// convert line
 		if (use_stripes) {
 			int o=y*bypl;
-			for (int x=0, i=0, k=y%3; x<sx; x++, i+=3, k=(k+1)%3) {
-				image[o+x] = (k<<6) | data[i+k]>>2;
-			}
-		} else {
-			bit_packing->pack(sx, data, image+y*bypl);
-		}
+			for (int x=0, i=0, k=y%3; x<sx; x++, i+=3, k=(k+1)%3) {image[o+x] = (k<<6) | data[i+k]>>2;}
+		} else bit_packing->pack(sx, data, image+y*bypl);
 	}
 } GRID_FINISH {
 	show_section(0,0,in->dim->get(1),in->dim->get(0));
