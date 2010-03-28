@@ -13,6 +13,7 @@ a-=%[
   inv0x2a
   inv0x2b
   gf/mouse_spy_proxy
+  #io.libv4l
 ].split(/\s+/)
 
 b=Dir["../abstractions/*.pd"].map{|x|
@@ -27,8 +28,8 @@ ab=a+b
 d=[]
 File.open("index.pd") {|f|
   f.each {|line|
-    m=/obj -?\d+ -?\d+ ([^ ;]+)/.match(line)
-    d<<m[1] if m
+    m= /obj -?\d+ -?\d+ ([^ ;]+)/      .match(line); d<<m[1] if m
+    m=/text -?\d+ -?\d+ \[([^ \];]+)\]/.match(line); d<<m[1] if m
   }
 }
 
