@@ -526,6 +526,7 @@ GRID_INLET(0) {
 #define warn(fmt,stuff...) post("warning: " fmt,stuff)
 
 \def 0 channel (int value) {
+	if (vcaps.channels<2) return; /* can't set this in this case */
 	VideoChannel vchan;
 	vchan.channel = value;
 	current_channel = value;
