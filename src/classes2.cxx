@@ -1143,10 +1143,10 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
 	\decl 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
 	\decl 0 xid (t_symbol *t, t_symbol *u) {MOM
-	outlet_symbol(outlets[0],t);
-	outlet_symbol(outlets[1],u);
-	outlet_symbol(outlets[2],symprintf(".x%lx",m));
-}
+		outlet_symbol(outlets[2],symprintf(".x%lx",m));
+		outlet_symbol(outlets[1],u);
+		outlet_symbol(outlets[0],t);
+	}
 };
 \end class {install("gf/canvas_xid",1,3);}
 
