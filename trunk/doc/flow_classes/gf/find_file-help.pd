@@ -1,4 +1,4 @@
-#N canvas 0 0 632 642 10;
+#N canvas 0 0 632 612 10;
 #X obj 53 92 gf/find_file 0;
 #X symbolatom 53 133 64 0 0 0 - - -;
 #X obj 53 33 loadbang;
@@ -30,7 +30,7 @@ etc.;
 #X obj 97 531 doc_m o1 bang;
 #X obj 97 206 doc_m c0 float;
 #X obj 14 531 doc_oo 1;
-#X obj 0 563 doc_f;
+#X obj 0 583 doc_f;
 #X text 232 329 1) the Pd Path \, as may be specified in the Path dialogue
 \, the pdrc file \, the pdsettings file \, the plist file \, the registry
 \, the commandline \, [declare] objects \, and sys_searchpath.;
@@ -39,6 +39,9 @@ this up using [gf/getcwd].;
 #X text 232 390 2) the folder of a canvas as specified by argument
 0;
 #X text 232 412 3) GridFlow's images folder.;
+#X obj 3 563 doc_also;
+#X obj 103 563 #in;
+#X obj 133 563 gf/getcwd;
 #X connect 0 0 1 0;
 #X connect 0 0 6 0;
 #X connect 0 1 3 0;
@@ -53,3 +56,5 @@ this up using [gf/getcwd].;
 #X connect 22 1 13 0;
 #X connect 23 1 14 0;
 #X connect 24 1 12 0;
+#X connect 31 1 32 0;
+#X connect 31 1 33 0;
