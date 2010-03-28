@@ -1218,7 +1218,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFLOL : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 wire_dotted (int r, int g, int b);
+	\decl 0 wire_dotted  (int r, int g, int b);
+	\decl 0 wire_bracket (int r, int g, int b);
 	\decl 0 wire_hide ();
 	\decl 0  box_dotted (int r, int g, int b);
 	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);
@@ -1234,6 +1235,31 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	BEGIN
 	wire_each(wire,ouch) {
 		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
+	}
+#else
+	post("doesn't work with DesireData");
+#endif
+}
+\def 0 wire_bracket (int r, int g, int b) {
+#ifndef DESIRE
+	BEGIN
+/*	wire_each(wire,ouch) {
+		t_linetraverser lt; linetraverser_start(&lt,can);
+		lt.tr_ob = (t_object *)mom;
+		lt.tr_nextoc = wire;
+		linetraverser_next(&lt);
+		int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
+		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n",long(can),long(wire),r,g,b);
+		sys_vgui(".x%lx.c coords l%lx %d %d %d %d %d %d\n",long(can),long(wire),x1,y1,x1,y2,x2,y2);
+	}*/
+	t_linetraverser lt; linetraverser_start(&lt,can);
+	t_outconnect *wire;
+	while ((wire = linetraverser_next(&lt))) if (lt.tr_outlet==ouch) {
+		int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
+		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n; "
+			 ".x%lx.c coords l%lx %d %d %d %d %d %d %d %d %d %d\n",
+			long(can),long(wire),r,g,b,
+			long(can),long(wire), x1,y1, x1,y1+3, x1+7,y1+3, x1+7,y2+8, x2-2,y2+8);
 	}
 #else
 	post("doesn't work with DesireData");
