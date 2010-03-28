@@ -32,19 +32,16 @@ File.open("index.pd") {|f|
   }
 }
 
-puts "missing from help files: "
-puts (ab-c).sort.join" "
-puts (ab-c).size
-puts ""
+def report text,list
+  puts text
+  puts list.sort.join" " if list.length>0
+  puts "(#{list.size})"
+end
 
-puts "orphan help files:"
-puts (c-ab).sort.join" "
+report "missing from help files: ", ab-c
 puts ""
-
-puts "missing from index:"
-puts (ab-d).sort.join" "
-puts (ab-d).size
+report "orphan help files:", c-ab
 puts ""
-
-puts "orphan index entries: "
-puts (d-ab).sort.join" "
+report "missing from index:", ab-d
+puts ""
+report "orphan index entries: ", d-ab
