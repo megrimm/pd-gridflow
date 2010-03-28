@@ -3,9 +3,9 @@
 #X obj 288 346 outlet;
 #X obj 382 10 args *;
 #N canvas 116 23 450 300 \$0-placeholder 0;
-#X obj 0 0 r 1031-in;
-#X obj 0 40 s 1031-out;
-#X obj 0 20 #io.x11 out;
+#X obj 0 0 r 1003-in;
+#X obj 0 40 s 1003-out;
+#X obj 0 20 gf.not_open;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
 #X restore 288 268 pd \$0-placeholder;
