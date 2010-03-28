@@ -1195,8 +1195,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 float (float z) {MOM;
 		int k=0;
 		canvas_each(y,m) {
-			k++;
 			if (k>=z && pd_class((t_pd *)y)==canvas_class) canvas_loadbang((t_canvas *)y);
+			k++;
 		}
 	}
 };
