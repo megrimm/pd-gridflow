@@ -946,6 +946,7 @@ static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom *argv) 
 }
 static void canvas_last_activate (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas last: there is no last object"); return;}
+	glist_select(self,g);
         gobj_activate(g,self,1);
 }
 
