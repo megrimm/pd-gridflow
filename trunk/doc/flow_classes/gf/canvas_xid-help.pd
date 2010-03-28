@@ -1,0 +1,42 @@
+#N canvas 430 0 632 490 10;
+#X obj 0 0 doc_h gf/;
+#X obj 111 75 gf/canvas_xid 0;
+#X symbolatom 198 94 10 0 0 0 - - -;
+#X symbolatom 111 130 10 0 0 0 - - -;
+#X symbolatom 154 112 10 0 0 0 - - -;
+#X obj 3 166 doc_c 1;
+#X obj 3 228 doc_i 1;
+#X obj 3 316 doc_o 3;
+#X obj 14 196 doc_cc 0;
+#X obj 14 258 doc_ii 0;
+#X obj 14 346 doc_oo 0;
+#X obj 14 368 doc_oo 1;
+#X obj 14 390 doc_oo 2;
+#X obj 0 461 doc_f;
+#X text 232 346 x11 id of canvas;
+#X obj 97 368 doc_m o1 symbol;
+#X obj 97 346 doc_m o0 symbol;
+#X obj 97 390 doc_m o2 symbol;
+#X text 232 368 x11 id of window containing canvas;
+#X obj 111 37 loadbang;
+#X obj 111 56 delay 1000;
+#X obj 97 196 doc_m c0 float;
+#X text 232 196 canvas level;
+#X obj 97 258 doc_m i0 bang;
+#X text 232 258 request info. this is essentially a [netsend] roundtrip
+\, therefore it acts like a [delay] of unknown variable logicaltime.
+be patient :);
+#X text 232 390 tk id of canvas. note: even though this one is known
+in advance and could be output immediately \, the whole outlet set
+is still behaving as a [unpack s s s] \, therefore it waits until the
+reply is received from the pd client.;
+#X connect 1 0 3 0;
+#X connect 1 1 4 0;
+#X connect 1 2 2 0;
+#X connect 15 1 18 0;
+#X connect 16 1 14 0;
+#X connect 17 1 25 0;
+#X connect 19 0 20 0;
+#X connect 20 0 1 0;
+#X connect 21 1 22 0;
+#X connect 23 1 24 0;
