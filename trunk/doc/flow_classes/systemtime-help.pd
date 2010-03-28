@@ -4,7 +4,7 @@
 #X obj 0 393 doc_f;
 #X obj 3 373 doc_also;
 #X obj 103 373 cputime;
-#X obj 157 373 systemtime;
+#X obj 157 373 usertime;
 #X text 186 108 What [usertime] and [systemtime] tell you together
 should add up to the amount that [cputime] tells you.;
 #X obj 3 311 doc_o 1;
