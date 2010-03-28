@@ -42,6 +42,6 @@ report "missing from help files: ", ab-c
 puts ""
 report "orphan help files:", c-ab
 puts ""
-report "missing from index:", ab-d
+report "missing from index but not from help files:", ab-d-(ab-c)
 puts ""
 report "orphan index entries: ", d-ab
