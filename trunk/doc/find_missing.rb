@@ -12,6 +12,7 @@ a-=%[
   cv/#CalcOpticalFlowPyrLK
   inv0x2a
   inv0x2b
+  gf/mouse_spy_proxy
 ].split(/\s+/)
 
 b=Dir["../abstractions/*.pd"].map{|x|
@@ -20,6 +21,7 @@ b=Dir["../abstractions/*.pd"].map{|x|
 
 c      = Dir["flow_classes/*-help.pd"   ].map{|x| x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"") }
 c.concat Dir["flow_classes/cv/*-help.pd"].map{|x| x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"") }
+c.concat Dir["flow_classes/gf/*-help.pd"].map{|x| x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"") }
 ab=a+b
 
 d=[]
