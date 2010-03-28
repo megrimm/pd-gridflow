@@ -1,0 +1,55 @@
+#N canvas 0 0 632 642 10;
+#X obj 53 92 gf/find_file 0;
+#X symbolatom 53 133 64 0 0 0 - - -;
+#X obj 53 33 loadbang;
+#X obj 144 93 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 53 52 symbol find_file-help.pd;
+#X msg 59 72 symbol this_file_does_not_exist.pd;
+#X obj 11 151 display;
+#X text 259 37 find file in the current folder (of UNIX) \, or GridFlow's
+images folder \, or the Path \, or the folder of a canvas;
+#X obj 3 176 doc_c 1;
+#X obj 3 479 doc_o 2;
+#X obj 14 509 doc_oo 0;
+#X obj 14 206 doc_cc 0;
+#X text 232 206 level of the canvas to be searching. 0 is for the canvas
+that this object is in. 1 is for the parent patch of this canvas \,
+if it is a subpatch or abstraction. 2 is for the parent of the parent.
+etc.;
+#X text 232 509 fully-qualified name of the file in UNIX format.;
+#X text 232 531 bang if file not found;
+#X obj 3 277 doc_i 1;
+#X obj 0 0 doc_h gf/;
+#X obj 14 307 doc_ii 0;
+#X text 232 307 filename to look for. the search order is :;
+#X text 67 114 see the [display] if the symbolbox is too short;
+#X text 163 91 not found;
+#X obj 97 307 doc_m i0 symbol;
+#X obj 97 509 doc_m o0 symbol;
+#X obj 97 531 doc_m o1 bang;
+#X obj 97 206 doc_m c0 float;
+#X obj 14 531 doc_oo 1;
+#X obj 0 563 doc_f;
+#X text 232 329 1) the Pd Path \, as may be specified in the Path dialogue
+\, the pdrc file \, the pdsettings file \, the plist file \, the registry
+\, the commandline \, [declare] objects \, and sys_searchpath.;
+#X text 232 434 4) the current folder (of UNIX). you can also look
+this up using [gf/getcwd].;
+#X text 232 390 2) the folder of a canvas as specified by argument
+0;
+#X text 232 412 3) GridFlow's images folder.;
+#X connect 0 0 1 0;
+#X connect 0 0 6 0;
+#X connect 0 1 3 0;
+#X connect 2 0 4 0;
+#X connect 4 0 0 0;
+#X connect 5 0 0 0;
+#X connect 21 1 18 0;
+#X connect 21 1 28 0;
+#X connect 21 1 30 0;
+#X connect 21 1 27 0;
+#X connect 21 1 29 0;
+#X connect 22 1 13 0;
+#X connect 23 1 14 0;
+#X connect 24 1 12 0;
