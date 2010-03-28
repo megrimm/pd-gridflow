@@ -253,12 +253,9 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 #define DEBUG(args...) 42
 //#define DEBUG(args...) post(args)
 
-#define  IOCTL( F,NAME,ARG) \
-  (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
-#define WIOCTL( F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
-#define WIOCTL2(F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+#define  IOCTL( F,NAME,ARG) (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
+#define WIOCTL( F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
+#define WIOCTL2(F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (RAISE("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 \def 0 get (t_symbol *s=0) {
 	// this is abnormal for a get-function
