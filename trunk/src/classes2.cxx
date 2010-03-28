@@ -1188,6 +1188,19 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
 };
 \end class {install("gf/canvas_count",1,1);}
+\class GFCanvasIndex : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 bang () {
+		MOM;
+		t_canvas *mm=m->gl_owner;
+		if (!mm) RAISE("chosen canvas is not in any canvas");
+		int k=0;
+		canvas_each(y,mm) {if (y==(t_gobj *)m) break; else k++;}
+		outlet_float(outlets[0],k);
+	}
+};
+\end class {install("gf/canvas_index",1,1);}
 
 \class GFCanvasLoadbang : FObject {
 	int n;
