@@ -34,7 +34,6 @@ say #finished        "bang when grid transmission has ended"
 say #fold            "compute the sum of each row, product of each row, and other similar operations"
 say #for             "make a grid from all numbers or coordinates in a certain range"
 say #from_pix        "convert pix (GEM) to grid"
-say #import_pix      "old name of #from_pix"
 say #grade           "make an index of the sorting of a grid"
 say #import          "convert float, list, or symbol ASCII codes, to a grid"
 say #inner           "scalar (\"dot\") product, matrix product, tensor contraction, image channel remapping, etc."
@@ -47,11 +46,12 @@ say #io.grid         "read or write a .grid file (GridFlow storage format)"
 say #io.jpeg         "read or write a .jpeg file"
 say #io.mpeg         "read a .mpeg video file"
 say #io.png          "read a .png image file"
-say #io.ppm          "read or write a .pbm or .pgm or .ppm image file"
+say #io.ppm          "read a .pbm or .pgm or .ppm image file or write a .ppm image file"
+say #io.quartz       "open a Quartz window (OSX)"
 say #io.quicktime    "read a .mov video file (or perhaps .avi)"
-say #io.sdl          "open a SDL window"
-say #io.videodev     "open a V4L1 device (Linux interface for video cameras and video digitisers)"
-say #io.x11          "open a X11 window"
+say #io.sdl          "open a SDL window (Windows,Linux,OSX)"
+say #io.videodev     "open a V4L1 device (Linux-only interface for video cameras and video digitisers)"
+say #io.x11          "open a X11 window (Linux,etc)"
 say parallel_port    "send to and receive from a DB25 parallel port"
 say plotter_control  "make HPGL commands"
 
@@ -181,7 +181,7 @@ say cv/#SVD           "OpenCV singular value decomposition (eigendecomposition)"
 say cv/#Ellipse       "OpenCV draw ellipse"
 say cv/#KMeans        "OpenCV K-Means clusteriser"
 say cv/#HaarDetectObjects "OpenCV (future use)"
-say cv/#Kalman        "OpenCV (future use)"
+#say cv/#Kalman        "OpenCV (future use)"
 say cv/#ApproxPoly    "OpenCV polygon approximator"
 say cv/#CornerHarris  "OpenCV Harris corner-detector"
 
@@ -220,51 +220,60 @@ if 0 {
   say cv/#CalcOpticalFlowPyrLK
 }
 
-# doc: many of them can't even be listed normally in the doc index
+category "GFDP" ;# many of them can't even be listed normally in the doc index
+say doc_add      "add a \[doc_m\] in the parent of the parent canvas"
+say doc_also     "GFDP subheader for listing related classes"
+say doc_below    "instruct \[doc_layout\] to put a GFDP element below another one"
+say doc_bottom   "find the bottom of a GFDP element"
+say doc_c        "GFDP subheader for creation arguments documentation"
+say doc_cc       "GFDP subsubheader for creation arguments documentation"
+say doc_demo     "header of an example patch"
+say doc_editmode "automatically move \[cnv\] and \[bng\] when switching from/to edit mode"
+say doc_exist    "check whether a certain GFDP component already exists in the help patch"
+say doc_f        "footer of a GFDP help patch"
+say doc_h        "header of a GFDP help patch"
+say doc_i        "GFDP subheader for inlet documentation"
+say doc_ii       "GFDP subsubheader for inlet documentation"
+say doc_layout   "enforce correct layout of the abstraction containing it, in the parent's abstraction"
+say doc_m        "GFDP subsubsubheader for one method or one creation argument"
+say doc_make     "add GFDP subsubheaders in the parent of the parent canvas"
+say doc_o        "GFDP subheader for outlet documentation"
+say doc_oo       "GFDP subsubheader for outlet documentation"
+say doc_same     "GFDP pseudo-comment for saying a method is same as a creation argument"
+
+# experimental new stuff
+
 if 0 {
-say doc_add
-say doc_also
-say doc_below
-say doc_bottom
-say doc_c
-say doc_cc
-say doc_editmode
-say doc_exist
-say doc_f
-say doc_h
-say doc_i
-say doc_ii
-say doc_layout
-say doc_m
-say doc_make
-say doc_o
-say doc_oo
-say doc_same
+# say gf.display
+# say gf.nbxhsl
+# say gf.not_open
+# say gf.print
 }
 
-# experimental undocumented
+#io.quartz #to_array doc_add doc_also doc_below doc_bottom doc_c doc_cc doc_demo doc_editmode doc_exist doc_f doc_h doc_i doc_ii doc_layout doc_m 
+#doc_make doc_o doc_oo doc_same inv0x2a inv0x2b memstat
 
+say gf/canvas_count      "tell total number of objects in a canvas"
+say gf/canvas_dollarzero "tell the \$0 of an uplevel canvas"
+say gf/canvas_edit_mode  "tell the edit mode of a canvas"
+say gf/canvas_filename   "tell the filename of a canvas"
+say gf/canvas_getpos     "tell the position of a canvas in its parent canvas"
+# say gf/canvas_hehehe      
+# say gf/canvas_hohoho
+say gf/canvas_index      "tell the index of a canvas in its parent canvas"
+say gf/canvas_isselected "tell whether a canvas is selected in its parent canvas"
+say gf/canvas_loadbang   "send loadbang to the most recently created objects of a canvas"
+say gf/canvas_setgop     "set GOP options of a canvas"
+say gf/canvas_setpos     "set the position of a canvas in its parent canvas"
+say gf/canvas_xid        "tell the x11 id of a canvas, its window, and tell the tk id of a canvas"
+say gf/find_file         "find a file the same way that \[#in\] does"
+say gf/getcwd            "tell the current working directory (as set by the \"cd\" shell command)"
+say gf/getpid            "tell the process id of the pd server"
+# say gf/lol
+say gf/selector          "report the true selector of the incoming message"
+say gf/string_<          "compare two strings"
+say gf/string_replace    "search and replace substrings in a symbol"
 if 0 {
-say gf.display
-say gf.nbxhsl
-say gf.not_open
-say gf.print
-say gf/canvas_count
-say gf/canvas_dollarzero
-say gf/canvas_edit_mode
-say gf/canvas_filename
-say gf/canvas_getpos
-say gf/canvas_hehehe
-say gf/canvas_hohoho
-say gf/canvas_is_selected
-say gf/canvas_loadbang
-say gf/canvas_setgop
-say gf/canvas_setpos
-say gf/canvas_xid
-say gf/getpid
-say gf/lol
-say gf/string_<
-say gf/string_replace
 say memstat
 say setargs
 }
