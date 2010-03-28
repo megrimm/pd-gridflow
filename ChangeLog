@@ -5,7 +5,7 @@ version 0.9.8 (2010.04...):
  * fixed GCC >= 4.4.3 related problem (?) with c++ templates...
  * fixed [gf/mouse_spy] crash (also related to [#see])
  * small fixes to colouring of [display] and [#see]
- * added [gf/selector] [gf/getcwd] [gf/find_file]
+ * added [gf/selector] [gf/getcwd] [gf/find_file] [gf/canvas_index]
  * OSX: print real error messages instead of error #-43, etc.
  * OSX: [#io.quartz] reports position
  * [#in]: lookup file in -path and the dir of the patch containing [#in]
@@ -25,6 +25,8 @@ version 0.9.8 (2010.04...):
  * [#in] load has a $2 as a shortcut for open $1, cast $2, bang, close
  * [#in videodev] (linux cameras): added YUYV support (palette 8)
  * [#out x11] [#out quartz] [#out sdl] [#see] accept greyscale
+ * [gf/canvas_loadbang]: fixed bug
+ * added missing helpfiles
 
 version 0.9.7 (2010.02.26):
 

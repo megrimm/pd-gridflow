@@ -6,15 +6,16 @@ $Id$
 0.9.8 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] colorspace rgb (, y, yuv)
+[ ] [#io.quicktimecamera] colorspace rgb                  (urgent)
+[ ] [#io.quicktimecamera] colorspace y, ya, yuv, yuva (PAS urgent)
 [x] [#io.quartz] position
 [ ] [#io.quartz] keypress/keyrelease
 [ ] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
-[ ] [#io.quicktime out] grid, codec, quality.
+[ ] [#io.quicktime (apple) out] grid, codec, quality.
 
 0.9.8 unassigned:
-[ ] [#] damages videodev_effects.pd's [pd sort_me_out]
+-------- vous êtes ici
 [ ] [#see] mouse coords when drag outside of window
 [ ] [#see] border size change
 [ ] [range] name conflict.
@@ -23,8 +24,6 @@ $Id$
     error: canvas: no method for 'receive'
     error: canvas: no method for 'send'
 [ ] [#import] bug (see atelier)
-[ ] do the rest of doc updates that were planned for 0.9.7
-    (including perhaps some of the updates of stuff new in 0.9.7)
 [ ] remove RAISE from grid.cxx, because of all the problems it causes.
     generally, be a lot more careful about exception handling, because
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
@@ -107,7 +106,10 @@ $Id$
 [ ] make single abstraction that replaces all picture converters and more.
 [ ] various_effects.pd doesn't completely support greyscale. other patches don't necessarily, either.
     make more efforts to make colorspaces switchable.
-[ ] [#greyscale_to_rgb] at [#out] level.
+[ ] run ./find_missing.rb and see...
+[ ] [display] visible outside redrectangle in [doc_h]
+[ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
+    this is a [doc_make] bug because not using [gf/canvas_loadbang].
 
 0.9.9 or later (not for 0.9.8):
 [ ] regular dc1394 options
