@@ -1103,7 +1103,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	((t_text *)m)->te_xpix = atom_getintarg(0,argc,argv);
 	((t_text *)m)->te_ypix = atom_getintarg(1,argc,argv);
 	t_canvas *granny = m->gl_owner;
-	if (!granny) RAISE("no such canvas");
+	if (!granny) RAISE("chosen canvas is not in any canvas");
 #ifdef DESIRE
 	gobj_changed(m);
 #else
@@ -1119,10 +1119,15 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
 };
 \end class {install("gf/canvas_edit_mode",1,1);}
-\class GFCanvasIsSelected : FObject { /* contributed by "rumence" of Slovakia, on IRC */
+\class GFCanvasIsSelected : FObject {
+	/* contributed by "rumence" of Slovakia, on IRC */
+	/* bugfix by matju */
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 bang () {MOM; outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));}
+	\decl 0 bang () {MOM;
+		if (!m->gl_owner) RAISE("chosen canvas is not in any canvas");
+		outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));
+	}
 };
 \end class {install("gf/canvas_isselected",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
