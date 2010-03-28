@@ -8,6 +8,7 @@ foreach k [lsort [array names ::say *]] {
 	set h 0 ;# gets clipped to 32 later, or replaced by whatever
 	set v $::say($k)
 	set ok $k ;# original k
+	set sel obj
 	if {$k == "#"}          {set k "$k +"}
 	if {$k == "#fold"}      {set k "$k +"}
 	if {$k == "#scan"}      {set k "$k +"}
@@ -18,6 +19,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$k == "receives"}   {set k "$k \$0-"}
 	if {$k=="#cluster_avg"} {set k "$k 4"}
 	if {$k == "#many"}      {set k "$k tgl 3 3"}
+	if {[regexp ^doc $k]}   {set k "\[$k\]"; set sel text}
 
 	set w [string length $k]
 	regsub "\\$" $k "\\$" k
@@ -30,7 +32,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$ok == "#color"} {set w 156; set h 55}
 	if {$ok == "display"} {set w 22}
 
-	puts "#X obj [expr 160-$w] $y $k;"
+	puts "#X $sel [expr 160-$w] $y $k;"
 	regsub "," $v " \\, " v
 	regsub ";" $v " \\; " v
 	regsub "\\$" $v "\\$" v
