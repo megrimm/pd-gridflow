@@ -1,5 +1,5 @@
-#N canvas 293 158 916 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect symbol 4 9 1 9 -261615
+#N canvas 258 183 916 502 10;
+#X obj 0 20 cnv 15 126 17 \$0-rect_s \$0-rect symbol 4 9 1 9 -261615
 -1 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
@@ -10,11 +10,11 @@
 #X obj 35 458 outlet dummy;
 #X obj 317 478 outlet to_comment;
 #X obj 317 392 gf/lol 1;
-#X obj 663 212 loadbang;
+#X obj 691 268 loadbang;
 #X obj 317 297 gf/canvas_edit_mode 1;
 #X obj 317 335 sel 0 1;
 #X msg 317 373 wire_hide;
-#X obj 663 234 print doc_m:\$1:\$2;
+#X obj 691 290 print doc_m:\$1:\$2;
 #X obj 317 278 t b b;
 #X obj 432 240 gf/canvas_getpos 0;
 #X msg 432 259 \$2;
@@ -91,23 +91,24 @@
 #X obj 637 425 gf/canvas_setgop 0;
 #X obj 446 158 doc_bottom 1;
 #X obj 363 20 doc_below ??? 0 -20;
-#X obj 118 20 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
+#X obj 118 0 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
 -261682 -1 -1;
 #X msg 656 401 1;
 #X obj 604 33 r \$0-create_s;
 #X msg 640 71 symbol pd-\$1;
-#X obj 604 202 s;
+#X obj 604 193 s;
 #X obj 604 52 t b b;
 #X obj 604 90 gf/canvas_count 1;
 #X obj 631 109 gf/canvas_index 0;
 #X obj 640 52 gf/canvas_filename 1;
 #X obj 604 155 pack f f f;
-#X obj 661 136 +;
 #X obj 128 72 doc_editmode 118 1;
 #X msg 604 174 text 232 \$3 ... \, connect \$2 1 \$1 0 \, last_activate
 ;
 #X msg 484 355 wire_dotted 255 170 0;
 #X msg 336 354 wire_bracket 255 170 0;
+#X msg 393 183 \$2;
+#X obj 661 136 +;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -117,10 +118,11 @@
 #X connect 5 0 55 0;
 #X connect 6 0 60 0;
 #X connect 9 0 20 0;
+#X connect 9 0 76 1;
 #X connect 11 0 12 0;
 #X connect 11 0 53 0;
 #X connect 12 0 13 0;
-#X connect 12 1 75 0;
+#X connect 12 1 74 0;
 #X connect 13 0 9 0;
 #X connect 15 0 11 0;
 #X connect 15 1 16 0;
@@ -130,7 +132,6 @@
 #X connect 18 0 46 1;
 #X connect 19 0 55 0;
 #X connect 20 0 18 0;
-#X connect 20 0 71 1;
 #X connect 21 0 26 1;
 #X connect 22 0 23 0;
 #X connect 23 0 27 0;
@@ -172,11 +173,11 @@
 #X connect 54 0 9 0;
 #X connect 55 2 6 0;
 #X connect 55 2 46 0;
+#X connect 55 2 75 0;
 #X connect 56 0 57 0;
 #X connect 56 1 62 0;
 #X connect 57 0 58 0;
 #X connect 59 0 21 1;
-#X connect 59 0 71 0;
 #X connect 60 0 25 0;
 #X connect 62 0 58 0;
 #X connect 63 0 66 0;
@@ -187,8 +188,9 @@
 #X connect 67 0 70 0;
 #X connect 68 0 70 1;
 #X connect 69 0 64 0;
-#X connect 70 0 73 0;
-#X connect 71 0 70 2;
-#X connect 73 0 65 0;
-#X connect 75 0 9 0;
-#X coords 0 -1 1 1 126 17 2 0 0;
+#X connect 70 0 72 0;
+#X connect 72 0 65 0;
+#X connect 74 0 9 0;
+#X connect 75 0 76 0;
+#X connect 76 0 70 2;
+#X coords 0 -1 1 1 126 17 1 0 0;
