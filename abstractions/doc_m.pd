@@ -1,5 +1,5 @@
-#N canvas 293 158 836 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect float 4 9 1 9 -261615
+#N canvas 293 158 916 502 10;
+#X obj 0 20 cnv 15 126 17 \$0-rect_s \$0-rect float 4 9 1 9 -261615
 -1 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
@@ -92,9 +92,8 @@
 #X obj 637 425 gf/canvas_setgop 0;
 #X obj 446 158 doc_bottom 1;
 #X obj 363 20 doc_below ??? 0 -20;
-#X obj 0 20 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
+#X obj 118 0 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
 -261682 -1 -1;
-#X obj 604 14 doc_editmode 0 1;
 #X msg 656 401 1;
 #X obj 604 33 r \$0-create_s;
 #X msg 640 71 symbol pd-\$1;
@@ -105,7 +104,9 @@
 #X obj 640 52 gf/canvas_filename 1;
 #X obj 604 155 pack f f f;
 #X obj 661 136 +;
-#X msg 604 174 text 232 \$3 ... \, connect \$2 1 \$1 0;
+#X obj 128 72 doc_editmode 118 1;
+#X msg 604 174 text 232 \$3 ... \, connect \$2 1 \$1 0 \, last_activate
+;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -128,7 +129,7 @@
 #X connect 18 0 46 1;
 #X connect 19 0 56 0;
 #X connect 20 0 18 0;
-#X connect 20 0 73 1;
+#X connect 20 0 72 1;
 #X connect 21 0 26 1;
 #X connect 22 0 23 0;
 #X connect 23 0 27 0;
@@ -172,21 +173,21 @@
 #X connect 56 2 6 0;
 #X connect 56 2 46 0;
 #X connect 57 0 58 0;
-#X connect 57 1 64 0;
+#X connect 57 1 63 0;
 #X connect 58 0 59 0;
 #X connect 60 0 21 1;
-#X connect 60 0 73 0;
+#X connect 60 0 72 0;
 #X connect 61 0 25 0;
-#X connect 64 0 59 0;
-#X connect 65 0 68 0;
-#X connect 66 0 67 1;
-#X connect 68 0 69 0;
-#X connect 68 1 70 0;
-#X connect 68 1 71 0;
-#X connect 69 0 72 0;
-#X connect 70 0 72 1;
-#X connect 71 0 66 0;
-#X connect 72 0 74 0;
-#X connect 73 0 72 2;
-#X connect 74 0 67 0;
-#X coords 0 -1 1 1 126 17 2 0 0;
+#X connect 63 0 59 0;
+#X connect 64 0 67 0;
+#X connect 65 0 66 1;
+#X connect 67 0 68 0;
+#X connect 67 1 69 0;
+#X connect 67 1 70 0;
+#X connect 68 0 71 0;
+#X connect 69 0 71 1;
+#X connect 70 0 65 0;
+#X connect 71 0 74 0;
+#X connect 72 0 71 2;
+#X connect 74 0 66 0;
+#X coords 0 -1 1 1 126 17 1 0 0;
