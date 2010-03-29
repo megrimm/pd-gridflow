@@ -1,8 +1,5 @@
 $Id$
 
-0.9.8 (à publier en mars ou avril):
-[ ] bbogart's bug (de mars 2010)
-
 0.9.8 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
@@ -110,6 +107,8 @@ $Id$
 [ ] [display] visible outside redrectangle in [doc_h]
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
+[ ] get rid of NOTEMPTY
+[ ] [#io.videodev] takes a lot of CPU doing nothing at all
 
 0.9.9 or later (not for 0.9.8):
 [ ] regular dc1394 options

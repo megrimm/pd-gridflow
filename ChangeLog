@@ -23,10 +23,14 @@ version 0.9.8 (2010.04...):
  * merged binary_operations.pd + videodev_effects.pd -> various_effects.pd
  * [#in] [#out] output "not_open" in outlet 1, to answer a message in closed mode
  * [#in] load has a $2 as a shortcut for open $1, cast $2, bang, close
- * [#in videodev] (linux cameras): added YUYV support (palette 8)
+ * [#in videodev] (linux cameras): trying to add YUYV support (palette 8) (please test)
  * [#out x11] [#out quartz] [#out sdl] [#see] accept greyscale
  * [gf/canvas_loadbang]: fixed bug
- * added missing helpfiles
+ * added missing helpfiles, missing parts of helpfiles, corrected typos, etc.
+ * added missing entries in index.pd ("GridFlow Index")
+ * [#in videodev]: some error messages have been condensed
+ * [#in videodev]: YUV cameras speedup (faster clip function)
+ * [#camera]: use "not_open" to correctly show that no camera currently is selected.
 
 version 0.9.7 (2010.02.26):
 
