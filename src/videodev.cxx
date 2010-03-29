@@ -332,19 +332,24 @@ void FormatVideoDev::frame_ask () {
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
-static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
+// YUV2R,G,B formula outputs can go from -317 to 573.
+static int cliptab[1024];
+static uint8 clip(int x) {return cliptab[x+384];} // be careful with this !
 
-// these are nonstandard YUV converters for use by frame_finished only
+//static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
+//#define clip
+
+// these convert from reduced-range YUV to full-range RGB
 #define YUV2R(Y,U,V) clip( (298*(Y-16)               + 409*(V-128))>>8)
 #define YUV2G(Y,U,V) clip( (298*(Y-16) - 100*(U-128) - 208*(V-128))>>8)
 #define YUV2B(Y,U,V) clip( (298*(Y-16) + 516*(U-128)              )>>8)
 #define YUV2RGB(b,Y,U,V) (b)[0]=YUV2R(Y,U,V); (b)[1]=YUV2G(Y,U,V); (b)[2]=YUV2B(Y,U,V);
-// these too, from one kind of YUV to another.
+// these convert from reduced-range YUV to full-range YUV
 #define YUV2Y(Y,U,V) clip( (298*(Y-16)                            )>>8)
 #define YUV2U(Y,U,V) clip(((             293*(U-128)              )>>8)+128)
 #define YUV2V(Y,U,V) clip(((                           293*(V-128))>>8)+128)
 #define YUV2YUV(b,Y,U,V) (b)[0]=YUV2Y(Y,U,V); (b)[1]=YUV2U(Y,U,V); (b)[2]=YUV2V(Y,U,V);
-// these are other macros specific to frame_finished
+// these are for reading different memory layouts of YUV
 #define GET420P(x) do {Y1=bufy[(x)+0]; U=bufu[(x)/2]; Y2=bufy[(x)+1]; V=bufv[(x)/2];} while (0)
 #define GETYUYV(x) do {Y1=bufy[(x)+0]; U=bufy[(x)+1]; Y2=bufy[(x)+2]; V=bufy[(x)+3];} while (0)
 void FormatVideoDev::frame_finished (uint8 *buf) {
@@ -694,4 +699,5 @@ void FormatVideoDev::initialize2 () {
 \end class FormatVideoDev {install_format("#io.videodev",4,"");}
 void startup_videodev () {
 	\startall
+	for (int i=0; i<1024; i++) cliptab[i] = min(255,max(0,i-384));
 }
