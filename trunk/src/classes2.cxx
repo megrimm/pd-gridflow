@@ -698,6 +698,7 @@ static t_symbol *s_empty;
 	static void visfn(BLAH, int flag) {INIT1
 		GUI_FObject::visfn(x,glist,flag);//super
 		self->clock = clock_new(bself,(void(*)())doh);
+		clock_delay(self->clock,0);
 	}
 	NEWWB
 };
