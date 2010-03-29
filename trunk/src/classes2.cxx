@@ -630,8 +630,10 @@ static t_symbol *s_empty;
 \class GridSee : GUI_FObject {
 	BFObject *spy;
 	P<Grid> buf;
+	bool hold;
 	\constructor () {
 		sy = 48+9; sx = 64+5;
+		hold = false;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
 		//use_queue = false; /* for now... */
@@ -643,14 +645,19 @@ static t_symbol *s_empty;
 	}
 	~GridSee () {pd_free((t_pd *)spy);}
 	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
-	#define FOO(A,B,C) t_canvas *can = mom; /* and not glist_getcanvas(mom) */ \
-		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2; \
-		if (!(y>=0 && y<sy-9 && x>=0 && x<sx-5)) return; \
-		t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags); A; \
-		outlet_anything(outlets[0],gensym(B),C,a);
-	\decl 0 position   (int y, int x, int flags             ) {FOO(                ,"position",  3);}
-	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {FOO(SETSYMBOL(a+3,k),"keypress",  4);}
-	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {FOO(SETSYMBOL(a+3,k),"keyrelease",4);}
+	void event (int y, int x, int flags, t_symbol *k, const char *sel) {
+		t_canvas *can = mom; /* and not glist_getcanvas(mom) */
+		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2;
+		if (hold || (y>=0 && y<sy-9 && x>=0 && x<sx-5)) {
+			t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags);
+			if (k) SETSYMBOL(a+3,k);
+			hold = (flags&-256) != 0;
+			outlet_anything(outlets[0],gensym(sel),k?4:3,a);
+		}
+	}
+	\decl 0 position   (int y, int x, int flags             ) {event(y,x,flags,0,"position"  );}
+	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keypress"  );}
+	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keyrelease");}
 	#undef FOO
 	\grin 0
 	void sendbuf () {
