@@ -631,19 +631,18 @@ static t_symbol *s_empty;
 	BFObject *spy;
 	P<Grid> buf;
 	bool hold;
+	t_clock *clock; // pitiééééééééééééééé
 	\constructor () {
 		sy = 48+9; sx = 64+5;
 		hold = false;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
-		//use_queue = false; /* for now... */
 		t_atom a[1]; SETSYMBOL(a,s_empty);
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
-		spy = (BFObject *)pd_newest();
-		if (!spy) RAISE("no spy?");
+		spy = (BFObject *)pd_newest(); if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
-	~GridSee () {pd_free((t_pd *)spy);}
+	~GridSee () {if (spy) pd_free((t_pd *)spy);}
 	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
 	void event (int y, int x, int flags, t_symbol *k, const char *sel) {
 		t_canvas *can = mom; /* and not glist_getcanvas(mom) */
@@ -691,10 +690,14 @@ static t_symbol *s_empty;
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#aaaaaa",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
+	static void doh (void *x) {INIT1
+		MouseSpy *ms = (MouseSpy *)self->spy->self;
+		ms->set_rcv(symprintf(".x%x",glist_getcanvas(self->mom)));
+		clock_free(self->clock);
+	}
 	static void visfn(BLAH, int flag) {INIT1
 		GUI_FObject::visfn(x,glist,flag);//super
-		MouseSpy *ms = (MouseSpy *)self->spy->self;
-		if (flag) ms->set_rcv(flag ? symprintf(".x%x",glist_getcanvas(self->mom)) : 0);
+		self->clock = clock_new(bself,(void(*)())doh);
 	}
 	NEWWB
 };
