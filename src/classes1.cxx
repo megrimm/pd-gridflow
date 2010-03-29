@@ -483,10 +483,9 @@ GRID_INLET(1) {
 	// put_at ( ... )
 	snap_backstore(r);
 	SAME_TYPE(in,r);
-	//!@#$ should check types. if (r->nt!=in->nt) RAISE("shoo");
 	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
 	int32 sizeb[nn];
-	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
+	for (int i=0; i<nn; i++) {fromb[i]=0; sizeb[i]=1;}
 	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim->prod());
 	COPY(fromb+nn-na,(int32 *)*put_at   ,na);
 	COPY(sizeb+nn-nb,(int32 *)in->dim->v,nb);
@@ -506,7 +505,6 @@ GRID_INLET(1) {
 	in->set_chunk(     chunk);
 	cs = in->dim->prod(chunk);
 } GRID_FLOW {
-	//fprintf(stderr,"d=%d\n",d);
 	if (!put_at) { // reassign
 		COPY(((T *)*(r.next ? r.next.p : &*r.p))+dex, data, n);
 		return;
