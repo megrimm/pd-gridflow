@@ -3,9 +3,9 @@
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 8 -233017 -195568 -195568 0;
-#N canvas 275 22 906 659 camera 0;
+#N canvas 273 26 906 659 camera 0;
 #X obj 310 515 outlet;
-#X obj 51 14 inlet;
+#X obj 11 12 inlet;
 #X obj 63 203 t a;
 #X msg 700 463 open videodev \$1 \, get;
 #X msg 673 314 size \$1 \$2;
@@ -36,18 +36,18 @@
 #X obj 308 622 s \$0-device;
 #X obj 85 446 route pwc;
 #X msg 85 465 pwc \$1 \, get;
-#X obj 51 33 list split 1;
-#X obj 51 52 makefilename \$0-%s;
-#X obj 51 109 s;
-#X obj 51 90 list;
-#X obj 51 71 t b s;
+#X obj 101 31 list split 1;
+#X obj 101 50 makefilename \$0-%s;
+#X obj 101 107 s;
+#X obj 101 88 list;
+#X obj 101 69 t b s;
 #X msg 684 487 open dc1394 \, get;
 #X msg 391 368 colorspace \$1;
-#X obj 181 71 list prepend;
-#X obj 181 90 list trim;
-#X obj 174 179 foreach;
-#X obj 174 198 makefilename \$0-%s;
-#X msg 174 217 \; \$1 color 10 20 20;
+#X obj 231 71 list prepend;
+#X obj 231 90 list trim;
+#X obj 224 179 foreach;
+#X obj 224 198 makefilename \$0-%s;
+#X msg 224 217 \; \$1 color 10 20 20;
 #X msg 179 564 \; \$1 color 18 17 22;
 #X obj 122 386 t b a b b;
 #X obj 391 311 s \$0-colorspace_e;
@@ -70,8 +70,8 @@
 #X obj 563 505 route color;
 #X msg 490 596 close;
 #X msg 490 617 label No_camera_selected;
-#X msg 339 186 label Unknown_camera;
-#X obj 339 205 s \$0-title;
+#X msg 389 186 label Unknown_camera;
+#X obj 389 205 s \$0-title;
 #X obj 731 13 r \$0-minsize;
 #X obj 731 51 unpack 0 0;
 #X obj 796 70 s \$0-minwidth;
@@ -91,11 +91,11 @@
 #X msg 139 525 label \$1;
 #X obj 25 568 route minsize maxsize;
 #X obj 67 506 route color;
-#X obj 181 13 receives \$0-s_ channel tuner frequency brightness contrast
+#X obj 231 13 receives \$0-s_ channel tuner frequency brightness contrast
 colour hue whiteness white_mode white_red white_blue white_speed white_delay
 auto_gain framerate noise_reduction compression pwc size colorspace
 norm transfer;
-#X msg 174 121 list channel tuner frequency brightness contrast colour
+#X msg 224 121 list channel tuner frequency brightness contrast colour
 hue whiteness white_mode white_red white_blue white_speed white_delay
 auto_gain framerate noise_reduction compression pwc size colorspace
 norm transfer;
@@ -112,7 +112,11 @@ norm transfer;
 #X msg 456 407 open quicktimecamera \$1 \, get;
 #X obj 718 416 - 9;
 #X obj 308 603 mod 14;
-#X connect 1 0 32 0;
+#X obj 11 31 route not_open;
+#X obj 11 88 s \$0-device;
+#X msg 11 69 13;
+#X obj 11 50 delay 200;
+#X connect 1 0 102 0;
 #X connect 2 0 27 0;
 #X connect 3 0 45 0;
 #X connect 4 0 0 0;
@@ -220,6 +224,10 @@ norm transfer;
 #X connect 99 0 45 0;
 #X connect 100 0 99 0;
 #X connect 101 0 29 0;
+#X connect 102 0 105 0;
+#X connect 102 1 32 0;
+#X connect 104 0 103 0;
+#X connect 105 0 104 0;
 #X restore 34 410 pd camera;
 #X obj 7 429 outlet image;
 #X obj 7 372 inlet;
@@ -232,7 +240,7 @@ norm transfer;
 0;
 #X text 9 31 device:;
 #X obj 11 50 vradio 15 1 0 14 \$0-s_device \$0-device empty 0 -6 0
-8 -241291 -1 -1 9;
+8 -241291 -1 -1 13;
 #X obj 81 105 cnv 15 184 177 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 270 214 cnv 15 144 140 empty \$0-palette2 YUYV 86 8 0 10 -233017
@@ -309,8 +317,8 @@ empty 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 214 45 NTSC;
 #X text 213 57 SECAM;
 #X text 213 68 auto;
-#X obj 6 6 cnv 15 408 20 empty \$0-title Unknown_camera 4 10 1 12 -1
--262144 0;
+#X obj 6 6 cnv 15 408 20 empty \$0-title No_camera_selected 4 10 1
+12 -1 -262144 0;
 #X obj 345 300 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
 0 -8 0 10 -233017 -195568 -195568 0;
 #X text 286 304 Transfer:;
