@@ -112,7 +112,7 @@ class GemState {
 	\decl 0 gem_state (...);
 	void render(GemState *state) {state->image = &m_pixBlock;}
 	void startRendering () {m_pixBlock.newimage = 1;}
-	GridToPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
+	\constructor () {
 		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
@@ -170,8 +170,7 @@ GRID_INLET(1) {
 	\attr bool yflip;
 	\attr NumberTypeE cast;
 	int channels;
-	GridFromPix () : FObject(0,0,0,0) {RAISE("don't call this. this exists only to make GEM happy.");}
-	GridFromPix (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
+	\constructor () {
 		yflip = false;
 		cast = int32_e;
 		_0_colorspace(0,0,gensym("rgba"));
