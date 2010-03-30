@@ -1,11 +1,10 @@
 $Id$
 
-0.9.8 assigned to Patrick:
+0.9.9 assigned to Patrick:
 [ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
 [ ] [#io.quicktimecamera] colorspace rgb                  (urgent)
 [ ] [#io.quicktimecamera] colorspace y, ya, yuv, yuva (PAS urgent)
-[x] [#io.quartz] position
 [ ] [#io.quartz] keypress/keyrelease
 [ ] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
@@ -13,8 +12,9 @@ $Id$
 
 0.9.8 unassigned:
 -------- vous êtes ici
-[ ] [#see] mouse coords when drag outside of window
-[ ] [#see] border size change
+[x] [#see] shouldn't send "shown" when reshowing nonoriginal content
+[x] putting [#see] in the redrectangle of a [pd] confuses the [pd].
+[x] [#see] border size change
 [ ] [range] name conflict.
 [ ] [#fft] sign crash
 [ ] [#many] when $1 is abstraction :
@@ -109,6 +109,7 @@ $Id$
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
 [ ] get rid of NOTEMPTY
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all
+[ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 
 0.9.9 or later (not for 0.9.8):
 [ ] regular dc1394 options
