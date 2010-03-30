@@ -603,6 +603,7 @@ static t_symbol *s_empty;
 		else {
 			int i = ascii.a_float;
 			key = (i<0 || i>=128 || !keyboard[i]) ? symprintf("%c",i) : keyboard[i];
+			if (!key) key = symprintf("whoah_%d",i);
 		}
 		event(on ? "keypress" : "keyrelease",key);
 	}
@@ -632,8 +633,11 @@ static t_symbol *s_empty;
 	P<Grid> buf;
 	bool hold;
 	t_clock *clock; // pitiééééééééééééééé
+	int my1,mx1,my2,mx2; // margins
 	\constructor () {
-		sy = 48+9; sx = 64+5;
+		clock = 0;
+		my1=5; my2=5; mx1=3; mx2=3;
+		compute_size();
 		hold = false;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		changed();
@@ -642,7 +646,14 @@ static t_symbol *s_empty;
 		spy = (BFObject *)pd_newest(); if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
-	~GridSee () {if (spy) pd_free((t_pd *)spy);}
+	void compute_size () { /* 1 is a fudge due to how Tk sizes work vis-à-vis pixel counting */
+		sy = my1 + (buf ? buf->dim->v[0] : 48) + my2 - 1;
+		sx = mx1 + (buf ? buf->dim->v[1] : 64) + mx2 - 1;
+	}
+	~GridSee () {
+		if (spy) pd_free((t_pd *)spy);
+		if (clock) clock_free(clock);
+	}
 	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
 	void event (int y, int x, int flags, t_symbol *k, const char *sel) {
 		t_canvas *can = mom; /* and not glist_getcanvas(mom) */
@@ -657,6 +668,7 @@ static t_symbol *s_empty;
 	\decl 0 position   (int y, int x, int flags             ) {event(y,x,flags,0,"position"  );}
 	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keypress"  );}
 	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keyrelease");}
+	\decl 0 margins (int y1, int x1, int y2, int x2) {my1=y1; mx1=x1; my2=y2; mx2=x2; compute_size(); changed();}
 	#undef FOO
 	\grin 0
 	void sendbuf () {
@@ -665,8 +677,7 @@ static t_symbol *s_empty;
 		int chans = buf->dim->get(2);
 		int xs = buf->dim->get(1);
 		int ys = buf->dim->get(0);
-		sx = xs+5;
-		sy = ys+9;
+		compute_size();
 		char fub[xs*ys*6+1];
 		fub[xs*ys*6]=0;
 		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* ",rsym->s_name,xs,ys);
@@ -686,14 +697,14 @@ static t_symbol *s_empty;
 		if (buf) sendbuf();
 		t_glist *c = glist_getcanvas(mom);
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
-		sys_vgui("gridsee_update %s %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
-			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":"#aaaaaa",c);
+		sys_vgui("gridsee_update %s %d %d %d %d %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
+			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,mx1,my1,mx2,my2,selected?"#0000ff":"#aaaaaa",c);
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
 	static void doh (void *x) {INIT1
 		MouseSpy *ms = (MouseSpy *)self->spy->self;
 		ms->set_rcv(symprintf(".x%x",glist_getcanvas(self->mom)));
-		clock_free(self->clock);
+		if (self->clock) {clock_free(self->clock); self->clock=0;}
 	}
 	static void visfn(BLAH, int flag) {INIT1
 		GUI_FObject::visfn(x,glist,flag);//super
@@ -716,19 +727,23 @@ GRID_INLET(0) {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
 	#define ETC ""
-	sys_gui("proc gridsee_update {self x1 y1 sx sy fg bg outline canvas} {\n"
+	sys_gui("proc gridsee_update {self x1 y1 sx sy mx1 my1 mx2 my2 fg bg outline canvas} {\n"
 	    "$canvas delete $self\n"
 	    "set x2 [expr {$x1+$sx}]\n"
 	    "set y2 [expr {$y1+$sy}]\n"
-	    "$canvas create rectangle $x1            $y1            [expr {$x2}  ] $y2            -fill $bg   "
+	    "set x3 [expr {$x1+max(0,$mx1-1)}]\n"
+	    "set y3 [expr {$y1+max(0,$my1-1)}]\n"
+	    "set x4 [expr {$x2-max(0,$mx2-1)}]\n"
+	    "set y4 [expr {$y2-max(0,$my2-1)}]\n"
+	    "$canvas create rectangle $x1 $y1            $x2            $y2            -fill $bg   "
 		"-tags [list $self ${self}R ] -outline $outline\n"
-	    "$canvas create rectangle [expr {$x1+2}] [expr {$y1+4}] [expr {$x2-2}] [expr {$y2-4}] -fill black "
+	    "$canvas create rectangle $x3 $y3            $x4            $y4            -fill black "
 		"-tags [list $self ${self}RR] -outline black\n"
-	    "$canvas create rectangle $x1            $y1            [expr {$x1+7}] [expr {$y1+2}] -fill white "
+	    "$canvas create rectangle $x1 $y1            [expr {$x1+7}] [expr {$y1+2}] -fill white "
 		"-tags [list $self ${self}i0] -outline black\n"
-	    "$canvas create rectangle $x1            [expr {$y2-2}] [expr {$x1+7}] $y2            -fill white "
+	    "$canvas create rectangle $x1 [expr {$y2-2}] [expr {$x1+7}] $y2            -fill white "
 		"-tags [list $self ${self}o0] -outline black\n"
-	    "$canvas create image     [expr {$x1+3}] [expr {$y1+5}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
+	    "$canvas create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
 }
 
