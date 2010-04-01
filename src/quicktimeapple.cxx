@@ -447,7 +447,7 @@ GRID_INLET(0) {
 
 \classinfo {
 	EnterMovies();
-	install_format("#io.quicktime",4,"mov");
+	install_format("#io.quicktimeapple",4,"mov");
 }
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
