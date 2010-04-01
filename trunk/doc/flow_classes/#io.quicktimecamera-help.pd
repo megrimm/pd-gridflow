@@ -1,0 +1,46 @@
+#N canvas 598 22 632 577 10;
+#X obj 0 0 doc_h;
+#X obj 3 268 doc_i 1;
+#X obj 3 413 doc_o 1;
+#X obj 3 514 doc_also;
+#X obj 14 298 doc_ii 0;
+#X obj 97 298 doc_m i0 get;
+#X obj 97 355 doc_m i0 help;
+#X text 232 333 default: gets all attributes.;
+#X text 232 298 gets a specific attribute. a message is sent through
+right outlet.;
+#X obj 0 541 doc_f;
+#X obj 103 514 #io.dc1394;
+#X obj 14 443 doc_oo 0;
+#X obj 97 443 doc_m o0 grid;
+#X obj 97 469 doc_m o0 <any>;
+#X text 232 443 image coming out;
+#X text 232 469 most any inlet 0 message is also an outlet 0 message
+whose output can be triggered using 'get'.;
+#X obj 51 143 print;
+#X obj 3 198 doc_c ...;
+#X text 224 225 you can send this to an [#in] \, but you could use
+[#camera] instead.;
+#X obj 36 74 metro 100;
+#X obj 36 57 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
+;
+#X text 387 43 get images from a Quicktime Camera;
+#X text 387 58 this is for Mac OSX only.;
+#X msg 42 94 open quicktimecamera 0 \, get;
+#X text 226 94 open first device;
+#X msg 58 232 open quicktimecamera 0;
+#X obj 175 514 #io.videodev;
+#X obj 36 124 #in;
+#X text 232 355 prints a list of all attribute names in the console
+;
+#X connect 3 1 10 0;
+#X connect 3 1 26 0;
+#X connect 5 1 8 0;
+#X connect 5 1 7 0;
+#X connect 6 1 28 0;
+#X connect 12 1 14 0;
+#X connect 13 1 15 0;
+#X connect 19 0 27 0;
+#X connect 20 0 19 0;
+#X connect 23 0 27 0;
+#X connect 27 1 16 0;
