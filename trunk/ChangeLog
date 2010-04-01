@@ -16,7 +16,7 @@ version 0.9.8 (2010.04...):
  * [#out x11]: add "border $1" method for hiding window-border (for fullscreen)
  * major update to cellular_1d.pd, instant_blur.pd, markov.pd, ...
  * reviewed and updated a lot of examples.
- * added rgb_delay.pd
+ * added examples : rgb_delay.pd dither.pd
  * [#]: added back an important optimisation to save on RAM
  * [#fold] [#scan]: allow op avg, op hypot
  * [#fold] [#scan]: better check for unallowed ops
@@ -34,6 +34,9 @@ version 0.9.8 (2010.04...):
  * [#see]: can drag to a point outside of the window
  * [#see]: fixed a bug when closing a gop containing a [#see].
  * [#see]: added "margins $1 $2 $3 $4" method
+ * linux [#in quicktime] renamed to [#in quicktimehw]
+ * osx   [#in quicktime] renamed to [#in quicktimeapple]
+ * [#in] and [#out]: added 'quicktime' alias for either of the above two
 
 version 0.9.7 (2010.02.26):
 

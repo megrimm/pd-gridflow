@@ -12,6 +12,8 @@ $Id$
 
 0.9.8 unassigned:
 -------- vous êtes ici
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[ ] win32 x11
 [x] [#see] shouldn't send "shown" when reshowing nonoriginal content
 [x] putting [#see] in the redrectangle of a [pd] confuses the [pd].
 [x] [#see] border size change
