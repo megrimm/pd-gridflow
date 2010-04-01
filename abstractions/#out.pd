@@ -3,8 +3,8 @@
 #X obj 288 346 outlet;
 #X obj 382 10 args *;
 #N canvas 116 23 450 300 \$0-placeholder 0;
-#X obj 0 0 r 1003-in;
-#X obj 0 40 s 1003-out;
+#X obj 0 0 r 1038-in;
+#X obj 0 40 s 1038-out;
 #X obj 0 20 gf.not_open;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
@@ -64,6 +64,7 @@
 #X connect 17 0 16 0;
 #X connect 19 0 4 0;
 #X connect 21 0 22 0;
+#X connect 21 1 4 0;
 #X connect 22 0 4 0;
 #X connect 22 1 29 0;
 #X connect 23 0 4 0;
