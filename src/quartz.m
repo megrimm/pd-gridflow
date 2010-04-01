@@ -127,6 +127,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	GFView *widget; /* GridFlow's Cocoa widget */
 	NSPoint mouse_lastpos;
 	int mouse_state;
+	int was_scroll;
 	t_clock *clock;
 	\constructor (t_symbol *mode) {
 		NSRect r = {{0,0}, {320,240}};
@@ -151,6 +152,7 @@ void FormatQuartz_call(FormatQuartz *self);
 		mouse_state = 0;
 		mouse_lastpos.x = 0;
 		mouse_lastpos.y = 0;
+		was_scroll = 0;
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -181,8 +183,8 @@ void FormatQuartz::report_pointer(int y, int x, int state) {
 
 static NSDate *distantFuture, *distantPast;
 
-#define VALIDATE_MOUSEEVENT  if ((p.y >= 0 && p.y <= [this->widget imageHeight]) && \
-                                 (p.x >= 0 && p.x <= [this->widget imageWidth])) wasMouseEvent = YES
+#define INSIDE_WINDOW  ((p.y >= 0 && p.y <= [this->widget imageHeight]) && (p.x >= 0 && p.x <= [this->widget imageWidth]))
+#define SCROLL_OFF(s)  this->was_scroll = 0; this->mouse_state -= (s); report_pointer((int)p.y, (int)p.x, this->mouse_state);
 
 void FormatQuartz::call() {
 	BOOL wasMouseEvent = NO;
@@ -192,35 +194,44 @@ void FormatQuartz::call() {
 		untilDate: distantPast      // nonblocking
 		inMode: NSDefaultRunLoopMode
 		dequeue: YES];
-		
+
 	p = [this->window mouseLocationOutsideOfEventStream];
 	p.y = [this->widget imageHeight] - p.y;
+
+	if (this->was_scroll == 2048) { SCROLL_OFF(2048) }
+	else if (this->was_scroll == 4096) { SCROLL_OFF(4096) }
+
 	if ([this->window isKeyWindow]) {
 		if (p.y != l->y || p.x != l->x) // mouse moved
-			VALIDATE_MOUSEEVENT;    // inside our window ?
+			if (INSIDE_WINDOW) wasMouseEvent = YES;
 	}
 	if (e) {
 		//fprintf(stderr,"isKeyWindow ? %s\n", [this->window isKeyWindow]?"yes":"no");//
 		//fprintf(stderr,"isMainWindow ? %s\n", [this->window isMainWindow]?"yes":"no");//
 		NSLog(@"%@", e);
 		[NSApp sendEvent: e];
+
 		switch ([e type]) {
 		case NSLeftMouseDown:
-			this->mouse_state += 256;  VALIDATE_MOUSEEVENT; break;
+			this->mouse_state += 256;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSLeftMouseUp:
-			this->mouse_state -= 256;  VALIDATE_MOUSEEVENT; break;
+			this->mouse_state -= 256;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSOtherMouseDown:
-			this->mouse_state += 512;  VALIDATE_MOUSEEVENT; break;
+			this->mouse_state += 512;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSOtherMouseUp:
-			this->mouse_state -= 512;  VALIDATE_MOUSEEVENT; break;
+			this->mouse_state -= 512;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSRightMouseDown:
-			this->mouse_state += 1024; VALIDATE_MOUSEEVENT; break;
+			this->mouse_state += 1024; if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSRightMouseUp:
-			this->mouse_state -= 1024; VALIDATE_MOUSEEVENT; break;
+			this->mouse_state -= 1024; if (INSIDE_WINDOW) wasMouseEvent = YES; break;
 		case NSLeftMouseDragged:
 		case NSRightMouseDragged:
 		case NSOtherMouseDragged:
-			wasMouseEvent = YES; break; // don't VALIDATE_MOUSEEVENT for when dragging outside the window
+			wasMouseEvent = YES; break; // don't check for bounds when dragging outside the window
+		case NSScrollWheel:
+			wasMouseEvent = YES;
+			if ([e deltaY] > 0) { this->was_scroll = 2048; this->mouse_state += 2048; }
+			else if ([e deltaY] < 0) { this->was_scroll = 4096; this->mouse_state += 4096; }
 		}
 	}
 	if (wasMouseEvent) report_pointer((int)p.y, (int)p.x, this->mouse_state);
