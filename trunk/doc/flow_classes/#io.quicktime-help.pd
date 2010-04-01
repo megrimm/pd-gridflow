@@ -33,28 +33,36 @@ GridFlow when reading a file \, but other programs usually care.;
 #X obj 97 641 doc_m i0 size;
 #X text 232 641 \$1=height \$2=width;
 #X obj 3 721 doc_o 1;
-#X obj 3 901 doc_also;
+#X obj 3 928 doc_also;
 #X text 232 663 Forces a window size when writing. Usually this has
 to be used _after_ setting the framerate and codec and _before_ setting
 the codec-parameters. (Strange. Sorry.);
 #X text 232 422 \$1=height \$2=width;
 #X text 232 444 forces a window size when reading. this is a workaround
 for a problem in HW-QuickTime.;
-#X obj 0 921 doc_f;
+#X obj 0 948 doc_f;
 #X obj 97 422 doc_m i0 force_size;
 #X obj 97 549 doc_m i0 get;
-#X text 232 549 output various properties of the video that is open
-(#in) (see outlet 0);
 #X obj 14 751 doc_oo 0;
-#X obj 103 901 #io.mpeg;
+#X obj 103 928 #io.mpeg;
 #X obj 97 751 doc_m o0 grid;
-#X obj 97 771 doc_m o0 codec symbol;
-#X obj 97 791 doc_m o0 depth float;
-#X obj 97 811 doc_m o0 framerate float;
-#X obj 97 831 doc_m o0 frames float;
-#X obj 97 851 doc_m o0 height float;
-#X obj 97 871 doc_m o0 width float;
+#X obj 97 773 doc_m o0 codec symbol;
+#X obj 97 795 doc_m o0 depth float;
+#X obj 97 817 doc_m o0 framerate float;
+#X obj 97 852 doc_m o0 frames float;
+#X obj 97 874 doc_m o0 height float;
+#X obj 97 896 doc_m o0 width float;
 #X obj 3 178 doc_c ...;
+#X text 232 751 frame read from file;
+#X text 232 773 currently set codec;
+#X text 232 549 output various properties of the video that is open
+(#in) (see all messages of outlet 0 except grid);
+#X text 232 795 number of bits per pixel ?;
+#X text 232 817 Nominal framerate as indicated by the file. You may
+use this to configure a metro. Or not.;
+#X text 232 852 total number of frames in the file;
+#X text 232 874 height of the movie as indicated in the file.;
+#X text 232 896 width of the movie as indicated in the file.;
 #X connect 4 1 5 0;
 #X connect 6 1 7 0;
 #X connect 6 1 8 0;
@@ -63,7 +71,14 @@ for a problem in HW-QuickTime.;
 #X connect 12 1 13 0;
 #X connect 14 1 15 0;
 #X connect 14 1 18 0;
-#X connect 17 1 26 0;
+#X connect 17 1 25 0;
 #X connect 22 1 19 0;
 #X connect 22 1 20 0;
-#X connect 23 1 24 0;
+#X connect 23 1 36 0;
+#X connect 26 1 34 0;
+#X connect 27 1 35 0;
+#X connect 28 1 37 0;
+#X connect 29 1 38 0;
+#X connect 30 1 39 0;
+#X connect 31 1 40 0;
+#X connect 32 1 41 0;
