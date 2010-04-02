@@ -34,6 +34,7 @@ version 9.8 (2010.04.01):
  * [#see]: can drag to a point outside of the window
  * [#see]: fixed a bug when closing a gop containing a [#see].
  * [#see]: added "margins $1 $2 $3 $4" method
+ * changed version numbering "scheme", if there was ever any such thing
  * linux [#in quicktime] renamed to [#in quicktimehw]
  * osx   [#in quicktime] renamed to [#in quicktimeapple]
  * [#in] and [#out]: added 'quicktime' alias for either of the above two
@@ -59,7 +60,7 @@ version 0.9.7 (2010.02.26):
  * [#in grid]: fixed end-of-file detection
  * ./configure: replaced pentium detection code
  * [#line_to_polygon]: fix: generates a rectangle as it was supposed to be
- * [#in grid]: added method «seek_byte»
+ * [#in grid]: added method "seek_byte"
  * [#out quartz]: no more spinning beach ball of death !
  * [#out quartz]: added methods: title, move, set_geometry
    (compatible with [#io.x11])
