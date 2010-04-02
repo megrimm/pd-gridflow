@@ -1511,6 +1511,21 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 };
 \end class {install("inv*",2,1);}
 
+\class GridFlowClass : FObject {
+	\constructor () {}
+	\decl 0 get (t_symbol *s=0) {
+		if (!s) {_0_get(0,0,gensym("version"));}
+		if (s==gensym("version")) {
+			t_atom a[3];
+			SETFLOAT(a+0,GF_VERSION_A);
+			SETFLOAT(a+1,GF_VERSION_B);
+			SETFLOAT(a+2,GF_VERSION_C);
+			outlet_anything(outlets[0],s,3,a);
+		}
+	}
+};
+\end class {install("gridflow",1,1);}
+
 void startup_flow_objects2 () {
 	\startall
 }
