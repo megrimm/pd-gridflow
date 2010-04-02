@@ -455,16 +455,6 @@ Feature.add {
 		if (!png_check_sig) return 1;
 		return 0;}`}}
 Feature.add {
-	tag :libv4l
-	status :disabled
-	name "Video4linux Driver Interface Library"
-	uses_h ["libv4l2.h"]
-	uses_o ["src/libv4l.o"]
-	test proc {
-		c_test "
-		#include <libv4l2.h>
-		int main () {return v4l2_open==0;}"}}
-Feature.add {
 	tag :videodev
 	name "Video4linux Driver Interface Version 1 (kernel)"
 	uses_h ["linux/videodev.h"]
@@ -474,6 +464,28 @@ Feature.add {
 		#include <stdlib.h>
 		#include#
 		int main () { struct video_window foo; return 0; }"}}
+Feature.add {
+	tag :libv4l1
+	uses_feature [:videodev]
+	name "Video4linux I Driver Interface Library"
+	uses_h ["libv4l1.h"]
+	uses_so ["-lv4l1"]
+	defines ["HAVE_LIBV4L1"]
+	test proc {
+		c_test "
+		#include <libv4l1.h>
+		int main () {return v4l1_open==0;}"}}
+Feature.add {
+	tag :libv4l2
+	status :disabled
+	name "Video4linux II Driver Interface Library"
+	uses_h ["libv4l2.h"]
+	uses_so ["-lv4l2"]
+	uses_o ["src/libv4l.o"]
+	test proc {
+		c_test "
+		#include <libv4l2.h>
+		int main () {return v4l2_open==0;}"}}
 Feature.add {
 	tag :dc1394
 	name "DC1394 for Linux"
@@ -735,7 +747,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 9.8 configurator"
+DUAL.puts "This is the GridFlow 9.9 configurator"
 
 begin
   $features.each {|feature| try feature }
