@@ -24,7 +24,7 @@
 #ifndef __GRIDFLOW_H
 #define __GRIDFLOW_H
 
-#define GF_VERSION "0.9.8"
+#define GF_VERSION "9.8"
 
 #include "m_pd.h"
 #include "config.h"
