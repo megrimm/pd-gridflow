@@ -46,6 +46,9 @@
 #define mmap   v4l1_mmap
 #define munmap v4l1_munmap
 #define read   v4l1_read
+#warning Using libv4l1 !!!
+#else
+#warning NOT Using libv4l1 !!!
 #endif
 
 //#define error post
