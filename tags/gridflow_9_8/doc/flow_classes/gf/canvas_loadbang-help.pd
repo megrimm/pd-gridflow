@@ -1,0 +1,26 @@
+#N canvas 642 39 632 426 10;
+#X obj 0 0 doc_h gf/;
+#X obj 0 397 doc_f;
+#X obj 3 207 doc_c 1;
+#X obj 3 269 doc_i 1;
+#X obj 3 357 doc_o 0;
+#X obj 14 299 doc_ii 0;
+#X obj 14 237 doc_cc 0;
+#X text 232 237 canvas level;
+#X obj 97 299 doc_m i0 float;
+#X obj 97 237 doc_m c0 float;
+#X text 232 299 canvas index of the first object to be loadbanged.
+this corresponds to the output of [gf/canvas_count] just before the
+new objects have been created.;
+#X obj 37 55 gf/canvas_loadbang 0;
+#X text 191 45 a way to do loadbang incrementally \, only on the newest
+objects of a canvas \, instead of only a whole canvas at a time. in
+this case \, just sending a loadbang message to a whole canvas is wrong
+\, because it will send a loadbang to objects that have already received
+a loadbang.;
+#X text 194 118 dynamically-patched objects that need to be loadbanged
+are [loadbang] \, [args] \, some other externals \, subpatches that
+contain anything that needs to be loadbanged \, and abstractions that
+contain anything that needs to be loadbanged.;
+#X connect 8 1 10 0;
+#X connect 9 1 7 0;

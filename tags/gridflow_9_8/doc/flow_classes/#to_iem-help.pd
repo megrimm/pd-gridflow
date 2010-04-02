@@ -1,0 +1,47 @@
+#N canvas 181 93 632 571 10;
+#X obj 0 0 doc_h;
+#X obj 0 542 doc_f;
+#X obj 111 212 tgl 50 0 empty empty empty 17 7 0 10 -70545 -1 -262144
+0 1;
+#X obj 111 94 #color;
+#X msg 111 192 color \$1;
+#X text 27 39 Turns colours into floats suitable for feeding to iemguis
+(24-bit or 18-bit);
+#X obj 209 193 nbx 15 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0
+10 -262144 -1 -1 -4.53664e+06 256;
+#X obj 3 282 doc_c 1;
+#X obj 14 312 doc_cc 0;
+#X obj 97 312 doc_m c0 float;
+#X text 232 312 Mode (0 = 24-bit \, 1 = 18-bit);
+#X text 232 334 When used with the 'color' selector as shown in the
+above example \, you must use 24-bit mode. However \, if you are creating
+gui-objects dynamically \, make sure you are using 18-bit instead.
+;
+#X obj 375 179 #to_iem 1;
+#X obj 375 199 nbx 15 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0
+10 -262144 -1 -1 -70545 256;
+#X obj 111 162 #to_iem;
+#X text 218 210 can't be saved in;
+#X text 218 222 a pd patch...;
+#X text 388 215 this can;
+#X obj 3 405 doc_i 1;
+#X obj 3 467 doc_o 1;
+#X obj 14 435 doc_ii 0;
+#X obj 14 497 doc_oo 0;
+#X obj 97 435 doc_m i0 grid;
+#X obj 97 497 doc_m o0 list;
+#X text 64 260 this is a toggle aka [tgl];
+#X text 232 497 List of N elements representing a color value suitable
+for an iem gui-object.;
+#X text 232 435 Dim(N*3) or Dim(N \, 3) grid representing a RGB colour
+;
+#X connect 3 0 12 0;
+#X connect 3 0 14 0;
+#X connect 4 0 2 0;
+#X connect 9 1 10 0;
+#X connect 9 1 11 0;
+#X connect 12 0 13 0;
+#X connect 14 0 4 0;
+#X connect 14 0 6 0;
+#X connect 22 1 26 0;
+#X connect 23 1 25 0;

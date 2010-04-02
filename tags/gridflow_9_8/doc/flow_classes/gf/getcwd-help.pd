@@ -1,0 +1,40 @@
+#N canvas 0 0 632 543 10;
+#X obj 0 0 doc_h gf/;
+#X obj 0 514 doc_f;
+#X obj 52 59 gf/getcwd;
+#X obj 3 106 doc_c 0;
+#X obj 3 146 doc_i 1;
+#X obj 14 176 doc_ii 0;
+#X obj 97 176 doc_m i0 bang;
+#X obj 3 208 doc_o 1;
+#X obj 14 238 doc_oo 0;
+#X obj 97 238 doc_m o0 symbol;
+#X symbolatom 52 78 60 0 0 0 - - -;
+#X text 407 34 get "current working directory";
+#X text 318 49 that is \, the default folder according to UNIX.;
+#X text 232 176 get it;
+#X text 232 238 fully-qualified name of the folder that pd was started
+from (unless you use an external to change this setting).;
+#X text 232 273 this has nothing to do with File->Open's memory of
+the last folder.;
+#X obj 52 40 loadbang;
+#X text 232 308 this is something you can set from a Terminal (actually
+from the Shell that is running in the Terminal) using the "cd" command
+\, but it will only propagate to pd if you start pd directly from a
+Shell configured in such a manner.;
+#X text 232 430 GNOME applications (Linux or other) depend. When using
+the "gnome-open" command in Terminal \, the last "cd" gets transferred
+to Pd \, but when clicking in GNOME's File Navigator \, the user's
+home folder is used instead (e.g. "symbol /home/matju");
+#X text 232 369 OSX applications opened using the dock \, or using
+the "open" command in the Shell \, would make [gf/getcwd] report "symbol
+/". (just a slash: this is what is otherwise known as "Macintosh HD")
+;
+#X connect 2 0 10 0;
+#X connect 6 1 13 0;
+#X connect 9 1 14 0;
+#X connect 9 1 15 0;
+#X connect 9 1 19 0;
+#X connect 9 1 17 0;
+#X connect 9 1 18 0;
+#X connect 16 0 2 0;

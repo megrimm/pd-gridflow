@@ -1,0 +1,41 @@
+#N canvas 656 230 471 389 10;
+#X obj 10 28 gf/find_file 0;
+#X obj 10 47 display;
+#X msg 10 9 symbol test.csv;
+#X obj 10 98 gf/find_file 0;
+#X obj 10 117 display;
+#X msg 10 79 symbol Gem/Gem.pd_linux;
+#X obj 11 171 gf/find_file 0;
+#X obj 11 190 display;
+#X msg 11 152 symbol nul.porc;
+#X obj 101 172 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 101 100 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 100 29 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 11 241 gf/find_file 0;
+#X obj 11 260 display;
+#X obj 101 242 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X msg 11 222 symbol ../images/opensource.png;
+#X obj 11 311 gf/find_file 0;
+#X obj 11 330 display;
+#X obj 101 312 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X msg 11 292 symbol opensource.png;
+#X connect 0 0 1 0;
+#X connect 0 1 11 0;
+#X connect 2 0 0 0;
+#X connect 3 0 4 0;
+#X connect 3 1 10 0;
+#X connect 5 0 3 0;
+#X connect 6 0 7 0;
+#X connect 6 1 9 0;
+#X connect 8 0 6 0;
+#X connect 12 0 13 0;
+#X connect 12 1 14 0;
+#X connect 15 0 12 0;
+#X connect 16 0 17 0;
+#X connect 16 1 18 0;
+#X connect 19 0 16 0;

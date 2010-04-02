@@ -1,0 +1,37 @@
+#N canvas 94 128 632 458 10;
+#X obj 0 0 doc_h;
+#X obj 3 70 doc_c;
+#X obj 0 429 doc_f;
+#X obj 44 40 #out quartz;
+#X obj 3 110 doc_i 1;
+#X obj 3 260 doc_o 1;
+#X obj 14 140 doc_ii 0;
+#X obj 97 140 doc_m i0 grid;
+#X obj 97 206 doc_m i0 title;
+#X text 134 40 video output for OSX (when running without Apple X11)
+;
+#X obj 14 290 doc_oo 0;
+#X obj 97 162 doc_m i0 move;
+#X text 232 140 with [#out] \, displays a frame;
+#X text 232 228 set window title;
+#X text 232 206 \$1=title;
+#X text 232 184 move window;
+#X text 232 162 \$1=y_position \, \$2=x_position;
+#X obj 97 290 doc_m o0 grid;
+#X text 232 290 grid(rows columns rgb);
+#X obj 3 409 doc_also;
+#X obj 103 409 #io.sdl;
+#X obj 157 409 #io.x11;
+#X text 232 312 Resizes the window to the size of the grid \; Encodes
+that grid in the display's pixel format \; Also displays it if autodraw
+is greater than 0 \; The values must be in range 0-255 \, or else they
+will be "wrapped".;
+#X connect 7 1 12 0;
+#X connect 8 1 14 0;
+#X connect 8 1 13 0;
+#X connect 11 1 16 0;
+#X connect 11 1 15 0;
+#X connect 17 1 18 0;
+#X connect 17 1 22 0;
+#X connect 19 1 20 0;
+#X connect 19 1 21 0;
