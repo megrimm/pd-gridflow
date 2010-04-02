@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.8 (2010.04...):
+version 9.8 (2010.04.01):
 
  * fixed GCC >= 4.4.3 related problem (?) with c++ templates...
  * fixed [gf/mouse_spy] crash (also related to [#see])
