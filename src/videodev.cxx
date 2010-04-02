@@ -376,16 +376,16 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			out.send(bs,b2);
 		    }
 		} else if (cs=="rgb") {
-		    for(int y=0; y<sy; bufy+=sx*2, y++) {int Y1,Y2,U,V;
-			for (int x=0,xx=0; x<sx; x+=4,xx+=6) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
+		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
+			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
 			out.send(bs,b2);}
 		} else if (cs=="yuv") {
-		    for(int y=0; y<sy; bufy+=sx*2, y++) {int Y1,Y2,U,V;
-			for (int x=0,xx=0; x<sx; x+=4,xx+=6) {GETYUYV(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
+		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
+			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
 			out.send(bs,b2);}
 		} else if (cs=="magic") {
 		    int sx2 = sx/2;
-		    for(int y=0; y<sy/2; bufy+=2*sx, y++) {
+		    for(int y=0; y<sy; bufy+=2*sx, y+=2) {
  			for (int x=0,xx=0; x<sx2; x+=3,xx+=3) {b2[xx+0]=bufy[x+0]; b2[xx+1]=bufy[x+1]; b2[xx+2]=bufy[x+3];}
 			out.send(bs,b2);
 		    }
