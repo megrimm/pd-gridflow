@@ -473,6 +473,8 @@ Feature.add {
 	defines ["HAVE_LIBV4L1"]
 	test proc {
 		c_test "
+		#include <linux/videodev.h>
+		#include <sys/types.h>
 		#include <libv4l1.h>
 		int main () {return v4l1_open==0;}"}}
 Feature.add {
