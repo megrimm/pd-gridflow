@@ -25,7 +25,9 @@
 #define __GRIDFLOW_H
 
 #define GF_VERSION "9.9"
-#define GF_VERSION_LIST 9,9,0
+#define GF_VERSION_A 9
+#define GF_VERSION_B 9
+#define GF_VERSION_C 0
 
 #include "m_pd.h"
 #include "config.h"
