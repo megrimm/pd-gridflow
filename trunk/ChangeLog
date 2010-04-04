@@ -1,5 +1,10 @@
 /* $Id$ */
 
+version 9.9 (2010.04...):
+
+ * added libv4l1 detection and use
+ * added class [gridflow] for reporting version number of gridflow
+
 version 9.8 (2010.04.01):
 
  * fixed GCC >= 4.4.3 related problem (?) with c++ templates...
