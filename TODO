@@ -16,15 +16,17 @@ $Id$
 [ ] [#io.quicktime (apple) out] grid, codec, quality.
 [ ] add alpha support in [#to_pix] and/or [#from_pix]
 [ ] [#to.pix] : set alpha to 255 when input has no alpha
+[ ] add [cv/#SVD] etc (-lcv) to OSX packages
 
 9.9, unassigned:
+[x] [gridflow] version
 [ ] heat.pd still sucks (?)
 -------- vous êtes ici
 [ ] libv4l1 support
-[x] [gridflow] version
+[x] [#to_pix] : marche pas avec Gem 93 !!!
 [ ] <tof> camera supports palettes : 3 4 5 8 15
 	  this driver is unsupported: it wants palette 8 instead of 4
-[ ] [#to_pix] : <tof> si tu crées ton contexte Gem avant de créer #to_pix, le contenu de #to_pix reste blanc
+[x] [#to_pix] : <tof> si tu crées ton contexte Gem avant de créer #to_pix, le contenu de #to_pix reste blanc
 [ ] [#from_pix] « ben ça a l'air qu'il convertit juste des RGBA. c'est parce que c'est pas consistant avec #to_pix »
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
@@ -124,7 +126,7 @@ $Id$
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 
-0.9.9 or later (not for 0.9.8):
+9.9 or later (not for 9.8):
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] [#in unicap] and/or [#in videojack] ?
