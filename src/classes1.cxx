@@ -703,17 +703,19 @@ template <class T> void inner_child_a (T *as, T *bs, int sj, int sk, int chunk) 
 template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) {FOO}
 #undef FOO
 
-// Inner product in a Module on the (+,*) Ring
+// Inner product in a Module on the (+,*) Ring ... or on the (^,&) Ring
 //     | BBBBB
 //     j BBBBB
 //     | BBBBB
 // -j--*---k---
 // AAA i CCCCC
 // AAA | CCCCC
-#define FOO for (long k=0; k<sk; k++) {T c=0; for (long j=0,z=k; j<sj; j++,z+=sk) {c+=as[j]*bs[z];} *cs++=c;}
-template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {FOO}
-template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {FOO}
-template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {FOO}
+#define MAKE_DOT(NAME,FOO) \
+	template <class T> void NAME (long sk, long sj, T *cs, T *as, T *bs) {FOO} \
+	template <class T, long sj> void NAME (long sk, T *cs, T *as, T *bs) {FOO} \
+	template <class T, long sj, long sk> void NAME (T *cs, T *as, T *bs) {FOO}
+#define FOO for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}
+MAKE_DOT(dot_add_mul,FOO)
 #undef FOO
 
 GRID_INLET(0) {
