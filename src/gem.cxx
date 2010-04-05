@@ -23,6 +23,7 @@
 
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
+#define GEM93 /* AUGGGH ! */
 
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
 struct imageStruct {
@@ -79,10 +80,8 @@ class TexCoord {
   TexCoord(float s_, float t_) : s(s_), t(t_) {}
   float s,t;
 };
-class GemState {
- public:
-  int dirty, inDisplayList, lighting, smooth, texture;
-  pixBlock *image;
+
+#if 0 /* unused GemState fields */
   TexCoord *texCoords;
   int numTexCoords, multiTexUnits;
   float tickTime;
@@ -93,12 +92,20 @@ class GemState {
   GLfloat *ColorArray;    int HaveColorArray;
   GLfloat *NormalArray;   int HaveNormalArray;
   GLfloat *TexCoordArray; int HaveTexCoordArray;
-  GemState();
-  ~GemState();
   float texCoordX(int num) const {if (texture && numTexCoords > num) return texCoords[num].s; else return 0.;}
   float texCoordY(int num) const {if (texture && numTexCoords > num) return texCoords[num].t; else return 0.;}
-  void reset();
+#endif
+
+static int gem=0;
+struct GemState92 {
+  int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
+  GemState92(); ~GemState92(); void reset();
 };
+struct GemState93 {
+  bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock *image;
+  GemState93(); ~GemState93(); void reset(); virtual void your_mom() = 0;
+};
+struct GemVersion {static const char *versionString();};
 /* end of summary */
 
 //  in 0: gem
@@ -110,7 +117,10 @@ class GemState {
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 	\decl 0 gem_state (...);
-	void render(GemState *state) {state->image = &m_pixBlock;}
+	void render(void *state) {
+		if (gem>=93) ((GemState93 *)state)->image = &m_pixBlock;
+		else         ((GemState92 *)state)->image = &m_pixBlock;
+	}
 	void startRendering () {m_pixBlock.newimage = 1;}
 	\constructor () {
 		yflip = false;
@@ -130,7 +140,10 @@ class GemState {
 	\grin 1 int
 };
 \def 0 gem_state (...) {
-	if (argc==2) render((GemState *)(void *)argv[1]); else startRendering();
+	if (argc==2) {
+		if (gem>=93) render((GemState93 *)(void *)argv[1]);
+		else         render((GemState92 *)(void *)argv[1]);
+	} else startRendering();
 	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
 }
 GRID_INLET(1) {
@@ -159,6 +172,8 @@ GRID_INLET(1) {
 	imageStruct &im = m_pixBlock.image;
 	im.upsidedown = !yflip;
 	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);
+} GRID_FINISH {
+	//m_pixBlock.newimage = 1;
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
@@ -178,9 +193,12 @@ GRID_INLET(1) {
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
 	\decl 0 colorspace (t_symbol *s);
-	void render(GemState *state) {
-		if (!state->image) {::post("gemstate has no pix"); return;}
-		imageStruct &im = state->image->image;
+	void render(void *state) {
+		pixBlock *pb = gem>=93 ?
+			((GemState93 *)state)->image:
+			((GemState92 *)state)->image;
+		if (!pb) {::post("gemstate has no pix"); return;}
+		imageStruct &im = pb->image;
 		BitPacking *bp;
 		switch (im.format) {
 		  case GL_RGBA: bp = bp_rgba; break;
@@ -228,13 +246,23 @@ GRID_INLET(1) {
 	} else
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
-\def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
+\def 0 gem_state (...) {
+	if (argc==2) {
+		if (gem>=93) render((GemState93 *)(void *)argv[1]);
+		else         render((GemState92 *)(void *)argv[1]);
+	}
+}
 \end class {install("#from_pix",1,1); add_creator("#import_pix");}
 
 //------------------------------------------------------------------------
 
 void startup_gem () {
 	\startall
+	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
+	int major,minor;
+	sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
+	post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
+	gem = major*1000+minor;
 }
 
 /*
