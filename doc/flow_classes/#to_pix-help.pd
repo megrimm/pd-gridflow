@@ -34,7 +34,7 @@ of inlet 1;
 #X obj 130 165 shunt;
 #X obj 166 166 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#N canvas 493 139 458 192 to_rgba_if_not_already 1;
+#N canvas 557 152 357 192 to_rgba_if_not_already 0;
 #X obj 51 118 #rgb_to_rgba;
 #X obj 60 18 #dim;
 #X obj 24 99 shunt;
@@ -80,8 +80,8 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 45 271 shunt;
 #X obj 81 272 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X obj 57 113 #dim;
-#X obj 57 132 display;
+#X obj 323 177 #dim;
+#X obj 323 196 display;
 #X msg 224 68 colorspace rgba;
 #X obj 157 204 # + (0 0 0 128);
 #X text 40 412 Note : you can get some timebased 'moiré' effects if
