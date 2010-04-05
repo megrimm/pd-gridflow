@@ -710,7 +710,7 @@ template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) 
 // -j--*---k---
 // AAA i CCCCC
 // AAA | CCCCC
-#define FOO for (long k=0; k<sk; k++) {T c=0; for (long j=0; j<sj; j++) {c+=as[j]*bs[j*sk+k];} *cs++=c;}
+#define FOO for (long k=0; k<sk; k++) {T c=0; for (long j=0,z=k; j<sj; j++,z+=sk) {c+=as[j]*bs[z];} *cs++=c;}
 template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {FOO}
 template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {FOO}
 template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {FOO}
