@@ -23,7 +23,6 @@
 
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
-#define GEM93 /* AUGGGH ! */
 
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
 struct imageStruct {
