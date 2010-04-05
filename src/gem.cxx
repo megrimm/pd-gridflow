@@ -100,6 +100,8 @@ struct GemState92 {
   int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
   GemState92(); ~GemState92(); void reset();
 };
+/* you need at least one virtual dummy function in order to enable the implicit inclusion of the vtable pointer,
+ * that is, C++'s class pointer. */
 struct GemState93 {
   bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock *image;
   GemState93(); ~GemState93(); void reset(); virtual void your_mom() = 0;
@@ -130,7 +132,8 @@ struct GemVersion {static const char *versionString();};
 		im.format = GL_RGBA;
 		im.type = GL_UNSIGNED_BYTE;
 		im.allocate();
-		*(int*)im.data = 0x0000ff;
+		*(int*)im.data = 0x0000ff; /* red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
+		/* I saw blue on OSX-386 : what was that ? */
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing3 = new BitPacking(is_le(),4,3,mask);
 		bit_packing4 = new BitPacking(is_le(),4,4,mask);
@@ -145,6 +148,10 @@ struct GemVersion {static const char *versionString();};
 	} else startRendering();
 	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
 }
+
+template <class T, class S>
+static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) out[i]=(T)in[i];}
+
 GRID_INLET(1) {
 	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	int c = in->dim->get(2);
@@ -167,10 +174,13 @@ GRID_INLET(1) {
 	/*!@#$ it would be nice to skip the bitpacking when we can */
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
-	BitPacking *bp = in->dim->get(2)==3 ? bit_packing3 : bit_packing4;
+	long chans = in->dim->get(2);
 	imageStruct &im = m_pixBlock.image;
 	im.upsidedown = !yflip;
-	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);
+	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) {
+		if (chans==3) bit_packing3->pack(sx,data,buf+y*sx*im.csize);
+		else convert_number_type(sx*4,buf+y*sx*im.csize,data);
+	}
 } GRID_FINISH {
 	m_pixBlock.newimage = 1;
 } GRID_END
