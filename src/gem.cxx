@@ -180,12 +180,11 @@ GRID_INLET(1) {
 		if (chans==3) {
 			uint8 *buf2 = buf+y*sx*im.csize;
 			T    *data2 = data;
-			for (int x=0; x<sx; x++, data2+=3, buf2+=4) {
-				buf2[0] = data2[0];
-				buf2[1] = data2[1];
-				buf2[2] = data2[2];
-				buf2[3] = 255;
-			}
+			#define FOO buf2[0]=data2[0]; buf2[1]=data2[1]; buf2[2]=data2[2]; buf2[3]=255; data2+=3; buf2+=4;
+			int x;
+			for (x=0; x<(sx&-4); x+=4) {FOO FOO FOO FOO}
+			for (   ; x< sx    ; x++ ) {FOO}
+			#undef FOO
 		} else convert_number_type(sx*4,buf+y*sx*im.csize,data);
 	}
 } GRID_FINISH {
