@@ -172,7 +172,7 @@ GRID_INLET(1) {
 	im.upsidedown = !yflip;
 	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) bp->pack(sx,data,buf+y*sx*im.csize);
 } GRID_FINISH {
-	//m_pixBlock.newimage = 1;
+	m_pixBlock.newimage = 1;
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
