@@ -104,20 +104,6 @@
 
 @end
 
-/* workaround: bus error in gcc */
-uint8 *GFView_imageData(GFView *self) {return (uint8 *)[self imageData];}
-
-void GFView_imageHeight_width(GFView *self, int height, int width) {
-	[self imageHeight: height width: width];
-}
-
-void GFView_display(GFView *self) {
-	NSRect r = {{0,0},{[self imageHeight],[self imageWidth]}};
-	[self displayRect: r];
-	[self setNeedsDisplay: YES];
-	[self display];
-}
-
 struct FormatQuartz;
 void FormatQuartz_call(FormatQuartz *self);
 
@@ -208,7 +194,7 @@ void FormatQuartz::call() {
 	if (e) {
 		//fprintf(stderr,"isKeyWindow ? %s\n", [this->window isKeyWindow]?"yes":"no");//
 		//fprintf(stderr,"isMainWindow ? %s\n", [this->window isMainWindow]?"yes":"no");//
-		NSLog(@"%@", e);
+		//NSLog(@"%@", e);
 		[NSApp sendEvent: e];
 
 		switch ([e type]) {
@@ -251,14 +237,12 @@ GRID_INLET(0) {
 	if (in->dim->n!=3) RAISE("expecting 3 dims, not %d", in->dim->n);
 	int c=in->dim->get(2);
 	if (c!=3&&c!=4) RAISE("expecting 3 or 4 channels, not %d", in->dim->get(2));
-//	[widget imageHeight: in->dim->get(0) width: in->dim->get(1) ];
-	GFView_imageHeight_width(widget,in->dim->get(0),in->dim->get(1));
+	[widget imageHeight: in->dim->get(0) width: in->dim->get(1)];
 	in->set_chunk(1);
 } GRID_FLOW {
 	int off = dex/in->dim->prod(2);
 	int c=in->dim->get(2);
-	NSView *w = widget;
-	uint8 *data2 = GFView_imageData(w)+off*4;
+	uint8 *data2 = ((uint8 *)[widget imageData])+off*4;
 //	convert_number_type(n,data2,data);
 	if (c==3) {
 		while(n) {
@@ -278,7 +262,10 @@ GRID_INLET(0) {
 		}
 	}
 } GRID_FINISH {
-	GFView_display(widget);
+	NSRect r = {{0,0},{[widget imageHeight],[widget imageWidth]}};
+	[widget displayRect: r];
+	[widget setNeedsDisplay: YES];
+	[widget display];
 } GRID_END
 
 #define MAC_MENUBARHEIGHT  22    // there must be a better way to handle this...
