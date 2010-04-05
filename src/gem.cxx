@@ -132,11 +132,9 @@ struct GemVersion {static const char *versionString();};
 		im.format = GL_RGBA;
 		im.type = GL_UNSIGNED_BYTE;
 		im.allocate();
-		*(int*)im.data = 0x0000ff; /* red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
+		/* this red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
 		/* I saw blue on OSX-386 : what was that ? */
-		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
-		bit_packing3 = new BitPacking(is_le(),4,3,mask);
-		bit_packing4 = new BitPacking(is_le(),4,4,mask);
+		*(int*)im.data = 0x0000ff;
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -151,6 +149,7 @@ struct GemVersion {static const char *versionString();};
 
 template <class T, class S>
 static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) out[i]=(T)in[i];}
+//#define NTIMES(FOO) for (; N>=4; N-=4) {FOO FOO FOO FOO} for (; N; N--) {FOO}
 
 GRID_INLET(1) {
 	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
@@ -178,8 +177,16 @@ GRID_INLET(1) {
 	imageStruct &im = m_pixBlock.image;
 	im.upsidedown = !yflip;
 	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) {
-		if (chans==3) bit_packing3->pack(sx,data,buf+y*sx*im.csize);
-		else convert_number_type(sx*4,buf+y*sx*im.csize,data);
+		if (chans==3) {
+			uint8 *buf2 = buf+y*sx*im.csize;
+			T    *data2 = data;
+			for (int x=0; x<sx; x++, data2+=3, buf2+=4) {
+				buf2[0] = data2[0];
+				buf2[1] = data2[1];
+				buf2[2] = data2[2];
+				buf2[3] = 255;
+			}
+		} else convert_number_type(sx*4,buf+y*sx*im.csize,data);
 	}
 } GRID_FINISH {
 	m_pixBlock.newimage = 1;
