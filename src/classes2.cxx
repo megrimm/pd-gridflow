@@ -1442,6 +1442,12 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 };
 \end class {install("gf/string_<",2,1);}
 
+\class GFStringLength : FObject {
+	\constructor () {}
+	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strlen(it->s_name));}
+};
+\end class {install("gf/string_length",1,1);}
+
 \class GFGetPid : FObject {
 	static t_symbol *sym;
 	\constructor () {}
