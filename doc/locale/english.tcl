@@ -48,7 +48,9 @@ say #io.mpeg         "read a .mpeg video file"
 say #io.png          "read a .png image file"
 say #io.ppm          "read a .pbm or .pgm or .ppm image file or write a .ppm image file"
 say #io.quartz       "open a Quartz window (OSX)"
-say #io.quicktime    "read a .mov video file (or perhaps .avi)"
+say #io.quicktimeapple "read a .mov video file (OSX)"
+say #io.quicktimecamera "open a QuickTime Sequence Grabber (Camera / Video input) device"
+say #io.quicktimehw  "read a .mov or .avi video file (Linux)"
 say #io.sdl          "open a SDL window (Windows,Linux,OSX)"
 say #io.videodev     "open a V4L1 device (Linux-only interface for video cameras and video digitisers)"
 say #io.x11          "open a X11 window (Linux,etc)"
@@ -240,6 +242,8 @@ say doc_make     "add GFDP subsubheaders in the parent of the parent canvas"
 say doc_o        "GFDP subheader for outlet documentation"
 say doc_oo       "GFDP subsubheader for outlet documentation"
 say doc_same     "GFDP pseudo-comment for saying a method is same as a creation argument"
+say doc_accolade "GFDP accolade"
+say doc_link     "GFDP hyperlink for opening another helpfile"
 
 # experimental new stuff
 
@@ -273,6 +277,8 @@ say gf/getpid            "tell the process id of the pd server"
 say gf/selector          "report the true selector of the incoming message"
 say gf/string_<          "compare two strings"
 say gf/string_replace    "search and replace substrings in a symbol"
+say gf/string_length     "measure the length of a string (in bytes)"
+say gridflow             "get GridFlow's version number..."
 if 0 {
 say memstat
 say setargs
