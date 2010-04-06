@@ -16,9 +16,16 @@ a-=%[
   #io.libv4l
 ].split(/\s+/)
 
+#  cv/#Add cv/#Sub cv/#Mul cv/#Div
+#  cv/#And cv/#Or cv/#Xor
+
 b=Dir["../abstractions/*.pd"].map{|x|
   x.gsub(/^\.\.\/abstractions\//,"").gsub(/\.pd$/,"")
 }
+b-=%[
+  #camera2
+  #camera3
+].split(/\s+/)
 
 c      = Dir["flow_classes/*-help.pd"   ].map{|x| x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"") }
 c.concat Dir["flow_classes/cv/*-help.pd"].map{|x| x.gsub(/^flow_classes\//,"").gsub(/-help\.pd$/,"") }
