@@ -1,43 +1,46 @@
-#N canvas 32 274 587 348 10;
-#X obj 148 113 loadbang;
-#X obj 158 199 s \$0-rect;
-#X msg 158 180 label \$1;
-#X obj 158 161 gf/string_replace # ♯;
-#X obj 148 132 symbol \$1;
-#X obj 148 224 gf/string_length;
-#X obj 148 243 * 6;
-#X obj 148 281 s \$0-souligne;
-#X obj 130 112 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
--1 -1;
+#N canvas 129 127 453 334 10;
+#X obj 18 113 loadbang;
+#X obj 28 199 s \$0-rect;
+#X msg 28 180 label \$1;
+#X obj 28 161 gf/string_replace # ♯;
+#X obj 18 132 symbol \$1;
+#X obj 18 224 gf/string_length;
+#X obj 18 243 * 6;
+#X obj 18 281 s \$0-souligne;
+#X obj 0 112 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
 #X obj 3 0 hsl 115 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10
--262144 -1 -1 7300 0;
-#X obj 0 0 cnv 1 120 18 empty \$0-rect ♯io.grid 2 10 0 8 -262144
+-262144 -1 -1 0 0;
+#X obj 0 0 cnv 5 120 18 empty \$0-rect ♯io.grid 2 10 0 8 -257983
 -49 0;
 #X obj 2 16 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -49 -33
 0;
 #X obj 2 17 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -262144
 -33 0;
-#X msg 149 262 vis_size \$1 1;
-#X obj 226 126 s \$0-hsl;
-#X obj 342 4 r \$0-hsl_s;
-#X obj 244 280 s \$0-rect;
-#X msg 244 261 size 1 \, vis_size 120 18;
-#X obj 426 158 s pd;
-#X obj 431 29 symbol \$1-help.pd;
-#X obj 502 78 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X obj 431 48 gf/find_file 1;
-#X msg 428 103 open \$1 /;
-#X obj 354 52 spigot;
-#X obj 342 109 delay 1000;
-#X msg 354 71 0;
-#X msg 342 128 1;
+#X msg 19 262 vis_size \$1 1;
+#X obj 96 126 s \$0-hsl;
+#X obj 212 4 r \$0-hsl_s;
+#X obj 126 281 s \$0-rect;
+#X obj 291 231 s pd;
+#X obj 291 60 symbol \$1-help.pd;
+#X obj 291 79 gf/find_file 1;
+#X obj 212 92 delay 1000;
+#X msg 218 72 0;
+#X msg 212 111 1;
 #X obj 15 33 inlet dummy;
-#X obj 342 23 b;
-#X obj 403 76 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X obj 301 47 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
+#X obj 212 23 b;
+#X obj 291 98 s2l /;
+#X obj 291 117 t l l;
+#X obj 348 98 list length;
+#X obj 348 117 - 1;
+#X obj 291 136 list split;
+#X obj 291 155 l2s /;
+#X msg 291 174 symbol /\$1;
+#X obj 291 193 pack s s;
+#X msg 291 212 open \$2 \$1;
+#X obj 225 43 spigot 1;
+#X msg 126 261 size 5 \, vis_size 120 18;
+#X msg 96 107 pos 3 0;
 #X connect 0 0 4 0;
 #X connect 2 0 1 0;
 #X connect 3 0 2 0;
@@ -47,19 +50,27 @@
 #X connect 6 0 13 0;
 #X connect 8 0 4 0;
 #X connect 13 0 7 0;
-#X connect 15 0 28 0;
-#X connect 17 0 16 0;
-#X connect 19 0 21 0;
-#X connect 21 0 22 0;
-#X connect 21 1 20 0;
-#X connect 22 0 18 0;
-#X connect 23 0 25 0;
-#X connect 23 0 19 0;
-#X connect 23 0 29 0;
-#X connect 24 0 26 0;
-#X connect 25 0 23 1;
-#X connect 26 0 23 1;
-#X connect 28 0 23 0;
-#X connect 28 0 24 0;
-#X connect 28 0 30 0;
+#X connect 15 0 24 0;
+#X connect 18 0 19 0;
+#X connect 19 0 25 0;
+#X connect 20 0 22 0;
+#X connect 21 0 34 1;
+#X connect 22 0 34 1;
+#X connect 24 0 20 0;
+#X connect 24 0 34 0;
+#X connect 24 0 21 0;
+#X connect 25 0 26 0;
+#X connect 26 0 29 0;
+#X connect 26 1 27 0;
+#X connect 27 0 28 0;
+#X connect 28 0 29 1;
+#X connect 29 0 30 0;
+#X connect 29 1 32 1;
+#X connect 30 0 31 0;
+#X connect 31 0 32 0;
+#X connect 32 0 33 0;
+#X connect 33 0 17 0;
+#X connect 34 0 18 0;
+#X connect 35 0 16 0;
+#X connect 36 0 14 0;
 #X coords 0 -1 1 1 120 18 2 0 0;
