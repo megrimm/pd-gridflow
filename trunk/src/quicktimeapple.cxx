@@ -271,6 +271,8 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	  case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
 	}
 
+	vdc = SGGetVideoDigitizerComponent(m_vc);
+
 	int dataSize = dim->prod();             
 	buf = new uint8[dataSize];
 	buf2 = new uint8[dataSize];
@@ -299,6 +301,8 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   \grin 0 int
   
   \attr t_symbol *name;
+  \attr uint16 brightness();
+
 };
 
 static int nn(int c) {return c?c:' ';}
@@ -309,6 +313,15 @@ static int nn(int c) {return c?c:' ';}
 	for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
 	out.send(dim->prod(),buf2);
 	SGIdle(m_sg);
+}
+
+\def uint16 brightness () {
+	unsigned short val;
+	VDGetBrightness(vdc,&val);
+	return val;
+}
+\def 0 brightness (uint16 brightness) {
+	VDSetBrightness(vdc,&brightness);
 }
 
 GRID_INLET(0) {
