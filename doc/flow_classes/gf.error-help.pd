@@ -1,0 +1,33 @@
+#N canvas 577 136 632 451 10;
+#X obj 0 0 doc_h;
+#X obj 0 422 doc_f;
+#X obj 31 105 gf.error my name is %s;
+#X msg 42 43 symbol mud;
+#X msg 51 63 symbol slim_shady;
+#X msg 55 84 symbol who;
+#X obj 199 105 gf.error got %d channels expecting 3 (rgb) or 4 (rgba)
+;
+#X text 200 87 %d not supported yet;
+#X obj 3 141 doc_c any;
+#X obj 14 171 doc_cc any;
+#X obj 97 171 doc_m cany <atom>;
+#X obj 3 382 doc_o 0;
+#X obj 3 255 doc_i 1;
+#X obj 14 285 doc_ii 0;
+#X obj 97 285 doc_m i0 list;
+#X text 232 171 will be converted to a long string by joining stringified
+atoms using single spaces. then will be searched for %s placeholders
+\, which will be replaced by arguments \$1 \, \$2 \, \$3 \, etc. \,
+sprintf style. (supports several %s unlike [makefilename]).;
+#X text 236 39 make error messages;
+#X text 236 53 FOR INTERNAL USE ONLY;
+#X text 232 285 list of arguments for substituting into the %s placeholders.
+after substitution is done \, an error message will be generated with
+that text. the apparent source of the error will be the abstraction
+instance containing [gf.error] \, if applicable. this is what Find
+Last Error will find and highlight.;
+#X connect 3 0 2 0;
+#X connect 4 0 2 0;
+#X connect 5 0 2 0;
+#X connect 10 1 15 0;
+#X connect 14 1 18 0;
