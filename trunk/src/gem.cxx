@@ -113,8 +113,6 @@ struct GemVersion {static const char *versionString();};
 //  in 1: grid
 // out 0: gem
 \class GridToPix : FObject {
-	P<BitPacking> bit_packing3;
-	P<BitPacking> bit_packing4;
 	pixBlock m_pixBlock;
 	\attr bool yflip;
 	\decl 0 gem_state (...);
@@ -170,7 +168,6 @@ GRID_INLET(1) {
 	im.allocate();
 } GRID_FLOW {
 	uint8 *buf = (uint8 *)m_pixBlock.image.data;
-	/*!@#$ it would be nice to skip the bitpacking when we can */
 	long sxc = in->dim->prod(1);
 	long sx = in->dim->v[1];
 	long chans = in->dim->get(2);
