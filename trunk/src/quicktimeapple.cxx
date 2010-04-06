@@ -302,6 +302,9 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   
   \attr t_symbol *name;
   \attr uint16 brightness();
+  \attr uint16 contrast();
+  \attr uint16 hue();
+  \attr uint16 colour();
 
 };
 
@@ -315,14 +318,15 @@ static int nn(int c) {return c?c:' ';}
 	SGIdle(m_sg);
 }
 
-\def uint16 brightness () {
-	unsigned short val;
-	VDGetBrightness(vdc,&val);
-	return val;
-}
-\def 0 brightness (uint16 brightness) {
-	VDSetBrightness(vdc,&brightness);
-}
+unsigned short val;
+\def uint16 brightness ()             { VDGetBrightness(vdc,&val); return val; }
+\def 0 brightness (uint16 brightness) { VDSetBrightness(vdc,&brightness); }
+\def uint16 contrast ()               { VDGetContrast(vdc,&val); return val; }
+\def 0 contrast (uint16 contrast)     { VDSetContrast(vdc,&contrast);}
+\def uint16 hue ()                    { VDGetHue(vdc,&val); return val; }
+\def 0 hue (uint16 hue)               { VDSetHue(vdc,&hue);}
+\def uint16 colour ()                 { VDGetSaturation(vdc,&val); return val; }
+\def 0 colour (uint16 colour)         { VDSetSaturation(vdc,&colour);}
 
 GRID_INLET(0) {
 	RAISE("Unimplemented. Sorry.");

@@ -1,7 +1,6 @@
 $Id$
 
 9.9, assigned to Patrick:
-[ ] [#io.quicktimecamera] contrast, brightness, hue, saturation, colour, etc.
 [ ] [#io.quicktimecamera] minsize, size, maxsize
 [ ] [#io.quicktimecamera] colorspace rgb                  (urgent)
 [ ] [#io.quicktimecamera] colorspace y, ya, yuv, yuva (PAS urgent)
