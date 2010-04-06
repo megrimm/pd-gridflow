@@ -8,9 +8,16 @@ version 9.9 (2010.04...):
  * added example supercycloid.pd
  * renamed example blob.pd to shadebob.pd
  * reviewed and updated a lot of examples.
- * support both GEM 92 and 93, with runtime autodetection (NOT compile-time!)
- * fixed bug about [#to_pix] not working if created after [gemwin] was last activated
- * [#io.quicktimeapple]: added brightness, contrast, hue and saturation control
+ * support both GEM 92 and 93, with runtime autodetection (NOT
+   compile-time!)
+ * fixed bug about [#to_pix] when created after [gemwin] was last activated
+ * [#to_pix] and [#from_pix]: when in colorspace rgba, preserve alpha
+   instead of setting to 0
+ * [#to_pix]: when in colorspace rgb, alpha defaults to 255 instead of 0
+ * added [gf/string_length] [doc_link] [doc_accolade]
+ * added even more missing helpfiles...
+ * [#io.quicktimeapple]: added brightness, contrast, hue and colour
+   (saturation) control
 
 version 9.8 (2010.04.01):
 

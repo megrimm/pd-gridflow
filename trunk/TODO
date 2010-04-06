@@ -13,15 +13,16 @@ $Id$
 [ ] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
 [ ] [#io.quicktime (apple) out] grid, codec, quality.
-[ ] add alpha support in [#to_pix] and/or [#from_pix]
-[ ] [#to.pix] : set alpha to 255 when input has no alpha
+[x] add alpha support in [#to_pix] and/or [#from_pix]
+[x] [#to_pix] : set alpha to 255 when input has no alpha
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
+[ ] on PPC, retest [#to_pix] with alpha etc...
 
 9.9, unassigned:
 [x] [gridflow] version
 [ ] heat.pd still sucks (?)
 -------- vous êtes ici
-[ ] libv4l1 support
+[ ] libv4l1 support : est-ce que ça marche ?
 [x] [#to_pix] : marche pas avec Gem 93 !!!
 [ ] <tof> camera supports palettes : 3 4 5 8 15
 	  this driver is unsupported: it wants palette 8 instead of 4
