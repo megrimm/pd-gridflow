@@ -1,0 +1,11 @@
+#N canvas 616 95 632 312 10;
+#X obj 0 0 doc_h;
+#X obj 0 283 doc_f;
+#X obj 41 48 doc_accolade;
+#X obj 3 263 doc_also;
+#X obj 103 263 doc_link doc_same;
+#X obj 3 143 doc_c 0;
+#X obj 3 183 doc_i 0;
+#X obj 3 223 doc_o 0;
+#X text 53 71 <- this is a [doc_accolade]. that's all.;
+#X connect 3 1 4 0;

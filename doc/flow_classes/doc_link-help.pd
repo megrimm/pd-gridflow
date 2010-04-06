@@ -1,0 +1,20 @@
+#N canvas 601 115 632 346 10;
+#X obj 0 0 doc_h;
+#X obj 0 317 doc_f;
+#X obj 3 127 doc_c 1;
+#X obj 3 202 doc_i 1;
+#X obj 3 277 doc_o 0;
+#X obj 14 232 doc_ii 0;
+#X obj 14 157 doc_cc 0;
+#X obj 97 232 doc_m i0 <none>;
+#X text 232 232 dummy inlet designed to be a hook for the <evil> outlet
+of [doc_m].;
+#X obj 59 53 doc_link #hello;
+#X obj 97 157 doc_m c0 symbol;
+#X text 232 157 name to be displayed. clicking on the object will cause
+\$1-help.pd to be opened.;
+#X text 182 54 <--- this is a [doc_link #hello] that points to #hello-help.pd.
+the file will be looked for according to [gf/find_file 1] \, that is
+\, like a [gf/find_file 0] in its parent.;
+#X connect 7 1 8 0;
+#X connect 10 1 11 0;
