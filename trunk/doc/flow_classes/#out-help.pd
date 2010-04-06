@@ -1,36 +1,36 @@
-#N canvas 594 0 632 715 10;
+#N canvas 591 0 632 715 10;
 #X obj 15 325 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 10 71 Displaying a grid:;
 #X text 342 73 Saving a grid:;
-#X text 232 689 "rewind" rewinds to the beginning of a video file.
+#X text 232 958 "rewind" rewinds to the beginning of a video file.
 Will overwrite previous data.;
 #X obj 15 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 15 221 #in;
 #X msg 65 227 open window;
 #X msg 65 252 close;
-#X text 232 597 "close" closes the file and hides the display \, must
+#X text 232 866 "close" closes the file and hides the display \, must
 be accompanied by message "open window" to reopen the display.;
-#X text 232 764 A bang notifies when a complete grid has been received.
+#X text 232 1033 A bang notifies when a complete grid has been received.
 ;
 #X text 12 32 Displays or saves an incoming grid (usually an image
 or a video).;
 #X obj 15 302 #out window \, title example;
 #X obj 127 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 133 886 #record;
-#X text 232 654 "open filename.format" (ex: "open somefile.jpg") sets
+#X obj 133 1152 #record;
+#X text 232 923 "open filename.format" (ex: "open somefile.jpg") sets
 the filename to write to.;
 #X obj 351 96 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 351 190 #in;
 #X msg 127 262 hidecursor;
 #X text 196 261 <-- linux only;
-#X text 232 632 "hidecursor" (linux only) hides the mouse cursor.;
+#X text 232 901 "hidecursor" (linux only) hides the mouse cursor.;
 #X obj 0 0 doc_h;
 #X obj 3 371 doc_c n;
-#X obj 3 886 doc_also;
+#X obj 3 1152 doc_also;
 #N canvas 140 70 570 615 More 0;
 #X text 203 143 open default display for screenshot;
 #X msg 82 197 open videodev /dev/video0;
@@ -84,15 +84,15 @@ preceeding one. There are many more options.;
 #X connect 24 0 15 0;
 #X connect 25 0 18 0;
 #X restore 140 334 pd More info about this object class;
-#X obj 3 488 doc_i 1;
-#X obj 14 518 doc_ii 0;
-#X obj 14 764 doc_oo 0;
-#X obj 97 518 doc_m i0 grid;
-#X obj 97 654 doc_m i0 open;
-#X obj 97 597 doc_m i0 close;
-#X obj 97 632 doc_m i0 hidecursor;
-#X obj 97 689 doc_m i0 rewind;
-#X obj 103 886 #in;
+#X obj 3 757 doc_i 1;
+#X obj 14 787 doc_ii 0;
+#X obj 14 1033 doc_oo 0;
+#X obj 97 787 doc_m i0 grid;
+#X obj 97 923 doc_m i0 open;
+#X obj 97 866 doc_m i0 close;
+#X obj 97 901 doc_m i0 hidecursor;
+#X obj 97 958 doc_m i0 rewind;
+#X obj 103 1152 #in;
 #X text 188 426 auto-open with auto-detect of the format-handler;
 #X text 226 451 auto-open with manual choice of the format-handler
 ;
@@ -100,28 +100,49 @@ preceeding one. There are many more options.;
 #X obj 46 407 #out;
 #X obj 46 428 #out filename.suffix;
 #X obj 46 449 #out handler filename.suffix;
-#X obj 97 553 doc_m i0 autoclose;
-#X obj 0 906 doc_f;
-#X obj 97 764 doc_m o0 bang;
+#X obj 97 822 doc_m i0 autoclose;
+#X obj 0 1172 doc_f;
+#X obj 97 1033 doc_m o0 bang;
 #X msg 15 117 load working.jpg;
 #X msg 127 117 load sewing.jpg;
 #X msg 351 113 load sewing.jpg;
-#X text 232 553 "autoclose 1": close after incoming image is finished.
+#X text 232 822 "autoclose 1": close after incoming image is finished.
 ;
-#X text 232 575 "autoclose 0": doesn't.;
-#X text 232 518 write one frame (or in the case of [#out grid] \, one
+#X text 232 844 "autoclose 0": doesn't.;
+#X text 232 787 write one frame (or in the case of [#out grid] \, one
 grid of any kind).;
 #X obj 351 266 #out;
 #X msg 365 235 open somefile.jpg \, autoclose;
-#X obj 97 789 doc_m o1 not_open;
-#X obj 3 734 doc_o 2;
-#X obj 14 789 doc_oo 1;
-#X text 232 789 Signals that the requested operation cannot be performed
+#X obj 97 1055 doc_m o1 not_open;
+#X obj 3 1003 doc_o 2;
+#X obj 14 1055 doc_oo 1;
+#X text 232 1055 Signals that the requested operation cannot be performed
 because [#in] is in closed mode. This could mean a "close" message
 was previously sent \, or no "open" (or equivalent) was ever done \,
 or the file was not found \, or the file was read-protected \, or the
 device is locked by another object or application that opened it (busy)
 \, or any other reason.;
+#X text 256 521 picture formats;
+#X text 244 481 generic file format that can encode any grid.;
+#X obj 246 499 doc_accolade;
+#X obj 124 483 doc_link #io.grid;
+#X obj 124 523 doc_link #io.jpeg;
+#X obj 124 503 doc_link #io.ppm;
+#X obj 124 563 doc_link #io.quicktimehw;
+#X text 246 562 movie formats (.mov and .avi);
+#X obj 124 593 doc_link #io.x11;
+#X obj 246 597 doc_accolade;
+#X obj 124 613 doc_link #io.quartz;
+#X obj 124 633 doc_link #io.sdl;
+#X obj 124 653 doc_link #io.aalib;
+#X text 58 707 note that [#in] supports some more modules (those that
+are only for input);
+#X text 258 621 windows;
+#X text 317 612 see also [#to_pix] with [gemwin];
+#X text 316 627 and see also [#see];
+#X msg 124 675 open window;
+#X text 243 674 alias for either quartz or x11 or sdl;
+#X text 125 543 no png (sorry);
 #X connect 4 0 42 0;
 #X connect 5 0 11 0;
 #X connect 6 0 11 0;
