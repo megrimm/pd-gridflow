@@ -10,6 +10,7 @@ version 9.9 (2010.04...):
  * reviewed and updated a lot of examples.
  * support both GEM 92 and 93, with runtime autodetection (NOT compile-time!)
  * fixed bug about [#to_pix] not working if created after [gemwin] was last activated
+ * [#io.quicktimeapple]: added brightness, contrast, hue and saturation control
 
 version 9.8 (2010.04.01):
 
