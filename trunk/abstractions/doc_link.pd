@@ -1,0 +1,43 @@
+#N canvas 32 274 446 270 10;
+#X obj 25 133 inlet dummy;
+#X obj 198 73 loadbang;
+#X obj 208 159 s \$0-rect;
+#X msg 208 140 label \$1;
+#X obj 208 121 gf/string_replace # ♯;
+#X obj 198 92 symbol \$1;
+#X obj 198 184 gf/string_length;
+#X obj 198 203 * 6;
+#X obj 198 241 s \$0-souligne;
+#X obj 180 72 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 3 0 hsl 115 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10
+-262144 -1 -1 11100 0;
+#X obj 0 0 cnv 1 120 18 empty \$0-rect ♯io.grid 2 10 0 8 -262144
+-49 0;
+#X obj 2 16 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -49 -33
+0;
+#X obj 2 17 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -262144
+-33 0;
+#X obj 110 2 bng 8 250 50 0 empty empty empty 17 7 0 10 -4034 -1 -1
+;
+#X msg 199 222 vis_size \$1 1;
+#X msg 164 38 symbol abcdefghijklmnopqrs;
+#X floatatom 344 34 5 0 0 0 - - -;
+#X obj 344 71 s \$0-hsl;
+#X obj 345 8 r \$0-hsl_s;
+#X obj 294 240 s \$0-rect;
+#X msg 294 221 size 1 \, vis_size 120 18;
+#X connect 1 0 5 0;
+#X connect 3 0 2 0;
+#X connect 4 0 3 0;
+#X connect 5 0 4 0;
+#X connect 5 0 6 0;
+#X connect 6 0 7 0;
+#X connect 7 0 15 0;
+#X connect 9 0 5 0;
+#X connect 15 0 8 0;
+#X connect 16 0 5 0;
+#X connect 19 0 14 0;
+#X connect 19 0 17 0;
+#X connect 21 0 20 0;
+#X coords 0 -1 1 1 120 18 2 0 0;
