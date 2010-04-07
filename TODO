@@ -1,32 +1,32 @@
 $Id$
 
+x = done
+L = much later (whenever we get to know how to do it...)
+
 9.9, assigned to Patrick:
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] colorspace rgb                  (urgent)
+[!] [#io.quicktimecamera] colorspace rgb                  (urgent)
 [ ] [#io.quicktimecamera] colorspace y, ya, yuv, yuva (PAS urgent)
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
-[ ] [#io.quartz] keypress/keyrelease
-[ ] [#io.quartz] setcursor/hidecursor
+[L] [#io.quartz] keypress/keyrelease
+[L] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
+[!] [#io.quartz] hide menubar
 [ ] [#io.quicktime (apple) out] grid, codec, quality.
-[x] add alpha support in [#to_pix] and/or [#from_pix]
-[x] [#to_pix] : set alpha to 255 when input has no alpha
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
 [ ] on PPC, retest [#to_pix] with alpha etc...
 
 9.9, unassigned:
-[x] [gridflow] version
+[ ] svn dollar id dollar : redo it or remove it
 [ ] heat.pd still sucks (?)
+[ ] libv4l1 support : est-ce que ça marche ? (non?)
 -------- vous êtes ici
-[ ] libv4l1 support : est-ce que ça marche ?
-[x] [#to_pix] : marche pas avec Gem 93 !!!
 [ ] <tof> camera supports palettes : 3 4 5 8 15
 	  this driver is unsupported: it wants palette 8 instead of 4
-[x] [#to_pix] : <tof> si tu crées ton contexte Gem avant de créer #to_pix, le contenu de #to_pix reste blanc
 [ ] [#from_pix] « ben ça a l'air qu'il convertit juste des RGBA. c'est parce que c'est pas consistant avec #to_pix »
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
