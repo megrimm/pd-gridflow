@@ -136,9 +136,8 @@ struct GemVersion {static const char *versionString();};
 		im.format = GEM_RGBA;
 		im.type = GL_UNSIGNED_BYTE;
 		im.allocate();
-		/* this red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
-		/* I saw blue on OSX-386 : what was that ? */
-		*(int*)im.data = 0x0000ff;
+		/* this is red on Linux-386, blue on OSX-386, what color on OSX-PPC ? (blue ?) */
+		*(int*)im.data = 0x000000ff;
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -184,7 +183,7 @@ GRID_INLET(1) {
 			uint8 *buf2 = buf+y*sx*im.csize;
 			T    *data2 = data;
 			#ifdef MACOSX
-			#define FOO buf2[2]=data2[0]; buf2[1]=data2[1]; buf2[0]=data2[2]; buf2[3]=255; data2+=3; buf2+=4;
+			#define FOO buf2[0]=data2[2]; buf2[1]=data2[1]; buf2[2]=data2[0]; buf2[3]=255; data2+=3; buf2+=4;
 			#else
 			#define FOO buf2[0]=data2[0]; buf2[1]=data2[1]; buf2[2]=data2[2]; buf2[3]=255; data2+=3; buf2+=4;
 			#endif
@@ -192,7 +191,22 @@ GRID_INLET(1) {
 			for (x=0; x<(sx&-4); x+=4) {FOO FOO FOO FOO}
 			for (   ; x< sx    ; x++ ) {FOO}
 			#undef FOO
-		} else convert_number_type(sx*4,buf+y*sx*im.csize,data);
+		} else if (chans==4) {
+			uint8 *buf2 = buf+y*sx*im.csize;
+			T    *data2 = data;
+			#ifdef MACOSX
+			#define FOO buf2[0]=data2[2]; buf2[1]=data2[1]; buf2[2]=data2[0]; buf2[3]=data2[3]; data2+=4; buf2+=4;
+			#else
+			#define FOO buf2[0]=data2[0]; buf2[1]=data2[1]; buf2[2]=data2[2]; buf2[3]=data2[3]; data2+=4; buf2+=4;
+			#endif
+			int x;
+			for (x=0; x<(sx&-4); x+=4) {FOO FOO FOO FOO}
+			for (   ; x< sx    ; x++ ) {FOO}
+			#undef FOO
+			//convert_number_type(sx*4,buf+y*sx*im.csize,data);
+		} else {
+			//huh?
+		}
 	}
 } GRID_FINISH {
 	m_pixBlock.newimage = 1;
@@ -252,9 +266,15 @@ GRID_INLET(1) {
 		//}
 	}
 };
-\def 0 colorspace (t_symbol *s) {
-	static uint32 rgba[4] = {0x000000ff,0x0000ff00,0x00ff0000,0xff000000};
-	static uint32 bgra[4] = {0x0000ff00,0x00ff0000,0xff000000,0x000000ff}; // really argb 
+\def 0 colorspace (t_symbol *s) {// 3 2 1 0 (numéro de byte)
+	static uint32 rgba[4] = {0x000000ff,
+				 0x0000ff00,
+				 0x00ff0000,
+				 0xff000000};
+	static uint32 bgra[4] = {0x0000ff00,
+				 0x00ff0000,
+				 0xff000000,
+				 0x000000ff}; // really argb 
 	if (s==gensym("rgb" )) {
 		channels=3;
 		bp_rgba = new BitPacking(is_le(),4,3,rgba);
