@@ -3,28 +3,28 @@
 #X obj 130 52 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1
 ;
 #X obj 45 52 gemhead;
-#X obj 45 252 pix_texture;
+#X obj 45 297 pix_texture;
 #X msg 371 81 destroy;
 #X text 150 49 <-- start playing the video;
 #X text 93 232 <-- imports gridflow grids into GEM;
-#X text 232 658 Modified gemstate so that the pix is equal to the Grid
+#X text 232 708 Modified gemstate so that the pix is equal to the Grid
 of inlet 1;
-#X text 232 539 Something coming from [gemhead];
+#X text 232 589 Something coming from [gemhead];
 #X msg 57 197 yflip \$1;
 #X obj 57 180 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
 #X obj 0 0 doc_h;
-#X obj 3 509 doc_i 2;
-#X obj 3 628 doc_o 1;
-#X obj 3 469 doc_c 0;
-#X obj 14 539 doc_ii 0;
-#X obj 14 596 doc_ii 1;
-#X obj 14 658 doc_oo 0;
-#X obj 97 539 doc_m i0 gem_state;
-#X obj 97 561 doc_m i0 yflip;
-#X obj 97 596 doc_m i1 grid;
-#X obj 97 658 doc_m o0 gem_state;
-#X obj 0 723 doc_f;
+#X obj 3 559 doc_i 2;
+#X obj 3 678 doc_o 1;
+#X obj 3 519 doc_c 0;
+#X obj 14 589 doc_ii 0;
+#X obj 14 646 doc_ii 1;
+#X obj 14 708 doc_oo 0;
+#X obj 97 589 doc_m i0 gem_state;
+#X obj 97 611 doc_m i0 yflip;
+#X obj 97 646 doc_m i1 grid;
+#X obj 97 708 doc_m o0 gem_state;
+#X obj 0 773 doc_f;
 #X obj 136 108 b;
 #X obj 136 127 fps;
 #X floatatom 136 146 5 0 0 0 - - -;
@@ -53,21 +53,21 @@ of inlet 1;
 #X connect 5 1 1 0;
 #X connect 7 0 2 1;
 #X restore 157 184 pd to_rgba_if_not_already;
-#X text 232 596 Grid with 3 or 4 channels (4th channel gets destroyed)
+#X text 232 646 Grid with 3 or 4 channels (4th channel gets destroyed)
 ;
-#X text 232 561 With one boolean argument that selects the order in
+#X text 232 611 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '0';
-#X obj 140 374 rotateXYZ;
-#X floatatom 157 350 5 0 0 0 - - -;
+#X obj 140 444 rotateXYZ;
+#X floatatom 157 420 5 0 0 0 - - -;
 #X obj 365 101 gemwin 30;
-#X obj 140 331 translateXYZ 0 0 2;
-#X obj 45 388 rectangle 4 3;
-#X obj 45 314 shunt;
-#X obj 81 314 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+#X obj 140 401 translateXYZ 0 0 2;
+#X obj 45 458 rectangle 4 3;
+#X obj 45 384 shunt;
+#X obj 81 384 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X obj 3 703 doc_also;
-#X obj 103 703 #from_pix;
-#X text 169 703 [examples/game_of_life_gem.pd];
+#X obj 3 753 doc_also;
+#X obj 103 753 #from_pix;
+#X text 169 753 [examples/game_of_life_gem.pd];
 #X obj 455 216 #in deux_piastres.png;
 #X obj 472 197 loadbang;
 #X obj 455 198 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
@@ -75,24 +75,38 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 45 233 #to_pix;
 #X obj 130 88 #in violoncelle.mov;
 #X obj 130 69 metro 33.3333;
-#X obj 72 290 alpha;
+#X obj 72 360 alpha;
 #X msg 365 61 create \, 1 \, color 0.5 0.5 0.5;
-#X obj 45 271 shunt;
-#X obj 81 272 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+#X obj 45 341 shunt;
+#X obj 81 342 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
 #X obj 323 177 #dim;
 #X obj 323 196 display;
 #X msg 224 68 colorspace rgba;
 #X obj 157 204 # + (0 0 0 128);
-#X text 40 412 Note : you can get some timebased 'moiré' effects if
+#X text 40 482 Note : you can get some timebased 'moiré' effects if
 the arguments to the [gemwin] and the [metro] are not synched;
-#X floatatom 221 350 5 0 0 0 - - -;
-#X floatatom 189 350 5 0 0 0 - - -;
-#X obj 140 393 cube 3;
+#X floatatom 221 420 5 0 0 0 - - -;
+#X floatatom 189 420 5 0 0 0 - - -;
+#X obj 140 463 cube 3;
+#X obj 382 250 pix_info;
+#X obj 382 336 pix_info;
+#X floatatom 407 269 5 0 0 0 - - -;
+#X floatatom 407 355 5 0 0 0 - - -;
+#X text 445 269 6408 = 0x1908 = GL_RGBA;
+#X text 439 354 32993 = 0x80e1 = GL_BGRA;
+#X obj 45 252 shunt;
+#X obj 82 253 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+1;
+#X obj 72 271 pix_rgba;
+#X text 98 252 this is supposed to have no effect;
+#X text 407 283 GEM/GL colorspace id;
+#X text 407 369 GEM/GL colorspace id;
 #X connect 0 0 51 0;
 #X connect 1 0 49 0;
 #X connect 2 0 47 0;
 #X connect 3 0 52 0;
+#X connect 3 0 63 0;
 #X connect 4 0 36 0;
 #X connect 9 0 47 0;
 #X connect 10 0 9 0;
@@ -119,7 +133,8 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X connect 41 1 43 0;
 #X connect 44 0 47 1;
 #X connect 46 0 44 0;
-#X connect 47 0 3 0;
+#X connect 47 0 68 0;
+#X connect 47 0 62 0;
 #X connect 48 0 23 0;
 #X connect 48 0 29 0;
 #X connect 48 0 54 0;
@@ -134,3 +149,9 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X connect 57 0 47 1;
 #X connect 59 0 34 3;
 #X connect 60 0 34 2;
+#X connect 62 4 64 0;
+#X connect 63 4 65 0;
+#X connect 68 0 3 0;
+#X connect 68 1 70 0;
+#X connect 69 0 68 1;
+#X connect 70 0 3 0;
