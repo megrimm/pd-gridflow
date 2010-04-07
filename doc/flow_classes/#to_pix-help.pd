@@ -3,10 +3,10 @@
 #X obj 130 52 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1
 ;
 #X obj 45 52 gemhead;
-#X obj 45 297 pix_texture;
+#X obj 45 317 pix_texture;
 #X msg 371 81 destroy;
 #X text 150 49 <-- start playing the video;
-#X text 93 232 <-- imports gridflow grids into GEM;
+#X text 93 252 <-- imports gridflow grids into GEM;
 #X text 232 708 Modified gemstate so that the pix is equal to the Grid
 of inlet 1;
 #X text 232 589 Something coming from [gemhead];
@@ -25,14 +25,14 @@ of inlet 1;
 #X obj 97 646 doc_m i1 grid;
 #X obj 97 708 doc_m o0 gem_state;
 #X obj 0 773 doc_f;
-#X obj 136 108 b;
-#X obj 136 127 fps;
-#X floatatom 136 146 5 0 0 0 - - -;
+#X obj 77 105 b;
+#X obj 77 124 fps;
+#X floatatom 77 143 5 0 0 0 - - -;
 #X msg 310 104 cast b;
 #X msg 310 124 cast s;
 #X msg 310 144 cast i;
-#X obj 130 165 shunt;
-#X obj 166 166 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+#X obj 130 145 shunt;
+#X obj 166 146 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
 #N canvas 557 152 357 192 to_rgba_if_not_already 0;
 #X obj 51 118 #rgb_to_rgba;
@@ -52,7 +52,7 @@ of inlet 1;
 #X connect 5 0 2 0;
 #X connect 5 1 1 0;
 #X connect 7 0 2 1;
-#X restore 157 184 pd to_rgba_if_not_already;
+#X restore 157 164 pd to_rgba_if_not_already;
 #X text 232 646 Grid with 3 or 4 channels (4th channel gets destroyed)
 ;
 #X text 232 611 With one boolean argument that selects the order in
@@ -68,11 +68,11 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 3 753 doc_also;
 #X obj 103 753 #from_pix;
 #X text 169 753 [examples/game_of_life_gem.pd];
-#X obj 455 216 #in deux_piastres.png;
-#X obj 472 197 loadbang;
-#X obj 455 198 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+#X obj 455 236 #in deux_piastres.png;
+#X obj 472 217 loadbang;
+#X obj 455 218 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
-#X obj 45 233 #to_pix;
+#X obj 45 253 #to_pix;
 #X obj 130 88 #in violoncelle.mov;
 #X obj 130 69 metro 33.3333;
 #X obj 72 360 alpha;
@@ -80,28 +80,45 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 45 341 shunt;
 #X obj 81 342 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X obj 323 177 #dim;
-#X obj 323 196 display;
+#X obj 323 169 #dim;
+#X obj 323 188 display;
 #X msg 224 68 colorspace rgba;
-#X obj 157 204 # + (0 0 0 128);
+#X obj 157 184 # + (0 0 0 128);
 #X text 40 482 Note : you can get some timebased 'moiré' effects if
 the arguments to the [gemwin] and the [metro] are not synched;
 #X floatatom 221 420 5 0 0 0 - - -;
 #X floatatom 189 420 5 0 0 0 - - -;
 #X obj 140 463 cube 3;
-#X obj 382 250 pix_info;
-#X obj 382 336 pix_info;
-#X floatatom 407 269 5 0 0 0 - - -;
-#X floatatom 407 355 5 0 0 0 - - -;
-#X text 445 269 6408 = 0x1908 = GL_RGBA;
-#X text 439 354 32993 = 0x80e1 = GL_BGRA;
-#X obj 45 252 shunt;
-#X obj 82 253 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+#X obj 382 270 pix_info;
+#X obj 382 356 pix_info;
+#X floatatom 407 289 5 0 0 0 - - -;
+#X floatatom 407 375 5 0 0 0 - - -;
+#X text 445 289 6408 = 0x1908 = GL_RGBA;
+#X text 439 374 32993 = 0x80e1 = GL_BGRA;
+#X obj 45 272 shunt;
+#X obj 82 273 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X obj 72 271 pix_rgba;
-#X text 98 252 this is supposed to have no effect;
-#X text 407 283 GEM/GL colorspace id;
-#X text 407 369 GEM/GL colorspace id;
+#X obj 72 291 pix_rgba;
+#X text 98 272 this is supposed to have no effect;
+#X text 407 303 GEM/GL colorspace id;
+#X text 407 389 GEM/GL colorspace id;
+#N canvas 515 5 450 300 swap 0;
+#X obj 22 19 inlet;
+#X obj 22 188 outlet;
+#X obj 22 116 #inner (4 4 #);
+#X obj 127 65 #many tgl 4 4;
+#X msg 127 46 4 4 # 1 0 0 0 0;
+#X obj 127 27 loadbang;
+#X connect 0 0 2 0;
+#X connect 2 0 1 0;
+#X connect 3 0 2 1;
+#X connect 4 0 3 0;
+#X connect 5 0 4 0;
+#X restore 184 222 pd swap channels;
+#X obj 157 203 shunt;
+#X obj 193 204 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+1;
+#X text 209 203 more stuff for testing;
 #X connect 0 0 51 0;
 #X connect 1 0 49 0;
 #X connect 2 0 47 0;
@@ -136,8 +153,8 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X connect 47 0 68 0;
 #X connect 47 0 62 0;
 #X connect 48 0 23 0;
-#X connect 48 0 29 0;
 #X connect 48 0 54 0;
+#X connect 48 0 29 0;
 #X connect 49 0 48 0;
 #X connect 50 0 39 0;
 #X connect 51 0 36 0;
@@ -146,7 +163,7 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X connect 53 0 52 1;
 #X connect 54 0 55 0;
 #X connect 56 0 48 0;
-#X connect 57 0 47 1;
+#X connect 57 0 75 0;
 #X connect 59 0 34 3;
 #X connect 60 0 34 2;
 #X connect 62 4 64 0;
@@ -155,3 +172,7 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X connect 68 1 70 0;
 #X connect 69 0 68 1;
 #X connect 70 0 3 0;
+#X connect 74 0 47 1;
+#X connect 75 0 47 1;
+#X connect 75 1 74 0;
+#X connect 76 0 75 1;
