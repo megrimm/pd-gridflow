@@ -1,50 +1,53 @@
-#N canvas 330 241 663 430 10;
+#N canvas 330 241 663 425 10;
 #X obj 38 -6 inlet rgb_color;
-#X obj 15 218 outlet rgb_color;
+#X obj 16 219 outlet rgb_color;
 #X obj 10 392 s \$0-cnv;
 #X msg 10 373 color \$1;
-#X obj 149 297 #unpack 3;
+#X obj 249 216 #unpack 3;
 #X obj 38 13 route delegate bang;
-#X obj 260 158 pack 0 0;
-#X obj 260 129 args (min a 0) (max a 255) (nopreview a 0);
+#X obj 294 30 pack 0 0;
+#X obj 260 9 args (min a 0) (max a 255) (nopreview a 0);
 #X obj 10 335 shunt;
 #X obj 10 354 #to_iem;
-#X msg 200 354 set \$1;
-#X msg 260 177 delegate range \$1 \$2;
-#X msg 174 316 set \$1;
-#X msg 149 354 set \$1;
+#X msg 321 273 set \$1;
+#X msg 294 49 delegate range \$1 \$2;
+#X msg 274 273 set \$1;
+#X msg 228 273 set \$1;
 #X obj 10 257 spigot 1;
 #X obj 107 123 #unpack 3;
 #X msg 158 142 set \$1;
 #X msg 132 172 set \$1;
 #X obj 176 76 nbx 3 13 -1e+37 1e+37 0 0 \$0-s_0 \$0-0 empty 0 -8 0
-8 -172033 -262144 -1 36 256;
+8 -172033 -262144 -1 58 256;
 #X obj 176 89 nbx 3 13 -1e+37 1e+37 0 0 \$0-s_1 \$0-1 empty 0 -8 0
-8 -2689 -262144 -1 177 256;
+8 -2689 -262144 -1 77 256;
 #X obj 176 102 nbx 3 13 -1e+37 1e+37 0 0 \$0-s_2 \$0-2 empty 0 -8 0
-8 -43 -262144 -1 133 256;
+8 -43 -262144 -1 166 256;
 #X obj 53 89 hsl 128 13 0 255 0 0 \$0-s_1 \$0-1 empty -2 -6 0 8 -225271
--24198 -1 8815 1;
+-24198 -1 3835 1;
 #X obj 53 102 hsl 128 13 0 255 0 0 \$0-s_2 \$0-2 empty -2 -6 0 8 -228992
--62784 -1 6624 1;
+-62784 -1 8267 1;
 #X obj 53 76 hsl 128 13 0 255 0 0 \$0-s_0 \$0-0 empty -2 -6 0 8 -261689
--258699 -1 1793 1;
+-258699 -1 2889 1;
 #X obj 10 199 #pack 3;
 #X obj 194 62 cnv 8 10 12 empty \$0-cnv2 empty 20 12 0 14 -1 -262144
 0;
-#X obj 186 64 cnv 8 16 8 empty \$0-cnv empty 20 12 0 14 -39714 -262144
+#X obj 186 64 cnv 8 16 8 empty \$0-cnv empty 20 12 0 14 -58602 -262144
 0;
-#X obj 149 373 s \$0-0;
-#X obj 200 373 s \$0-2;
-#X obj 174 335 s \$0-1;
+#X obj 228 292 s \$0-0;
+#X obj 321 292 s \$0-2;
+#X obj 274 292 s \$0-1;
 #X obj 10 139 r \$0-s_0;
 #X obj 29 158 r \$0-s_1;
 #X obj 49 177 r \$0-s_2;
+#X obj 321 254 change;
+#X obj 274 254 change;
+#X obj 228 254 change;
 #X connect 0 0 5 0;
 #X connect 3 0 2 0;
-#X connect 4 0 13 0;
-#X connect 4 1 12 0;
-#X connect 4 2 10 0;
+#X connect 4 0 35 0;
+#X connect 4 1 34 0;
+#X connect 4 2 33 0;
 #X connect 5 0 23 0;
 #X connect 5 0 21 0;
 #X connect 5 0 22 0;
@@ -72,4 +75,7 @@
 #X connect 30 0 24 0;
 #X connect 31 0 24 1;
 #X connect 32 0 24 2;
+#X connect 33 0 10 0;
+#X connect 34 0 12 0;
+#X connect 35 0 13 0;
 #X coords 0 -1 1 1 156 55 1 50 60;
