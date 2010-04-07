@@ -196,8 +196,10 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   Ptr m_baseAddr;
   long m_rowBytes;
   int m_quality;
+  P<BitPacking> bit_packing3;
   \constructor (t_symbol *mode, int device) {
 	dim = new Dim(240,320,4);
+	_0_colorspace(0,0,gensym("rgba"));
 	OSErr e;
 	rect.top=rect.left=0;
 	rect.bottom=dim->v[0]; rect.right=dim->v[1];
@@ -305,17 +307,48 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   \attr uint16 contrast();
   \attr uint16 hue();
   \attr uint16 colour();
-
+  \attr t_symbol *colorspace;
 };
+
+\def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
+	string c = colorspace->s_name;
+	//if (c=="y"    ) {} else
+	//if (c=="yuv"  ) {} else
+	if (c=="rgb"  ) {} else
+	if (c=="rgba" ) {} else
+	//if (c=="magic") {} else
+	   RAISE("got '%s' but supported colorspaces are: rgb rgba",c.data());
+	uint32 masks[4]={0x00ff0000,0x0000ff00,0x000000ff,0x00000000};
+	bit_packing3 = new BitPacking(is_le(),bytes,3,masks);
+	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
+	this->colorspace=gensym(c.data());
+	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+}
 
 static int nn(int c) {return c?c:' ';}
 
 \def 0 bang () {
 	GridOutlet out(this,0,dim);
-	int n = dim->prod()/4;
-	for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
-	out.send(dim->prod(),buf2);
-	SGIdle(m_sg);
+	string cs = colorspace->s_name;
+	if (cs=="rgb") {
+		int n = dim->prod()/3;
+		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
+			buf2[j+0] = buf[i+0];
+			buf2[j+1] = buf[i+1];
+			buf2[j+2] = buf[i+2];
+		}*/
+		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+		bit_packing3->unpack(n,buf2,buf);
+		out.send(dim->prod(),buf2);
+		SGIdle(m_sg);
+	} else
+	if (cs=="rgba") { // does this really work on PPC ?
+		int n = dim->prod()/4;
+		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
+		out.send(dim->prod(),buf2);
+		SGIdle(m_sg);
+	} else
+	RAISE("colorspace problem");
 }
 
 unsigned short val;
@@ -328,15 +361,7 @@ unsigned short val;
 \def uint16 colour ()                 { VDGetSaturation(vdc,&val); return val; }
 \def 0 colour (uint16 colour)         { VDSetSaturation(vdc,&colour);}
 
-GRID_INLET(0) {
-	RAISE("Unimplemented. Sorry.");
-//!@#$
-	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-	in->set_chunk(0);
-} GRID_FLOW {
-} GRID_FINISH {
-} GRID_END
+GRID_INLET(0) {RAISE("Unimplemented. Sorry.");} GRID_END
 \end class FormatQuickTimeCamera {install_format("#io.quicktimecamera",4,"");}
 
 void startup_quicktimecamera () {
