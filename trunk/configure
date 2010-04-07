@@ -514,7 +514,7 @@ Feature.add {
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
-	uses_o ["src/quicktimeapple.o"]
+	uses_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
 	test proc {
 		c_test "
 		#include#
