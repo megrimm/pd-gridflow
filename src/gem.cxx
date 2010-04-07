@@ -109,6 +109,12 @@ struct GemState93 {
 struct GemVersion {static const char *versionString();};
 /* end of summary */
 
+#ifdef MACOSX
+#define GEM_RGBA GL_BGRA
+#else
+#define GEM_RGBA GL_RGBA
+#endif
+
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
@@ -127,11 +133,7 @@ struct GemVersion {static const char *versionString();};
 		im.ysize = 1;
 		im.xsize = 1;
 		im.csize = 4;
-		#ifdef MACOSX
-			im.format = GL_BGRA;
-		#else
-			im.format = GL_RGBA;
-		#endif
+		im.format = GEM_RGBA;
 		im.type = GL_UNSIGNED_BYTE;
 		im.allocate();
 		/* this red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
@@ -165,8 +167,8 @@ GRID_INLET(1) {
 	im.type = GL_UNSIGNED_BYTE;
 	switch (in->dim->get(2)) {
 	    case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
-	    case 3: im.csize = 4; im.format = GL_RGBA;      break;
-	    case 4: im.csize = 4; im.format = GL_RGBA;      break;
+	    case 3: im.csize = 4; im.format = GEM_RGBA;     break;
+	    case 4: im.csize = 4; im.format = GEM_RGBA;     break;
 	    default: RAISE("you shouldn't see this error message.");
 	}
 	im.allocate();
