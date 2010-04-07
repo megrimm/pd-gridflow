@@ -127,7 +127,11 @@ struct GemVersion {static const char *versionString();};
 		im.ysize = 1;
 		im.xsize = 1;
 		im.csize = 4;
-		im.format = GL_RGBA;
+		#ifdef MACOSX
+			im.format = GL_BGRA;
+		#else
+			im.format = GL_RGBA;
+		#endif
 		im.type = GL_UNSIGNED_BYTE;
 		im.allocate();
 		/* this red on Linux-386, red on OSX-386, what color on OSX-PPC ? (blue ?) */
