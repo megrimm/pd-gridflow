@@ -35,9 +35,9 @@ software" CD.;
 just like sending a grid dim(height \, width \, 3) would. this affects
 the size of screen captures too.;
 #X text 232 1114 This makes the cursor invisible.;
-#X obj 3 2337 doc_also;
-#X obj 103 2337 #io.quartz;
-#X obj 175 2337 #io.sdl;
+#X obj 3 2385 doc_also;
+#X obj 103 2385 #io.quartz;
+#X obj 175 2385 #io.sdl;
 #X text 141 227 Destroying the object (or sending "close") should close
 the window.;
 #X obj 35 65 #out x11;
@@ -47,40 +47,40 @@ you love xlib). Something similar happens if you close any of the windows
 yourself \, but IIRC this could be fixed.;
 #X text 140 330 only one window may be used per x11 connection (to
 simplify matters \; this doesn't reduce flexibility).;
-#X obj 3 1518 doc_o 1;
-#X obj 14 1548 doc_oo 0;
-#X text 232 1548 grid(rows columns rgb);
-#X obj 97 1849 doc_m o0 position;
-#X text 232 1849 \$1=y \$2=x \$3=buttons;
-#X text 232 1871 This is emitted every time the cursor moves inside
+#X obj 3 1566 doc_o 1;
+#X obj 14 1596 doc_oo 0;
+#X text 232 1596 grid(rows columns rgb);
+#X obj 97 1897 doc_m o0 position;
+#X text 232 1897 \$1=y \$2=x \$3=buttons;
+#X text 232 1919 This is emitted every time the cursor moves inside
 the window connected to this format handler. This is also emitted when
 the cursor is dragging from inside to outside the window. This is also
 emitted when a mouse button is pressed.;
-#X text 232 1945 The y and x coordinates are relative to the upper
+#X text 232 1993 The y and x coordinates are relative to the upper
 right corner of the window. Specific button states may be extracted
 from the button value by applying [>> buttonnumber] and then checking
 whether the result is odd.;
-#X text 232 2006 0: Shift;
-#X text 232 2028 1: Caps Lock;
-#X text 232 2050 2: Control;
-#X text 232 2072 3: Alternate;
-#X text 232 2094 4: NumLock;
-#X text 232 2116 5: (unknown);
-#X text 232 2138 6: Meta or Window Key;
-#X text 232 2160 7: Scroll Lock;
-#X text 232 2182 8: Left Mouse Button;
-#X text 232 2204 9: Middle Mouse Button or Mouse Wheel Click;
-#X text 232 2226 10: Right Mouse Button;
-#X text 232 2248 11: Wheel Up;
-#X text 232 2270 12: Wheel Down;
-#X text 232 2292 NOTE: This message form may become longer in the future
+#X text 232 2054 0: Shift;
+#X text 232 2076 1: Caps Lock;
+#X text 232 2098 2: Control;
+#X text 232 2120 3: Alternate;
+#X text 232 2142 4: NumLock;
+#X text 232 2164 5: (unknown);
+#X text 232 2186 6: Meta or Window Key;
+#X text 232 2208 7: Scroll Lock;
+#X text 232 2230 8: Left Mouse Button;
+#X text 232 2252 9: Middle Mouse Button or Mouse Wheel Click;
+#X text 232 2274 10: Right Mouse Button;
+#X text 232 2296 11: Wheel Up;
+#X text 232 2318 12: Wheel Down;
+#X text 232 2340 NOTE: This message form may become longer in the future
 \, but the already defined parts will stay the same.;
-#X text 232 1644 \$1=y \$2=x \$3=buttons \$4=keyname;
-#X text 232 1779 \$1=y \$2=x \$3=buttons \$4=keyname;
-#X text 232 1801 Same as keypress but when a key gets released instead.
+#X text 232 1692 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1827 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1849 Same as keypress but when a key gets released instead.
 NOTE: This message form may become longer in the future \, but the
 already defined parts will stay the same.;
-#X obj 0 2357 doc_f;
+#X obj 0 2405 doc_f;
 #X text 208 795 other syntax for 'remote'.;
 #X text 141 480 there is one last argument that may be added to every
 "open" message of [#in x11]. if you don't put it \, a new toplevel
@@ -98,14 +98,14 @@ doesn't have any borders \, for example. however \, this is "dangerous"
 \, as you can lock yourself out of your computer. On Linux you can
 escape that using Ctrl+Alt+F1 or similar. Another problem is that it
 prevents the window from getting 'keypress' 'keyrelease' events.;
-#X text 232 1666 This is emitted when a keyboard key is pressed while
+#X text 232 1714 This is emitted when a keyboard key is pressed while
 this format handler's window is active. Keynames follow the X11 standard
 \, similarly to PureData's [keyname] object. The only exception is
 that keynames that are digits get prefixed by a capital D so that they
 don't get mistaken for actual numbers. NOTE: This message form may
 become longer in the future \, but the already defined parts will stay
 the same.;
-#X text 232 1570 Resizes the window to the size of the grid \; Encodes
+#X text 232 1618 Resizes the window to the size of the grid \; Encodes
 that grid in the display's pixel format \; Also displays it if autodraw
 is greater than 0 \; The values must be in range 0-255 \, or else they
 will be "wrapped".;
@@ -115,26 +115,26 @@ will be "wrapped".;
 #X obj 97 1158 doc_m i0 out_size;
 #X obj 97 1228 doc_m i0 setcursor;
 #X obj 97 1114 doc_m i0 hidecursor;
-#X obj 97 1548 doc_m o0 grid;
-#X obj 97 1644 doc_m o0 keypress;
-#X obj 97 1779 doc_m o0 keyrelease;
+#X obj 97 1596 doc_m o0 grid;
+#X obj 97 1692 doc_m o0 keypress;
+#X obj 97 1827 doc_m o0 keyrelease;
 #X obj 97 1136 doc_m i0 move;
-#X obj 97 1346 doc_m i0 shared_memory;
-#X obj 97 1486 doc_m i0 xvideo;
-#X obj 97 1403 doc_m i0 title;
-#X obj 97 1464 doc_m i0 warp;
+#X obj 97 1394 doc_m i0 shared_memory;
+#X obj 97 1534 doc_m i0 xvideo;
+#X obj 97 1451 doc_m i0 title;
+#X obj 97 1512 doc_m i0 warp;
 #X obj 97 1206 doc_m i0 set_geometry;
 #X text 232 1206 does: out_size \$1 \$2 \, move \$3 \$4;
-#X text 232 1403 puts the symbol \$1 in the titlebar instead of the
+#X text 232 1451 puts the symbol \$1 in the titlebar instead of the
 default GridFlow (240 \, 320 \, 3)" or similar). if title is an empty
 string \, the title goes back to the default mode of writing "GridFlow"
 and the window size.;
-#X text 232 1464 moves mouse cursor to location y=\$1 x=\$2. use sparingly.
+#X text 232 1512 moves mouse cursor to location y=\$1 x=\$2. use sparingly.
 ;
-#X text 232 1486 for future use.;
-#X text 232 1346 0: don't use explicit shared memory for sending to
+#X text 232 1534 for future use.;
+#X text 232 1394 0: don't use explicit shared memory for sending to
 the video card.;
-#X text 232 1381 1: use shared memory if available.;
+#X text 232 1429 1: use shared memory if available.;
 #X obj 97 931 doc_m i0 border;
 #X text 232 931 0: hide window border. this does not work in Apple
 X11. It may or may not work on Linux X11 (or other X11 servers) depending
@@ -146,15 +146,19 @@ managing the window otherwise. thus \, for example \, Metacity still
 allows Alt+Button1 and Alt+Tab to affect that window \, which is not
 the case with override_redirect. Also \, border is different \, as
 this setting can be changed while the window exists.;
-#X text 229 2337 [#see];
-#X text 277 2337 [gf/mouse_spy];
-#X obj 373 2337 #mouse;
+#X text 229 2385 [#see];
+#X text 277 2385 [gf/mouse_spy];
+#X obj 373 2385 #mouse;
 #X text 232 1263 Note that if your cursor table has them numbered from
 0 to 154 using only even numbers \, then those cursor numbers are all
 doubled compared to the ones GridFlow uses.;
 #X text 232 1228 \$1=cursor_id. \$1=cursor_id. Selects one of the 77
 predefined cursors of X11 \, from 0 to 76;
 #X text 232 1311 Note that out-of-range values are now rejected.;
+#X text 232 1333 On Linux \, the file /usr/include/X11/cursorfont.h
+contain a list of cursor names \, with doubled numbers \, but this
+file isn't always already installed. On Ubuntu \, this is in the package
+named "libx11-dev".;
 #X connect 20 1 21 0;
 #X connect 20 1 22 0;
 #X connect 20 1 84 0;
@@ -183,6 +187,7 @@ predefined cursors of X11 \, from 0 to 76;
 #X connect 63 1 88 0;
 #X connect 63 1 87 0;
 #X connect 63 1 89 0;
+#X connect 63 1 90 0;
 #X connect 64 1 19 0;
 #X connect 65 1 29 0;
 #X connect 65 1 58 0;
