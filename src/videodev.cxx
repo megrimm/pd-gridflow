@@ -69,6 +69,7 @@ typedef video_mmap       VideoMmap      ;
 #define WHYX(_name_,_fieldy_,_fieldx_) oprintf(buf, "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
 #define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
 #define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
+#if 0
 static const char *video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
@@ -85,6 +86,7 @@ static const char *video_type_flags[] = {
 	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
 };
+#endif
 static const char *tuner_flags[] = {
 	FLAG(0,PAL,      "")
 	FLAG(1,NTSC,     "")
@@ -195,14 +197,14 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap, use_pwc;
-	P<BitPacking> bit_packing;
+	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
 	bool has_frequency, has_tuner, has_norm;
 	int fd;
 	int palettes; /* bitfield */
 
 	\constructor (string mode, string filename) {
-		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
+		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		has_frequency=false;
 		has_tuner=false;
@@ -319,7 +321,7 @@ void FormatVideoDev::alloc_image () {
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 	} else {
-		image = new uint8[dim->prod(0,1)*bit_packing->bytes];
+		image = new uint8[dim->prod(0,1)*bit_packing3->bytes];
 	}
 }
 
@@ -379,6 +381,11 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
 			out.send(bs,b2);}
+		} else if (cs=="rgba") {
+		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
+			for (int x=0,xx=0; x<sx*2; x+=4,xx+=8) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+4,Y2,U,V);
+				b2[xx+3]=255; b2[xx+7]=255;}
+			out.send(bs,b2);}
 		} else if (cs=="yuv") {
 		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
@@ -399,6 +406,11 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420P(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
 			out.send(bs,b2);}
+		} else if (cs=="rgba") {
+		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
+			for (int x=0,xx=0; x<sx; x+=2,xx+=8) {GET420P(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+4,Y2,U,V);
+			b2[xx+3]=255; b2[xx+7]=255;}
+			out.send(bs,b2);}
 		} else if (cs=="yuv") {
 		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420P(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
@@ -412,11 +424,11 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		}
 	} else if (vp.palette==VIDEO_PALETTE_RGB32 || vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
 		GridOutlet out(this,0,dim,cast);
-		uint8 rgb[sx*3];
+		uint8 rgb[sx*4];
 		uint8 b2[sx*3];
 		if (cs=="y") {
 			for(int y=0; y<sy; y++) {
-			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
+			        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 					b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
@@ -425,12 +437,17 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			}
 		} else if (cs=="rgb") {
 			for(int y=0; y<sy; y++) {
-			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
+			        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+			 	out.send(bs,rgb);
+			}
+		} else if (cs=="rgba") {
+			for(int y=0; y<sy; y++) {
+			        bit_packing4->unpack(sx,buf+y*sx*bit_packing4->bytes,rgb);
 			 	out.send(bs,rgb);
 			}
 		} else if (cs=="yuv") {
 			for(int y=0; y<sy; y++) {
-				bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
+				bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					b2[xx+0] = clip(    ((  76*rgb[xx+0] + 150*rgb[xx+1] +  29*rgb[xx+2])>>8));
 					b2[xx+1] = clip(128+((- 44*rgb[xx+0] -  85*rgb[xx+1] + 108*rgb[xx+2])>>8));
@@ -472,7 +489,7 @@ static int read3(int fd, uint8 *image, int n) {
 	if (!image) alloc_image();
 	if (!use_mmap) {
 		/* picture is read at once by frame() to facilitate debugging. */
-		int tot = dim->prod(0,1) * bit_packing->bytes;
+		int tot = dim->prod(0,1) * bit_packing3->bytes;
 		int n = (int) read3(fd,image,tot);
 		if (n==tot) frame_finished(image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
@@ -594,8 +611,9 @@ GRID_INLET(0) {
 	if (c=="y"    ) {} else
 	if (c=="yuv"  ) {} else
 	if (c=="rgb"  ) {} else
+	if (c=="rgba" ) {} else
 	if (c=="magic") {} else
-	   RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
+	   RAISE("got '%s' but supported colorspaces are: y yuv rgb rgba magic",c.data());
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24 )) ? VIDEO_PALETTE_RGB24  :
 	              (palettes&(1<<VIDEO_PALETTE_RGB32 )) ? VIDEO_PALETTE_RGB32  :
@@ -609,12 +627,15 @@ GRID_INLET(0) {
 		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-	#define RGB(R,G,B,bytes) {uint32 masks[3]={R,G,B}; bit_packing = new BitPacking(is_le(),bytes,3,masks);}
+	#define RGB(R,G,B,bytes) { \
+		uint32 masks[4]={R,G,B,0}; \
+		bit_packing3 = new BitPacking(is_le(),bytes,3,masks);\
+		bit_packing4 = new BitPacking(is_le(),bytes,4,masks);}
         if (palette==VIDEO_PALETTE_RGB565) RGB(0x00f800,0x0007e0,0x00001f,2) else
 	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3) else
 	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4) else
 	this->colorspace=gensym(c.data());
-	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
+	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
 }
 
 \def bool pwc ()         {return use_pwc;}
