@@ -1,5 +1,5 @@
 /*
-	$Id: videodev.c 4620 2009-11-01 21:16:58Z matju $
+	$Id$
 
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
@@ -20,6 +20,9 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#ifndef __COLORSPACE_H
+#define __COLORSPACE_H
 
 extern int cliptab[1024]; // lut for clipping because YUV2R,G,B formula outputs can go from -317 to 573.
 inline uint8 fastclip(int x) {return cliptab[x+384];} // be careful with this !
@@ -47,3 +50,5 @@ inline uint8 fastclip(int x) {return cliptab[x+384];} // be careful with this !
 #define RGB2Y_(R,G,B) fastclip(    ((  66*R + 129*G +  25*B)>>8))
 #define RGB2U_(R,G,B) fastclip(128+((- 38*R -  74*G + 112*B)>>8))
 #define RGB2V_(R,G,B) fastclip(128+(( 112*R -  94*G -  18*B)>>8))
+
+#endif // __COLORSPACE_H
