@@ -24,6 +24,7 @@ version 9.9 (2010.04...):
  * [#color]: faster
  * [#io.videodev]: added colorspace rgba, with alpha=255.
  * [#camera]: added colorspace rgba
+ * [#io.quartz]: added support for keypress and keyrelease
  * [#io.quicktimecamera]: colorspace rgba's alpha=255 now.
  * [#io.quicktimecamera]: added colorspaces y, yuv, rgb.
 
