@@ -330,6 +330,8 @@ static int nn(int c) {return c?c:' ';}
 \def 0 bang () {
 	GridOutlet out(this,0,dim);
 	string cs = colorspace->s_name;
+	int sy = dim->v[0];
+	int sx = dim->v[1];
 	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
 	uint8 b2[ sx*3+3];
 	if (cs=="y") {
