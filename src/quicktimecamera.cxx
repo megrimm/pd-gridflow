@@ -25,6 +25,7 @@
 #include <QuickTime/Movies.h>
 #include <QuickTime/QuickTimeComponents.h>
 #include "gridflow.hxx.fcs"
+#include "colorspace.hxx"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -332,8 +333,10 @@ static int nn(int c) {return c?c:' ';}
 	string cs = colorspace->s_name;
 	int sy = dim->v[0];
 	int sx = dim->v[1];
+	int sc = dim->v[2];
 	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
 	uint8 b2[ sx*3+3];
+	int bs = sx*sc;
 	if (cs=="y") {
 		for(int y=0; y<sy; y++) {
 		        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
@@ -341,7 +344,17 @@ static int nn(int c) {return c?c:' ';}
 				b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 				b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
 			}
-			out.send(sx,b2);
+			out.send(bs,b2);
+		}
+	} else if (cs=="yuv") {
+		for(int y=0; y<sy; y++) {
+			bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+			for (int x=0,xx=0; x<sx; x++,xx+=3) {
+				b2[xx+0] = RGB2Y(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[xx+1] = RGB2U(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[xx+2] = RGB2V(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+			}
+			out.send(bs,b2);
 		}
 	} else if (cs=="rgb") {
 		int n = dim->prod()/3;
