@@ -98,7 +98,7 @@ static void gfpost(v4l2_requestbuffers *self) {std::ostringstream buf; buf << "[
 
 /* **************************************************************** */
 
-struct Frame {void *p; size_t n;};
+struct Frame {uint8 *p; size_t n;};
 
 \class FormatLibV4L : Format {
 	uint8 *image;
@@ -215,24 +215,29 @@ void FormatLibV4L::alloc_image () {
         WIOCTL2(fd, VIDIOC_QUERYBUF, &vbuf);
 	for (int i=0; i<queuemax; i++) {
 		queue[i].n = buf.length;
-		queue[i].p = v4l2_mmap(0, buf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
-		if (queue[i].p == MAP_FAILED) post("libv4l: mmap");
+		queue[i].p = (uint8 *)v4l2_mmap(0, buf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
+		if (queue[i].p == MAP_FAILED) post("libv4l: can't mmap");
 	}
 }
 
 void FormatLibV4L::frame_ask () {
 	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
-	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
-	vmmap.frame = queue[queuesize++] = next_frame;
-	vmmap.format = vp.palette;
-	vmmap.width  = dim->get(1);
-	vmmap.height = dim->get(0);
-	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
+	//if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
+	//vmmap.frame = queue[queuesize++] = next_frame;
+	//vmmap.format = vp.palette;
+	//vmmap.width  = dim->get(1);
+	//vmmap.height = dim->get(0);
+	struct v4l2_buffer vbuf;
+	memset(&vbuf, 0, sizeof(buf)); //CLEAR(vbuf);
+	vbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	vbuf.memory = V4L2_MEMORY_MMAP;
+	//WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
+	WIOCTL2(fd, VIDIOC_QBUF, &vbuf);
 	//gfpost(&vmmap);
-	next_frame = (next_frame+1) % vmbuf.frames;
+	next_frame = (next_frame+1) % queuemax;
 }
 
-static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
+//static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
 void FormatLibV4L::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
@@ -243,7 +248,8 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 	int bs = dim->prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
-	if (vp.palette==V4L2_PIX_FMT_YUYV) {
+	int palette = fmt.fmt.pix.pixelformat;
+	if (palette==V4L2_PIX_FMT_YUYV) {
 		uint8 *bufy = buf;
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 		if (cs=="y") {
@@ -274,7 +280,7 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 			out.send(bs,b2);
 		    }
 		}
-	} else if (vp.palette==V4L2_PIX_FMT_YVU420) {
+	} else if (palette==V4L2_PIX_FMT_YVU420) {
 		uint8 *bufy = buf, *bufu = buf+sx*sy, *bufv = buf+sx*sy*5/4;
 		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 		if (cs=="y") {
@@ -299,7 +305,7 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 			out.send(bs,b2);
 		    }
 		}
-	} else if (vp.palette==V4L2_PIX_FMT_RGB24) {
+	} else if (palette==V4L2_PIX_FMT_RGB24) {
 		GridOutlet out(this,0,dim,cast);
 		uint8 rgb[sx*4];
 		uint8 b2[sx*3];
@@ -336,7 +342,7 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 			}
 		} else if (cs=="magic") RAISE("magic colorspace not supported with a RGB palette");
 	} else {
-		RAISE("unsupported palette %d",vp.palette);
+		RAISE("unsupported palette %d",palette);
 	}
 }
 
@@ -348,12 +354,15 @@ void FormatLibV4L::frame_finished (uint8 *buf) {
 \def 0 bang () {
 	if (!image) alloc_image();
 	while(queuesize<queuemax) frame_ask();
-	vmmap.frame = queue[0];
+	struct v4l2_buffer vbuf;
+	memset(&vbuf, 0, sizeof(buf));
+	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	buf.memory = V4L2_MEMORY_MMAP;
 	//uint64 t0 = gf_timeofday();
-	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
+	WIOCTL2(fd, VIDIOC_DQBUF, &buf);
 	//uint64 t1 = gf_timeofday();
-	//if (t1-t0 > 100) gfpost("VIDIOCSYNC delay: %d us",t1-t0);
-	frame_finished(image+vmbuf.offsets[queue[0]]);
+	//if (t1-t0 > 100) gfpost("VIDIOC_DQBUF delay: %d us",t1-t0);
+	frame_finished(queue[0].p);
 	queuesize--;
 	for (int i=0; i<queuesize; i++) queue[i]=queue[i+1];
 	frame_ask();
@@ -371,8 +380,7 @@ GRID_INLET(0) {
 	if (0> IOCTL(fd, VIDIOC_G_TUNER, &vtuner)) RAISE("no tuner #%d", value);
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOC_S_TUNER, &vtuner);
-	int meuh;
-	has_frequency = (v4l2_ioctl(fd, VIDIOC_G_FREQUENCY, &meuh)>=0);
+	//int meuh; has_frequency = (v4l2_ioctl(fd, VIDIOC_G_FREQUENCY, &meuh)>=0);
 }
 \def int tuner () {return current_tuner;}
 
