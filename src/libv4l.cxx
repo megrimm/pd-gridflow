@@ -90,12 +90,20 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	WH(fmt.pix.sizeimage,"0x%08x");
 	WH(fmt.pix.colorspace,"0x%08x");
 	WH(fmt.pix.priv,"0x%08x");}
+static void gfpost(v4l2_requestbuffers *self) {std::ostringstream buf; buf << "[v4l2_requestbuffers]";
+	WH(count,"%u");
+	WH(type,"%u"); // enum v4l2_buf_type
+	WH(memory,"%u"); // enum v4l2_memory
+};
 
 /* **************************************************************** */
 
+struct Frame {void *p; size_t n;};
+
 \class FormatLibV4L : Format {
 	uint8 *image;
-	int queue[8], queuesize, queuemax, next_frame;
+	Frame queue[8];
+	int queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
@@ -186,16 +194,30 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	if (debug) gfpost(&fmt);
 }
 
-void FormatLibV4L::dealloc_image () {if (image) {munmap(image,vmbuf.size); image=0;}}
+void FormatLibV4L::dealloc_image () {
+  for (int i=0; i<queuemax; i++) {
+    if (munmap(queue[i].p,queue[i].n)<0) post("libv4l: can't munmap?");
+  }
+  queuesize=0;
+  //image=???;
+}
 void FormatLibV4L::alloc_image () {
-	CLEAR(req);
-        req.count = 2;
-        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        req.memory = V4L2_MEMORY_MMAP;
-        WIOCTL2(fd, VIDIOC_REQBUFS, &req); //gfpost(&req);
-	//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
-	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-	if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
+	//CLEAR(req); // ???
+        //req.count = 2;
+        //req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        //req.memory = V4L2_MEMORY_MMAP;
+        //WIOCTL2(fd, VIDIOC_REQBUFS, &req); gfpost(&req);
+	struct v4l2_buffer vbuf;
+	memset (&vbuf,0,sizeof(vbuf));
+	vbuf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	vbuf.memory = V4L2_MEMORY_MMAP;
+	vbuf.index  = 2;
+        WIOCTL2(fd, VIDIOC_QUERYBUF, &vbuf);
+	for (int i=0; i<queuemax; i++) {
+		queue[i].n = buf.length;
+		queue[i].p = v4l2_mmap(0, buf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
+		if (queue[i].p == MAP_FAILED) post("libv4l: mmap");
+	}
 }
 
 void FormatLibV4L::frame_ask () {
