@@ -5,8 +5,9 @@ L = much later (whenever we get to know how to do it...)
 
 9.9, assigned to Patrick:
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[!] [#io.quicktimecamera] colorspace rgb                  (urgent)
-[ ] [#io.quicktimecamera] colorspace y, ya, yuv, yuva (PAS urgent)
+[ ] [#io.quicktimecamera] test colorspace rgb on PPC
+[ ] [#io.quicktimecamera] make colorspace rgb the default when it works on both Intel and PPC
+[ ] [#io.quicktimecamera] colorspace yuv, magic
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
@@ -19,6 +20,9 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#io.quicktime (apple) out] grid, codec, quality.
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
 [ ] on PPC, retest [#to_pix] with alpha etc...
+[ ] [#io.quicktimecamera] crash when opening busy camera (?)
+    or is it when opening two cameras at once ?
+[ ] [#io.quicktimecamera]: 65535 vs 65536.
 
 9.9, unassigned:
 [ ] svn dollar id dollar : redo it or remove it

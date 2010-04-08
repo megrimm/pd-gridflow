@@ -22,6 +22,10 @@ version 9.9 (2010.04...):
  * [#io.x11]: setcursor: support 77 cursors instead of 64;
    and reject out-of-range values
  * [#color]: faster
+ * [#io.videodev]: added colorspace rgba, with alpha=255.
+ * [#camera]: added colorspace rgba
+ * [#io.quicktimecamera]: colorspace rgba's alpha=255 now.
+ * [#io.quicktimecamera]: added colorspaces y, yuv, rgb.
 
 version 9.8 (2010.04.01):
 
@@ -44,16 +48,20 @@ version 9.8 (2010.04.01):
  * [#fold] [#scan]: allow op avg, op hypot
  * [#fold] [#scan]: better check for unallowed ops
  * merged binary_operations.pd + videodev_effects.pd -> various_effects.pd
- * [#in] [#out] output "not_open" in outlet 1, to answer a message in closed mode
+ * [#in] [#out] output "not_open" in outlet 1, to answer a message in closed
+   mode
  * [#in] load has a $2 as a shortcut for open $1, cast $2, bang, close
- * [#in videodev] (linux cameras): trying to add YUYV support (palette 8) (please test)
+ * [#in videodev] (linux cameras): trying to add YUYV support (palette 8)
+   (please test)
  * [#out x11] [#out quartz] [#out sdl] [#see] accept greyscale
  * [gf/canvas_loadbang]: fixed bug
- * added most missing helpfiles, missing parts of helpfiles, corrected typos, etc.
+ * added most missing helpfiles, missing parts of helpfiles, corrected typos,
+   etc.
  * added missing entries in index.pd ("GridFlow Index")
  * [#in videodev]: some error messages have been condensed
  * [#in videodev]: YUV cameras speedup (faster clip function)
- * [#camera]: use "not_open" to correctly show that no camera currently is selected.
+ * [#camera]: use "not_open" to correctly show that no camera currently is
+   selected.
  * [#see]: can drag to a point outside of the window
  * [#see]: fixed a bug when closing a gop containing a [#see].
  * [#see]: added "margins $1 $2 $3 $4" method
