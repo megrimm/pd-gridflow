@@ -355,7 +355,7 @@ static int nn(int c) {return c?c:' ';}
 		out.send(dim->prod(),buf2);
 	} else if (cs=="rgba") { // does this really work on PPC ?
 		int n = dim->prod()/4;
-		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
+		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
 		out.send(dim->prod(),buf2);
 	} else
 		RAISE("colorspace problem");
