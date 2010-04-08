@@ -338,19 +338,6 @@ void FormatVideoDev::frame_ask () {
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
-// these convert from reduced-range YUV to full-range RGB
-#define YUV2R(Y,U,V) fastclip( (298*(Y-16)               + 409*(V-128))>>8)
-#define YUV2G(Y,U,V) fastclip( (298*(Y-16) - 100*(U-128) - 208*(V-128))>>8)
-#define YUV2B(Y,U,V) fastclip( (298*(Y-16) + 516*(U-128)              )>>8)
-#define YUV2RGB(b,Y,U,V) (b)[0]=YUV2R(Y,U,V); (b)[1]=YUV2G(Y,U,V); (b)[2]=YUV2B(Y,U,V);
-// these convert from reduced-range YUV to full-range YUV
-#define YUV2Y(Y,U,V) fastclip( (298*(Y-16)                            )>>8)
-#define YUV2U(Y,U,V) fastclip(((             293*(U-128)              )>>8)+128)
-#define YUV2V(Y,U,V) fastclip(((                           293*(V-128))>>8)+128)
-#define YUV2YUV(b,Y,U,V) (b)[0]=YUV2Y(Y,U,V); (b)[1]=YUV2U(Y,U,V); (b)[2]=YUV2V(Y,U,V);
-// these are for reading different memory layouts of YUV
-#define GET420P(x) do {Y1=bufy[(x)+0]; U=bufu[(x)/2]; Y2=bufy[(x)+1]; V=bufv[(x)/2];} while (0)
-#define GETYUYV(x) do {Y1=bufy[(x)+0]; U=bufy[(x)+1]; Y2=bufy[(x)+2]; V=bufy[(x)+3];} while (0)
 void FormatVideoDev::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
@@ -444,13 +431,10 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		} else if (cs=="yuv") {
 			for(int y=0; y<sy; y++) {
 				bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
-				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
-					b2[xx+0] = fastclip(    ((  76*rgb[xx+0] + 150*rgb[xx+1] +  29*rgb[xx+2])>>8));
-					b2[xx+1] = fastclip(128+((- 44*rgb[xx+0] -  85*rgb[xx+1] + 108*rgb[xx+2])>>8));
-					b2[xx+2] = fastclip(128+(( 128*rgb[xx+0] - 108*rgb[xx+1] -  21*rgb[xx+2])>>8));
-					b2[xx+3] = fastclip(    ((  76*rgb[xx+3] + 150*rgb[xx+4] +  29*rgb[xx+5])>>8));
-					b2[xx+4] = fastclip(128+((- 44*rgb[xx+3] -  85*rgb[xx+4] + 108*rgb[xx+5])>>8));
-					b2[xx+5] = fastclip(128+(( 128*rgb[xx+3] - 108*rgb[xx+4] -  21*rgb[xx+5])>>8));
+				for (int x=0,xx=0; x<sx; x++,xx+=3) {
+					b2[xx+0] = RGB2Y(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+					b2[xx+1] = RGB2U(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+					b2[xx+2] = RGB2V(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
 				}
 				out.send(bs,b2);
 			}
