@@ -444,11 +444,6 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	}
 }
 
-/* these are factors for RGB to analog YUV */
-// Y =   66*R + 129*G +  25*B
-// U = - 38*R -  74*G + 112*B
-// V =  112*R -  94*G -  18*B
-
 // strange that read2 is not used and read3 is used instead
 static int read2(int fd, uint8 *image, int n) {
 	int r=0;
