@@ -34,10 +34,15 @@
 
 #include "gridflow.hxx.fcs"
 
+class FormatQuartz;
+
 @interface GFView: NSView {
+  @private
 	uint8 *imdata;
 	int imwidth;
 	int imheight;
+  @public
+	FormatQuartz *boss;
 }
 - (id) drawRect: (NSRect)rect;
 - (id) imageHeight: (int)w width: (int)h;
@@ -47,7 +52,74 @@
 - (int) imageDataSize;
 - (BOOL) acceptsFirstResponder;
 - (void)keyDown:(NSEvent *)e;
+- (void)mouseMoved:(NSEvent *)e;
+- (void)mouseDown:(NSEvent *)e;
+- (void)mouseDragged:(NSEvent *)e;
+- (void)mouseUp:(NSEvent *)e;
+- (void)rightMouseDown:(NSEvent *)e;
+- (void)rightMouseDragged:(NSEvent *)e;
+- (void)rightMouseUp:(NSEvent *)e;
+- (void)otherMouseDown:(NSEvent *)e;
+- (void)otherMouseDragged:(NSEvent *)e;
+- (void)otherMouseUp:(NSEvent *)e;
+- (void)scrollWheel:(NSEvent *)e;
 @end
+
+///////////////////////////////////////////////////////////////////////////////
+
+void FormatQuartz_call(FormatQuartz *self);
+
+\class FormatQuartz : Format {
+	NSWindow *window;
+	NSWindowController *wc;
+	GFView *widget; /* GridFlow's Cocoa widget */
+	int mouse_state;
+	t_clock *clock;
+	\constructor (t_symbol *mode) {
+		NSRect r = {{0,0}, {320,240}};
+		window = [[NSWindow alloc]
+			initWithContentRect: r
+			styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
+			backing: NSBackingStoreBuffered
+			defer: YES];
+		widget = [[GFView alloc] initWithFrame: r];
+		widget->boss = this;
+		wc = [[NSWindowController alloc] initWithWindow: window];
+		[window setContentView: widget];
+		[window setTitle: @"GridFlow"];
+		[window makeKeyAndOrderFront: nil];
+		[window orderFrontRegardless];
+		[window makeFirstResponder: widget];
+		[window setBackgroundColor: [NSColor clearColor]];
+		[window setAcceptsMouseMovedEvents: YES];
+		clock = clock_new(this,(t_method)FormatQuartz_call);
+		clock_delay(clock,0);
+		_0_move(0,0,0,0);
+		mouse_state = 0;
+
+		// hack for proper event handling
+		ProcessSerialNumber proc;
+		GetCurrentProcess(&proc);
+		TransformProcessType(&proc, kProcessTransformToForegroundApplication);
+	}
+	~FormatQuartz () {
+		clock_unset(clock);
+		clock_free(clock);
+		clock = 0;
+		[window autorelease];
+		[window setReleasedWhenClosed: YES];
+		[window close];
+	}
+	void call ();
+	void report_pointer(BOOL check_bounds);
+	\decl 0 title (string title="");
+	\decl 0 move (int y, int x);
+	\decl 0 set_geometry (int y, int x, int sy, int sx);
+	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
+	\grin 0
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 @implementation GFView
 
@@ -99,128 +171,74 @@
 - (BOOL) acceptsFirstResponder {return YES;}
 
 - (void)keyDown:(NSEvent *)e {
-	fprintf(stderr,"GFView keyDown...\n");	
+//	fprintf(stderr,"GFView keyDown...\n");	
+}
+
+#define SET_MOUSE_STATE(s)   boss->mouse_state |= (s); boss->report_pointer(NO);
+#define UNSET_MOUSE_STATE(s) boss->mouse_state &=~(s); boss->report_pointer(NO);
+
+- (void)mouseDown:         (NSEvent *)e {   SET_MOUSE_STATE(256)  }
+- (void)mouseUp:           (NSEvent *)e { UNSET_MOUSE_STATE(256)  }
+
+- (void)rightMouseDown:    (NSEvent *)e {   SET_MOUSE_STATE(1024) }
+- (void)rightMouseUp:      (NSEvent *)e { UNSET_MOUSE_STATE(1024) }
+
+- (void)otherMouseDown:    (NSEvent *)e {   SET_MOUSE_STATE(512)  }
+- (void)otherMouseUp:      (NSEvent *)e { UNSET_MOUSE_STATE(512)  }
+
+- (void)mouseMoved:        (NSEvent *)e { boss->report_pointer(YES); }
+- (void)mouseDragged:      (NSEvent *)e { boss->report_pointer(NO); }
+- (void)rightMouseDragged: (NSEvent *)e { boss->report_pointer(NO); }
+- (void)otherMouseDragged: (NSEvent *)e { boss->report_pointer(NO); }
+
+- (void)scrollWheel: (NSEvent *)e {
+	if ([e deltaY] > 0) {
+		SET_MOUSE_STATE(2048)
+		UNSET_MOUSE_STATE(2048)
+	} else if ([e deltaY] < 0) {
+		SET_MOUSE_STATE(4096)
+		UNSET_MOUSE_STATE(4096)
+	}
 }
 
 @end
 
-struct FormatQuartz;
-void FormatQuartz_call(FormatQuartz *self);
+////////////////////////////////////////////////////////////////////////////////
 
-\class FormatQuartz : Format {
-	NSWindow *window;
-	NSWindowController *wc;
-	GFView *widget; /* GridFlow's Cocoa widget */
-	NSPoint mouse_lastpos;
-	int mouse_state;
-	int was_scroll;
-	t_clock *clock;
-	\constructor (t_symbol *mode) {
-		NSRect r = {{0,0}, {320,240}};
-		window = [[NSWindow alloc]
-			initWithContentRect: r
-			styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
-			backing: NSBackingStoreBuffered
-			defer: YES];
-		widget = [[GFView alloc] initWithFrame: r];
-		wc = [[NSWindowController alloc] initWithWindow: window];
-		[window setContentView: widget];
-		[window setTitle: @"GridFlow"];
-		[window makeKeyAndOrderFront: nil];
-		[window orderFrontRegardless];
-		[window makeFirstResponder: widget];
-		[window setBackgroundColor: [NSColor clearColor]];
-		clock = clock_new(this,(t_method)FormatQuartz_call);
-		clock_delay(clock,0);
-		//post("mainWindow = %08lx",(long)[NSApp mainWindow]);
-		//post(" keyWindow = %08lx",(long)[NSApp keyWindow]);
-		_0_move(0,0,0,0);
-		mouse_state = 0;
-		mouse_lastpos.x = 0;
-		mouse_lastpos.y = 0;
-		was_scroll = 0;
-	}
-	~FormatQuartz () {
-		clock_unset(clock);
-		clock_free(clock);
-		clock = 0;
-		[window autorelease];
-		[window setReleasedWhenClosed: YES];
-		[window close];
-	}
-	void call ();
-	void report_pointer(int y, int x, int state);
-	\decl 0 title (string title="");
-	\decl 0 move (int y, int x);
-	\decl 0 set_geometry (int y, int x, int sy, int sx);
-	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
-	\grin 0
-};
+#define INSIDE_WINDOW  ((p.y >= 0 && p.y <= [this->widget imageHeight]) && (p.x >= 0 && p.x <= [this->widget imageWidth]))
 
-void FormatQuartz::report_pointer(int y, int x, int state) {
+void FormatQuartz::report_pointer(BOOL check_bounds) {
+	NSPoint p;
+	p = [this->window mouseLocationOutsideOfEventStream];
+	p.y = [this->widget imageHeight] - p.y;
+	
 	t_atom a[3];
-	SETFLOAT(a+0,y);
-	SETFLOAT(a+1,x);
-	SETFLOAT(a+2,state);
-	outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
-	this->mouse_lastpos.y = y;
-	this->mouse_lastpos.x = x;
+	SETFLOAT(a+0,p.y);
+	SETFLOAT(a+1,p.x);
+	SETFLOAT(a+2,this->mouse_state);
+
+	if (check_bounds) {
+		if (INSIDE_WINDOW)
+			outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	}
+	else {
+			outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	}
 }
 
 static NSDate *distantFuture, *distantPast;
 
-#define INSIDE_WINDOW  ((p.y >= 0 && p.y <= [this->widget imageHeight]) && (p.x >= 0 && p.x <= [this->widget imageWidth]))
-#define SCROLL_OFF(s)  this->was_scroll = 0; this->mouse_state -= (s); report_pointer((int)p.y, (int)p.x, this->mouse_state);
-
 void FormatQuartz::call() {
 	BOOL wasMouseEvent = NO;
-	NSPoint p, *l=&this->mouse_lastpos;
 	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
 		// untilDate: distantFuture // blocking
 		untilDate: distantPast      // nonblocking
 		inMode: NSDefaultRunLoopMode
 		dequeue: YES];
-
-	p = [this->window mouseLocationOutsideOfEventStream];
-	p.y = [this->widget imageHeight] - p.y;
-
-	if (this->was_scroll == 2048) { SCROLL_OFF(2048) }
-	else if (this->was_scroll == 4096) { SCROLL_OFF(4096) }
-
-	if ([this->window isKeyWindow]) {
-		if (p.y != l->y || p.x != l->x) // mouse moved
-			if (INSIDE_WINDOW) wasMouseEvent = YES;
-	}
 	if (e) {
-		//fprintf(stderr,"isKeyWindow ? %s\n", [this->window isKeyWindow]?"yes":"no");//
-		//fprintf(stderr,"isMainWindow ? %s\n", [this->window isMainWindow]?"yes":"no");//
 		//NSLog(@"%@", e);
 		[NSApp sendEvent: e];
-
-		switch ([e type]) {
-		case NSLeftMouseDown:
-			this->mouse_state += 256;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSLeftMouseUp:
-			this->mouse_state -= 256;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSOtherMouseDown:
-			this->mouse_state += 512;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSOtherMouseUp:
-			this->mouse_state -= 512;  if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSRightMouseDown:
-			this->mouse_state += 1024; if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSRightMouseUp:
-			this->mouse_state -= 1024; if (INSIDE_WINDOW) wasMouseEvent = YES; break;
-		case NSLeftMouseDragged:
-		case NSRightMouseDragged:
-		case NSOtherMouseDragged:
-			wasMouseEvent = YES; break; // don't check for bounds when dragging outside the window
-		case NSScrollWheel:
-			wasMouseEvent = YES;
-			if ([e deltaY] > 0) { this->was_scroll = 2048; this->mouse_state += 2048; }
-			else if ([e deltaY] < 0) { this->was_scroll = 4096; this->mouse_state += 4096; }
-		}
 	}
-	if (wasMouseEvent) report_pointer((int)p.y, (int)p.x, this->mouse_state);
 	[NSApp updateWindows];
 	[this->window flushWindowIfNeeded];
 	clock_delay(clock,20);
