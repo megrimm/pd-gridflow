@@ -314,7 +314,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
 	string c = colorspace->s_name;
 	if (c=="y"    ) {} else
-	//if (c=="yuv"  ) {} else
+	if (c=="yuv"  ) {} else
 	if (c=="rgb"  ) {} else
 	if (c=="rgba" ) {} else
 	//if (c=="magic") {} else
