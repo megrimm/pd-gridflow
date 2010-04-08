@@ -396,7 +396,7 @@ public:
 	}
 	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
 	virtual void show() = 0;
-	void changed() {if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
+	void changed(t_symbol *foo=0) {foo=foo; if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
 	static void redraw(BLAH) {INIT1 self->show();}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
@@ -628,10 +628,14 @@ static t_symbol *s_empty;
 	KEYS_ARE(127,"Delete");
 }
 
+static t_pd *seesend;
 \class GridSee : GUI_FObject {
 	BFObject *spy;
 	P<Grid> buf;
 	bool hold;
+	//\attr bool fast;
+	bool fast; // does not work
+	\decl 0 fast (bool fast=1) {this->fast=fast;}
 	t_clock *clock; // pitiééééééééééééééé
 	int my1,mx1,my2,mx2; // margins
 	\constructor () {
@@ -640,6 +644,7 @@ static t_symbol *s_empty;
 		compute_size();
 		hold = false;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
+		fast=false;
 		changed();
 		t_atom a[1]; SETSYMBOL(a,s_empty);
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
@@ -672,16 +677,31 @@ static t_symbol *s_empty;
 	#undef FOO
 	\grin 0
 	void sendbuf () {
-		std::ostringstream os;
-		int i=0,j=0,t=0;
-		int chans = buf->dim->get(2);
-		int xs = buf->dim->get(1);
-		int ys = buf->dim->get(0);
-		compute_size();
-		char fub[xs*ys*6+1];
-		fub[xs*ys*6]=0;
-		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* ",rsym->s_name,xs,ys);
-		char tab[]="0123456789abcdef";
+	    std::ostringstream os;
+	    int i=0,j=0,t=0;
+	    int chans = buf->dim->get(2);
+	    int xs = buf->dim->get(1);
+	    int ys = buf->dim->get(0);
+	    compute_size();
+	    if (fast) {
+		sys_vgui("encoding system iso8859-1; image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,xs,ys);
+		char fub[xs*ys*3+1]; fub[xs*ys*3]=0;
+		static char tab[256];
+		for (int k=0; k<256; k++) tab[k]=k;
+		tab[0]=1; tab[10]=9; tab[34]=33; tab[36]=35; tab[91]=90; tab[92]=90; tab[93]=94; tab[123]=122; tab[125]=126;
+		//for (int k=192; k<223; k++) tab[k]=191;
+		#define FUX(i,j) fub[j]=tab[unsigned(data[i])&255];
+		#define FOO(T) {T *data = (T *)*buf; \
+		  if(chans>2) for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=3) {FUX(i+0,j+0)FUX(i+1,j+1)FUX(i+2,j+2)}\
+		  else        for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=3) {FUX(i  ,j+0)FUX(i  ,j+1)FUX(i  ,j+2)}}
+		TYPESWITCH(buf->nt,FOO,)
+		#undef FOO
+		sys_gui(fub);
+		sys_gui("\"\n");
+	    } else {
+		char fub[xs*ys*6+1]; fub[xs*ys*6]=0;
+		sys_gui("set zut ");
+		static char tab[]="0123456789abcdef";
 		#define HEX(i,j) t=unsigned(data[i]); fub[j+0]=tab[(t>>4)&15]; fub[j+1]=tab[t&15];
 		#define FOO(T) {T *data = (T *)*buf; \
 		  if(chans>2) for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=6) {HEX(i+0,j+0)HEX(i+1,j+2)HEX(i+2,j+4)}\
@@ -690,7 +710,8 @@ static t_symbol *s_empty;
 		#undef FOO
 		#undef HEX
 		sys_gui(fub);
-		sys_gui("]\"\n");
+		sys_vgui("\nimage create photo %s -data \"P6\\n%d %d\\n255\\n[binary format H* $zut]\"\n",rsym->s_name,xs,ys);
+	    }
 	}
  	void show() {L
 		int osx=sx, osy=sy;
@@ -726,7 +747,6 @@ GRID_INLET(0) {
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
-	#define ETC ""
 	sys_gui("proc gridsee_update {self x1 y1 sx sy mx1 my1 mx2 my2 fg bg outline canvas} {\n"
 	    "$canvas delete $self\n"
 	    "set x2 [expr {$x1+$sx}]\n"
@@ -745,6 +765,17 @@ GRID_INLET(0) {
 		"-tags [list $self ${self}o0] -outline black\n"
 	    "$canvas create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
+/*
+ * 	sys_gui("set gridsee_socket [socket -server -port 9999]\n");
+	pd_anything(&pd_objectmaker,gensym("netsend"),0,0);
+	seesend = (t_pd *)pd_newest(); if (!seesend) post("no seesend?"); else post("seesend!");
+	t_atom a[2];
+	SETSYMBOL(a,gensym("localhost"));
+	SETFLOAT(a+1,9999);
+	post("preconnect");
+	pd_anything((t_pd *)seesend,gensym("connect"),2,a);
+	post("postconnect");
+*/
 }
 
 //****************************************************************
