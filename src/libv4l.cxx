@@ -97,7 +97,7 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	uint8 *image;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
-	P<BitPacking> bit_packing;
+	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
 	int fd;
 	v4l2_format         fmt;
@@ -105,7 +105,7 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	v4l2_requestbuffers req;
 
 	\constructor (string mode, string filename) {
-		queuesize=0; queuemax=2; next_frame=0; bit_packing=0; dim=0;
+		queuesize=0; queuemax=2; next_frame=0;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		image=0;
 		fd = v4l2_open(filename.data(),0);
@@ -212,7 +212,7 @@ void FormatLibV4L::frame_ask () {
 
 static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
-void FormatVideoDev::frame_finished (uint8 *buf) {
+void FormatLibV4L::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
 	/* picture is converted here. */
@@ -412,8 +412,11 @@ GRID_INLET(0) {
 		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-	if (palette==V4L2_PIX_FMT_RGB24) {uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
-	    bit_packing = new BitPacking(is_le(),3,3,masks);} else this->colorspace=gensym(c.data());
+	if (palette==V4L2_PIX_FMT_RGB24) {
+		uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
+		bit_packing3 = new BitPacking(is_le(),3,3,masks);
+		bit_packing4 = new BitPacking(is_le(),3,4,masks);
+	} else this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
 
