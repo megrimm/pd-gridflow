@@ -318,8 +318,8 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	if (c=="rgba" ) {} else
 	//if (c=="magic") {} else
 	   RAISE("got '%s' but supported colorspaces are: rgb rgba",c.data());
-	uint32 masks[4]={0x00ff0000,0x0000ff00,0x000000ff,0x00000000};
-	bit_packing3 = new BitPacking(is_le(),bytes,3,masks);
+	uint32 masks[4]={0x0000ff00,0x00ff0000,0xff000000,0x00000000};
+	bit_packing3 = new BitPacking(is_le(),4,3,masks);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
 	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
@@ -338,7 +338,7 @@ static int nn(int c) {return c?c:' ';}
 			buf2[j+2] = buf[i+2];
 		}*/
 		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
-		bit_packing3->unpack(n,buf2,buf);
+		bit_packing3->unpack(n,buf,buf2);
 		out.send(dim->prod(),buf2);
 		SGIdle(m_sg);
 	} else
