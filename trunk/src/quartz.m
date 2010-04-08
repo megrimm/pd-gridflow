@@ -112,6 +112,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	}
 	void call ();
 	void report_pointer(BOOL check_bounds);
+	void report_key(NSEvent *e);
 	\decl 0 title (string title="");
 	\decl 0 move (int y, int x);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
@@ -170,36 +171,28 @@ void FormatQuartz_call(FormatQuartz *self);
 
 - (BOOL) acceptsFirstResponder {return YES;}
 
-- (void)keyDown:(NSEvent *)e {
-//	fprintf(stderr,"GFView keyDown...\n");	
-}
-
 #define SET_MOUSE_STATE(s)   boss->mouse_state |= (s); boss->report_pointer(NO);
 #define UNSET_MOUSE_STATE(s) boss->mouse_state &=~(s); boss->report_pointer(NO);
 
 - (void)mouseDown:         (NSEvent *)e {   SET_MOUSE_STATE(256)  }
 - (void)mouseUp:           (NSEvent *)e { UNSET_MOUSE_STATE(256)  }
-
 - (void)rightMouseDown:    (NSEvent *)e {   SET_MOUSE_STATE(1024) }
 - (void)rightMouseUp:      (NSEvent *)e { UNSET_MOUSE_STATE(1024) }
-
 - (void)otherMouseDown:    (NSEvent *)e {   SET_MOUSE_STATE(512)  }
 - (void)otherMouseUp:      (NSEvent *)e { UNSET_MOUSE_STATE(512)  }
 
 - (void)mouseMoved:        (NSEvent *)e { boss->report_pointer(YES); }
-- (void)mouseDragged:      (NSEvent *)e { boss->report_pointer(NO); }
-- (void)rightMouseDragged: (NSEvent *)e { boss->report_pointer(NO); }
-- (void)otherMouseDragged: (NSEvent *)e { boss->report_pointer(NO); }
+- (void)mouseDragged:      (NSEvent *)e { boss->report_pointer(NO);  }
+- (void)rightMouseDragged: (NSEvent *)e { boss->report_pointer(NO);  }
+- (void)otherMouseDragged: (NSEvent *)e { boss->report_pointer(NO);  }
 
 - (void)scrollWheel: (NSEvent *)e {
-	if ([e deltaY] > 0) {
-		SET_MOUSE_STATE(2048)
-		UNSET_MOUSE_STATE(2048)
-	} else if ([e deltaY] < 0) {
-		SET_MOUSE_STATE(4096)
-		UNSET_MOUSE_STATE(4096)
-	}
+	if ([e deltaY] > 0) { SET_MOUSE_STATE(2048) UNSET_MOUSE_STATE(2048) }
+	else if ([e deltaY] < 0) { SET_MOUSE_STATE(4096) UNSET_MOUSE_STATE(4096) }
 }
+
+- (void)keyDown: (NSEvent *)e { boss->report_key(e); }
+- (void)keyUp:   (NSEvent *)e { boss->report_key(e); }
 
 @end
 
@@ -217,13 +210,82 @@ void FormatQuartz::report_pointer(BOOL check_bounds) {
 	SETFLOAT(a+1,p.x);
 	SETFLOAT(a+2,this->mouse_state);
 
-	if (check_bounds) {
-		if (INSIDE_WINDOW)
-			outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	if (!check_bounds || INSIDE_WINDOW)
+		outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+}
+
+// TODO: Use KEYS_ARE from SDL...
+//       Or use only keycodes to prevent CAPS and things like ! @ # $ %
+
+void FormatQuartz::report_key(NSEvent * e) {
+	NSPoint p;
+	p = [this->window mouseLocationOutsideOfEventStream];
+	p.y = [this->widget imageHeight] - p.y;
+
+	const char *keyname = [[e characters] cStringUsingEncoding: [NSString defaultCStringEncoding]];
+	const int keycode = [e keyCode];
+	char buf[64], *keysym = NULL;
+
+	///fprintf(stderr, "%d\n", keycode);
+
+	switch (keycode) {
+	  case 36:  keysym = "Return"; break;
+	  case 51:  keysym = "BackSpace"; break;
+	  case 53:  keysym = "Escape"; break;
+	  case 76:  keysym = "KP_Return"; break;
+	  case 18:  keysym = "D1"; break;
+	  case 19:  keysym = "D2"; break;
+	  case 20:  keysym = "D3"; break;
+	  case 21:  keysym = "D4"; break;
+	  case 23:  keysym = "D5"; break;
+	  case 22:  keysym = "D6"; break;
+	  case 26:  keysym = "D7"; break;
+	  case 28:  keysym = "D8"; break;
+	  case 25:  keysym = "D9"; break;
+	  case 29:  keysym = "D0"; break;
+	  case 123: keysym = "Left"; break;
+	  case 124: keysym = "Right"; break;
+	  case 126: keysym = "Up"; break;
+	  case 125: keysym = "Down"; break;
+	  case 116: keysym = "Prior"; break;
+	  case 121: keysym = "Next"; break;
+	  case 115: keysym = "Home"; break;
+	  case 119: keysym = "End"; break;
+	  case 122: keysym = "F1"; break;
+	  case 120: keysym = "F2"; break;
+	  case 99:  keysym = "F3"; break;
+	  case 118: keysym = "F4"; break;
+	  case 96:  keysym = "F5"; break;
+	  case 97:  keysym = "F6"; break;
+	  case 98:  keysym = "F7"; break;
+	  case 27:  keysym = "minus"; break;
+	  case 24:  keysym = "equal"; break;
+	  case 43:  keysym = "comma"; break;
+	  case 47:  keysym = "period"; break;
+	  case 44:  keysym = "slash"; break;
+	  case 41:  keysym = "semicolon"; break;
+	  case 39:  keysym = "apostrophe"; break;
+	  case 33:  keysym = "bracketleft"; break;
+	  case 30:  keysym = "bracketright"; break;
+	  case 42:  keysym = "backslash"; break;
+	  case 49:  keysym = "space"; break;
+	  case 48:  keysym = "Tab"; break;
 	}
-	else {
-			outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+
+	if (!keysym) {
+		if (!keyname) strcpy(buf,"unknown");
+		else strcpy(buf,keyname);
+	} else {
+		strcpy(buf,keysym);
 	}
+
+	t_symbol *sel = gensym(const_cast<char *>([e type] == NSKeyDown ? "keypress" : "keyrelease"));
+	t_atom a[4];
+	SETFLOAT(a+0,p.y);
+	SETFLOAT(a+1,p.x);
+	SETFLOAT(a+2,this->mouse_state);
+	SETSYMBOL(a+3,gensym(buf));
+	outlet_anything(outlets[0],sel,4,a);
 }
 
 static NSDate *distantFuture, *distantPast;
