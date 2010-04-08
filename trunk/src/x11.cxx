@@ -627,7 +627,8 @@ GRID_INLET(0) {
 \def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
 
 \def 0 setcursor (int shape) {
-	shape = 2*(shape&63);
+	if (shape<0 || shape>=77) RAISE("unknown shape number (should be at least 0 but less than 77)");
+	shape = 2*shape;
 	Cursor c = XCreateFontCursor(display,shape);
 	XDefineCursor(display,window,c);
 	XFlush(display);
