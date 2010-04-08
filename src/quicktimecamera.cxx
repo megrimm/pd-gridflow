@@ -341,9 +341,9 @@ static int nn(int c) {return c?c:' ';}
 				b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 				b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
 			}
-			out.send(bs,b2);
+			out.send(sx,b2);
 		}
-	if (cs=="rgb") {
+	} else if (cs=="rgb") {
 		int n = dim->prod()/3;
 		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
 			buf2[j+0] = buf[i+0];
@@ -353,15 +353,13 @@ static int nn(int c) {return c?c:' ';}
 		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 		bit_packing3->unpack(n,buf,buf2);
 		out.send(dim->prod(),buf2);
-		SGIdle(m_sg);
-	} else
-	if (cs=="rgba") { // does this really work on PPC ?
+	} else if (cs=="rgba") { // does this really work on PPC ?
 		int n = dim->prod()/4;
 		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = ((uint32 *)buf)[i] >> 8;
 		out.send(dim->prod(),buf2);
-		SGIdle(m_sg);
 	} else
-	RAISE("colorspace problem");
+		RAISE("colorspace problem");
+	SGIdle(m_sg);
 }
 
 unsigned short val;
