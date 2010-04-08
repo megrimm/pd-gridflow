@@ -274,6 +274,10 @@ TYPESWITCH(in->nt,FOO,)
 
 \end class FormatGrid {install_format("#io.grid",6,"grid");}
 
+// this line goes with colorspace.hxx
+int cliptab[1024];
+
 void startup_format () {
 	\startall
+	for (int i=0; i<1024; i++) cliptab[i] = min(255,max(0,i-384));
 }
