@@ -312,7 +312,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
 	string c = colorspace->s_name;
-	//if (c=="y"    ) {} else
+	if (c=="y"    ) {} else
 	//if (c=="yuv"  ) {} else
 	if (c=="rgb"  ) {} else
 	if (c=="rgba" ) {} else
@@ -330,6 +330,17 @@ static int nn(int c) {return c?c:' ';}
 \def 0 bang () {
 	GridOutlet out(this,0,dim);
 	string cs = colorspace->s_name;
+	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
+	uint8 b2[ sx*3+3];
+	if (cs=="y") {
+		for(int y=0; y<sy; y++) {
+		        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+				b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
+				b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
+			}
+			out.send(bs,b2);
+		}
 	if (cs=="rgb") {
 		int n = dim->prod()/3;
 		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
