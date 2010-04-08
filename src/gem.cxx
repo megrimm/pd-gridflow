@@ -302,7 +302,7 @@ void startup_gem () {
 	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
 	int major,minor;
 	sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
-	post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
+	//post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
 	gem = major*1000+minor;
 }
 
