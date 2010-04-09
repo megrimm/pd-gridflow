@@ -39,7 +39,7 @@
 #include "pwc-ioctl.h"
 #include <sstream>
 
-#ifdef HAVE_LIBV4L1 // never defined (yet)
+#ifndef HAVE_LIBV4L1 // never defined (yet)
 #include <libv4l1.h>
 #define open   v4l1_open
 #define close  v4l1_close
@@ -211,9 +211,11 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 		has_tuner=false;
 		has_norm=false;
 		image=0;
-		f = fopen(filename.data(),"r+");
-		if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
-		fd = fileno(f);
+		//f = fopen(filename.data(),"r+");
+		//if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
+		//fd = fileno(f);
+		fd = open(filename.data(),O_RDWR);
+		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		initialize2();
 	}
 	void frame_finished (uint8 *buf);
@@ -222,7 +224,10 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	void dealloc_image ();
 	void frame_ask ();
 	void initialize2 ();
-	~FormatVideoDev () {if (image) dealloc_image();}
+	~FormatVideoDev () {
+		if (image) dealloc_image();
+		close(fd); // wtf
+	}
 
 	\decl 0 bang ();
 	\grin 0 int
