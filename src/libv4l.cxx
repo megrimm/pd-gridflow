@@ -108,12 +108,13 @@ struct Frame {uint8 *p; size_t n;};
 	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
 	int fd;
+	int palette;
 	v4l2_format         fmt;
 	v4l2_buffer         buf;
 	v4l2_requestbuffers req;
-
+	v4l2_capability     cap;
 	\constructor (string mode, string filename) {
-		queuesize=0; queuemax=2; next_frame=0;
+		queuesize=0; queuemax=2; next_frame=0; palette=-1;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		image=0;
 		fd = v4l2_open(filename.data(),0);
@@ -168,8 +169,8 @@ struct Frame {uint8 *p; size_t n;};
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
 		t_atom a[2];
-		//SETFLOAT(a+0,vcaps.minheight); SETFLOAT(a+1,vcaps.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		//SETFLOAT(a+0,vcaps.maxheight); SETFLOAT(a+1,vcaps.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
+		//SETFLOAT(a+0,cap.minheight); SETFLOAT(a+1,cap.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
+		//SETFLOAT(a+0,cap.maxheight); SETFLOAT(a+1,cap.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
 		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),2,a);
 		SETSYMBOL(a,gensym("mmap")); outlet_anything(outlets[0],gensym("transfer"),1,a);
 	}
@@ -191,6 +192,7 @@ struct Frame {uint8 *p; size_t n;};
 			sy,sx,f.height,f.width);
 	sy = f.height;
 	sx = f.width;
+	palette = f.pixelformat;
 	if (debug) gfpost(&fmt);
 }
 
@@ -433,20 +435,12 @@ GRID_INLET(0) {
 	if (c=="rgb"  ) {} else
 	if (c=="magic") {} else
 	   RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
-	WIOCTL(fd, VIDIOCGPICT, &vp);
-	int palette = (palettes&(1<<V4L2_PIX_FMT_RGB24 )) ? V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_YVU420;
-	vp.palette = palette;
-	WIOCTL(fd, VIDIOCSPICT, &vp);
-	WIOCTL(fd, VIDIOCGPICT, &vp);
-	if (vp.palette != palette) {
-		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
-		return;
-	}
 	if (palette==V4L2_PIX_FMT_RGB24) {
 		uint32 masks[3]={0xff0000,0x00ff00,0x0000ff};
 		bit_packing3 = new BitPacking(is_le(),3,3,masks);
 		bit_packing4 = new BitPacking(is_le(),3,4,masks);
-	} else this->colorspace=gensym(c.data());
+	} // else RAISE("huh?");
+	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
 
@@ -462,37 +456,24 @@ GRID_INLET(0) {
 \def 0 white_blue(uint16 white_blue)  {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
 
 void FormatLibV4L::initialize2 () {
-	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
+	//WIOCTL(fd, VIDIOCGCAP, &cap);
+	WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
+	//_0_size(0,0,cap.maxheight,cap.maxwidth);
+	_0_size(0,0,240,320);
 	char namebuf[33];
-	memcpy(namebuf,vcaps.name,sizeof(vcaps.name));
+	memcpy(namebuf,cap.card,sizeof(cap.card));
 	int i;
 	for (i=32; i>=1; i--) if (!namebuf[i] || !isspace(namebuf[i])) break;
 	namebuf[i]=0;
 	while (--i>=0) if (isspace(namebuf[i])) namebuf[i]='_';
 	name = gensym(namebuf);
-	WIOCTL(fd, VIDIOCGPICT,&vp);
-	palettes=0;
-	int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
-#if 1
-	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
-		int p = checklist[i];
-#else
-	for (size_t p=0; p<17; p++) {
-#endif
-		vp.palette = p;
-		v4l2_ioctl(fd, VIDIOCSPICT,&vp);
-		v4l2_ioctl(fd, VIDIOCGPICT,&vp);
-		if (vp.palette == p) {
-			palettes |= 1<<p;
-			post("palette %d supported",p);
-		}
-	}
+	//WIOCTL(fd, VIDIOCGPICT,&vp);
+	//int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
 	_0_colorspace(0,0,gensym("rgb"));
 	_0_channel(0,0,0);
 }
 
 \end class FormatLibV4L {install_format("#io.libv4l",4,"");}
-void startup_videodev () {
+void startup_libv4l () {
 	\startall
 }
