@@ -124,7 +124,8 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 }
 \def 0 close() {
 	//post("CLOSE! f=%p fd=%d",f,fd);
-	if (f) {fclose(f); f=0; fd=-1;} else if (fd>=0) close(fd);
+	if (f) {fclose(f); f=0;}
+	if (fd>=0) {close(fd); fd=-1;} // ???
 }
 \def 0 cast(NumberTypeE nt) {cast = nt;}
 
