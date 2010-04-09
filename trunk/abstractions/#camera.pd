@@ -3,7 +3,7 @@
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 8 -233017 -195568 -195568 0;
-#N canvas 0 0 906 659 camera 1;
+#N canvas 0 0 906 659 camera 0;
 #X obj 310 515 outlet;
 #X obj 11 12 inlet;
 #X obj 63 203 t a;
@@ -179,7 +179,7 @@ norm transfer;
 #X obj 7 469 outlet image;
 #X obj 7 382 inlet;
 #X obj 143 46 hradio 12 1 0 4 \$0-s_tuner \$0-tuner _0_1_2_3 -2 7 1
-8 -233017 -195568 -195568 0;
+8 -233017 -195568 -195568 3;
 #X obj 46 382 r \$0-o;
 #X text 84 35 channel:;
 #X text 98 47 tuner:;
@@ -222,7 +222,7 @@ norm transfer;
 #X obj 360 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
 empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 83 178 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
-20 7 1 8 -233017 -195568 -195568 0 1;
+20 7 1 8 -233017 -195568 -195568 65535 65535;
 #X text 25 47 #0;
 #X text 25 59 #1;
 #X text 25 71 #2;
