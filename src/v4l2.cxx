@@ -458,18 +458,26 @@ GRID_INLET(0) {
 \def uint16 white_blue()       {return v4l2_get_control(fd,V4L2_CID_RED_BALANCE);}
 \def 0 white_blue(uint16 white_blue)  {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
 
+static t_symbol *mangle (char *s, int n) {
+	int i; char buf[n+1]; memcpy(buf,s,n); buf[n]=0;
+	for (i=n-1; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
+	for (i=0; buf[i]; i++) {
+		if (isspace(buf[i])) buf[i]='_';
+		if (buf[i]=='(') buf[i]='[';
+		if (buf[i]==')') buf[i]=']';
+	}
+	return gensym(buf);
+}
+
 void FormatV4L2::initialize2 () {
 	//WIOCTL(fd, VIDIOCGCAP, &cap);
 	WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
 	//_0_size(0,0,cap.maxheight,cap.maxwidth);
 	_0_size(0,0,240,320);
-	char namebuf[33];
-	memcpy(namebuf,cap.card,sizeof(cap.card));
-	int i;
-	for (i=32; i>=1; i--) if (!namebuf[i] || !isspace(namebuf[i])) break;
-	namebuf[i]=0;
-	while (--i>=0) if (isspace(namebuf[i])) namebuf[i]='_';
-	name = gensym(namebuf);
+	t_symbol *card = mangle((char *)cap.card,sizeof(cap.card));
+	//t_symbol *bus = mangle((char *)cap.bus_info,sizeof(cap.bus_info));
+	//this->name = symprintf("%s_on_%s",card->s_name,bus->s_name);
+	this->name = card;
 	//WIOCTL(fd, VIDIOCGPICT,&vp);
 	//int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
 	_0_colorspace(0,0,gensym("rgb"));
