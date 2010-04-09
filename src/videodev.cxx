@@ -39,9 +39,9 @@
 #include "pwc-ioctl.h"
 #include <sstream>
 
-#ifndef HAVE_LIBV4L1 // never defined (yet)
+#ifdef HAVE_LIBV4L1 // never defined (yet)
 #include <libv4l1.h>
-#define open   v4l1_open
+//#define open   v4l1_open
 #define close  v4l1_close
 #define ioctl  v4l1_ioctl
 #define mmap   v4l1_mmap
@@ -201,10 +201,11 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
 	bool has_frequency, has_tuner, has_norm;
+	bool use_libv4l;
 	int fd;
 	int palettes; /* bitfield */
 
-	\constructor (string mode, string filename) {
+	\constructor (string mode, string filename, bool libv4l=false) {
 		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		has_frequency=false;
@@ -214,7 +215,9 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 		//f = fopen(filename.data(),"r+");
 		//if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		//fd = fileno(f);
-		fd = open(filename.data(),O_RDWR);
+		if (libv4l)
+			fd = v4l1_open(filename.data(),O_RDWR);
+		else 	fd =      open(filename.data(),O_RDWR);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		initialize2();
 	}
@@ -265,8 +268,8 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 //#define DEBUG(args...) post(args)
 
 #define  IOCTL( F,NAME,ARG) (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
-#define WIOCTL( F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
-#define WIOCTL2(F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (RAISE("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+#define WIOCTL( F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (error("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)),1))
+#define WIOCTL2(F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (RAISE("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 \def 0 get (t_symbol *s=0) {
 	// this is abnormal for a get-function
@@ -599,6 +602,7 @@ GRID_INLET(0) {
 	              (palettes&(1<<VIDEO_PALETTE_YUYV  )) ? VIDEO_PALETTE_YUYV :
                       VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
+	post("trying to use palette %d",palette);
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
