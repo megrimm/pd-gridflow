@@ -3,7 +3,7 @@
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 8 -233017 -195568 -195568 0;
-#N canvas 0 0 906 659 camera 0;
+#N canvas 0 0 906 659 camera 1;
 #X obj 276 477 outlet;
 #X obj 11 12 inlet;
 #X obj 139 239 t a;
@@ -61,14 +61,6 @@
 #X msg 238 520 label \$1;
 #X obj -13 143 route minsize maxsize;
 #X obj 166 520 route color;
-#X obj 231 13 receives \$0-s_ channel tuner frequency brightness contrast
-colour hue whiteness white_mode white_red white_blue white_speed white_delay
-auto_gain framerate noise_reduction compression pwc size colorspace
-norm transfer;
-#X msg 231 111 list channel tuner frequency brightness contrast colour
-hue whiteness white_mode white_red white_blue white_speed white_delay
-auto_gain framerate noise_reduction compression pwc size colorspace
-norm transfer;
 #X obj 714 510 r \$0-transfer;
 #X obj 754 549 listfind read mmap;
 #X obj 744 568 s \$0-transfer_e;
@@ -91,11 +83,19 @@ norm transfer;
 #X obj 308 603 mod 22;
 #X msg 625 386 open videodev \$1 0 \, get;
 #X obj 509 355 t a;
-#X connect 1 0 68 0;
+#X obj 231 13 receives \$0-s_ channel tuner frequency brightness contrast
+colour hue whiteness white_mode white_red white_blue white_speed white_delay
+auto_gain framerate noise_reduction compression pwc size colorspace
+norm;
+#X msg 231 111 list channel tuner frequency brightness contrast colour
+hue whiteness white_mode white_red white_blue white_speed white_delay
+auto_gain framerate noise_reduction compression pwc size colorspace
+norm;
+#X connect 1 0 66 0;
 #X connect 2 0 4 0;
-#X connect 3 0 79 0;
+#X connect 3 0 77 0;
 #X connect 4 0 7 0;
-#X connect 5 0 78 0;
+#X connect 5 0 76 0;
 #X connect 7 0 8 0;
 #X connect 7 1 0 0;
 #X connect 8 0 22 0;
@@ -106,7 +106,7 @@ norm transfer;
 #X connect 12 0 11 0;
 #X connect 13 0 12 0;
 #X connect 13 1 11 1;
-#X connect 14 0 80 0;
+#X connect 14 0 78 0;
 #X connect 15 0 2 0;
 #X connect 16 0 17 0;
 #X connect 17 0 2 0;
@@ -115,21 +115,21 @@ norm transfer;
 #X connect 22 0 27 0;
 #X connect 22 1 0 0;
 #X connect 22 2 36 0;
-#X connect 22 2 58 0;
+#X connect 22 2 80 0;
 #X connect 22 3 26 0;
-#X connect 24 0 72 0;
+#X connect 24 0 70 0;
 #X connect 25 0 51 0;
 #X connect 26 0 4 1;
 #X connect 27 0 4 1;
 #X connect 28 0 23 0;
-#X connect 28 1 71 0;
+#X connect 28 1 69 0;
 #X connect 29 0 28 0;
 #X connect 31 0 30 0;
 #X connect 32 0 33 0;
 #X connect 33 1 31 0;
 #X connect 34 0 35 0;
 #X connect 34 0 49 0;
-#X connect 34 0 80 0;
+#X connect 34 0 78 0;
 #X connect 35 0 30 0;
 #X connect 36 0 37 0;
 #X connect 38 0 46 0;
@@ -142,41 +142,41 @@ norm transfer;
 #X connect 47 0 42 0;
 #X connect 49 0 48 0;
 #X connect 49 0 50 0;
-#X connect 51 0 76 0;
+#X connect 51 0 74 0;
 #X connect 51 1 49 0;
 #X connect 52 0 56 0;
 #X connect 54 0 53 0;
 #X connect 55 2 21 0;
 #X connect 56 1 54 0;
-#X connect 57 0 16 0;
-#X connect 57 1 16 1;
-#X connect 58 0 18 0;
-#X connect 59 0 65 0;
+#X connect 57 0 63 0;
+#X connect 58 0 59 0;
 #X connect 60 0 61 0;
-#X connect 62 0 63 0;
-#X connect 63 0 64 0;
-#X connect 64 0 2 0;
-#X connect 65 0 61 0;
-#X connect 65 1 60 0;
-#X connect 66 0 80 0;
-#X connect 67 0 66 0;
-#X connect 68 0 70 0;
-#X connect 68 1 9 0;
-#X connect 70 0 77 0;
-#X connect 71 0 23 0;
-#X connect 72 0 15 0;
-#X connect 73 0 74 0;
-#X connect 74 0 80 0;
-#X connect 75 0 73 0;
-#X connect 76 0 3 0;
-#X connect 76 1 14 0;
-#X connect 76 2 67 0;
-#X connect 76 3 75 0;
-#X connect 76 4 34 0;
-#X connect 77 0 69 0;
-#X connect 78 0 6 0;
-#X connect 79 0 80 0;
-#X connect 80 0 22 0;
+#X connect 61 0 62 0;
+#X connect 62 0 2 0;
+#X connect 63 0 59 0;
+#X connect 63 1 58 0;
+#X connect 64 0 78 0;
+#X connect 65 0 64 0;
+#X connect 66 0 68 0;
+#X connect 66 1 9 0;
+#X connect 68 0 75 0;
+#X connect 69 0 23 0;
+#X connect 70 0 15 0;
+#X connect 71 0 72 0;
+#X connect 72 0 78 0;
+#X connect 73 0 71 0;
+#X connect 74 0 3 0;
+#X connect 74 1 14 0;
+#X connect 74 2 65 0;
+#X connect 74 3 73 0;
+#X connect 74 4 34 0;
+#X connect 75 0 67 0;
+#X connect 76 0 6 0;
+#X connect 77 0 78 0;
+#X connect 78 0 22 0;
+#X connect 79 0 16 0;
+#X connect 79 1 16 1;
+#X connect 80 0 18 0;
 #X restore 34 450 pd camera;
 #X obj 7 469 outlet image;
 #X obj 7 382 inlet;
@@ -265,11 +265,6 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 213 68 auto;
 #X obj 6 6 cnv 15 408 20 empty \$0-title Logitech_QuickCam_Pro_4000
 4 10 1 12 -1 -262144 0;
-#X obj 345 315 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
-0 -8 0 10 -62784 -44926 -1 1;
-#X text 286 319 Transfer:;
-#X text 359 313 read;
-#X text 360 325 mmap;
 #X obj 312 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
 -6 1 10 -233017 -1 -195568 120 256;
 #X obj 360 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
@@ -385,10 +380,10 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X obj 47 254 cnv 1 3 1 empty empty V4L2 5 0 0 8 -1 -66577 0;
 #X obj 46 256 cnv 1 1 42 empty empty empty 20 12 0 14 -1 -66577 0;
 #X text 25 263 #5;
-#X connect 2 0 75 0;
+#X connect 2 0 71 0;
 #X connect 4 0 49 0;
-#X connect 6 0 75 0;
-#X connect 49 0 75 0;
-#X connect 75 0 3 0;
-#X connect 75 1 2 0;
-#X connect 98 0 75 0;
+#X connect 6 0 71 0;
+#X connect 49 0 71 0;
+#X connect 71 0 3 0;
+#X connect 71 1 2 0;
+#X connect 94 0 71 0;
