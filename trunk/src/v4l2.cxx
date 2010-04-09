@@ -119,7 +119,7 @@ struct Frame {uint8 *p; size_t n;};
 		image=0;
 		fd = v4l2_open(filename.data(),0);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
-		f = fdopen(fd,"r+");
+		f=0;
 		initialize2();
 	}
 	void frame_finished (uint8 *buf);
@@ -128,7 +128,10 @@ struct Frame {uint8 *p; size_t n;};
 	void dealloc_image ();
 	void frame_ask ();
 	void initialize2 ();
-	~FormatV4L2 () {if (image) dealloc_image();}
+	~FormatV4L2 () {
+		if (image) dealloc_image();
+		close(fd); fd=-1; /* can be v4l2_close, not same as in formats.cxx */
+	}
 
 	\decl 0 bang ();
 	\grin 0 int

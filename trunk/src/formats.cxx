@@ -122,7 +122,10 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 //		def self.rewind() raw_open(*@raw_open_args); @frame = 0 end unless @rewind_redefined
 //		@rewind_redefined = true
 }
-\def 0 close() {if (f) {fclose(f); f=0; fd=-1;}}
+\def 0 close() {
+	//post("CLOSE! f=%p fd=%d",f,fd);
+	if (f) {fclose(f); f=0; fd=-1;} else if (fd>=0) close(fd);
+}
 \def 0 cast(NumberTypeE nt) {cast = nt;}
 
 \def 0 seek(int frame) {
@@ -139,7 +142,7 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 	frame = 0;
 }
 
-Format::~Format () {if (f) fclose(f); /*if (fd>=0) close(fd);*/}
+Format::~Format () {_0_close(0,0);}
 \end class Format {}
 
 /* This is the Grid format I defined: */
