@@ -667,7 +667,7 @@ void FormatVideoDev::initialize2 () {
 	char buf[33];
 	memcpy(buf,vcaps.name,32);
 	int i;
-	for (i=31; buf[i] && !isspace(buf[i]); i--) buf[i--]=0;
+	for (i=31; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
 	for (i=0; buf[i]; i++) {
 		if (isspace(buf[i])) buf[i]='_';
 		if (buf[i]=='(') buf[i]='[';
