@@ -479,11 +479,10 @@ Feature.add {
 		int main () {return v4l1_open==0;}"}}
 Feature.add {
 	tag :libv4l2
-	status :disabled
 	name "Video4linux II Driver Interface Library"
 	uses_h ["libv4l2.h"]
 	uses_so ["-lv4l2"]
-	uses_o ["src/libv4l.o"]
+	uses_o ["src/v4l2.o"]
 	test proc {
 		c_test "
 		#include <libv4l2.h>
