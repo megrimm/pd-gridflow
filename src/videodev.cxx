@@ -317,8 +317,6 @@ void FormatVideoDev::dealloc_image () {
 void FormatVideoDev::alloc_image () {
 	if (use_mmap) {
 		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-		//gfpost(&vmbuf);
-		//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 	} else {
@@ -602,13 +600,13 @@ GRID_INLET(0) {
 		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-	#define RGB(R,G,B,bytes) { \
+	#define RGB(R,G,B,bytes) do { \
 		uint32 masks[4]={R,G,B,0}; \
 		bit_packing3 = new BitPacking(is_le(),bytes,3,masks);\
-		bit_packing4 = new BitPacking(is_le(),bytes,4,masks);}
-        if (palette==VIDEO_PALETTE_RGB565) RGB(0x00f800,0x0007e0,0x00001f,2) else
-	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3) else
-	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4) else
+		bit_packing4 = new BitPacking(is_le(),bytes,4,masks);} while(0)
+        if (palette==VIDEO_PALETTE_RGB565) RGB(0x00f800,0x0007e0,0x00001f,2); else
+	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3); else
+	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4);
 	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
 }
