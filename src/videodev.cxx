@@ -197,7 +197,7 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	uint8 *image;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
-	bool use_mmap, use_pwc;
+	bool use_pwc;
 	P<BitPacking> bit_packing3, bit_packing4;
 	P<Dim> dim;
 	bool has_frequency, has_tuner, has_norm;
@@ -206,7 +206,7 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	int palettes; /* bitfield */
 
 	\constructor (string mode, string filename, bool libv4l=false) {
-		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false;
+		queuesize=0; queuemax=2; next_frame=0; use_pwc=false;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		has_frequency=false;
 		has_tuner=false;
@@ -239,7 +239,6 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	\attr int tuner();
 	\attr int norm();
 	\decl 0 size (int sy, int sx);
-	\decl 0 transfer (string sym);
 
 	\attr t_symbol *colorspace;
 	\attr int32  frequency();
@@ -289,7 +288,6 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 		string foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
 		SETSYMBOL(a,gensym(foo.data()));
 		outlet_anything(outlets[0],gensym("palette"),1,a);
-		SETSYMBOL(a,gensym(use_mmap ? "mmap" : "read"));  outlet_anything(outlets[0],gensym("transfer"),1,a);
 		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),    2,a);
 	}
 }
@@ -312,24 +310,11 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	if (debug) gfpost(&grab_win);
 }
 
-void FormatVideoDev::dealloc_image () {
-	if (!image) return;
-	if (use_mmap) {
-		munmap(image, vmbuf.size);
-		image=0;
-	} else {
-		delete[] (uint8 *)image;
-	}
-}
-
+void FormatVideoDev::dealloc_image () {if (image) {munmap(image,vmbuf.size); image=0;}}
 void FormatVideoDev::alloc_image () {
-	if (use_mmap) {
-		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
-	} else {
-		image = new uint8[dim->prod(0,1)*4];
-	}
+	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
+	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 }
 
 void FormatVideoDev::frame_ask () {
@@ -458,33 +443,8 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	}
 }
 
-// strange that read2 is not used and read3 is used instead
-static int read2(int fd, uint8 *image, int n) {
-	int r=0;
-	while (n>0) {
-		int rr=read(fd,image,n);
-		if (rr<0) return rr; else {r+=rr; image+=rr; n-=rr;}
-	}
-	return r;
-}
-
-static int read3(int fd, uint8 *image, int n) {
-	int r=read(fd,image,n);
-	if (r<0) return r;
-	return n;
-}
-
 \def 0 bang () {
 	if (!image) alloc_image();
-	if (!use_mmap) {
-		/* picture is read at once by frame() to facilitate debugging. */
-		int tot = dim->prod(0,1) * bit_packing3->bytes;
-		int n = (int) read3(fd,image,tot);
-		if (n==tot) frame_finished(image);
-		if (0> n) RAISE("error reading: %s", strerror(errno));
-		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
-		return;
-	}
 	while(queuesize<queuemax) frame_ask();
 	vmmap.frame = queue[0];
 	//uint64 t0 = gf_timeofday();
@@ -497,11 +457,7 @@ static int read3(int fd, uint8 *image, int n) {
 	frame_ask();
 }
 
-GRID_INLET(0) {
-	RAISE("can't write.");
-} GRID_FLOW {
-} GRID_FINISH {
-} GRID_END
+GRID_INLET(0) {RAISE("can't write.");} GRID_END
 
 \def 0 norm (int value) {
 	VideoTuner vtuner;
@@ -548,12 +504,6 @@ GRID_INLET(0) {
 	has_tuner = (vcaps.type & VID_TYPE_TUNER && vchan.tuners > 1);
 }
 \def int channel () {return current_channel;}
-
-\def 0 transfer (string sym) {
-	if        (sym=="read") {dealloc_image(); use_mmap = false;
-	} else if (sym=="mmap") {dealloc_image(); use_mmap = true;  alloc_image(); //this->queuemax=vmbuf.frames;
-	} else RAISE("don't know that transfer mode");
-}
 
 #define PICTURE_ATTR(_name_) {\
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
