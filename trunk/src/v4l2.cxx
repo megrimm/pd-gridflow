@@ -100,7 +100,7 @@ static void gfpost(v4l2_requestbuffers *self) {std::ostringstream buf; buf << "[
 
 struct Frame {uint8 *p; size_t n;};
 
-\class FormatLibV4L : Format {
+\class FormatV4L2 : Format {
 	uint8 *image;
 	Frame queue[8];
 	int queuesize, queuemax, next_frame;
@@ -128,7 +128,7 @@ struct Frame {uint8 *p; size_t n;};
 	void dealloc_image ();
 	void frame_ask ();
 	void initialize2 ();
-	~FormatLibV4L () {if (image) dealloc_image();}
+	~FormatV4L2 () {if (image) dealloc_image();}
 
 	\decl 0 bang ();
 	\grin 0 int
@@ -196,14 +196,14 @@ struct Frame {uint8 *p; size_t n;};
 	if (debug) gfpost(&fmt);
 }
 
-void FormatLibV4L::dealloc_image () {
+void FormatV4L2::dealloc_image () {
   for (int i=0; i<queuemax; i++) {
-    if (munmap(queue[i].p,queue[i].n)<0) post("libv4l: can't munmap?");
+    if (munmap(queue[i].p,queue[i].n)<0) post("v4l2: can't munmap?");
   }
   queuesize=0;
   //image=???;
 }
-void FormatLibV4L::alloc_image () {
+void FormatV4L2::alloc_image () {
 	//CLEAR(req); // ???
         //req.count = 2;
         //req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -218,11 +218,11 @@ void FormatLibV4L::alloc_image () {
 	for (int i=0; i<queuemax; i++) {
 		queue[i].n = buf.length;
 		queue[i].p = (uint8 *)v4l2_mmap(0, buf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
-		if (queue[i].p == MAP_FAILED) post("libv4l: can't mmap");
+		if (queue[i].p == MAP_FAILED) post("v4l2: can't mmap");
 	}
 }
 
-void FormatLibV4L::frame_ask () {
+void FormatV4L2::frame_ask () {
 	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
 	//if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	//vmmap.frame = queue[queuesize++] = next_frame;
@@ -241,7 +241,7 @@ void FormatLibV4L::frame_ask () {
 
 //static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
-void FormatLibV4L::frame_finished (uint8 *buf) {
+void FormatV4L2::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
 	/* picture is converted here. */
@@ -455,7 +455,7 @@ GRID_INLET(0) {
 \def uint16 white_blue()       {return v4l2_get_control(fd,V4L2_CID_RED_BALANCE);}
 \def 0 white_blue(uint16 white_blue)  {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
 
-void FormatLibV4L::initialize2 () {
+void FormatV4L2::initialize2 () {
 	//WIOCTL(fd, VIDIOCGCAP, &cap);
 	WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
 	//_0_size(0,0,cap.maxheight,cap.maxwidth);
@@ -473,7 +473,7 @@ void FormatLibV4L::initialize2 () {
 	_0_channel(0,0,0);
 }
 
-\end class FormatLibV4L {install_format("#io.libv4l",4,"");}
-void startup_libv4l () {
+\end class FormatV4L2 {install_format("#io.v4l2",4,"");}
+void startup_v4l2 () {
 	\startall
 }
