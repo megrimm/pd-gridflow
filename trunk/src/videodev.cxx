@@ -353,9 +353,9 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int bs = dim->prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
+	GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 	if (vp.palette==VIDEO_PALETTE_YUYV) {
 		uint8 *bufy = buf;
-		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 		if (cs=="y") {
 		    for(int y=0; y<sy; bufy+=sx, y++) {
 			for (int x=0,xx=0; x<sx; x+=2,xx+=4) {
@@ -386,7 +386,6 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		}
 	} else if (vp.palette==VIDEO_PALETTE_YUV420P) {
 		uint8 *bufy = buf, *bufu = buf+sx*sy, *bufv = buf+sx*sy*5/4;
-		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
 		if (cs=="y") {
 		    out.send(sy*sx,buf);
 		} else if (cs=="rgb") {
@@ -410,7 +409,6 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		    }
 		}
 	} else if (vp.palette==VIDEO_PALETTE_RGB32 || vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
-		GridOutlet out(this,0,dim,cast);
 		uint8 rgb[sx*4];
 		uint8 b2[sx*3];
 		if (cs=="y") {
@@ -444,7 +442,17 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (cs=="magic") RAISE("magic colorspace not supported with a RGB palette");
+		} else if (cs=="magic") {
+		    for(int y=0; y<sy; y+=2) {
+			bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+ 			for (int x=0,xx=0; x<bs; x+=3,xx+=6) {
+				b2[x+0] = RGB2Y_(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[x+1] = RGB2U_(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[x+2] = RGB2V_(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+			}
+			out.send(bs,b2);
+		    }
+		}
 	} else {
 		RAISE("unsupported palette %d",vp.palette);
 	}
@@ -602,7 +610,7 @@ GRID_INLET(0) {
 	              (palettes&(1<<VIDEO_PALETTE_YUYV  )) ? VIDEO_PALETTE_YUYV :
                       VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
-	post("trying to use palette %d",palette);
+	post("request use of palette %d",palette);
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
