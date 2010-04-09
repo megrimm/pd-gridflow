@@ -2,8 +2,8 @@
 #X obj 81 31 cnv 15 184 68 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 143 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
-7 1 8 -233017 -195568 -195568 0;
-#N canvas 0 0 906 659 camera 0;
+7 1 8 -62784 -44926 -1 0;
+#N canvas 0 0 906 659 camera 1;
 #X obj 310 515 outlet;
 #X obj 11 12 inlet;
 #X obj 63 203 t a;
@@ -79,7 +79,6 @@ norm transfer;
 #X obj 714 529 route2 color;
 #X msg 668 282 open quicktimecamera \$1 \, get;
 #X obj 668 263 - 9;
-#X obj 308 603 mod 14;
 #X obj 11 31 route not_open;
 #X obj 11 88 s \$0-device;
 #X obj 11 50 delay 200;
@@ -90,12 +89,13 @@ norm transfer;
 #X obj 690 370 - 13;
 #X obj 625 244 range 8 9 13 21;
 #X msg 11 69 21;
-#X connect 1 0 70 0;
+#X obj 308 603 mod 22;
+#X connect 1 0 69 0;
 #X connect 2 0 5 0;
 #X connect 3 0 23 0;
 #X connect 4 0 3 0;
 #X connect 5 0 8 0;
-#X connect 6 0 69 0;
+#X connect 6 0 79 0;
 #X connect 8 0 9 0;
 #X connect 8 1 0 0;
 #X connect 9 0 23 0;
@@ -117,12 +117,12 @@ norm transfer;
 #X connect 23 2 37 0;
 #X connect 23 2 59 0;
 #X connect 23 3 27 0;
-#X connect 25 0 74 0;
+#X connect 25 0 73 0;
 #X connect 26 0 52 0;
 #X connect 27 0 5 1;
 #X connect 28 0 5 1;
 #X connect 29 0 24 0;
-#X connect 29 1 73 0;
+#X connect 29 1 72 0;
 #X connect 30 0 29 0;
 #X connect 32 0 31 0;
 #X connect 33 0 34 0;
@@ -142,7 +142,7 @@ norm transfer;
 #X connect 48 0 43 0;
 #X connect 50 0 49 0;
 #X connect 50 0 51 0;
-#X connect 52 0 78 0;
+#X connect 52 0 77 0;
 #X connect 52 1 50 0;
 #X connect 53 0 57 0;
 #X connect 55 0 54 0;
@@ -160,26 +160,26 @@ norm transfer;
 #X connect 66 1 61 0;
 #X connect 67 0 23 0;
 #X connect 68 0 67 0;
-#X connect 69 0 7 0;
-#X connect 70 0 72 0;
-#X connect 70 1 10 0;
-#X connect 72 0 79 0;
-#X connect 73 0 24 0;
-#X connect 74 0 16 0;
-#X connect 75 0 76 0;
-#X connect 76 0 23 0;
-#X connect 77 0 75 0;
-#X connect 78 0 4 0;
-#X connect 78 1 15 0;
-#X connect 78 2 68 0;
-#X connect 78 3 77 0;
-#X connect 78 4 35 0;
-#X connect 79 0 71 0;
+#X connect 69 0 71 0;
+#X connect 69 1 10 0;
+#X connect 71 0 78 0;
+#X connect 72 0 24 0;
+#X connect 73 0 16 0;
+#X connect 74 0 75 0;
+#X connect 75 0 23 0;
+#X connect 76 0 74 0;
+#X connect 77 0 4 0;
+#X connect 77 1 15 0;
+#X connect 77 2 68 0;
+#X connect 77 3 76 0;
+#X connect 77 4 35 0;
+#X connect 78 0 70 0;
+#X connect 79 0 7 0;
 #X restore 34 450 pd camera;
 #X obj 7 469 outlet image;
 #X obj 7 382 inlet;
 #X obj 143 46 hradio 12 1 0 4 \$0-s_tuner \$0-tuner _0_1_2_3 -2 7 1
-8 -233017 -195568 -195568 3;
+8 -62784 -44926 -1 3;
 #X obj 46 382 r \$0-o;
 #X text 84 35 channel:;
 #X text 98 47 tuner:;
@@ -187,7 +187,7 @@ norm transfer;
 0;
 #X text 9 31 device:;
 #X obj 11 50 vradio 12 1 0 22 \$0-s_device \$0-device empty 0 -6 0
-8 -241291 -1 -1 21;
+8 -241291 -1 -1 13;
 #X obj 81 105 cnv 15 184 177 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 270 214 cnv 15 144 155 empty \$0-palette2 YUV420P 86 8 0 10
@@ -195,34 +195,34 @@ norm transfer;
 #X obj 270 31 cnv 15 144 178 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 312 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_height \$0-height empty
-0 -6 1 10 -233017 -195568 -195568 240 256;
+0 -6 1 10 -62784 -44926 -1 240 256;
 #X obj 360 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_width \$0-width empty
-0 -6 1 10 -233017 -195568 -195568 320 256;
+0 -6 1 10 -62784 -44926 -1 320 256;
 #X text 275 65 size:;
 #X text 315 35 height;
 #X text 365 35 width;
 #X msg 291 346 transfer mmap 4;
 #X obj 291 377 s \$0-o;
 #X obj 329 124 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 344 124 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 329 136 bng 12 250 50 0 \$0-size2 \$0-sizec 240x320 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 344 136 bng 12 250 50 0 \$0-size3 \$0-sizec 240x360 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 329 148 bng 12 250 50 0 \$0-size4 \$0-sizec 480x640 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 344 148 bng 12 250 50 0 \$0-size5 \$0-sizec 480x720 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 344 160 bng 12 250 50 0 \$0-size6 \$0-sizec 576x720 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 344 172 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 360 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
 empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 83 178 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
-20 7 1 8 -233017 -195568 -195568 65535 65535;
+20 7 1 8 -62784 -44926 -1 65535 65535;
 #X text 25 47 #0;
 #X text 25 59 #1;
 #X text 25 71 #2;
@@ -241,7 +241,7 @@ _0_1_2_3_noise_reduction -2 7 1 8 -233017 -195568 -195568 0;
 #X text 26 323 use PWC;
 #X text 24 143 DC1394;
 #X obj 345 232 vradio 12 1 0 6 \$0-s_colorspace_e \$0-colorspace_e
-empty 0 -8 0 10 -233017 -195568 -195568 2;
+empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 359 228 y (grey);
 #X text 359 240 yuv;
 #X text 358 253 rgb;
@@ -263,10 +263,10 @@ empty 0 -8 0 10 -233017 -195568 -195568 2;
 #X text 214 45 NTSC;
 #X text 213 57 SECAM;
 #X text 213 68 auto;
-#X obj 6 6 cnv 15 408 20 empty \$0-title No_camera_selected 4 10 1
-12 -1 -262144 0;
+#X obj 6 6 cnv 15 408 20 empty \$0-title Logitech_QuickCam_Pro_4000
+4 10 1 12 -1 -262144 0;
 #X obj 345 315 vradio 12 1 0 2 \$0-s_transfer_e \$0-transfer_e empty
-0 -8 0 10 -233017 -195568 -195568 1;
+0 -8 0 10 -62784 -44926 -1 1;
 #X text 286 319 Transfer:;
 #X text 359 313 read;
 #X text 360 325 mmap;
