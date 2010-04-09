@@ -810,24 +810,27 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
 
-/* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
+/* This code handles nested lists because PureData doesn't do it */
 int handle_braces(int ac, t_atom *av) {
 	int stack[16];
 	int stackn=0;
 	int j=0;
 	t_binbuf *buf = binbuf_new();
+	//startpost("1: "); postatom(ac,av); post("");
 	for (int i=0; i<ac; ) {
 		int close=0;
 		if (av[i].a_type==A_SYMBOL) {
-			const char *s = av[i].a_symbol->s_name;
+			const char *s = av[i].a_symbol->s_name, *os=s;
 			while (*s=='(') {
 				if (stackn==16) {binbuf_free(buf); RAISE("too many nested lists (>16)");}
 				stack[stackn++]=j;
 				s++;
 			}
-			const char *se = s+strlen(s);
+			const char *se = s+strlen(s), *ose=se;
 			while (se>s && se[-1]==')') {se--; close++;}
-			if (s!=se) {
+			if (os==s && ose==se) {
+				av[j++]=av[i];
+			} else if (s!=se) {
 				binbuf_text(buf,(char *)s,se-s);
 				if ((binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT) || binbuf_getvec(buf)[0].a_type==A_COMMA) {
 					av[j++] = binbuf_getvec(buf)[0];
@@ -852,6 +855,7 @@ int handle_braces(int ac, t_atom *av) {
 	}
 	binbuf_free(buf);
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
+	//startpost("2: "); postatom(ac,av); post("");
 	return j;
 }
 
