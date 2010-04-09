@@ -318,7 +318,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	if (c=="rgb"  ) {} else
 	if (c=="rgba" ) {} else
 	//if (c=="magic") {} else
-	   RAISE("got '%s' but supported colorspaces are: rgb rgba",c.data());
+	   RAISE("got '%s' but supported colorspaces are: y yuv rgb rgba",c.data());
 	uint32 masks[4]={0x0000ff00,0x00ff0000,0xff000000,0x00000000};
 	bit_packing3 = new BitPacking(is_le(),4,3,masks);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
