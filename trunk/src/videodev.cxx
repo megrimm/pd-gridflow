@@ -328,7 +328,7 @@ void FormatVideoDev::alloc_image () {
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 	} else {
-		image = new uint8[dim->prod(0,1)*bit_packing3->bytes];
+		image = new uint8[dim->prod(0,1)*4];
 	}
 }
 
