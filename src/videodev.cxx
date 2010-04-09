@@ -431,7 +431,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			for(int y=0; y<sy; y++) {
 				uint8 *buf2 = buf+y*sx*bit_packing4->bytes;
 			        bit_packing4->unpack(sx,buf2,rgb);
-			        for (int x=0; x<sx; x++) buf2[4*x+3]=255; /* i hope this is correct. not tested. */
+			        for (int x=3; x<bs; x+=4) rgb[x]=255;
 			 	out.send(bs,rgb);
 			}
 		} else if (cs=="yuv") {
