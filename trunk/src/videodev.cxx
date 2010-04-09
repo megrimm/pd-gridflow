@@ -239,7 +239,7 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	\attr int tuner();
 	\attr int norm();
 	\decl 0 size (int sy, int sx);
-	\decl 0 transfer (string sym, int queuemax=2);
+	\decl 0 transfer (string sym);
 
 	\attr t_symbol *colorspace;
 	\attr int32  frequency();
@@ -549,18 +549,9 @@ GRID_INLET(0) {
 }
 \def int channel () {return current_channel;}
 
-\def 0 transfer (string sym, int queuemax=2) {
-	if (sym=="read") {
-		dealloc_image();
-		use_mmap = false;
-		post("transfer read");
-	} else if (sym=="mmap") {
-		dealloc_image();
-		use_mmap = true;
-		alloc_image();
-		queuemax=min(8,min(queuemax,vmbuf.frames));
-		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
-		this->queuemax=queuemax;
+\def 0 transfer (string sym) {
+	if        (sym=="read") {dealloc_image(); use_mmap = false;
+	} else if (sym=="mmap") {dealloc_image(); use_mmap = true;  alloc_image(); //this->queuemax=vmbuf.frames;
 	} else RAISE("don't know that transfer mode");
 }
 
