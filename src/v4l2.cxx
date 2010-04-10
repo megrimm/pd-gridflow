@@ -37,6 +37,20 @@
 //#define error post
 static bool debug=1;
 
+#ifdef HAVE_LIBV4L2
+#include <libv4l1.h>
+//#define open   v4l2_open
+#define close  v4l2_close
+#define ioctl  v4l2_ioctl
+#define mmap   v4l2_mmap
+#define munmap v4l2_munmap
+#define read   v4l2_read
+#warning Using libv4l2 !!!
+#else
+#warning NOT Using libv4l2 !!!
+#define v4l2_open(a,b) RAISE("this [#io.v4l2] wasn't compiled with libv4l2 support")
+#endif
+
 /* **************************************************************** */
 
 #define FLAG(_num_,_name_,_desc_) #_name_,
@@ -113,11 +127,12 @@ struct Frame {uint8 *p; size_t n;};
 	v4l2_buffer         buf;
 	v4l2_requestbuffers req;
 	v4l2_capability     cap;
-	\constructor (string mode, string filename) {
+	\constructor (string mode, string filename, bool use_libv4l) {
 		queuesize=0; queuemax=2; next_frame=0; palette=-1;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		image=0;
-		fd = v4l2_open(filename.data(),0);
+		if (use_libv4l) fd = v4l2_open(filename.data(),0);
+		else            fd =      open(filename.data(),0);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		f=0;
 		initialize2();
