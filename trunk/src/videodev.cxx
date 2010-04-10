@@ -39,7 +39,7 @@
 #include "pwc-ioctl.h"
 #include <sstream>
 
-#ifdef HAVE_LIBV4L1 // never defined (yet)
+#ifdef HAVE_LIBV4L1
 #include <libv4l1.h>
 //#define open   v4l1_open
 #define close  v4l1_close
@@ -50,6 +50,7 @@
 #warning Using libv4l1 !!!
 #else
 #warning NOT Using libv4l1 !!!
+#define v4l1_open(a,b) RAISE("this [#io.videodev] wasn't compiled with libv4l1 support")
 #endif
 
 //#define error post
