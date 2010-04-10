@@ -127,7 +127,7 @@ struct Frame {uint8 *p; size_t n;};
 	v4l2_buffer         buf;
 	v4l2_requestbuffers req;
 	v4l2_capability     cap;
-	\constructor (string mode, string filename, bool use_libv4l) {
+	\constructor (string mode, string filename, bool use_libv4l=false) {
 		queuesize=0; queuemax=2; next_frame=0; palette=-1;
 		colorspace=gensym("none"); /* non-existent colorspace just to prevent crash in case of other problems */
 		image=0;
