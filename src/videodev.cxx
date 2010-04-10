@@ -50,7 +50,7 @@
 #warning Using libv4l1 !!!
 #else
 #warning NOT Using libv4l1 !!!
-#define v4l1_open(a,b) RAISE("this [#io.videodev] wasn't compiled with libv4l1 support")
+#define v4l1_open(a,b) (RAISE("this [#io.videodev] wasn't compiled with libv4l1 support"),-1)
 #endif
 
 //#define error post
