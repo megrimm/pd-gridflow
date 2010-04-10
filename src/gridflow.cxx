@@ -810,6 +810,8 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
 
+static t_symbol *s_comma;
+
 /* This code handles nested lists because PureData doesn't do it */
 int handle_braces(int ac, t_atom *av) {
 	int stack[16];
@@ -829,10 +831,12 @@ int handle_braces(int ac, t_atom *av) {
 			const char *se = s+strlen(s), *ose=se;
 			while (se>s && se[-1]==')') {se--; close++;}
 			if (os==s && ose==se) {
+				if (av[i].a_symbol==s_comma) av[i].a_type=A_COMMA; /* wtf */
 				av[j++]=av[i];
 			} else if (s!=se) {
 				binbuf_text(buf,(char *)s,se-s);
-				if ((binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT) || binbuf_getvec(buf)[0].a_type==A_COMMA) {
+				if ((binbuf_getnatom(buf)==1 && binbuf_getvec(buf)[0].a_type==A_FLOAT)
+				 || binbuf_getvec(buf)[0].a_type==A_COMMA) {
 					av[j++] = binbuf_getvec(buf)[0];
 				} else {
 					char ss[MAXPDSTRING];
@@ -984,6 +988,7 @@ void allow_big_stack () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
+    s_comma = gensym(",");
     post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
