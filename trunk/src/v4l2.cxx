@@ -48,7 +48,7 @@ static bool debug=1;
 #warning Using libv4l2 !!!
 #else
 #warning NOT Using libv4l2 !!!
-#define v4l2_open(a,b) RAISE("this [#io.v4l2] wasn't compiled with libv4l2 support")
+#define v4l2_open(a,b) (RAISE("this [#io.v4l2] wasn't compiled with libv4l2 support"),-1)
 #endif
 
 /* **************************************************************** */
