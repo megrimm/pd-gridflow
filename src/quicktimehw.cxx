@@ -62,6 +62,7 @@ static std::map<string,string> fourccs;
 		quicktime_set_cpus(anim,1);
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 		bit_packing = new BitPacking(is_le(),3,3,mask);
+		with_audio = false;
 	}
 	\decl 0 bang ();
 	\decl 0 seek (int32 frame);
@@ -78,6 +79,7 @@ static std::map<string,string> fourccs;
 	\attr int32   width();
 	\attr int32   depth();
 	\attr string  codec();
+	\attr bool with_audio;
 };
 
 \def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
@@ -87,6 +89,25 @@ static std::map<string,string> fourccs;
 \def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
+	if (with_audio) {
+		int track = 0;
+		int a_rate = quicktime_sample_rate(anim,track);
+		post("audio rate = %d",a_rate);
+		int v_rate = quicktime_frame_rate(anim,track);
+		post("video rate = %d",v_rate);
+		post("audio rate ratio = %f",float(a_rate)/v_rate);
+		int samples = float(a_rate)/v_rate;
+		float sound[channels*samples];
+		float *output_f[channels];
+		for (int j=0; j<channels; j++) output_f[j] = sound+samples*j;
+		lqt_decode_audio_track(anim,0,output_f,samples,track);
+		float sound2[samples*channels];
+		for (int i=0; i<samples; i++)
+			for (int j=0; j<samples; j++)
+				sound2[i*channels+j] = sound[j*samples+i];
+		GridOutlet out(this,0,new Dim(samples,channels),float32_e);
+		out.send(samples*channels,sound2);
+	}
 	long length = quicktime_video_length(anim,track);
 	long nframe = quicktime_video_position(anim,track);
 	if (nframe >= length) {outlet_bang(outlets[0]); return;}
@@ -103,10 +124,7 @@ static std::map<string,string> fourccs;
 	case 32: colorspace=BC_RGBA8888; break;
 	default: post("strange quicktime. ask matju."); break;
 	}
-	if (force) {
-		sy = force->get(0);
-		sx = force->get(1);
-	}
+	if (force) {sy = force->get(0); sx = force->get(1);}
 	uint8 buf[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
