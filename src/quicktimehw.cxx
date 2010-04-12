@@ -51,8 +51,7 @@ static std::map<string,string> fourccs;
 // libquicktime may be nice, but it won't take a filehandle, only filename
 		filename = gf_find_file(filename);
 		anim = quicktime_open((char *)filename.data(),mode==gensym("in"),mode==gensym("out"));
-		if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
-			filename.data(), strerror(errno));
+		if (!anim) RAISE("can't open file `%s': see error message above",filename.data());
 		if (mode==gensym("in")) {
 	/* This doesn't really work: (is it just for encoding?)
 			if (!quicktime_supported_video(anim,track))
@@ -225,6 +224,12 @@ GRID_INLET(0) {
 #endif
 }
 \end class FormatQuickTimeHW
+
+void gf_lqt_log_callback(lqt_log_level_t level, const char *domain, const char *message, void *data) {
+	if (level&1) post("libquicktime: %s",message);
+}
+
 void startup_quicktimehw () {
 	\startall
+	lqt_set_log_callback(gf_lqt_log_callback,0);
 }
