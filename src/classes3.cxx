@@ -32,6 +32,66 @@ template <long n> struct SCopy {template <class T> static inline void __attribut
 template <>    struct SCopy<0> {template <class T> static inline void __attribute__((always_inline)) f(T *a, T *b) {}};
 
 //****************************************************************
+\class GridToTilde : FObject {
+	PtrGrid blah;
+	t_outlet **sigout;
+	int chans; /* number of channels */
+	int start;
+	int size;
+	\constructor (int n) {
+		sigout = new t_outlet *[chans];
+		for (int i=0; i<n; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
+		chans = n;
+		blah=new Grid(new Dim(16384,n),float32_e);
+		start=0;
+		size=0;
+	}
+	~GridToTilde () {delete[] sigout;}
+	void perform (int n, t_sample *v) {
+		float32 *data = (float32 *)*blah;
+		for (int i=0; i<n; i++) {
+			if (size) {
+				v[i]=data[start*chans];
+				start=(start+1)&16383;
+				size--;
+			} else {
+				v[i]=0;
+			}
+		}
+	}
+	static t_int *perform_ (t_int *w) {
+		GridToTilde *self = (GridToTilde *)w[1];
+		int n = int(w[2]);
+		t_sample *v = (t_sample *)w[3];
+		self->perform(n,v);
+		return w+4;
+	}
+	static void dsp (BFObject *bself, t_signal **sp) {
+		GridToTilde *self = (GridToTilde *)bself->self;
+		dsp_add(GridToTilde::perform_,3,self,sp[0]->s_n,sp[0]->s_vec);
+	}
+	\grin 0 float32
+};
+GRID_INLET(0) {
+	if (in->dim->n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
+	if (in->dim->v[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in->dim->v[1],chans);
+} GRID_FLOW {
+	if (size==16384) return;
+	while (n) {
+		int i = ((start+size)&16383) * chans;
+		COPY((T *)*blah+i,data,chans);
+		data+=chans; n-=chans; size++;
+		if (size==16384) {post("[#to~] buffer full"); break;}
+	}
+} GRID_FINISH {
+	post("[#to~] buffer size : %d out of 16384",size);
+} GRID_END
+\end class {
+	install("#to~",1,0); // actually 1 outlet unregistered with GF
+	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp,gensym("dsp"),A_CANT,0);
+}
+
+//****************************************************************
 \class GridJoin : FObject {
 	\attr int which_dim;
 	PtrGrid r;
