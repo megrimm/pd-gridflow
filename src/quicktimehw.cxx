@@ -91,22 +91,21 @@ static std::map<string,string> fourccs;
 \def 0 bang () {
 	if (with_audio) {
 		int track = 0;
-		int a_rate = quicktime_sample_rate(anim,track);
-		post("audio rate = %d",a_rate);
-		int v_rate = quicktime_frame_rate(anim,track);
-		post("video rate = %d",v_rate);
-		post("audio rate ratio = %f",float(a_rate)/v_rate);
-		int samples = float(a_rate)/v_rate;
-		float sound[channels*samples];
-		float *output_f[channels];
-		for (int j=0; j<channels; j++) output_f[j] = sound+samples*j;
+		float a_rate = quicktime_sample_rate(anim,track);
+		float v_rate = quicktime_frame_rate(anim,track);
+		int samples = int(a_rate/v_rate);
+		post("audio rate = %f, video rate = %f, ratio = %f",a_rate,v_rate,a_rate/v_rate);
+		int achannels = quicktime_track_channels(anim,track);
+		float sound[achannels*samples];
+		float *output_f[achannels];
+		for (int j=0; j<achannels; j++) output_f[j] = sound+samples*j;
 		lqt_decode_audio_track(anim,0,output_f,samples,track);
-		float sound2[samples*channels];
+		float sound2[samples*achannels];
 		for (int i=0; i<samples; i++)
-			for (int j=0; j<samples; j++)
-				sound2[i*channels+j] = sound[j*samples+i];
-		GridOutlet out(this,0,new Dim(samples,channels),float32_e);
-		out.send(samples*channels,sound2);
+			for (int j=0; j<achannels; j++)
+				sound2[i*achannels+j] = sound[j*samples+i];
+		GridOutlet out(this,0,new Dim(samples,achannels),float32_e);
+		out.send(samples*achannels,sound2);
 	}
 	long length = quicktime_video_length(anim,track);
 	long nframe = quicktime_video_position(anim,track);
