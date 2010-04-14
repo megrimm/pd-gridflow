@@ -113,11 +113,17 @@ const char *oserr_find(long err)
 //	post("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
-	GridOutlet out(this,0,dim);
+	GridOutlet out(this,0,dim,cast);
 	uint32 *bufu32 = (uint32 *)buffer;
 	int n = dim->prod()/4;
 	int i;
 	if (is_le()) {
+		for (i=0; i<n&-4; i+=4) {
+			bufu32[i+0]=bufu32[i+0]>>8;
+			bufu32[i+1]=bufu32[i+1]>>8;
+			bufu32[i+2]=bufu32[i+2]>>8;
+			bufu32[i+3]=bufu32[i+3]>>8;
+		}
 		for (; i<n; i++) {
 			bufu32[i+0]=bufu32[i+0]>>8;
 		}
