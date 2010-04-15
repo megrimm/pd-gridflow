@@ -329,7 +329,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 static int nn(int c) {return c?c:' ';}
 
 \def 0 bang () {
-	GridOutlet out(this,0,dim);
+	GridOutlet out(this,0,dim,cast);
 	string cs = colorspace->s_name;
 	int sy = dim->v[0];
 	int sx = dim->v[1];
