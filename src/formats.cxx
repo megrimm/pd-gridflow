@@ -233,8 +233,10 @@ GRID_INLET(0) {
 		}
 		head.reserved = 0;
 		head.dimn = in->dim->n;
-		fwrite(&head,1,8,f);
-		fwrite(in->dim->v,in->dim->n,4,f);
+		size_t sz = 4*in->dim->n;
+#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
+		if (fwrite(&head,1,8,f      )< 8) FRAISE(fwrite,f);
+		if (fwrite(in->dim->v,1,sz,f)<sz) FRAISE(fwrite,f);
 	}
 } GRID_FLOW {
 #define FOO(T) {T data2[n]; for(int i=0; i<n; i++) data2[i]=(T)data[i]; \
