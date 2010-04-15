@@ -1,7 +1,7 @@
 proc say {k v} {set ::say($k) $v}
 proc category {k} {}
 source locale/english.tcl
-puts "#N canvas 0 0 560 480 10 ;"
+puts "#N canvas 0 0 632 659 10 ;"
 set y 50
 set n 0
 foreach k [lsort [array names ::say *]] {
@@ -20,6 +20,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$k=="#cluster_avg"} {set k "$k 4"}
 	if {$k == "#many"}      {set k "$k tgl 3 3"}
 	if {[regexp ^doc $k]}   {set k "\[$k\]"; set sel text}
+	if {[regexp ^#io $k]}   {set k "doc_link $k"}
 
 	set w [string length $k]
 	regsub "\\$" $k "\\$" k
@@ -31,6 +32,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$ok == "doremi"} {set w 105; set h 73}
 	if {$ok == "#color"} {set w 156; set h 55}
 	if {$ok == "display"} {set w 22}
+	if {[regexp ^doc_link $k]} {set w 120}
 
 	puts "#X $sel [expr 160-$w] $y $k;"
 	regsub "," $v " \\, " v
