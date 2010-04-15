@@ -4,14 +4,18 @@ x = done
 L = much later (whenever we get to know how to do it...)
 
 9.9, assigned to Patrick:
+[1] [#io.quicktimecamera] dÃ©boguer farfisa_2.mov
+[2] [#io.quicktimecamera] accÃ©lÃ©rer le dÃ©codage (essayer avec farfisa_2.mov)
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] test colorspace rgb on PPC
+[ ] [#io.quicktimecamera] test colorspace rgb, rgba, y, yuv on PPC
 [ ] [#io.quicktimecamera] make colorspace rgb the default when it works on both Intel and PPC
 [ ] [#io.quicktimecamera] colorspace magic
-[ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
-    (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
-     vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
-     présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
+[ ] [#io.quicktimecamera] cast
+[ ] [#io.quicktimeapple] cast
+[ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le mÃ©tro est trop vite)
+    (et parce que sur un ordi que je viens d'essayer, on dÃ©termine qu'on a juste 15 fps pcq quand le mÃ©tro est plus
+     vite, la dÃ©tection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
+     prÃ©sentement ? est-ce que Ã§a dÃ©pend de la derniÃ¨re app qui a ouvert la camÃ©ra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
 [x] [#io.quartz] keypress/keyrelease
 [L] [#io.quartz] setcursor/hidecursor
@@ -23,16 +27,30 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#io.quicktimecamera] crash when opening busy camera (?)
     or is it when opening two cameras at once ?
 [ ] [#io.quicktimecamera]: 65535 vs 65536.
+[ ] libv4l dans l'package ubuntu
 
 9.9, unassigned:
+[ ] comma arg does self-bang
+[x] use v4l1_open for real !
+[ ] lqtgavl
+[ ] [#rotate] : round not floor
 [ ] svn dollar id dollar : redo it or remove it
 [ ] heat.pd still sucks (?)
-[ ] libv4l1 support : est-ce que ça marche ? (non?)
--------- vous êtes ici
-[ ] <tof> camera supports palettes : 3 4 5 8 15
+[x] libv4l1 support : est-ce que Ã§a marche ? (non?)
+[ ] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
+[ ] accelerate [#outer ignore (0)]
+[ ] [#print] float32 can use up crazy number of digits
+[ ] [lb]
+[ ] <errordeveloper>
+	/usr/include/opencv/cxtypes.h:161: error: conflicting declaration â€˜typedef int64_t int64â€™
+	src/gridflow.hxx.fcs:87: error: â€˜int64â€™ has a previous declaration as â€˜typedef long long int int64â€™
+	/usr/include/opencv/cxtypes.h:162: error: conflicting declaration â€˜typedef uint64_t uint64â€™
+	src/gridflow.hxx.fcs:87: error: â€˜uint64â€™ has a previous declaration as â€˜typedef long long unsigned int uint64â€™
+-------- vous Ãªtes ici
+[x] <tof> camera supports palettes : 3 4 5 8 15
 	  this driver is unsupported: it wants palette 8 instead of 4
-[ ] [#from_pix] « ben ça a l'air qu'il convertit juste des RGBA. c'est parce que c'est pas consistant avec #to_pix »
-[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[?] [#from_pix] Â« ben Ã§a a l'air qu'il convertit juste des RGBA. c'est parce que c'est pas consistant avec #to_pix Â»
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidÃ©os avec [pix_video] ou [pix_film]
 [ ] win32 x11
 [ ] [range] name conflict.
 [ ] [#fft] sign crash
@@ -52,7 +70,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
 [ ] handle_braces error causes crash?
-[ ] GridFlow does something nasty with \1 \2 \3 etc... probably because of handle_braces
 [ ] [listread] has a different outlet_atom than [foreach] does
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] bug: see #io.ppm-test.pd
@@ -77,7 +94,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] bugs/bugfixes from roman, claude, federico, etc
 [ ] videodev,quicktime,etc: height,width vs size
 [ ] even after all the latest bugfixes, i still get invalid command name ".x8685500.c" with [display]
-[ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
+[ ] [#swap]: convertir un littÃ©ral de grille en grille avant de la passer Ã  l'outlet de droite
 [ ] cellular_1d.pd: should get a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
@@ -114,7 +131,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] add [#out png]
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
-[ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
+[ ] remove implicit (argc,argv) from \decl that doesn't use wildcard Â«...Â».
 [ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
     COULDN'T REPRODUCE THIS BUG !!!
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
@@ -129,29 +146,35 @@ L = much later (whenever we get to know how to do it...)
 [ ] get rid of NOTEMPTY
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
+[ ] threaded v4l1, v4l2, dc1394.
+[ ] has waves.pd really slowed down since 9.4 ?
 
-9.9 or later (not for 9.8):
+9.10 or later
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] [#in unicap] and/or [#in videojack] ?
 [ ] [#in libv4l]
 
+// 9.9
+//DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
+//DEF_OP(pingpong,  
+
 OpenCV
 [ ] cvOpticalFlow
 [ ] [cv.split]
 [ ] cvEstimateRigidTransform
-[ ] cvApproxPoly pour un seul poly à la fois
+[ ] cvApproxPoly pour un seul poly Ã  la fois
 [ ] cvMeanShift, cvCamShift (?)
-       cvCamShift s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
-       Celui-ci peut être représenté comme une grid de 5 éléments pour faire plus facile
-       (contrairement à cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que ça).
+       cvCamShift s'utilise presque comme MeanShift, sauf que Ã§a requiert un autre type non-grid.
+       Celui-ci peut Ãªtre reprÃ©sentÃ© comme une grid de 5 Ã©lÃ©ments pour faire plus facile
+       (contrairement Ã  cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que Ã§a).
 [ ] cvCalcBackProject (?)
 [ ] cvCalcHist, cvCreateHist.
 [ ] SnakeImage (what is the concept of 'energy', squared luminosity?)
-        J'aurais supposé que oui, mais c'est juste trois mesures reliées à trois forces qui "shapent" la courbe:
-	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
-	être un edge-detect d'une image plus vieille).
-[ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
+        J'aurais supposÃ© que oui, mais c'est juste trois mesures reliÃ©es Ã  trois forces qui "shapent" la courbe:
+	espacement Ã©gal des points, rÃ©duction des angles, et correspondance avec l'image mÃªme (qui doit normalement
+	Ãªtre un edge-detect d'une image plus vieille).
+[ ] on doit aussi commencer Ã  rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
 Common Video Framework
 [ ] a common library for all video IO (cameras, files, web), which is the project of Thomas H and Johannes.
@@ -308,10 +331,10 @@ User Interface
 
 -mfpmath=sse2
 
-Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
+Tom Schouten wrote: Â«added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
 use external programs for raw video input. rationale: mplayer is a very nice piece of software supporting virtually any
 input format/codec. since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is
-to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
+to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.Â»
 
 very old bookmarks: http://pdl.perl.org/ http://www.opendragon.com/Pages/MaxObjects.shtml
 	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm http://freej.dyne.org/
@@ -321,7 +344,7 @@ there are bugs with abstractions that use [route]->[list] instead of [route2] be
 svn propset svn:mime-type text/pure-data *.pd
 
 Benchmarks on a Pentium M 1733 (with #out x11):
-(fps)           0.9.0   0.9.3   0.9.4   0.9.6
+(fps)           0.9.0   0.9.3   0.9.4   0.9.6   9.9
 waves.pd rain    41.1    49.5   50.5
 game_of_life.pd 162     183     188
 sand.pd          18.7    20.5   20.1
