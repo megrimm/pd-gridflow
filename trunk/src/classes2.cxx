@@ -867,7 +867,7 @@ void ParallelPort_call(ParallelPort *self);
 	\decl 0 float (float x);
 	\decl 0 bang ();
 };
-#define FRAISE(funk,f) RAISE("can't "funk": %s",ferror(f));
+#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
 \def 0 float (float x) {
   uint8 foo = (uint8) x;
   if (fwrite(&foo,1,1,f)<1) FRAISE(fwrite,f);
