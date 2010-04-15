@@ -1,4 +1,4 @@
-#N canvas 129 127 794 334 10;
+#N canvas 337 142 794 411 10;
 #X obj 18 113 loadbang;
 #X obj 28 199 s \$0-rect;
 #X msg 28 180 label \$1;
@@ -10,8 +10,8 @@
 #X obj 0 112 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X obj 3 0 hsl 115 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10
--262144 -1 -1 7800 0;
-#X obj 0 0 cnv 5 120 18 empty \$0-rect ♯io.sdl 2 10 0 8 -249661 -33
+-262144 -1 -1 5200 0;
+#X obj 0 0 cnv 5 120 18 empty \$0-rect ♯io.ppm 2 10 0 8 -249661 -64
 0;
 #X obj 2 16 cnv 1 42 1 empty \$0-souligne empty 20 12 0 14 -49 -33
 0;
@@ -21,28 +21,28 @@
 #X obj 96 126 s \$0-hsl;
 #X obj 176 6 r \$0-hsl_s;
 #X obj 107 282 s \$0-rect;
-#X obj 255 262 s pd;
+#X obj 255 342 s pd;
 #X obj 255 61 symbol \$1-help.pd;
-#X obj 255 110 gf/find_file 1;
+#X obj 255 190 gf/find_file 1;
 #X obj 176 84 delay 1000;
 #X msg 182 64 0;
 #X msg 176 103 1;
 #X obj 15 33 inlet dummy;
 #X obj 176 25 b;
-#X obj 255 129 s2l /;
-#X obj 255 148 t l l;
-#X obj 312 129 list length;
-#X obj 312 148 - 1;
-#X obj 255 167 list split;
-#X obj 255 186 l2s /;
-#X msg 255 205 symbol /\$1;
-#X obj 255 224 pack s s;
-#X msg 255 243 open \$2 \$1;
+#X obj 255 209 s2l /;
+#X obj 255 228 t l l;
+#X obj 312 209 list length;
+#X obj 312 228 - 1;
+#X obj 255 247 list split;
+#X obj 255 266 l2s /;
+#X msg 255 285 symbol /\$1;
+#X obj 255 304 pack s s;
+#X msg 255 323 open \$2 \$1;
 #X obj 176 44 spigot 1;
 #X msg 107 262 size 5 \, vis_size 120 18;
 #X msg 96 107 pos 3 0;
-#X obj 384 146 gf.error file not found: '%s';
-#X obj 384 127 symbol;
+#X obj 384 226 gf.error file not found: '%s';
+#X obj 384 207 symbol;
 #X obj 255 80 t s s;
 #X obj 581 196 s \$0-rect;
 #X obj 581 158 #to_iem;
@@ -51,9 +51,15 @@
 #X obj 513 62 delay 1000;
 #X obj 255 42 delay 100;
 #X text 314 41 c'est laite.;
-#X msg 581 139 2 3 # \$1 \$2 \$3 0 0 128;
 #X msg 590 47 255 255 0;
 #X msg 513 81 240 240 240;
+#X msg 581 139 2 3 # \$1 \$2 \$3 0 0 255;
+#X obj 363 99 gridflow;
+#X msg 363 80 get folder;
+#X obj 363 61 loadbang;
+#X obj 255 135 pack s s;
+#X msg 255 155 symbol \$2/doc/flow_classes/\$1;
+#X msg 363 118 symbol \$1;
 #X connect 0 0 4 0;
 #X connect 2 0 1 0;
 #X connect 3 0 2 0;
@@ -88,16 +94,22 @@
 #X connect 35 0 16 0;
 #X connect 36 0 14 0;
 #X connect 38 0 37 0;
-#X connect 39 0 19 0;
+#X connect 39 0 53 0;
 #X connect 39 1 38 1;
 #X connect 41 0 42 0;
 #X connect 42 0 40 0;
 #X connect 43 0 44 0;
 #X connect 43 1 45 0;
-#X connect 43 2 48 0;
-#X connect 44 0 49 0;
+#X connect 43 2 47 0;
+#X connect 44 0 48 0;
 #X connect 45 0 18 0;
-#X connect 47 0 41 0;
-#X connect 48 0 47 0;
-#X connect 49 0 47 0;
+#X connect 47 0 49 0;
+#X connect 48 0 49 0;
+#X connect 49 0 41 0;
+#X connect 50 0 55 0;
+#X connect 51 0 50 0;
+#X connect 52 0 51 0;
+#X connect 53 0 54 0;
+#X connect 54 0 19 0;
+#X connect 55 0 53 1;
 #X coords 0 -1 1 1 120 18 2 0 0;
