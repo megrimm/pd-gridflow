@@ -98,11 +98,6 @@ void FormatQuartz_call(FormatQuartz *self);
 		clock_delay(clock,0);
 		_0_move(0,0,0,0);
 		mouse_state = 0;
-
-		// hack for proper event handling
-		ProcessSerialNumber proc;
-		GetCurrentProcess(&proc);
-		TransformProcessType(&proc, kProcessTransformToForegroundApplication);
 	}
 	~FormatQuartz () {
 		clock_unset(clock);
@@ -337,7 +332,7 @@ GRID_INLET(0) {
 		}
 	} else {
 		while(n) {
-			data2[0]=255;
+			data2[0]=255; // un attribut bool 'alpha' pourrait décider si data[3] serait utilisé ou non
 			data2[1]=(uint8)data[0];
 			data2[2]=(uint8)data[1];
 			data2[3]=(uint8)data[2];
@@ -390,5 +385,9 @@ GRID_INLET(0) {
 }
 void startup_quartz () {
         \startall
+	// hack for proper event handling
+	ProcessSerialNumber proc;
+	GetCurrentProcess(&proc);
+	TransformProcessType(&proc, kProcessTransformToForegroundApplication);
 }
 
