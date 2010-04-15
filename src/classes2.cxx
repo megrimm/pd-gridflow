@@ -1552,13 +1552,22 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 \class GridFlowClass : FObject {
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
-		if (!s) {_0_get(0,0,gensym("version"));}
+		if (!s) {
+			_0_get(0,0,gensym("version"));
+			_0_get(0,0,gensym("folder"));
+		}
 		if (s==gensym("version")) {
 			t_atom a[3];
 			SETFLOAT(a+0,GF_VERSION_A);
 			SETFLOAT(a+1,GF_VERSION_B);
 			SETFLOAT(a+2,GF_VERSION_C);
 			outlet_anything(outlets[0],s,3,a);
+		}
+		if (s==gensym("folder")) {
+			t_atom a[1];
+			extern t_symbol *gridflow_folder;
+			SETSYMBOL(a+0,gridflow_folder);
+			outlet_anything(outlets[0],s,1,a);
 		}
 	}
 };
