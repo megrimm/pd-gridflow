@@ -52,6 +52,7 @@ class FormatQuartz;
 - (int) imageDataSize;
 - (BOOL) acceptsFirstResponder;
 - (void)keyDown:(NSEvent *)e;
+- (void)keyUp:(NSEvent *)e;
 - (void)mouseMoved:(NSEvent *)e;
 - (void)mouseDown:(NSEvent *)e;
 - (void)mouseDragged:(NSEvent *)e;
@@ -352,20 +353,20 @@ GRID_INLET(0) {
 #define MAC_BOTTOMLEFT_TO_TOPLEFT  ([[[NSScreen screens] objectAtIndex:0] frame].size.height - MAC_MENUBARHEIGHT - y)
 
 \def 0 title (string title="") {
-    NSString *str = [[NSString alloc] initWithCString:title.c_str()];
-    [window setTitle: str];
+	NSString *str = [[NSString alloc] initWithCString:title.c_str()];
+	[window setTitle: str];
 }
 
 \def 0 move (int y, int x) {
-    int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT;
-    NSPoint pos = { x, new_y };
-    [window setFrameTopLeftPoint: pos];
+	int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT;
+	NSPoint pos = { x, new_y };
+	[window setFrameTopLeftPoint: pos];
 }
 
 \def 0 set_geometry (int y, int x, int sy, int sx) {
-    int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT - sy;
-    NSRect r = {{x, new_y}, {sx, sy}};
-    [window setFrame: r display: YES];
+	int new_y = MAC_BOTTOMLEFT_TO_TOPLEFT - sy;
+	NSRect r = {{x, new_y}, {sx, sy}};
+	[window setFrame: r display: YES];
 }
 
 \end class FormatQuartz {
