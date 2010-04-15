@@ -2,7 +2,6 @@
 
 version 9.9 (2010.04...):
 
- * added libv4l1 detection and use
  * added class [gridflow] for reporting version number of gridflow
  * [print]: pointer: write "0x" and not "0x0x"
  * added example supercycloid.pd
@@ -23,11 +22,19 @@ version 9.9 (2010.04...):
    and reject out-of-range values
  * [#color]: faster
  * [#io.videodev]: added colorspace rgba, with alpha=255.
+ * [#io.videodev]: added conversion from RGB to colorspace "magic"
  * [#camera]: added colorspace rgba
  * [#io.quartz]: added support for keypress and keyrelease
  * [#io.quartz]: added 'menubar' method (show/hide system menubar on OSX)
  * [#io.quicktimecamera]: colorspace rgba's alpha=255 now.
  * [#io.quicktimecamera]: added colorspaces y, yuv, rgb.
+ * [#io.videodev] and [#camera]: removed attribute 'transfer'
+ * fixed bug in nested-list processing (which affected [print] and [display]
+   and use of symbols that look like floats)
+ * [#io.videodev]: add support for libv4l1
+ * [#camera]: added method "api", added autodetection of camera modules
+ * [#io.quicktimehw]: show real error messages
+ * added [#to~], for converting grids to signals.
 
 version 9.8 (2010.04.01):
 
