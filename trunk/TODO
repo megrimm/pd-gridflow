@@ -4,8 +4,8 @@ x = done
 L = much later (whenever we get to know how to do it...)
 
 9.9, assigned to Patrick:
-[1] [#io.quicktimecamera] déboguer farfisa_2.mov
-[2] [#io.quicktimecamera] accélérer le décodage (essayer avec farfisa_2.mov)
+[1] [#io.quicktimeapple] déboguer farfisa_2.mov
+[2] [#io.quicktimeapple] accélérer le décodage (essayer avec farfisa_2.mov)
 [ ] [#io.quicktimecamera] minsize, size, maxsize
 [ ] [#io.quicktimecamera] test colorspace rgb, rgba, y, yuv on PPC
 [ ] [#io.quicktimecamera] make colorspace rgb the default when it works on both Intel and PPC
@@ -28,6 +28,8 @@ L = much later (whenever we get to know how to do it...)
     or is it when opening two cameras at once ?
 [ ] [#io.quicktimecamera]: 65535 vs 65536.
 [ ] libv4l dans l'package ubuntu
+[ ] installer émulateur de PPC
+[ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
 
 9.9, unassigned:
 [ ] comma arg does self-bang
