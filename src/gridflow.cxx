@@ -66,6 +66,7 @@ extern t_class *text_class;
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
+t_symbol *gridflow_folder;
 
 //using namespace std;
 
@@ -1004,6 +1005,7 @@ extern "C" void gridflow_setup () {
 	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd>=0) close(fd); else post("%s was not found via the -path!","gridflow"PDSUF);
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
+	gridflow_folder = gensym(dirresult);
 	add_to_path(dirresult);
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_anything);
