@@ -25,6 +25,7 @@ version 9.9 (2010.04...):
  * [#io.videodev]: added colorspace rgba, with alpha=255.
  * [#camera]: added colorspace rgba
  * [#io.quartz]: added support for keypress and keyrelease
+ * [#io.quartz]: added 'menubar' method (show/hide system menubar on OSX)
  * [#io.quicktimecamera]: colorspace rgba's alpha=255 now.
  * [#io.quicktimecamera]: added colorspaces y, yuv, rgb.
 

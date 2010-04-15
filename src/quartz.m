@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <objc/Object.h>
 #include <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h>
 
 #include "gridflow.hxx.fcs"
 
@@ -115,6 +116,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	void report_pointer(BOOL check_bounds);
 	void report_key(NSEvent *e);
 	\decl 0 title (string title="");
+	\decl 0 menubar (int state);
 	\decl 0 move (int y, int x);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
@@ -355,6 +357,16 @@ GRID_INLET(0) {
 \def 0 title (string title="") {
 	NSString *str = [[NSString alloc] initWithCString:title.c_str()];
 	[window setTitle: str];
+}
+
+\def 0 menubar (int state) {
+	if (state == 0)
+		SetSystemUIMode( kUIModeAllHidden, kUIOptionDisableAppleMenu | kUIOptionDisableProcessSwitch |
+						   kUIOptionDisableSessionTerminate | kUIOptionDisableForceQuit );
+	else if (state > 0)
+		SetSystemUIMode( kUIModeNormal, 0 );
+	else
+		SetSystemUIMode( kUIModeAllHidden, kUIOptionAutoShowMenuBar );
 }
 
 \def 0 move (int y, int x) {
