@@ -42,7 +42,6 @@ class FormatQuartz;
 	uint8 *imdata;
 	int imwidth;
 	int imheight;
-	CGImageRef image;
   @public
 	FormatQuartz *boss;
 }
@@ -138,18 +137,12 @@ void FormatQuartz_call(FormatQuartz *self);
 	CLEAR(imdata,size);
 	NSSize s = {w,h};
 	[[self window] setContentSize: s];
-	CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
-	CGDataProviderRef dp = CGDataProviderCreateWithData(NULL, imdata, imheight*imwidth*4, NULL);
-	CGImageRef image = CGImageCreate(imwidth, imheight, 8, 32, imwidth*4, 
-		cs, kCGImageAlphaFirst, dp, NULL, 0, kCGRenderingIntentDefault);
-	CGDataProviderRelease(dp);
-	CGColorSpaceRelease(cs);
 	return self;
 }
 
 - (id) initWithFrame: (NSRect)r {
 	[super initWithFrame: r];
-	image=0; imdata=0; imwidth=-1; imheight=-1;
+	imdata=0; imwidth=-1; imheight=-1;
 	[self imageHeight: 240 width: 320];
 	return self;
 }	
@@ -157,10 +150,19 @@ void FormatQuartz_call(FormatQuartz *self);
 - (id) drawRect: (NSRect)rect {
 	[super drawRect: rect];
 	//if (![self lockFocusIfCanDraw]) return self;
-	CGContextRef g = (CGContextRef) [[NSGraphicsContext graphicsContextWithWindow: [self window]] graphicsPort];
+	CGContextRef g = (CGContextRef)
+		[[NSGraphicsContext graphicsContextWithWindow: [self window]]
+			graphicsPort];
+	CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
+	CGDataProviderRef dp = CGDataProviderCreateWithData(
+		NULL, imdata, imheight*imwidth*4, NULL);
+	CGImageRef image = CGImageCreate(imwidth, imheight, 8, 32, imwidth*4, 
+		cs, kCGImageAlphaFirst, dp, NULL, 0, kCGRenderingIntentDefault);
+	CGDataProviderRelease(dp);
+	CGColorSpaceRelease(cs);
 	CGRect rectangle = CGRectMake(0,0,imwidth,imheight);
-	if (image) CGContextDrawImage(g,rectangle,image);
-	//CGImageRelease(image);
+	CGContextDrawImage(g,rectangle,image);
+	CGImageRelease(image);
 	//[self unlockFocus];
 	return self;
 }
