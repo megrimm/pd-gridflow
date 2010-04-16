@@ -570,8 +570,10 @@ struct BFProxy : t_object {
 static t_class *BFProxy_class;
 
 static void BFObject_loadbang (BFObject *bself) {
+    try {
 	FMethod m = funcall_lookup(bself,"_0_loadbang");
 	m(bself->self,0,0);
+    } catch (Barf &oozy) {oozy.error(bself);}
 }
 
 static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
