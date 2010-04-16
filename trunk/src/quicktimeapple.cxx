@@ -113,32 +113,55 @@ const char *oserr_find(long err)
 //	post("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
+
+//////// début de copier-coller de #io.quicktimeapple 0 bang
+
 	GridOutlet out(this,0,dim,cast);
-	uint32 *bufu32 = (uint32 *)buffer;
-	int n = dim->prod()/4;
-	int i;
-	if (is_le()) {
-		for (i=0; i<n&-4; i+=4) {
-			bufu32[i+0]=bufu32[i+0]>>8;
-			bufu32[i+1]=bufu32[i+1]>>8;
-			bufu32[i+2]=bufu32[i+2]>>8;
-			bufu32[i+3]=bufu32[i+3]>>8;
+	string cs = colorspace->s_name;
+	int sy = dim->v[0];
+	int sx = dim->v[1];
+	int sc = dim->v[2];
+	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
+	uint8 b2[ sx*3+3];
+	int bs = sx*sc;
+	if (cs=="y") {
+		for(int y=0; y<sy; y++) {
+		        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+				b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
+				b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
+			}
+			out.send(bs,b2);
 		}
-		for (; i<n; i++) {
-			bufu32[i+0]=bufu32[i+0]>>8;
+	} else if (cs=="yuv") {
+		for(int y=0; y<sy; y++) {
+			bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+			for (int x=0,xx=0; x<sx; x++,xx+=3) {
+				b2[xx+0] = RGB2Y(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[xx+1] = RGB2U(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+				b2[xx+2] = RGB2V(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
+			}
+			out.send(bs,b2);
 		}
-	} else {
-		for (i=0; i<n&-4; i+=4) {
-			bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
-			bufu32[i+1]=(bufu32[i+1]<<8)+(bufu32[i+1]>>24);
-			bufu32[i+2]=(bufu32[i+2]<<8)+(bufu32[i+2]>>24);
-			bufu32[i+3]=(bufu32[i+3]<<8)+(bufu32[i+3]>>24);
-		}
-		for (; i<n; i++) {
-			bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
-		}
-	}
-	out.send(dim->prod(),buffer);
+	} else if (cs=="rgb") {
+		int n = dim->prod()/3;
+		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
+			buf2[j+0] = buf[i+0];
+			buf2[j+1] = buf[i+1];
+			buf2[j+2] = buf[i+2];
+		}*/
+		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
+		bit_packing3->unpack(n,buf,buf2);
+		out.send(dim->prod(),buf2);
+	} else if (cs=="rgba") { // does this really work on PPC ?
+		int n = dim->prod()/4;
+		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
+		out.send(dim->prod(),buf2);
+	} else
+		RAISE("colorspace problem");
+
+//////// fin de copier-coller
+
 	int nf=nframe;
 	nframe++;
 	//return INT2NUM(nf);
@@ -157,7 +180,22 @@ GRID_INLET(0) {
 } GRID_END
 
 \def 0 codec      (string c) { RAISE("Unimplemented. Sorry."); }
-\def 0 colorspace (string c) { RAISE("Unimplemented. Sorry."); }
+
+// copy of the one in #io.quicktimecamera
+\def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
+	string c = colorspace->s_name;
+	if (c=="y"    ) {} else
+	if (c=="yuv"  ) {} else
+	if (c=="rgb"  ) {} else
+	if (c=="rgba" ) {} else
+	//if (c=="magic") {} else
+	   RAISE("got '%s' but supported colorspaces are: y yuv rgb rgba",c.data());
+	uint32 masks[4]={0x0000ff00,0x00ff0000,0xff000000,0x00000000};
+	bit_packing3 = new BitPacking(is_le(),4,3,masks);
+	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
+	this->colorspace=gensym(c.data());
+	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+}
 
 \classinfo {
 	EnterMovies();
