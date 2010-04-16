@@ -25,6 +25,7 @@
 #include <QuickTime/Movies.h>
 #include <QuickTime/QuickTimeComponents.h>
 #include "gridflow.hxx.fcs"
+#include "colorspace.hxx"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -48,6 +49,7 @@ const char *oserr_find(long err)
 	uint8 *buffer;
 	P<Dim> dim;
 	int nframe, nframes;
+	P<BitPacking> bit_packing3;
 	\constructor (t_symbol *mode, string filename) {
 		/*vdc=0;*/ movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
 		long err;
@@ -71,6 +73,7 @@ const char *oserr_find(long err)
 		buffer = new uint8[dim->prod()];
 		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
 		if (err) ERR("QTNewGWorldFromPtr");
+		_0_colorspace(0,0,gensym("rgba"));
 		return;
 	}
 	~FormatQuickTimeApple() {
@@ -86,6 +89,7 @@ const char *oserr_find(long err)
 	\decl 0 seek (int frame);
 	\decl 0 rewind ();
 	\grin 0
+	\attr t_symbol *colorspace;
 };
 
 \def 0 seek (int frame) {nframe=frame;}
@@ -123,6 +127,7 @@ const char *oserr_find(long err)
 	int sc = dim->v[2];
 	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
 	uint8 b2[ sx*3+3];
+	uint8 *buf = buffer; // sorry
 	int bs = sx*sc;
 	if (cs=="y") {
 		for(int y=0; y<sy; y++) {
