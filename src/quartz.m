@@ -340,9 +340,9 @@ GRID_INLET(0) {
 		}
 	}
 } GRID_FINISH {
-	NSRect r = {{0,0},{[widget imageHeight],[widget imageWidth]}};
-	[widget displayRect: r];
-	[widget setNeedsDisplay: YES];
+	//NSRect r = {{0,0},{[widget imageHeight],[widget imageWidth]}};
+	//[widget displayRect: r];
+	//[widget setNeedsDisplay: YES];
 	[widget display];
 } GRID_END
 
