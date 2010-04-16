@@ -86,7 +86,7 @@ const char *oserr_find(long err)
 		}
 	}
 	\decl 0 codec (string c);
-	\decl 0 colorspace (string c);
+	//\decl 0 colorspace (string c);
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 rewind ();
