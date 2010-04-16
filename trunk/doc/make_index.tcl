@@ -32,7 +32,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$ok == "doremi"} {set w 105; set h 73}
 	if {$ok == "#color"} {set w 156; set h 55}
 	if {$ok == "display"} {set w 22}
-	if {[regexp ^doc_link $k]} {set w 120}
+	if {[regexp ^doc_link $k]} {incr w -36}
 
 	puts "#X $sel [expr 160-$w] $y $k;"
 	regsub "," $v " \\, " v
