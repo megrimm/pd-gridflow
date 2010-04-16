@@ -1136,7 +1136,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("gf/canvas_filename",1,1);}
 \class GFCanvasDollarZero : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(m)->ce_dollarzero);}
 };
 \end class {install("gf/canvas_dollarzero",1,1);}
@@ -1173,7 +1173,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("gf/canvas_setpos",1,0);}
 \class GFCanvasEditMode : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
 };
 \end class {install("gf/canvas_edit_mode",1,1);}
@@ -1181,7 +1181,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	/* contributed by "rumence" of Slovakia, on IRC */
 	/* bugfix by matju */
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM;
 		if (!m->gl_owner) RAISE("chosen canvas is not in any canvas");
 		outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));
@@ -1191,14 +1191,14 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasSetGOP : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 float (float gop) {MOM; canvas_setgraph(m,int(gop),0);}
 };
 \end class {install("gf/canvas_setgop",1,0);}
 \class GFCanvasXID : FObject {
 	int n;
 	t_symbol *name;
-	\constructor (int n_) {
+	\constructor (int n_=0) {
 		n=n_;
 		name=symprintf("gf/canvas_xid:%lx",bself);
 		pd_bind((t_pd *)bself,name);
@@ -1247,13 +1247,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 #define canvas_each(y,x) for (t_gobj *y=x->gl_list; y; y=y->g_next)
 \class GFCanvasCount : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
 };
 \end class {install("gf/canvas_count",1,1);}
 \class GFCanvasIndex : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {
 		MOM;
 		t_canvas *mm=m->gl_owner;
@@ -1267,7 +1267,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 
 \class GFCanvasLoadbang : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 float (float z) {MOM;
 		int k=0;
 		canvas_each(y,m) {
