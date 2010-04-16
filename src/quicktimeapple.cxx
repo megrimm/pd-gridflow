@@ -47,6 +47,7 @@ const char *oserr_find(long err)
 	short movie_file;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
 	uint8 *buffer;
+	uint8 *buf2;
 	P<Dim> dim;
 	int nframe, nframes;
 	P<BitPacking> bit_packing3;
@@ -71,6 +72,7 @@ const char *oserr_find(long err)
 		dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
 		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 		buffer = new uint8[dim->prod()];
+		buf2 = new uint8[dim->prod()];
 		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
 		if (err) ERR("QTNewGWorldFromPtr");
 		_0_colorspace(0,0,gensym("rgba"));
