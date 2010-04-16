@@ -1130,7 +1130,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class GFCanvasFileName : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; outlet_symbol(outlets[0],m->gl_name ? m->gl_name : gensym("empty"));}
 };
 \end class {install("gf/canvas_filename",1,1);}
@@ -1142,7 +1142,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("gf/canvas_dollarzero",1,1);}
 \class GFCanvasGetPos : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM;
 		t_atom a[2];
 		SETFLOAT(a+0,m->gl_obj.te_xpix);
@@ -1153,7 +1153,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \end class {install("gf/canvas_getpos",1,1);}
 \class GFCanvasSetPos : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 list (...);
 };
 \def 0 list (...) {MOM;
@@ -1513,7 +1513,7 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 
 \class FindFile : FObject {
 	int n;
-	\constructor (int n) {this->n=n;}
+	\constructor (int n=0) {this->n=n;}
 	\decl 0 symbol (t_symbol *s) {MOM
 	    int fd;
 	    char bof[MAXPDSTRING], *bofp;
