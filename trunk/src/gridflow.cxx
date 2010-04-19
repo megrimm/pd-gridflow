@@ -243,7 +243,7 @@ uint64 gf_timeofday () {
 	return t.tv_sec*1000000+t.tv_usec;
 }
 
-#define CONVERT0(z) ((in[z] >> chop[z]) << slide[z])
+#define CONVERT0(z) (((uint32)in[z] >> chop[z]) << slide[z])
 #define CONVERT1 t = CONVERT0(0) | CONVERT0(1) | CONVERT0(2)
 #define CONVERT2 for (t=0,i=0; i<self->size; i++) t |= CONVERT0(i);
 
