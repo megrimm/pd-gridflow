@@ -44,10 +44,12 @@ static std::map<string,string> fourccs;
 	float64 m_framerate;
 	P<BitPacking> bit_packing;
 	int jpeg_quality; // in theory we shouldn't need this, but...
+	float advance;
 	~FormatQuickTimeHW() {if (anim) quicktime_close(anim);}
 	\constructor (t_symbol *mode, string filename) {
 		track=0; dim=0; m_codec=const_cast<char *>(QUICKTIME_RAW);
 		started=false; force=0; m_framerate=29.97; bit_packing=0; jpeg_quality=75;
+		advance = 0;
 // libquicktime may be nice, but it won't take a filehandle, only filename
 		filename = gf_find_file(filename);
 		anim = quicktime_open((char *)filename.data(),mode==gensym("in"),mode==gensym("out"));
@@ -90,22 +92,24 @@ static std::map<string,string> fourccs;
 
 \def 0 bang () {
 	if (with_audio) {
-		int track = 0;
-		float a_rate = quicktime_sample_rate(anim,track);
-		float v_rate = quicktime_frame_rate(anim,track);
-		int samples = int(a_rate/v_rate);
-		post("audio rate = %f, video rate = %f, ratio = %f",a_rate,v_rate,a_rate/v_rate);
+	    int track = 0;
+	    float a_rate = quicktime_sample_rate(anim,track);
+	    float v_rate = quicktime_frame_rate(anim,track);
+	    advance -= a_rate/v_rate;
+	    if (advance < 0) {
+		int samples = 2*1024;
+		//post("audio rate = %f, video rate = %f, ratio = %f",a_rate,v_rate,a_rate/v_rate);
 		int achannels = quicktime_track_channels(anim,track);
 		float sound[achannels*samples];
 		float *output_f[achannels];
 		for (int j=0; j<achannels; j++) output_f[j] = sound+samples*j;
 		lqt_decode_audio_track(anim,0,output_f,samples,track);
 		float sound2[samples*achannels];
-		for (int i=0; i<samples; i++)
-			for (int j=0; j<achannels; j++)
-				sound2[i*achannels+j] = sound[j*samples+i];
+		for (int i=0; i<samples; i++) for (int j=0; j<achannels; j++) sound2[i*achannels+j] = sound[j*samples+i];
 		GridOutlet out(this,0,new Dim(samples,achannels),float32_e);
 		out.send(samples*achannels,sound2);
+		advance += samples;
+	    }
 	}
 	long length = quicktime_video_length(anim,track);
 	long nframe = quicktime_video_position(anim,track);
