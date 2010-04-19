@@ -754,9 +754,18 @@ void add_creator3(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
 	t_class *c = pd_objectmaker;
 	t_symbol *want = gensym(name);
+	t_gotfn old;
 	for (int i=c->c_nmethod-1; i>=0; i--) {
 		t_methodentry *m = c->c_methods+i;
-		if (m->me_name==want) {m->me_fun = t_gotfn(BFObject_new); m->me_arg[0]=A_GIMME; m->me_arg[1]=A_NULL; break;}
+		if (m->me_name==want) {
+			old = m->me_fun;
+			m->me_fun = t_gotfn(BFObject_new);
+			m->me_arg[0]=A_GIMME;
+			m->me_arg[1]=A_NULL;
+			// big hack : I can't assume A_GIMME here, but so far, this is only for [print], so it's ok
+			class_addcreator(t_newmethod(old),symprintf("pd.%s",name),A_GIMME,0);
+			return;
+		}
 	}
 }
 
