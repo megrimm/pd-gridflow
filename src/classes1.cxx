@@ -484,6 +484,8 @@ GRID_INLET(1) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
+	if (nn<na) RAISE("stored grid dims < length of put_at list");
+	if (nn<nb) RAISE("stored grid dims < right inlet dims");
 	int32 sizeb[nn];
 	for (int i=0; i<nn; i++) {fromb[i]=0; sizeb[i]=1;}
 	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim->prod());
