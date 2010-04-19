@@ -246,6 +246,7 @@ GRID_INLET(1) {
 		  case GL_UNSIGNED_BYTE: break; /*ok*/
 		  #ifdef GL_VERSION_1_2
 		  case GL_UNSIGNED_INT_8_8_8_8: break; /*ok*/
+		  case GL_UNSIGNED_INT_8_8_8_8_REV: break; /*ouate de phoque*/
 		  #endif
 		  default: ::post("can't produce grid from pix type %d (0x%x)",  im.type, im.type  ); return;}
 		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
