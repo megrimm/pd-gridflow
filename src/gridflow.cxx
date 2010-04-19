@@ -426,8 +426,8 @@ static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
 static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
 /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
-	int32 *i32 = (int32 *)in;
-	int32 *o32 = (int32 *)out;
+	uint32 *i32 = (uint32 *)in;
+	uint32 *o32 = (uint32 *)out;
 	while (n>=4) {
 		o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff);
 		o32[1] = ((i32[1]&0xff)<<16) | (i32[1]&0xff00) | ((i32[1]>>16)&0xff);
