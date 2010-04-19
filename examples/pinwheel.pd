@@ -1,6 +1,6 @@
 #N canvas 582 55 634 630 10;
 #X obj 14 509 #out window;
-#X obj 13 50 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1;
+#X obj 13 50 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
 #X obj 45 195 f;
 #X obj 13 87 t b b;
 #X obj 133 418 nbx 3 14 1 32 0 1 empty A empty 0 -8 0 10 -241291 -1
@@ -57,16 +57,16 @@
 #X obj 75 195 + 100;
 #X obj 14 490 #store (2 3 # 0 0 0 255 255 255);
 #X obj 13 452 #inner (2 1 # 1 1);
-#X obj 14 471 # / 18000;
 #X msg 133 435 2 1 # \$1 \$1;
 #X obj 0 0 doc_demo;
+#X obj 14 471 # div 18000;
 #X connect 0 0 12 0;
 #X connect 1 0 48 0;
 #X connect 2 0 16 0;
 #X connect 2 0 49 0;
 #X connect 3 0 43 0;
 #X connect 3 1 2 0;
-#X connect 4 0 53 0;
+#X connect 4 0 52 0;
 #X connect 5 0 23 1;
 #X connect 6 0 20 1;
 #X connect 7 0 43 1;
@@ -101,6 +101,6 @@
 #X connect 48 0 3 0;
 #X connect 49 0 2 1;
 #X connect 50 0 0 0;
-#X connect 51 0 52 0;
-#X connect 52 0 50 0;
-#X connect 53 0 51 1;
+#X connect 51 0 54 0;
+#X connect 52 0 51 1;
+#X connect 54 0 50 0;
