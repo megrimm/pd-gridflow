@@ -241,13 +241,13 @@ GRID_INLET(1) {
 		  #ifdef GL_VERSION_1_2
 		  case GL_BGRA: bp = bp_bgra; break;
 		  #endif
-		  default: ::post("can't produce grid from pix format %d",im.format); return;}
+		  default: ::post("can't produce grid from pix format %d (0x%x)",im.format,im.format); return;}
 		switch (im.type) {
 		  case GL_UNSIGNED_BYTE: break; /*ok*/
 		  #ifdef GL_VERSION_1_2
 		  case GL_UNSIGNED_INT_8_8_8_8: break; /*ok*/
 		  #endif
-		  default: ::post("can't produce grid from pix type %d",  im.type  ); return;}
+		  default: ::post("can't produce grid from pix type %d (0x%x)",  im.type, im.type  ); return;}
 		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
 		int32 v[] = { im.ysize, im.xsize, channels };
 		GridOutlet out(this,0,new Dim(3,v),cast);
