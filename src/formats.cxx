@@ -209,14 +209,17 @@ struct GridHeader {
 		if (head.reserved!=0) RAISE("unsupported grid reserved field %d in file",head.reserved);
 		if (head.dimn>16) RAISE("unsupported grid number of dimensions %d in file",head.dimn);
 		int32 dimv[head.dimn];
-		;
 		if (fread(dimv,1,head.dimn*4,f)<size_t(head.dimn*4)) RAISE("can't read dimension list");
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
 		dim = new Dim(head.dimn,dimv);
 	}
 	GridOutlet out(this,0,dim,nt);
 	long nn = dim->prod();
-#define FOO(T) {T data[nn]; if (fread(data,1,nn*sizeof(T),f)<nn*sizeof(T)) RAISE("can't read grid data (body)"); out.send(nn,(T *)data);}
+	
+#define FOO(T) {T data[nn]; size_t nnn = fread(data,1,nn*sizeof(T),f); \
+	if (nnn<nn*sizeof(T)) pd_error(bself,"can't read grid data (body): %s", feof(f) ? "end of file" : strerror(ferror(f))); \
+	CLEAR(data+nnn/sizeof(T),nn-nnn/sizeof(T)); \
+	out.send(nn,(T *)data);}
 TYPESWITCH(nt,FOO,)
 #undef FOO
 	SUPER;
