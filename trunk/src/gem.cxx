@@ -268,14 +268,15 @@ GRID_INLET(1) {
 	}
 };
 \def 0 colorspace (t_symbol *s) {// 3 2 1 0 (numéro de byte)
-	static uint32 rgba[4] = {0x000000ff,
-				 0x0000ff00,
-				 0x00ff0000,
-				 0xff000000};
-	static uint32 bgra[4] = {0x0000ff00,
-				 0x00ff0000,
-				 0xff000000,
-				 0x000000ff}; // really argb 
+	uint32 rgba[4] = {0x000000ff,
+			  0x0000ff00,
+			  0x00ff0000,
+			  0xff000000};
+	uint32 bgra[4] = {0x0000ff00,
+			  0x00ff0000,
+			  0xff000000,
+			  0x000000ff}; // really argb 
+	if (!is_le()) {swap32(4,rgba); swap32(4,bgra);}
 	if (s==gensym("rgb" )) {
 		channels=3;
 		bp_rgba = new BitPacking(is_le(),4,3,rgba);
