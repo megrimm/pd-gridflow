@@ -114,6 +114,8 @@ void FormatQuartz_call(FormatQuartz *self);
 	\decl 0 menubar (int state);
 	\decl 0 move (int y, int x);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
+	\decl 0 hidecursor ();
+	\decl 0 setcursor (int c);
 	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
 	\grin 0
 };
@@ -289,7 +291,6 @@ void FormatQuartz::report_key(NSEvent * e) {
 static NSDate *distantFuture, *distantPast;
 
 void FormatQuartz::call() {
-	BOOL wasMouseEvent = NO;
 	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
 		// untilDate: distantFuture // blocking
 		untilDate: distantPast      // nonblocking
@@ -375,6 +376,10 @@ GRID_INLET(0) {
 	NSRect r = {{x, new_y}, {sx, sy}};
 	[window setFrame: r display: YES];
 }
+
+\def 0 hidecursor () { [NSCursor hide]; }
+
+\def 0 setcursor (int c) { [NSCursor unhide]; }
 
 \end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
