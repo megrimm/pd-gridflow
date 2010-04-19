@@ -20,7 +20,7 @@ version 9.9 (2010.04...):
    (saturation) control
  * [#io.x11]: setcursor: support 77 cursors instead of 64;
    and reject out-of-range values
- * [#color]: faster
+ * [#color]: runs faster
  * [#io.videodev]: added colorspace rgba, with alpha=255.
  * [#io.videodev]: added conversion from RGB to colorspace "magic"
  * [#camera]: added colorspace rgba
@@ -28,14 +28,19 @@ version 9.9 (2010.04...):
  * [#io.quartz]: added 'menubar' method (show/hide system menubar on OSX)
  * [#io.quartz]: added hidecursor and setcursor
  * [#io.quicktimecamera]: colorspace rgba's alpha=255 now.
- * [#io.quicktimecamera]: added colorspaces y, yuv, rgb.
+ * [#io.quicktimecamera] [#io.quicktimeapple]: added colorspaces y, yuv, rgb.
  * [#io.videodev] and [#camera]: removed attribute 'transfer'
  * fixed bug in nested-list processing (which affected [print] and [display]
    and use of symbols that look like floats)
  * [#io.videodev]: add support for libv4l1
  * [#camera]: added method "api", added autodetection of camera modules
  * [#io.quicktimehw]: show real error messages
- * added [#to~], for converting grids to signals.
+ * added class [#to~], for converting grids to signals.
+ * [#io.quicktimeapple] [#io.quicktimecamera]: added method "cast".
+ * [gf/canvas_...] and [gf/find_file]: add default arg
+ * [args]: fixed crash when using comma when there is no [inlet] at all.
+ * [#out quartz]: major speedup !
+ * [#store]: put_at: fixed two crashing bugs
 
 version 9.8 (2010.04.01):
 
