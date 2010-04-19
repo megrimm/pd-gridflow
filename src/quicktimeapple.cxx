@@ -162,7 +162,13 @@ const char *oserr_find(long err)
 		out.send(dim->prod(),buf2);
 	} else if (cs=="rgba") { // does this really work on PPC ?
 		int n = dim->prod()/4;
-		for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
+		if (is_le()) {
+			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
+
+		} else {
+			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] << 8) | 0x000000ff;
+		}
+		
 		out.send(dim->prod(),buf2);
 	} else
 		RAISE("colorspace problem");
@@ -188,6 +194,8 @@ GRID_INLET(0) {
 
 \def 0 codec      (string c) { RAISE("Unimplemented. Sorry."); }
 
+void post_BitPacking(BitPacking *);
+
 // copy of the one in #io.quicktimecamera
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
 	string c = colorspace->s_name;
@@ -196,9 +204,15 @@ GRID_INLET(0) {
 	if (c=="rgb"  ) {} else
 	if (c=="rgba" ) {} else
 	//if (c=="magic") {} else
-	   RAISE("got '%s' but supported colorspaces are: y yuv rgb rgba",c.data());
-	uint32 masks[4]={0x0000ff00,0x00ff0000,0xff000000,0x00000000};
-	bit_packing3 = new BitPacking(is_le(),4,3,masks);
+	RAISE("got '%s' but supported colorspaces are: y yuv rgb rgba",c.data());
+	if (is_le()) {
+		uint32 masks[4]={0x0000ff00,0x00ff0000,0xff000000,0x00000000};
+		bit_packing3 = new BitPacking(is_le(),4,3,masks);
+	} else {
+		uint32 masks[4]={0x00ff0000,0x0000ff00,0x000000ff,0x00000000};
+		bit_packing3 = new BitPacking(is_le(),4,3,masks);
+	}
+	post_BitPacking(bit_packing3);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
 	this->colorspace=gensym(c.data());
 	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
