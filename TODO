@@ -17,10 +17,7 @@ L = much later (whenever we get to know how to do it...)
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
-[x] [#io.quartz] keypress/keyrelease
-[L] [#io.quartz] setcursor/hidecursor
 [ ] [#io.quartz] fullscreen mode
-[x] [#io.quartz] hide menubar
 [ ] [#io.quicktime (apple) out] grid, codec, quality.
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
 [ ] on PPC, retest [#to_pix] with alpha etc...
