@@ -7,18 +7,16 @@ L = much later (whenever we get to know how to do it...)
 [1] [#io.quicktimeapple] déboguer farfisa_2.mov
 [2] [#io.quicktimeapple] accélérer le décodage (essayer avec farfisa_2.mov)
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] test colorspace rgb, rgba, y, yuv on PPC
+[ ] [#io.quicktimecamera] [#io.quicktimeapple] test colorspace rgb, rgba, y, yuv on PPC
 [ ] [#io.quicktimecamera] make colorspace rgb the default when it works on both Intel and PPC
 [ ] [#io.quicktimecamera] colorspace magic
-[ ] [#io.quicktimecamera] cast
-[ ] [#io.quicktimeapple] cast
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
 [ ] [#io.quartz] fullscreen mode
-[ ] [#io.quicktime (apple) out] grid, codec, quality.
+[ ] [#io.quicktimeapple out] grid, codec, quality.
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
 [ ] on PPC, retest [#to_pix] with alpha etc...
 [ ] [#io.quicktimecamera] crash when opening busy camera (?)
@@ -27,15 +25,14 @@ L = much later (whenever we get to know how to do it...)
 [ ] libv4l dans l'package ubuntu
 [ ] installer émulateur de PPC
 [ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
+[ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
 
 9.9, unassigned:
 [ ] comma arg does self-bang
-[x] use v4l1_open for real !
 [ ] lqtgavl
 [ ] [#rotate] : round not floor
 [ ] svn dollar id dollar : redo it or remove it
 [ ] heat.pd still sucks (?)
-[x] libv4l1 support : est-ce que ça marche ? (non?)
 [ ] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
 [ ] accelerate [#outer ignore (0)]
 [ ] [#print] float32 can use up crazy number of digits
@@ -45,13 +42,10 @@ L = much later (whenever we get to know how to do it...)
 	src/gridflow.hxx.fcs:87: error: ‘int64’ has a previous declaration as ‘typedef long long int int64’
 	/usr/include/opencv/cxtypes.h:162: error: conflicting declaration ‘typedef uint64_t uint64’
 	src/gridflow.hxx.fcs:87: error: ‘uint64’ has a previous declaration as ‘typedef long long unsigned int uint64’
--------- vous êtes ici
-[x] <tof> camera supports palettes : 3 4 5 8 15
-	  this driver is unsupported: it wants palette 8 instead of 4
-[?] [#from_pix] « ben ça a l'air qu'il convertit juste des RGBA. c'est parce que c'est pas consistant avec #to_pix »
+[ ] <errordeveloper> 10101/devel/proj/diamond/misc/src/gridflow-9.8/gridflow.pd_linux: undefined symbol: png_write_destroy
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
-[ ] [range] name conflict.
+-------- vous êtes ici
 [ ] [#fft] sign crash
 [ ] [#many] when $1 is abstraction :
     error: canvas: no method for 'receive'
@@ -68,14 +62,12 @@ L = much later (whenever we get to know how to do it...)
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
-[ ] handle_braces error causes crash?
 [ ] [listread] has a different outlet_atom than [foreach] does
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
-[ ] [#io....] help files aren't visible from anywhere
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
 [ ] about.pd: add link to website, mention irc, etc.
 [ ] go back in all help files and fill in whatever is missing
@@ -106,7 +98,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] distinguish messages vs atoms in this manual
     e.g. [doc_aa] would contain something like [doc_m]
 		but wouldn't have [doc_m] as a subnode.
-[ ] [print], [gf.print] bugs : "float", "(", ")", what else...?
+[ ] [print], [gf.print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
     to prevent a lot of redraw bugs.
@@ -145,14 +137,19 @@ L = much later (whenever we get to know how to do it...)
 [ ] get rid of NOTEMPTY
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
-[ ] threaded v4l1, v4l2, dc1394.
-[ ] has waves.pd really slowed down since 9.4 ?
+[ ] add default values in docs
+[ ] use sand.pd as basis for introducing those features :
+    [ ] seedless #convolve
+    [ ] seedless #inner
+    [ ] automatic type conversion
 
 9.10 or later
+[ ] threaded v4l1, v4l2, dc1394.
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] [#in unicap] and/or [#in videojack] ?
-[ ] [#in libv4l]
+[ ] test accuracy of RGB2Y etc
+[ ] [range] name conflict.
 
 // 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
