@@ -414,16 +414,6 @@ Feature.add {
 		};
 		int main () {return aa_init==0;}"}}
 Feature.add {
-	tag :netpbm
-	name "NetPBM 10 Library"
-	uses_so ["-lnetpbm"]
-	uses_h Or[["pam.h"],["netpbm/pam.h"]]
-	uses_o ["src/netpbm.o"]
-	test proc {|f|
-		f.c_test "
-		#include#
-		int main () {return pm_init==0;}"}}
-Feature.add {
 	tag :jpeg
 	name "JPEG Library"
 	uses_so ["-ljpeg"]
@@ -829,7 +819,6 @@ end
 include_here f,"DC1394", :dc1394
 include_here f,"LIBMPEG", :mpeg3
 include_here f,"QUICKTIMEHW",:quicktimehw
-include_here f,"NETPBM",:netpbm,true
 
 f.puts "
 \#endif /* __CONFIG_H */"
