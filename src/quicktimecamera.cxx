@@ -309,21 +309,21 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   \decl 0 size (int height, int width);
 };
 
-\decl 0 size (int height, int width) {
+\def 0 size (int height, int width) {
 }
 
 \def 0 get (t_symbol *s=0) {
 	FObject::_0_get(argc,argv,s);
 	if (!s) {
 		DigitizerInfo di;
-		OSErr e = VDGetDigitizerInfo(&di);
+		OSErr e = VDGetDigitizerInfo(m_sg,&di);
 		if (e!=noErr) RAISE("VDGetDigitizerInfo error");
 		post("vdigType=%d inputCapabilityFlags=%d outputCapabilityFlags=%d inputCurrentFlags=%d outputCurrentFlags=%d",
 			di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
-		post("slot=%d gdh=%p maskgdh=%p",slot,gdh,maskgdh);
+		post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
 		post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
 			di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
-		post("blendlevels=%d reserved=%d",di.blendlevels,di.reserved);
+		post("blendlevels=%d reserved=%d",di.blendLevels,di.reserved);
 		//Rect r;
 		//OSErr e = SGGetChannelBounds (m_vc,&r);
 		//if (e!=noErr) RAISE("SGGetChannelBounds error");
