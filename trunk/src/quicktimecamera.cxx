@@ -310,10 +310,14 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 };
 
 \def 0 size (int height, int width) {
+	OSErr e = VDSetDigitizerRect(vdc,&rect);
+	if (e!=noErr) RAISE("VDGetDigitizerRect error");
+	post("rect1: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
 	dim = new Dim(height,width,dim->v[2]);
 	rect.bottom = height;
 	rect.right = width;
-	OSErr e = VDSetDigitizerRect(vdc,&rect);
+	post("rect2: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
+	e = VDSetDigitizerRect(vdc,&rect);
 	if (e!=noErr) RAISE("VDSetDigitizerRect error");
 	e = SGSetChannelBounds(m_vc,&rect);
 	if (e!=noErr) post("could not set SG ChannelBounds");
