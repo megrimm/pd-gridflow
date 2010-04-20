@@ -316,9 +316,9 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	FObject::_0_get(argc,argv,s);
 	if (!s) {
 		DigitizerInfo di;
-		OSErr e = VDGetDigitizerInfo(m_sg,&di);
+		OSErr e = VDGetDigitizerInfo(vdc,&di);
 		if (e!=noErr) RAISE("VDGetDigitizerInfo error");
-		post("vdigType=%d inputCapabilityFlags=%d outputCapabilityFlags=%d inputCurrentFlags=%d outputCurrentFlags=%d",
+		post("vdigType=%d inputCapabilityFlags=0x%08x outputCapabilityFlags=0x%08x inputCurrentFlags=0x%08x outputCurrentFlags=0x%08x",
 			di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
 		post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
 		post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
