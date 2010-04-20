@@ -309,7 +309,21 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   \attr uint16 hue();
   \attr uint16 colour();
   \attr t_symbol *colorspace;
+  \decl 0 get ();
 };
+
+\def 0 get () {
+	FObject::_0_get(argc,argv,s);
+	if (!s) {
+		Rect r;
+		OSErr e = SGGetChannelBounds (vgd->gVideoChannel,&r);
+		if (e!=noErr) RAISE("SGGetChannelBounds error");
+		t_atom a[2];
+		SETFLOAT(a+0,          1); SETFLOAT(a+1,         1); outlet_anything(outlets[0],gensym("minsize"),2,a);
+		SETFLOAT(a+0,   r.bottom); SETFLOAT(a+1,   r.right); outlet_anything(outlets[0],gensym("maxsize"),2,a);
+		SETFLOAT(a+0,rect.bottom); SETFLOAT(a+1,rect.right); outlet_anything(outlets[0],gensym(   "size"),2,a);
+	}
+}
 
 \def 0 colorspace (t_symbol *colorspace) { /* y yuv rgb rgba magic */
 	string c = colorspace->s_name;
