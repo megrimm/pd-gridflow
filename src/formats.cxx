@@ -284,6 +284,77 @@ TYPESWITCH(in->nt,FOO,)
 
 \end class FormatGrid {install_format("#io.grid",6,"grid");}
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+\class FormatNetPBM : Format {
+	\grin 0
+	\constructor (t_symbol *mode, string filename) {
+		Format::_0_open(0,0,mode,filename);
+	}
+	uint32 getuint() {
+		uint32 i=0;
+		char ch; do {
+			ch = fgetc(f);
+		} while (isspace(ch));
+		if (!isdigit(ch)) RAISE("error reading header: expected uint");
+		do {
+			uint32 d = ch-'0';
+			if (i > 0xffffffff/10 - d) RAISE("error reading header: uint too big");
+			i = i * 10 + d;
+			ch = fgetc(f);
+		} while (isdigit(ch));
+		return i;
+	}
+	\decl 0 bang ();
+};
+#define RERR RAISE("error reading header: %s",feof(f) ? "end of file" : strerror(ferror(f)))
+\def 0 bang () {
+	int a = fgetc(f); if (a==EOF) RAISE("error reading header magic");
+	int b = fgetc(f); if (a==EOF) RAISE("error reading header magic");
+	if (a!='P') RAISE("not a pbm/pgm/ppm/pam file (expected 'P')");
+	if (b!='6') RAISE("expected a P6");
+	int sx = getuint();
+	int sy = getuint();
+	int maxnum = getuint();
+	if (maxnum!=255) RAISE("expected max to be 255 (8 bits per value)");
+	int sc = 3;
+	size_t sxc = sx*sc;
+	GridOutlet out(this,0,new Dim(sy,sx,sc),cast);
+	uint8 row[sx*3];
+	for (int y=0; y<sy; y++) {
+		if (fread(row,1,sxc,f)<sxc) RERR;
+		out.send(sxc,row);
+	}
+
+}
+GRID_INLET(0) {
+	if (in->dim->n!=3) RAISE("need 3 dimensions");
+	if (in->dim->v[2]!=3) RAISE("need 3 channels");
+	fprintf(f,"P6\n");
+	fprintf(f,"%d %d 255\n",in->dim->v[1],in->dim->v[0]);
+	in->set_chunk(1);
+} GRID_FLOW {
+	int sx = in->dim->v[1];
+	int sc = in->dim->v[2];
+	size_t sxc = sx*sc;
+	uint8 row[sx*3];
+	while (n) {
+		for (int i=0,j=0; i<sx; i++,j+=3) {
+			row[j+0] = data[j+0];
+			row[j+1] = data[j+1];
+			row[j+2] = data[j+2];
+		}
+		if (fwrite(row,1,sxc,f)<sxc) RAISE("write error: %s",strerror(ferror(f)));
+		data+=sxc; n-=sxc;
+	}
+} GRID_FINISH {
+	fflush(f);
+} GRID_END
+\classinfo {install_format("#io.ppm",6,"ppm pgm pnm pam");}
+\end class FormatNetPBM
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 // this line goes with colorspace.hxx
 int cliptab[1024];
 
