@@ -295,6 +295,7 @@ TYPESWITCH(in->nt,FOO,)
 		uint32 i=0;
 		char ch; do {
 			ch = fgetc(f);
+			if (ch=='#') do {ch=fgetc(f);} while (ch!='\n' && ch!='\r');
 		} while (isspace(ch));
 		if (!isdigit(ch)) RAISE("error reading header: expected uint");
 		do {
