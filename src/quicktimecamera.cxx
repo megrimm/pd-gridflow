@@ -104,11 +104,7 @@ VDE VDGetMaskPixMap(PixMapHandlemaskPixMap)
 VDE VDGetPlayThruDestination(PixMapHandle *    dest, Rect *destRect, MatrixRecord *    m, RgnHandle *mask)
 VDE VDUseThisCLUT(CTabHandle colorTableHandle)
 VDE VD[SG*]etInputGammaValue(Fixed channel1, Fixed channel2, Fixed channel3)
-VDE VD[GS]etBrightness(uint16 *)
-VDE VD[GS]etContrast(uint16 *)
-VDE VD[GS]etHue(uint16 *)
 VDE VD[GS]etSharpness(uint16 *)
-VDE VD[GS]etSaturation(uint16 *)
 VDE VDGrabOneFrame(VDC ci)
 VDE VDGetMaxAuxBuffer(PixMapHandle *pm, Rect *r)
 VDE VDGetDigitizerInfo(DigitizerInfo *info)
@@ -309,19 +305,34 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   \attr uint16 hue();
   \attr uint16 colour();
   \attr t_symbol *colorspace;
-  \decl 0 get ();
+  \decl 0 get (t_symbol *s=0);
+  \decl 0 size (int height, int width);
 };
 
-\def 0 get () {
+\decl 0 size (int height, int width) {
+}
+
+\def 0 get (t_symbol *s=0) {
 	FObject::_0_get(argc,argv,s);
 	if (!s) {
-		Rect r;
-		OSErr e = SGGetChannelBounds (vgd->gVideoChannel,&r);
-		if (e!=noErr) RAISE("SGGetChannelBounds error");
+		DigitizerInfo di;
+		OSErr e = VDGetDigitizerInfo(&di);
+		if (e!=noErr) RAISE("VDGetDigitizerInfo error");
+		post("vdigType=%d inputCapabilityFlags=%d outputCapabilityFlags=%d inputCurrentFlags=%d outputCurrentFlags=%d",
+			di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
+		post("slot=%d gdh=%p maskgdh=%p",slot,gdh,maskgdh);
+		post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
+			di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
+		post("blendlevels=%d reserved=%d",di.blendlevels,di.reserved);
+		//Rect r;
+		//OSErr e = SGGetChannelBounds (m_vc,&r);
+		//if (e!=noErr) RAISE("SGGetChannelBounds error");
 		t_atom a[2];
-		SETFLOAT(a+0,          1); SETFLOAT(a+1,         1); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		SETFLOAT(a+0,   r.bottom); SETFLOAT(a+1,   r.right); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		SETFLOAT(a+0,rect.bottom); SETFLOAT(a+1,rect.right); outlet_anything(outlets[0],gensym(   "size"),2,a);
+		//SETFLOAT(a+0,          1); SETFLOAT(a+1,         1); outlet_anything(outlets[0],gensym("minsize"),2,a);
+		//SETFLOAT(a+0,   r.bottom); SETFLOAT(a+1,   r.right); outlet_anything(outlets[0],gensym("maxsize"),2,a);
+		SETFLOAT(a+0,di.minDestHeight); SETFLOAT(a+1,di.minDestWidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
+		SETFLOAT(a+0,di.maxDestHeight); SETFLOAT(a+1,di.maxDestWidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
+		SETFLOAT(a+0,     rect.bottom); SETFLOAT(a+1,     rect.right); outlet_anything(outlets[0],gensym(   "size"),2,a);
 	}
 }
 
