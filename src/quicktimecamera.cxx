@@ -310,6 +310,13 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 };
 
 \def 0 size (int height, int width) {
+	dim = new Dim(height,width,dim->v[2]);
+	rect.bottom = height;
+	rect.right = width;
+	OSErr e = VDSetDigitizerRect(vdc,&rect);
+	if (e!=noErr) RAISE("VDSetDigitizerRect error");
+	e = SGSetChannelBounds(m_vc,&rect);
+	if (e!=noErr) post("could not set SG ChannelBounds");
 }
 
 \def 0 get (t_symbol *s=0) {
@@ -323,7 +330,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
 		post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
 			di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
-		post("blendlevels=%d reserved=%d",di.blendLevels,di.reserved);
+		post("blendLevels=%d reserved=%d",di.blendLevels,di.reserved);
 		//Rect r;
 		//OSErr e = SGGetChannelBounds (m_vc,&r);
 		//if (e!=noErr) RAISE("SGGetChannelBounds error");
