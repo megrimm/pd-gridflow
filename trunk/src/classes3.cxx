@@ -110,9 +110,7 @@ GRID_INLET(0) {
 	if (d->n != r->dim->n) RAISE("wrong number of dimensions");
 	int w = which_dim;
 	if (w<0) w+=d->n;
-	if (w<0 || w>=d->n)
-		RAISE("can't join on dim number %d on %d-dimensional grids",
-			which_dim,d->n);
+	if (w<0 || w>=d->n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,d->n);
 	int32 v[d->n];
 	for (int i=0; i<d->n; i++) {
 		v[i] = d->get(i);
@@ -158,9 +156,7 @@ GRID_INLET(0) {
 } GRID_FINISH {
 	if (in->dim->prod()==0) out->send(r->dim->prod(),(T *)*r);
 } GRID_END
-
 GRID_INPUT(1,r) {} GRID_END
-
 \end class {install("#join",2,1); add_creator("@join");}
 
 //****************************************************************
@@ -1357,7 +1353,50 @@ GRID_INPUT(2,r) {
 \end class {install("#cluster_avg",3,2);}
 
 //****************************************************************
+
+static Numop *op_os8;
+\class GridFadeSpace : FObject {
+	\attr int which_dim;
+	\attr PtrGrid r;
+	\grin 0
+	\grin 1
+	PtrGrid fader_grid;
+	\constructor (int which_dim, Grid *r) {
+		this->which_dim = which_dim;
+		this->r=r;
+	}
+};
+GRID_INLET(0) {
+	if (in->dim->n<2) RAISE("at least 2 dimensions");
+	out = new GridOutlet(this,0,in->dim,in->nt);
+	int w = which_dim; if (w<0) w+=in->dim->n;
+	if (w<0 || w>=in->dim->n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in->dim->n);
+	in->set_chunk(w);
+	int sxc = in->dim->prod(w);
+	fader_grid = new Grid(new Dim(sxc),in->nt);
+	T *fader = (T *)*fader_grid;
+	size_t rn = r->dim->prod();
+	//post("rn=%d sxc=%d",rn,sxc);
+	for (int i=0; i<sxc; i++) fader[i] = max(((T *)*r)[mod(i,rn)],T(1));
+} GRID_FLOW {
+	int w = which_dim; if (w<0) w+=in->dim->n;
+	int sc = in->dim->prod(w+1);
+	int sxc = in->dim->prod(w);
+	T *fader = (T *)*fader_grid;
+	while (n) {
+		T tada[sxc+sc];
+		CLEAR(tada,sc);
+		for (int i=0; i<sxc; i++) tada[i+sc] = (tada[i]*(fader[i]-1) + data[i] + (fader[i]/2)) / fader[i];
+		out->send(sxc,tada+sc);
+		n-=sxc; data+=sxc;
+	}
+} GRID_END
+GRID_INPUT(1,r) {} GRID_END
+\end class {install("#fade_space",2,1);}
+
+//****************************************************************
 void startup_flow_objects3 () {
+	op_os8 = OP(*>>8);
 	\startall
 }
 
