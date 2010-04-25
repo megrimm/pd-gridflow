@@ -1,16 +1,15 @@
-#N canvas 420 110 647 484 10;
+#N canvas 512 137 647 484 10;
 #X obj 274 73 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
 ;
-#X obj 274 197 #out window;
-#X obj 64 224 hsl 128 15 0 319 0 0 x1_o x1_i empty -2 -8 1 10 -262144
--1 -1 8560 1;
-#X obj 64 76 hsl 128 15 0 319 0 0 x0_o x0_i empty 0 8 1 10 -262144
--66577 -258699 5215 0;
-#X obj 46 93 vsl 15 128 239 0 0 0 y0_o y0_i empty 0 -8 1 10 -262144
--1 -1 10840 1;
-#X obj 194 93 vsl 15 128 239 0 0 0 y1_o y1_i empty 0 -8 1 10 -262144
--1 -1 7439 1;
-#N canvas 463 375 452 302 make_rectangle 0;
+#X obj 44 196 hsl 160 15 0 639 0 0 x1_o x1_i empty -2 -8 1 10 -262144
+-1 -1 12143 1;
+#X obj 44 56 hsl 160 15 0 639 0 0 x0_o x0_i empty 0 8 1 10 -262144
+-66577 -258699 3857 0;
+#X obj 26 73 vsl 15 120 479 0 0 0 y0_o y0_i empty 0 -8 1 10 -262144
+-1 -1 8968 1;
+#X obj 206 73 vsl 15 120 479 0 0 0 y1_o y1_i empty 0 -8 1 10 -262144
+-1 -1 5341 1;
+#N canvas 463 351 452 302 make_rectangle 0;
 #X obj 27 16 inlet;
 #X text 25 -3 image;
 #X obj 93 17 inlet;
@@ -38,69 +37,65 @@
 #X connect 13 0 8 0;
 #X restore 274 177 pd make_rectangle;
 #X obj 274 123 metro 33.3667;
-#X text 21 75 start;
-#X text 198 224 end;
-#X obj 371 103 loadbang;
+#X text 6 53 start;
+#X text 208 194 end;
+#X obj 390 74 loadbang;
 #X obj 274 152 #store;
-#X obj 436 105 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 455 76 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 358 197 #mouse \, ...;
+#X obj 311 252 #mouse \, ...;
 #X obj 421 145 loadbang;
 #X msg 421 164 0 0;
-#X obj 385 241 t a;
-#X obj 90 402 #out window;
-#X obj 129 301 t b a;
+#X obj 463 319 t a;
+#X obj 220 294 t b a;
 #X obj 90 366 #store;
-#X msg 91 323 set ( \$1 \$2 );
-#X obj 370 123 #in b001.jpg;
-#X text 73 115 drag the mouse;
-#X text 99 100 step 2:;
-#X text 82 131 inside the;
-#X text 80 146 first window;
+#X msg 90 290 set ( \$1 \$2 );
+#X text 80 115 drag the mouse;
+#X text 106 100 step 2:;
+#X text 89 131 inside the;
+#X text 87 146 first window;
 #X text 261 55 step 1: turn on;
-#X text 95 384 cropping (to 2nd window);
-#X obj 2 453 cnv 15 640 30 empty empty empty 20 12 0 14 -200249 -66577
-0;
-#X text 10 460 GridFlow 0.8.0;
-#X text 10 460 GridFlow 0.8.0;
-#X obj 3 3 cnv 15 640 30 empty empty empty 20 12 0 14 -233017 -66577
-0;
-#X text 16 16 Copyright 2002 Mathieu Bouchard;
-#X text 16 3 drag_rectangle.pd;
+#X text 96 382 cropping (to 2nd window);
+#X text 7 23 Copyright 2002 Mathieu Bouchard;
 #X obj 90 347 #for (0 0) (0 0) (1 1);
-#X obj 358 359 unpack;
-#X obj 493 354 unpack;
-#X obj 395 378 s x0_i;
-#X obj 493 392 s y1_i;
-#X obj 530 373 s x1_i;
-#X obj 358 397 s y0_i;
-#X connect 0 0 7 0;
-#X connect 1 0 13 0;
-#X connect 6 0 1 0;
-#X connect 7 0 11 0;
-#X connect 10 0 21 0;
-#X connect 11 0 6 0;
-#X connect 12 0 21 0;
-#X connect 13 0 6 1;
-#X connect 13 0 20 0;
-#X connect 13 0 16 0;
-#X connect 13 0 35 0;
-#X connect 13 1 16 0;
-#X connect 13 2 16 0;
-#X connect 13 2 18 0;
-#X connect 14 0 15 0;
-#X connect 15 0 6 1;
-#X connect 15 0 6 2;
-#X connect 16 0 6 2;
+#X obj 311 318 unpack;
+#X obj 463 354 unpack;
+#X obj 344 337 s x0_i;
+#X obj 463 392 s y1_i;
+#X obj 496 373 s x1_i;
+#X obj 311 356 s y0_i;
+#X obj 389 94 #in scissors.jpg;
+#X obj 90 400 #out window \, title crop;
+#X obj 0 0 doc_demo;
+#X obj 253 344 #store;
+#X obj 274 197 #out window \, title first;
+#X connect 0 0 6 0;
+#X connect 5 0 37 0;
+#X connect 6 0 10 0;
+#X connect 9 0 33 0;
+#X connect 10 0 5 0;
+#X connect 11 0 33 0;
+#X connect 12 0 5 1;
+#X connect 12 0 15 0;
+#X connect 12 0 27 0;
+#X connect 12 0 36 1;
+#X connect 12 1 15 0;
+#X connect 12 2 15 0;
+#X connect 12 2 16 0;
+#X connect 13 0 14 0;
+#X connect 14 0 5 1;
+#X connect 14 0 5 2;
+#X connect 15 0 5 2;
+#X connect 15 0 28 0;
 #X connect 16 0 36 0;
-#X connect 18 0 34 0;
-#X connect 18 1 34 1;
-#X connect 19 0 17 0;
-#X connect 20 0 34 0;
-#X connect 21 0 11 1;
-#X connect 21 0 19 1;
-#X connect 34 0 19 0;
-#X connect 35 0 40 0;
-#X connect 35 1 37 0;
-#X connect 36 0 38 0;
-#X connect 36 1 39 0;
+#X connect 16 1 26 1;
+#X connect 17 0 34 0;
+#X connect 26 0 17 0;
+#X connect 27 0 32 0;
+#X connect 27 1 29 0;
+#X connect 28 0 30 0;
+#X connect 28 1 31 0;
+#X connect 33 0 10 1;
+#X connect 33 0 17 1;
+#X connect 36 0 26 0;
+#X connect 37 0 12 0;
