@@ -1,6 +1,6 @@
-#N canvas 335 118 632 474 10;
+#N canvas 335 118 632 538 10;
 #X obj 0 0 doc_h;
-#X obj 0 445 doc_f;
+#X obj 0 509 doc_f;
 #X obj 122 57 #draw_rect;
 #X obj 14 126 doc_cc 0;
 #X obj 14 148 doc_cc 1;
@@ -13,35 +13,40 @@
 #X obj 97 148 doc_m c1 grid;
 #X obj 97 170 doc_m c2 grid;
 #X obj 3 202 doc_i 3;
-#X obj 3 383 doc_o 1;
-#X obj 14 413 doc_oo 0;
+#X obj 3 447 doc_o 1;
+#X obj 14 477 doc_oo 0;
 #X obj 14 232 doc_ii 0;
-#X obj 14 323 doc_ii 1;
-#X obj 14 348 doc_ii 2;
+#X obj 14 393 doc_ii 1;
+#X obj 14 415 doc_ii 2;
 #X obj 97 232 doc_m i0 grid;
 #X obj 97 279 doc_m i0 outline;
-#X obj 97 323 doc_m i1 grid;
-#X obj 97 348 doc_m i2 grid;
+#X obj 97 393 doc_m i1 grid;
+#X obj 97 415 doc_m i2 grid;
 #X text 232 232 picture to draw on;
-#X text 232 279 0: fill rectangle;
-#X text 232 301 1: draw outline only (1 pixel thickness);
-#X text 232 413 picture drawn on;
-#X obj 97 413 doc_m o0 grid;
-#X obj 232 323 doc_same 1;
-#X obj 232 348 doc_same 2;
+#X text 232 327 0: fill rectangle;
+#X text 232 349 1: draw outline only (1 pixel thickness);
+#X text 232 477 picture drawn on;
+#X obj 97 477 doc_m o0 grid;
+#X obj 232 393 doc_same 1;
+#X obj 232 415 doc_same 2;
 #X obj 97 254 doc_m i0 op;
 #X obj 232 254 doc_same 0;
 #X text 291 37 note: also supports other methods of #draw_polygon...
 ;
-#X text 272 57 should clarify that "outline" was designed before "fill"
-option became available.;
+#X obj 97 371 doc_m i0 <any>;
+#X text 232 371 same as with [#draw_polygon];
+#X text 232 279 "outline" was designed before [#draw_polygon]'s "draw
+line" option became available. it makes a 10-gon with repeated vertices
+\, to simulate a hollow square.;
 #X connect 10 1 7 0;
 #X connect 11 1 8 0;
 #X connect 12 1 9 0;
 #X connect 19 1 23 0;
 #X connect 20 1 25 0;
 #X connect 20 1 24 0;
+#X connect 20 1 35 0;
 #X connect 21 1 28 0;
 #X connect 22 1 29 0;
 #X connect 27 1 26 0;
 #X connect 30 1 31 0;
+#X connect 33 1 34 0;
