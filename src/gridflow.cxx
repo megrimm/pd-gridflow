@@ -763,7 +763,7 @@ void add_creator3(FClass *fclass, const char *name) {
 			m->me_arg[0]=A_GIMME;
 			m->me_arg[1]=A_NULL;
 			// big hack : I can't assume A_GIMME here, but so far, this is only for [print], so it's ok
-			class_addcreator(t_newmethod(old),symprintf("pd.%s",name),A_GIMME,0);
+			class_addcreator(t_newmethod(old),symprintf("pd/%s",name),A_GIMME,0);
 			return;
 		}
 	}
