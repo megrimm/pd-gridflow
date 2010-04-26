@@ -1,4 +1,4 @@
-#N canvas 434 167 794 411 10;
+#N canvas 432 167 794 411 10;
 #X obj 18 113 loadbang;
 #X obj 28 199 s \$0-rect;
 #X msg 28 180 label \$1;
@@ -9,13 +9,13 @@
 #X obj 17 301 s \$0-souligne;
 #X obj 0 112 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 3 0 hsl 53 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10 -262144
--1 -1 0 0;
-#X obj 0 0 cnv 5 58 18 empty \$0-rect ♯layer 20 10 0 8 -249661 -64
+#X obj 3 0 hsl 65 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10 -262144
+-1 -1 3500 0;
+#X obj 0 0 cnv 5 70 18 empty \$0-rect ♯io.grid 20 10 0 8 -249661
+-64 0;
+#X obj 21 16 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -64 -33
 0;
-#X obj 21 16 cnv 1 36 1 empty \$0-souligne empty 20 12 0 14 -64 -33
-0;
-#X obj 21 17 cnv 1 36 1 empty \$0-souligne empty 20 12 0 14 -262144
+#X obj 21 17 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -262144
 -33 0;
 #X msg 18 282 vis_size \$1 1;
 #X obj 170 300 s \$0-hsl;
@@ -59,8 +59,8 @@
 #X obj 255 135 pack s s;
 #X msg 255 155 symbol \$2/doc/flow_classes/\$1;
 #X msg 363 118 symbol \$1;
-#X obj 405 315 namecanvas \$0-canvas;
-#X obj 459 296 s \$0-canvas;
+#X obj 405 345 namecanvas \$0-canvas;
+#X obj 459 326 s \$0-canvas;
 #X msg 45 320 size 5 \, vis_size \$1 18;
 #X obj 89 257 - 5;
 #X msg 128 254 size \$1 18;
@@ -71,7 +71,8 @@
 #X msg -4 76 size 8 8 \, open \$1/images/help.gif;
 #X msg 60 23 get folder;
 #X obj 60 42 gridflow;
-#X msg 459 277 map 0 \, coords 0 1 2 3 \$1 18 3 0 0 \, map 1;
+#X msg 459 277 coords 0 1 2 3 \$1 18 3 0 0;
+#X text 459 259 not using map 0 \, map 1;
 #X connect 0 0 4 0;
 #X connect 2 0 1 0;
 #X connect 3 0 2 0;
@@ -136,4 +137,4 @@
 #X connect 65 0 66 0;
 #X connect 66 0 64 0;
 #X connect 67 0 56 0;
-#X coords 0 1 2 3 58 18 2 0 0;
+#X coords 0 1 2 3 70 18 2 0 0;
