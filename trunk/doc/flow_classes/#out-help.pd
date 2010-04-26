@@ -1,4 +1,4 @@
-#N canvas 173 0 632 715 10;
+#N canvas 173 0 632 685 10;
 #X obj 15 325 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 10 71 Displaying a grid:;
@@ -122,27 +122,30 @@ was previously sent \, or no "open" (or equivalent) was ever done \,
 or the file was not found \, or the file was read-protected \, or the
 device is locked by another object or application that opened it (busy)
 \, or any other reason.;
-#X text 256 521 picture formats;
-#X text 244 481 generic file format that can encode any grid.;
-#X obj 246 499 doc_accolade;
+#X text 246 522 picture formats;
+#X text 234 482 generic file format that can encode any grid.;
+#X obj 236 500 doc_accolade;
 #X obj 124 483 doc_link #io.grid;
 #X obj 124 523 doc_link #io.jpeg;
 #X obj 124 503 doc_link #io.ppm;
 #X obj 124 563 doc_link #io.quicktimehw;
-#X text 246 562 movie formats (.mov and .avi);
+#X text 236 563 movie formats (.mov and .avi);
 #X obj 124 593 doc_link #io.x11;
-#X obj 246 597 doc_accolade;
+#X obj 236 598 doc_accolade;
 #X obj 124 613 doc_link #io.quartz;
 #X obj 124 633 doc_link #io.sdl;
 #X obj 124 653 doc_link #io.aalib;
 #X text 58 707 note that [#in] supports some more modules (those that
 are only for input);
-#X text 258 621 windows;
-#X text 317 612 see also [#to_pix] with [gemwin];
-#X text 316 627 and see also [#see];
+#X text 252 627 see also [#to_pix] with [gemwin];
+#X text 251 642 and see also [#see];
 #X msg 124 675 open window;
-#X text 243 674 alias for either quartz or x11 or sdl;
-#X text 125 543 no png (sorry);
+#X text 233 675 alias for either quartz or x11 or sdl;
+#X obj 124 543 doc_link #io.png;
+#X text 252 611 window adaptors;
+#X obj 187 1152 #to_pix;
+#X obj 241 1152 gemwin;
+#X obj 289 1152 doc_link #see;
 #X connect 4 0 42 0;
 #X connect 5 0 11 0;
 #X connect 6 0 11 0;
@@ -154,6 +157,9 @@ are only for input);
 #X connect 17 0 11 0;
 #X connect 22 1 32 0;
 #X connect 22 1 13 0;
+#X connect 22 1 74 0;
+#X connect 22 1 75 0;
+#X connect 22 1 76 0;
 #X connect 27 1 47 0;
 #X connect 28 1 14 0;
 #X connect 29 1 8 0;
