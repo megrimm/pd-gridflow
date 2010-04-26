@@ -287,7 +287,7 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 };
  // precedence problem in dispatcher... does this problem still exist?
 \def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
-\end class {install("range",1,1);}
+\end class {install("range",1,1); add_creator("gf/range");}
 
 //****************************************************************
 
