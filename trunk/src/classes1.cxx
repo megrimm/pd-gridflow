@@ -484,8 +484,8 @@ GRID_INLET(1) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
-	if (nn<na) RAISE("stored grid dims < length of put_at list");
-	if (nn<nb) RAISE("stored grid dims < right inlet dims");
+	if (nn<na) RAISE("stored grid dims (%d) < length of put_at list (%d)",nn,na);
+	if (nn<nb) RAISE("stored grid dims (%d) < right inlet dims (%d)"     ,nn,nb);
 	int32 sizeb[nn];
 	for (int i=0; i<nn; i++) {fromb[i]=0; sizeb[i]=1;}
 	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim->prod());
@@ -885,9 +885,9 @@ GRID_INPUT(1,r) {} GRID_END
 	}
 	\decl 0 set (Grid *r=0) {from=new Grid(argv[0]);}
 	\decl 0 bang ();
-	\grin 0 int
-	\grin 1 int
-	\grin 2 int
+	\grin 0
+	\grin 1
+	\grin 2
 	template <class T> void trigger (T bogus);
 };
 
@@ -939,7 +939,7 @@ void GridFor::trigger (T bogus) {
 		RAISE("dimension mismatch: from:%s to:%s step:%s",
 			from->dim->to_s(),to->dim->to_s(),step->dim->to_s());
 #define FOO(T) trigger((T)0);
-	TYPESWITCH_JUSTINT(from->nt,FOO,);
+	TYPESWITCH(from->nt,FOO,);
 #undef FOO
 }
 
