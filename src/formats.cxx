@@ -172,7 +172,6 @@ struct GridHeader {
 	\decl 0 bang ();
 	\decl 0 headerless (...);
 	\decl 0 headerful ();
-	\decl 0 type (NumberTypeE nt);
 	\decl 0 seek_byte (int64 bytepos);
 	~FormatGrid() {
 		//@stream.close if @stream
@@ -260,17 +259,6 @@ TYPESWITCH(in->nt,FOO,)
 	headerless_dim = new Dim(argc,v);
 }
 \def 0 headerful () {headerless_dim = 0;}
-\def 0 type (NumberTypeE nt) {
-	//!@#$ bug: should not be able to modify this _during_ a transfer
-	switch (nt) {
-	case uint8_e: head.type= 8; break;
-	case int16_e: head.type=16; break;
-	case int32_e: head.type=32; break;
-	default: RAISE("unsupported type");
-	}
-	this->nt = nt;
-}
-
 \def 0 seek_byte (int64 pos) {fseek(f,pos,SEEK_SET);}
 
 //\def void raw_open_gzip_in(string filename) {
