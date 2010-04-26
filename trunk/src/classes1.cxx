@@ -71,12 +71,12 @@ static void   expect_max_one_dim     (P<Dim> d) {if (d->n>1 ) RAISE("expecting D
 
 //****************************************************************
 \class GridCast : FObject {
-	\attr NumberTypeE nt;
-	\constructor (NumberTypeE nt) {this->nt = nt;}
+	\attr NumberTypeE cast;
+	\constructor (NumberTypeE nt) {this->cast = nt;}
 	\grin 0
 };
 GRID_INLET(0) {
-	out = new GridOutlet(this,0,in->dim,nt);
+	out = new GridOutlet(this,0,in->dim,cast);
 } GRID_FLOW {
 	out->send(n,data);
 } GRID_END
