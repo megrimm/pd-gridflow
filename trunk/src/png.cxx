@@ -80,10 +80,10 @@ GRID_INLET(0) {
   post("GRID FINISH 2");
   png_write_destroy(png);
   post("GRID FINISH 3");
-	fflush(f);
+  fflush(f);
   free(png);
   free(info);
-	fclose(f);
+  //fclose(f);
 } GRID_FINISH {
 } GRID_END
 
