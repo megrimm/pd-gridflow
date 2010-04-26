@@ -299,22 +299,29 @@ GRID_INLET(1) {
 
 //------------------------------------------------------------------------
 
-struct GemState {GemState(); ~GemState(); char coccinelle[666];}; /* bizarrerie */
+struct GemState {GemState(); /*~GemState(); ??? */ char coccinelle[666];}; /* bizarrerie */
 
 void startup_gem () {
 	\startall
 	post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
-	int major,minor;
-	sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
-	post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
-	gem = major*1000+minor;
+	//int major,minor;
+	//sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
+	//gem = major*1000+minor;
+	gem = -1;
  	GemState *dummy = new GemState();
 	float *stupide = (float *)dummy;
 	int i;
 	for (i=0; i<16; i++) if (stupide[i]==50.f) break;
-	if (i==16) post("GemState::tickTime not found");
-	else       post("GemState::tickTime found at [%d]",i);
-	delete dummy;
+	if (i==16) error("GridFlow: can't find GemState::tickTime");
+	else {
+		int j = i-2-2*sizeof(void*)/sizeof(float);
+		//post("GemState::tickTime found at [%d], so pixBlock is probably at [%d]",i,j);	
+		if      (j==3) {gem = 93;}
+		else if (j==5) {gem = 92;}
+		else error("GridFlow: can't detect this version of GEM");
+	}
+	//post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
+	//delete dummy;
 }
 
 /*
