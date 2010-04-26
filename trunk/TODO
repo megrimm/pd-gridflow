@@ -7,15 +7,14 @@ L = much later (whenever we get to know how to do it...)
 [1] [#io.quicktimeapple] déboguer farfisa_2.mov
 [2] [#io.quicktimeapple] accélérer le décodage (essayer avec farfisa_2.mov)
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] [#io.quicktimeapple] test colorspace rgb, rgba, y, yuv on PPC
-[ ] [#io.quicktimecamera] make colorspace rgb the default when it works on both Intel and PPC
+[ ] [#io.quicktimecamera] make colorspace rgb the default
 [ ] [#io.quicktimecamera] colorspace magic
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
-[ ] [#io.quartz] fullscreen mode
+[L] [#io.quartz] fullscreen mode
 [ ] [#io.quicktimeapple out] grid, codec, quality.
 [ ] add [cv/#SVD] etc (-lcv) to OSX packages
 [ ] on PPC, retest [#to_pix] with alpha etc...
@@ -56,16 +55,15 @@ L = much later (whenever we get to know how to do it...)
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
     because if you assume an operation works, you're not really _using_ throw/catch.
 [ ] win32 color_correction.pd crash
-[ ] [#camera] [#cast] setting ? or not ?
 [ ] continue [#many]...
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
-[ ] see CRASH 2009.12.06 in tests/#in-grid-test.pd
 [ ] [listread] has a different outlet_atom than [foreach] does
 [ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
 [ ] bug: see #io.ppm-test.pd
 [ ] bug: see #fft*-test.pd
+[ ] merge threshold.pd, simple_mask.pd, color_detect.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
@@ -105,21 +103,16 @@ L = much later (whenever we get to know how to do it...)
 [ ] support "get" in abstractions... automatically, through [args] ?
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] reimplement negative indices in [listelement] and [listsublist]
-[ ] fix SDL modifiers
-[ ] [args] have to be connected to a [t a] in common with first inlet... (BUT: this has an impact on float vs list distinction)
-    (why not make this automatic, by making [args] contact whichever inlet is first?)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
-[ ] what to do with GridFlow version numbering?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
 [ ] reintroduce set_mode(0)
 [ ] [#fold] is slowwww
-[ ] [route3] is like [route] but doesn't trim.
+[ ] [route3] will be like [route] but doesn't trim.
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
-[ ] make [#draw_points] [#edit_polygon]
+[ ] make [#draw_points]
 [ ] distinguish between C++ types Grid* and GridFlow*
-[ ] add [#out png]
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
 [ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
@@ -150,6 +143,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#in unicap] and/or [#in videojack] ?
 [ ] test accuracy of RGB2Y etc
 [ ] [range] name conflict.
+[ ] [#camera] [#cast] setting ? or not ?
+[ ] fix SDL modifiers
 
 // 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
