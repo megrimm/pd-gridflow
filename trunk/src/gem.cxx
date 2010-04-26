@@ -303,10 +303,8 @@ struct GemState {GemState(); /*~GemState(); ??? */ char coccinelle[666];}; /* bi
 
 void startup_gem () {
 	\startall
-	post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
-	//int major,minor;
-	//sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
-	//gem = major*1000+minor;
+	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
+	//int major,minor; sscanf(GemVersion::versionString(),"%d.%d",&major,&minor); gem = major*1000+minor;
 	gem = -1;
  	GemState *dummy = new GemState();
 	float *stupide = (float *)dummy;
