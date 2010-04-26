@@ -299,13 +299,22 @@ GRID_INLET(1) {
 
 //------------------------------------------------------------------------
 
+struct GemState {GemState(); ~GemState(); char coccinelle[666];}; /* bizarrerie */
+
 void startup_gem () {
 	\startall
-	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
+	post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
 	int major,minor;
 	sscanf(GemVersion::versionString(),"%d.%d",&major,&minor);
-	//post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
+	post("GridFlow/GEM bridge : GEM version is detected to be '%s', major=%d minor=%d",GemVersion::versionString(),major,minor);
 	gem = major*1000+minor;
+ 	GemState *dummy = new GemState();
+	float *stupide = (float *)dummy;
+	int i;
+	for (i=0; i<16; i++) if (stupide[i]==50.f) break;
+	if (i==16) post("GemState::tickTime not found");
+	else       post("GemState::tickTime found at [%d]",i);
+	delete dummy;
 }
 
 /*
