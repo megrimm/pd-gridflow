@@ -9,13 +9,13 @@
 #X obj 17 301 s \$0-souligne;
 #X obj 0 112 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 3 0 hsl 65 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10 -262144
--1 -1 3500 0;
-#X obj 0 0 cnv 5 70 18 empty \$0-rect ♯io.grid 20 10 0 8 -249661
--64 0;
-#X obj 21 16 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -64 -33
+#X obj 3 0 hsl 17 18 0 127 0 0 \$0-hsl_s \$0-hsl empty -2 -8 0 10 -262144
+-1 -1 0 0;
+#X obj 0 0 cnv 5 22 18 empty \$0-rect empty 20 10 0 8 -249661 -64 0
+;
+#X obj 21 16 cnv 1 1 1 empty \$0-souligne empty 20 12 0 14 -64 -33
 0;
-#X obj 21 17 cnv 1 48 1 empty \$0-souligne empty 20 12 0 14 -262144
+#X obj 21 17 cnv 1 1 1 empty \$0-souligne empty 20 12 0 14 -262144
 -33 0;
 #X msg 18 282 vis_size \$1 1;
 #X obj 170 300 s \$0-hsl;
@@ -64,15 +64,16 @@
 #X msg 45 320 size 5 \, vis_size \$1 18;
 #X obj 89 257 - 5;
 #X msg 128 254 size \$1 18;
-#X obj 9 9 image /home/matju/src/gridflow/images/help.gif;
-#X obj 60 4 loadbang;
+#X obj 1 1 #see \, margins 0 0 0 0;
+#X obj 32 -9 loadbang;
 #X obj 45 260 + 22;
 #X msg 104 301 pos 44 44;
-#X msg -4 76 size 8 8 \, open \$1/images/help.gif;
-#X msg 60 23 get folder;
-#X obj 60 42 gridflow;
+#X msg 32 10 get folder;
+#X obj 32 29 gridflow;
 #X msg 459 277 coords 0 1 2 3 \$1 18 3 0 0;
 #X text 459 259 not using map 0 \, map 1;
+#X obj 32 67 #in;
+#X msg 32 48 load \$1/images/help.png;
 #X connect 0 0 4 0;
 #X connect 2 0 1 0;
 #X connect 3 0 2 0;
@@ -128,13 +129,14 @@
 #X connect 57 0 16 0;
 #X connect 58 0 59 0;
 #X connect 59 0 14 0;
-#X connect 61 0 65 0;
-#X connect 62 0 67 0;
+#X connect 61 0 64 0;
+#X connect 62 0 66 0;
 #X connect 62 0 57 0;
 #X connect 62 0 58 0;
 #X connect 63 0 7 0;
-#X connect 64 0 60 0;
-#X connect 65 0 66 0;
-#X connect 66 0 64 0;
-#X connect 67 0 56 0;
-#X coords 0 1 2 3 70 18 2 0 0;
+#X connect 64 0 65 0;
+#X connect 65 0 69 0;
+#X connect 66 0 56 0;
+#X connect 68 0 60 0;
+#X connect 69 0 68 0;
+#X coords 0 1 2 3 22 18 2 0 0;
