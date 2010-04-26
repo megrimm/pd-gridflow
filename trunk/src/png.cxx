@@ -43,54 +43,40 @@ extern "C" {
 };
 
 GRID_INLET(0) {
-	if (in->dim->n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	int c = in->dim->get(2);
-	if (c!=3)               RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	if (in->dim->n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	int sc = in->dim->get(2);
+	if (sc<1 || sc>4)  RAISE("expecting 1 to 4 channels (got %d)",sc);
 	in->set_chunk(0);
 } GRID_FLOW {
 	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) RAISE("!png");
 	info = png_create_info_struct(png);
 	if (!info) {if (png) png_destroy_write_struct(&png, NULL); RAISE("!info");}
-	if (setjmp(png->jmpbuf)) {png_destroy_write_struct(&png, &info);         RAISE("png write error");}
-	//if (setjmp(png->jmpbuf)) {png_write_destroy(png); free(png); free(info); RAISE("png write error");}
+	if (setjmp(png->jmpbuf)) {png_destroy_write_struct(&png, &info); RAISE("png write error");}
 	png_init_io(png, f);
-	//info->width  = in->dim->get(1);
-	//info->height = in->dim->get(0);
-	//info->bit_depth = 8;
-	//info->rowbytes = in->dim->prod(1);
-	//info->channels = 3;
-	//info->depth = 3;
-	// info->color_type = channels==3 ?  PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_GRAY;
-	//info->color_type = PNG_COLOR_TYPE_RGB;
-	// info->color_type |= PNG_COLOR_MASK_ALPHA;
-	//info->interlace_type = 1;
-
-	png_set_IHDR(png,info,in->dim->v[1],in->dim->v[0],8,
-                 PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
+	static int color_type[] = {
+		PNG_COLOR_TYPE_GRAY,
+		PNG_COLOR_TYPE_GRAY_ALPHA,
+		PNG_COLOR_TYPE_RGB,
+		PNG_COLOR_TYPE_RGBA,
+	};
+	int sc = in->dim->v[2];
+	png_set_IHDR(png,info,in->dim->v[1],in->dim->v[0],8, color_type[sc-1],
+                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png,info);
 	png_set_packing(png);
 // this would have been the GRID_FLOW section
-	int rowsize = in->dim->get(1)*in->dim->get(2);
-	int rowsize2 = in->dim->get(1)*3;
-	uint8 row[rowsize2];
+	int rowsize = in->dim->get(1)*sc;
+	uint8 row[rowsize];
 	while (n) {
-		post("n=%ld n/1800=%f",long(n),n/1800.0);
-		bit_packing->pack(in->dim->get(1),data,row);
+		for (int i=0; i<rowsize; i++) row[i]=data[i];
 		png_write_row(png,row);
 		n-=rowsize; data+=rowsize;
 	}
 // this would have been the GRID_FINISH section
-	post("GRID FINISH 1");
 	png_write_end(png,info);
-	post("GRID FINISH 2");
-	png_write_destroy(png);
-	post("GRID FINISH 3");
+	png_destroy_write_struct(&png, &info);
 	fflush(f);
-	free(png);
-	free(info);
-	//fclose(f);
 } GRID_FINISH {
 } GRID_END
 
