@@ -301,7 +301,7 @@ TYPESWITCH(in->nt,FOO,)
 	int a = fgetc(f); if (a==EOF) RAISE("error reading header magic");
 	int b = fgetc(f); if (a==EOF) RAISE("error reading header magic");
 	if (a!='P') RAISE("not a pbm/pgm/ppm/pam file (expected 'P')");
-	if (b!='6') RAISE("expected a P6");
+	if (b!='3' && b!='6') RAISE("expected a P3 or P6");
 	int sx = getuint();
 	int sy = getuint();
 	int maxnum = getuint();
@@ -310,9 +310,12 @@ TYPESWITCH(in->nt,FOO,)
 	size_t sxc = sx*sc;
 	GridOutlet out(this,0,new Dim(sy,sx,sc),cast);
 	uint8 row[sx*3];
-	for (int y=0; y<sy; y++) {
-		if (fread(row,1,sxc,f)<sxc) RERR;
-		out.send(sxc,row);
+	if        (b=='3') {
+		int n = out.dim->prod();
+		int32 x;
+		for (int i=0; i<n; i++) if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);
+	} else if (b=='6') {
+		for (int y=0; y<sy; y++) if (fread(row,1,sxc,f)<sxc) RERR; else out.send(sxc,row);
 	}
 
 }
