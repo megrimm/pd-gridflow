@@ -7,7 +7,6 @@ L = much later (whenever we get to know how to do it...)
 [1] [#io.quicktimeapple] déboguer farfisa_2.mov
 [2] [#io.quicktimeapple] accélérer le décodage (essayer avec farfisa_2.mov)
 [ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] make colorspace rgb the default
 [ ] [#io.quicktimecamera] colorspace magic
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
@@ -22,7 +21,6 @@ L = much later (whenever we get to know how to do it...)
     or is it when opening two cameras at once ?
 [ ] [#io.quicktimecamera]: 65535 vs 65536.
 [ ] libv4l dans l'package ubuntu
-[x] installer émulateur de PPC
 [ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
 [ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
 
