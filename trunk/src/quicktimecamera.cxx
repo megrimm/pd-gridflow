@@ -33,6 +33,8 @@
 #include <map>
 extern std::map<long,const char *> oserr_table;
 
+#define DEBUG false
+
 typedef ComponentInstance VideoDigitizerComponent, VDC;
 typedef ComponentResult   VideoDigitizerError,     VDE;
 
@@ -223,7 +225,6 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		//post("  info=%08x, *info='%*s'",info, *name, info+1);
 		n++;
 	}
-	//post("  number of components: %d",n);
 	m_sg = OpenDefaultComponent(SeqGrabComponentType, 0);
 	if(!m_sg) RAISE("could not open default component");
 	e=SGInitialize(m_sg);
@@ -231,19 +232,18 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	e=SGSetDataRef(m_sg, 0, 0, seqGrabDontMakeMovie);
 	if (e!=noErr) RAISE("dataref failed");
 	e=SGNewChannel(m_sg, VideoMediaType, &m_vc);
-	if(e!=noErr) post("could not make new SG channel");
+	if(e!=noErr) RAISE("could not make new SG channel");
 	e=SGSetChannelBounds(m_vc, &rect);
-	if(e!=noErr) post("could not set SG ChannelBounds");
-	
+	if(e!=noErr) RAISE("could not set SG ChannelBounds");
 	e=SGGetChannelDeviceList(m_vc, sgDeviceListIncludeInputs, &deviceList);
-	if (e!=noErr) post("could not get device list");
+	if (e!=noErr) RAISE("could not get device list");
 	else {
 		nDevices = (*deviceList)->count;
-		//post("  number of available devices: %d", nDevices); 
-		//post("  current device: %d", (*deviceList)->selectedIndex);
-		//for (int i=0; i<nDevices; i++) post("  Device %d: %s", i, (*deviceList)->entry[i].name);
+		//fprintf(stderr,"  number of available devices: %d\n", nDevices); 
+		//fprintf(stderr,"  current device: %d\n", (*deviceList)->selectedIndex);
+		//for (int i=0; i<nDevices; i++) fprintf(stderr,"  Device %d: '%.*s'\n", i, *(*deviceList)->entry[i].name,1+(*deviceList)->entry[i].name);
 	}
-    
+
 	// treat the device list in reverse order
 	device = nDevices-1-device;
 	e=SGSetChannelDevice(m_vc, (*deviceList)->entry[device].name);
@@ -312,11 +312,11 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 \def 0 size (int height, int width) {
 	OSErr e = VDGetDigitizerRect(vdc,&rect);
 	if (e!=noErr) RAISE("VDGetDigitizerRect error");
-	post("rect1: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
+	if (DEBUG) post("rect1: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
 	dim = new Dim(height,width,dim->v[2]);
 	rect.bottom = height;
 	rect.right = width;
-	post("rect2: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
+	if (DEBUG) post("rect2: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
 	e = VDSetDigitizerRect(vdc,&rect);
 	if (e!=noErr) post("VDSetDigitizerRect error");
 	e = SGSetChannelBounds(m_vc,&rect);
@@ -329,12 +329,14 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		DigitizerInfo di;
 		OSErr e = VDGetDigitizerInfo(vdc,&di);
 		if (e!=noErr) RAISE("VDGetDigitizerInfo error");
-		post("vdigType=%d inputCapabilityFlags=0x%08x outputCapabilityFlags=0x%08x inputCurrentFlags=0x%08x outputCurrentFlags=0x%08x",
-			di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
-		post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
-		post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
-			di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
-		post("blendLevels=%d reserved=%d",di.blendLevels,di.reserved);
+		if (DEBUG) {
+			post("vdigType=%d inputCapabilityFlags=0x%08x outputCapabilityFlags=0x%08x inputCurrentFlags=0x%08x outputCurrentFlags=0x%08x",
+				di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
+			post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
+			post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
+				di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
+			post("blendLevels=%d reserved=%d",di.blendLevels,di.reserved);
+		}
 		//Rect r;
 		//OSErr e = SGGetChannelBounds (m_vc,&r);
 		//if (e!=noErr) RAISE("SGGetChannelBounds error");
