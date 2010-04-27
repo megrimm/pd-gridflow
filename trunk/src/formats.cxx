@@ -301,23 +301,29 @@ TYPESWITCH(in->nt,FOO,)
 	int a = fgetc(f); if (a==EOF) RAISE("error reading header magic");
 	int b = fgetc(f); if (a==EOF) RAISE("error reading header magic");
 	if (a!='P') RAISE("not a pbm/pgm/ppm/pam file (expected 'P')");
-	if (b!='3' && b!='6') RAISE("expected a P3 or P6");
+	int sc=0;
+	switch (b) {
+		case '2': case '5': sc=1; break;
+		case '3': case '6': sc=3; break;
+		default: RAISE("expected one of: P2 P3 P5 P6");
+	}
 	int sx = getuint();
 	int sy = getuint();
 	int maxnum = getuint();
 	if (maxnum!=255) RAISE("expected max to be 255 (8 bits per value)");
-	int sc = 3;
 	size_t sxc = sx*sc;
 	GridOutlet out(this,0,new Dim(sy,sx,sc),cast);
 	uint8 row[sx*3];
-	if        (b=='3') {
-		int n = out.dim->prod();
-		int32 x;
-		for (int i=0; i<n; i++) if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);
-	} else if (b=='6') {
-		for (int y=0; y<sy; y++) if (fread(row,1,sxc,f)<sxc) RERR; else out.send(sxc,row);
+	switch (b) {
+		case '2': case '3': {
+			size_t n = out.dim->prod();
+			int32 x;
+			for (size_t i=0; i<n; i++) if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);
+		} break;
+		case '5': case '6': {
+			for (size_t y=0; y<sy; y++) if (fread(row,1,sxc,f)<sxc) RERR; else out.send(sxc,row);
+		} break;
 	}
-
 }
 GRID_INLET(0) {
 	if (in->dim->n!=3) RAISE("need 3 dimensions");
