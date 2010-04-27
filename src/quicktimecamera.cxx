@@ -196,7 +196,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   P<BitPacking> bit_packing3;
   \constructor (t_symbol *mode, int device) {
 	dim = new Dim(240,320,4);
-	_0_colorspace(0,0,gensym("rgba"));
+	_0_colorspace(0,0,gensym("rgb"));
 	OSErr e;
 	rect.top=rect.left=0;
 	rect.bottom=dim->v[0]; rect.right=dim->v[1];
@@ -310,7 +310,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 };
 
 \def 0 size (int height, int width) {
-	OSErr e = VDSetDigitizerRect(vdc,&rect);
+	OSErr e = VDGetDigitizerRect(vdc,&rect);
 	if (e!=noErr) RAISE("VDGetDigitizerRect error");
 	post("rect1: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
 	dim = new Dim(height,width,dim->v[2]);
@@ -318,7 +318,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	rect.right = width;
 	post("rect2: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
 	e = VDSetDigitizerRect(vdc,&rect);
-	if (e!=noErr) RAISE("VDSetDigitizerRect error");
+	if (e!=noErr) post("VDSetDigitizerRect error");
 	e = SGSetChannelBounds(m_vc,&rect);
 	if (e!=noErr) post("could not set SG ChannelBounds");
 }
