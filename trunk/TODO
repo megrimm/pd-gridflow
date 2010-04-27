@@ -22,7 +22,7 @@ L = much later (whenever we get to know how to do it...)
     or is it when opening two cameras at once ?
 [ ] [#io.quicktimecamera]: 65535 vs 65536.
 [ ] libv4l dans l'package ubuntu
-[ ] installer émulateur de PPC
+[x] installer émulateur de PPC
 [ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
 [ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
 
@@ -45,6 +45,10 @@ L = much later (whenever we get to know how to do it...)
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
 -------- vous êtes ici
+[ ] alias numops so that it's more pd-like
+[ ] [#pack, cast] ?
+[ ] [# /exp] as inverse of [# log*]
+[ ] make a rounding [# *>>8]
 [ ] [#fft] sign crash
 [ ] [#many] when $1 is abstraction :
     error: canvas: no method for 'receive'
@@ -137,14 +141,14 @@ L = much later (whenever we get to know how to do it...)
     [ ] automatic type conversion
 
 9.10 or later
-[ ] threaded v4l1, v4l2, dc1394.
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
-[ ] [#in unicap] and/or [#in videojack] ?
-[ ] test accuracy of RGB2Y etc
-[ ] [range] name conflict.
-[ ] [#camera] [#cast] setting ? or not ?
-[ ] fix SDL modifiers
+[L] threaded v4l1, v4l2, dc1394.
+[L] regular dc1394 options
+[L] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
+[L] [#in unicap] and/or [#in videojack] ?
+[L] test accuracy of RGB2Y etc
+[L] [range] name conflict.
+[L] [#camera] [#cast] setting ? or not ?
+[L] fix SDL modifiers
 
 // 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
