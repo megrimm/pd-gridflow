@@ -307,8 +307,8 @@ TYPESWITCH(in->nt,FOO,)
 		case '3': case '6': sc=3; break;
 		default: RAISE("expected one of: P2 P3 P5 P6");
 	}
-	int sx = getuint();
-	int sy = getuint();
+	size_t sx = getuint();
+	size_t sy = getuint();
 	int maxnum = getuint();
 	if (maxnum!=255) RAISE("expected max to be 255 (8 bits per value)");
 	size_t sxc = sx*sc;
@@ -327,21 +327,18 @@ TYPESWITCH(in->nt,FOO,)
 }
 GRID_INLET(0) {
 	if (in->dim->n!=3) RAISE("need 3 dimensions");
-	if (in->dim->v[2]!=3) RAISE("need 3 channels");
-	fprintf(f,"P6\n");
+	int sc = in->dim->v[2];
+	if (sc!=1 && sc!=3) RAISE("need 1 or 3 channels");
+	fprintf(f, sc==3 ? "P6\n" : "P5\n");
 	fprintf(f,"%d %d 255\n",in->dim->v[1],in->dim->v[0]);
 	in->set_chunk(1);
 } GRID_FLOW {
 	int sx = in->dim->v[1];
 	int sc = in->dim->v[2];
 	size_t sxc = sx*sc;
-	uint8 row[sx*3];
+	uint8 row[sxc];
 	while (n) {
-		for (int i=0,j=0; i<sx; i++,j+=3) {
-			row[j+0] = data[j+0];
-			row[j+1] = data[j+1];
-			row[j+2] = data[j+2];
-		}
+		for (size_t i=0; i<sxc; i++) row[i] = data[i];
 		if (fwrite(row,1,sxc,f)<sxc) RAISE("write error: %s",strerror(ferror(f)));
 		data+=sxc; n-=sxc;
 	}
