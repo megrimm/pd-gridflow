@@ -197,7 +197,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   int m_quality;
   P<BitPacking> bit_packing3;
   \constructor (t_symbol *mode, int device) {
-	dim = new Dim(240,320,4);
+	dim = new Dim(240,320,3);
 	_0_colorspace(0,0,gensym("rgb"));
 	OSErr e;
 	rect.top=rect.left=0;
@@ -272,10 +272,11 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 
 	vdc = SGGetVideoDigitizerComponent(m_vc);
 
-	int dataSize = dim->prod();             
-	buf = new uint8[dataSize];
-	buf2 = new uint8[dataSize];
-	m_rowBytes = dim->prod(1);
+	int sy = dim->v[0], sx = dim->v[1], sc = dim->v[2];
+	int dataSize = dim->prod();
+	buf  = new uint8[sy*sx*4];
+	buf2 = new uint8[sy*sx*4];
+	m_rowBytes = sx*4;
 	e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,&rect,NULL,NULL,0,buf,m_rowBytes);
 	if (0/*yuv*/) {
 		int dataSize = dim->prod()*2/4;
