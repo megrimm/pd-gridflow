@@ -24,7 +24,7 @@
 #X obj 3 250 doc_c 1..2;
 #X obj 97 521 doc_m i0 grid;
 #X text 232 280 The value defines the scale factor. A pack object allows
-you to vary the horizontal and vertical values idenpendently. In the
+you to vary the horizontal and vertical values independently. In the
 example above \, inlet 0 of [#pack] varies the image on a vertical
 axis \, inlet 1 of [#pack] varies the image on a horizontal axis.;
 #X obj 97 556 doc_m i1 grid;
