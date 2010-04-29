@@ -119,12 +119,8 @@ static void HandleEvent () {
 			SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
 			pd_anything(gensym("#sdl")->s_thing,sel,4,at);
 		    } break;
-		    case SDL_MOUSEBUTTONDOWN: SDL_MOUSEBUTTONUP: {
-			if (SDL_MOUSEBUTTONDOWN) mousem |=  (128<<event.button.button);
-			else                     mousem &= ~(128<<event.button.button);
-			//post("mousem=%d",mousem);
-			report_pointer();
-		    } break;
+		    case SDL_MOUSEBUTTONDOWN: {mousem |=  (128<<event.button.button); report_pointer();} break;
+		    case SDL_MOUSEBUTTONUP:   {mousem &= ~(128<<event.button.button); report_pointer();} break;
 		    case SDL_MOUSEMOTION: {
 			mousey = event.motion.y;
 			mousex = event.motion.x;
