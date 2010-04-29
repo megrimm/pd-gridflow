@@ -298,8 +298,44 @@ GRID_INLET(1) {
 \end class {install("#from_pix",1,1); add_creator("#import_pix");}
 
 //------------------------------------------------------------------------
+// [gemdead]
 
 struct GemState {GemState(); /*~GemState(); ??? */ char coccinelle[666];}; /* bizarrerie */
+class gemhead;
+#define GEMCACHE_MAGIC 0x1234567
+struct GemCache {
+    	GemCache(gemhead *parent);
+        ~GemCache();
+	void reset(gemhead *parent);
+    	int dirty, resendImage, vertexDirty;
+    	gemhead *m_parent;
+	int m_magic;
+};
+
+\class GemDead : FObject {
+	GemState *state;
+	GemCache *cache;
+	\constructor () {
+		//cache = new GemCache(this); ///???
+		cache = new GemCache(0);
+		state = new GemState();
+	}
+	~GemDead () {/*delete cache; delete state;*/}
+	\decl 0 bang () {
+		t_atom ap[2];
+		SETPOINTER(ap+0,(t_gpointer *)cache); // GemCache
+		SETPOINTER(ap+1,(t_gpointer *)state);
+		outlet_anything(outlets[0],gensym("gem_state"),2,ap);
+	}
+	\decl 0 float (float state) {
+		t_atom ap[1];
+		SETFLOAT(ap,!!state);
+		outlet_anything(outlets[0],gensym("gem_state"),1,ap);
+	}
+};
+\end class {install("gemdead",1,1);}
+
+//------------------------------------------------------------------------
 
 void startup_gem () {
 	\startall
