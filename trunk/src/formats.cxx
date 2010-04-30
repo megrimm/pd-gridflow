@@ -26,6 +26,7 @@
 #include <map>
 #include <algorithm>
 #include <errno.h>
+#include <fcntl.h>
 #define L _L_
 
 /* API (version 0.9.3)
