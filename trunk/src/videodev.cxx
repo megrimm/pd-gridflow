@@ -188,6 +188,19 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 	WHCHOICE(format,video_palette_choice);
 	post(buf);}
 
+t_symbol *safe_gensym(const char *name) {
+	char buf[33];
+	memcpy(buf,name,32);
+	int i;
+	for (i=31; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
+	for (i=0; buf[i]; i++) {
+		if (isspace(buf[i])) buf[i]='_';
+		if (buf[i]=='(') buf[i]='[';
+		if (buf[i]==')') buf[i]=']';
+	}
+	return gensym(buf);
+}
+
 /* **************************************************************** */
 
 \class FormatVideoDev : Format {
@@ -296,7 +309,7 @@ static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap]
 \def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
-	dim = new Dim(sy,sx,3);
+	dim = new Dim(sy,sx,dim->v[2]);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	if (debug) gfpost(&grab_win);
 	grab_win.clipcount = 0;
@@ -401,6 +414,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			for(int y=0; y<sy; y++) {
 			        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+					// this doesn't clip!
 					b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 					b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
 				}
@@ -622,17 +636,8 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 
 void FormatVideoDev::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
-	char buf[33];
-	memcpy(buf,vcaps.name,32);
-	int i;
-	for (i=31; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
-	for (i=0; buf[i]; i++) {
-		if (isspace(buf[i])) buf[i]='_';
-		if (buf[i]=='(') buf[i]='[';
-		if (buf[i]==')') buf[i]=']';
-	}
-	name = gensym(buf);
+	dim = new Dim(0,0,0);
+	name = safe_gensym(vcaps.name);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	palettes=0;
 	std::ostringstream supp;
@@ -648,6 +653,7 @@ void FormatVideoDev::initialize2 () {
 		if (ioctl(fd, VIDIOCSPICT,&vp)>=0) {palettes |= 1<<p; supp << " " << p;}
 	}
 	post(supp);
+	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
 	_0_colorspace(0,0,gensym("rgb"));
 	_0_channel(0,0,0);
 }
