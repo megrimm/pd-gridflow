@@ -129,7 +129,7 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 		//outlet_anything2(outlets[sargc],j-k,av+k);
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
-		pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
+		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
 	}
 }
 void Args::process_args (int argc, t_atom *argv) {
