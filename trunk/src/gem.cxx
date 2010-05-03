@@ -301,6 +301,9 @@ GRID_INLET(1) {
 // [gemdead]
 
 struct GemState {GemState(); /*~GemState(); ??? */ char coccinelle[666];}; /* bizarrerie */
+#ifdef __WIN32__
+GemState::GemState() {}
+#endif
 class gemhead;
 #define GEMCACHE_MAGIC 0x1234567
 struct GemCache {
@@ -311,6 +314,12 @@ struct GemCache {
     	gemhead *m_parent;
 	int m_magic;
 };
+#ifdef __WIN32__
+    GemCache :: GemCache(gemhead *parent)
+        : dirty(1), resendImage(0), vertexDirty(0),
+        m_parent(parent), m_magic(GEMCACHE_MAGIC)
+       {}
+#endif
 
 \class GemDead : FObject {
 	GemState *state;
