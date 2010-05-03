@@ -110,6 +110,28 @@ static void gfpost(v4l2_requestbuffers *self) {std::ostringstream buf; buf << "[
 	WH(memory,"%u"); // enum v4l2_memory
 };
 
+static t_symbol *safe_gensym (const char *s, int n=32) {
+	int i; char buf[n+1]; memcpy(buf,s,n); buf[n]=0;
+	for (i=n-1; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
+	for (i=0; buf[i]; i++) {
+		if (isspace(buf[i])) buf[i]='_';
+		if (buf[i]=='(') buf[i]='[';
+		if (buf[i]==')') buf[i]=']';
+	}
+	return gensym(buf);
+}
+
+
+#define DEBUG(args...) 42
+//#define DEBUG(args...) post(args)
+
+#define  IOCTL( F,NAME,ARG) \
+  (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), v4l2_ioctl(F,NAME,ARG))
+#define WIOCTL( F,NAME,ARG) \
+  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
+#define WIOCTL2(F,NAME,ARG) \
+  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+
 /* **************************************************************** */
 
 struct Frame {uint8 *p; size_t n;};
@@ -135,14 +157,24 @@ struct Frame {uint8 *p; size_t n;};
 		else            fd =      open(filename.data(),0);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		f=0;
-		initialize2();
+		//WIOCTL(fd, VIDIOCGCAP, &cap);
+		WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
+		//_0_size(0,0,cap.maxheight,cap.maxwidth);
+		_0_size(0,0,240,320);
+		t_symbol *card = safe_gensym((char *)cap.card,sizeof(cap.card));
+		//t_symbol *bus = safe_gensym((char *)cap.bus_info,sizeof(cap.bus_info));
+		//this->name = symprintf("%s_on_%s",card->s_name,bus->s_name);
+		this->name = card;
+		//WIOCTL(fd, VIDIOCGPICT,&vp);
+		//int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
+		_0_colorspace(0,0,gensym("rgb"));
+		_0_channel(0,0,0);
 	}
 	void frame_finished (uint8 *buf);
 
 	void alloc_image ();
 	void dealloc_image ();
 	void frame_ask ();
-	void initialize2 ();
 	~FormatV4L2 () {
 		if (image) dealloc_image();
 		close(fd); fd=-1; /* can be v4l2_close, not same as in formats.cxx */
@@ -171,16 +203,6 @@ struct Frame {uint8 *p; size_t n;};
 
 	\decl 0 get (t_symbol *s=0);
 };
-
-#define DEBUG(args...) 42
-//#define DEBUG(args...) post(args)
-
-#define  IOCTL( F,NAME,ARG) \
-  (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), v4l2_ioctl(F,NAME,ARG))
-#define WIOCTL( F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
-#define WIOCTL2(F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 \def 0 get (t_symbol *s=0) {
 	FObject::_0_get(argc,argv,s);
@@ -472,32 +494,6 @@ GRID_INLET(0) {
 \def 0 white_red(uint16 white_red)    {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_red);}
 \def uint16 white_blue()       {return v4l2_get_control(fd,V4L2_CID_RED_BALANCE);}
 \def 0 white_blue(uint16 white_blue)  {v4l2_set_control(fd,V4L2_CID_RED_BALANCE,white_blue);}
-
-static t_symbol *mangle (char *s, int n) {
-	int i; char buf[n+1]; memcpy(buf,s,n); buf[n]=0;
-	for (i=n-1; buf[i] && !isspace(buf[i]); i--) buf[i]=0;
-	for (i=0; buf[i]; i++) {
-		if (isspace(buf[i])) buf[i]='_';
-		if (buf[i]=='(') buf[i]='[';
-		if (buf[i]==')') buf[i]=']';
-	}
-	return gensym(buf);
-}
-
-void FormatV4L2::initialize2 () {
-	//WIOCTL(fd, VIDIOCGCAP, &cap);
-	WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
-	//_0_size(0,0,cap.maxheight,cap.maxwidth);
-	_0_size(0,0,240,320);
-	t_symbol *card = mangle((char *)cap.card,sizeof(cap.card));
-	//t_symbol *bus = mangle((char *)cap.bus_info,sizeof(cap.bus_info));
-	//this->name = symprintf("%s_on_%s",card->s_name,bus->s_name);
-	this->name = card;
-	//WIOCTL(fd, VIDIOCGPICT,&vp);
-	//int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
-	_0_colorspace(0,0,gensym("rgb"));
-	_0_channel(0,0,0);
-}
 
 \end class FormatV4L2 {install_format("#io.v4l2",4,"");}
 void startup_v4l2 () {

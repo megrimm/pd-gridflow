@@ -201,6 +201,12 @@ t_symbol *safe_gensym(const char *name) {
 	return gensym(buf);
 }
 
+#define DEBUG(args...) 42
+//#define DEBUG(args...) post(args)
+#define  IOCTL( F,NAME,ARG) (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
+#define WIOCTL( F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (error("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)),1))
+#define WIOCTL2(F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (RAISE("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+
 /* **************************************************************** */
 
 \class FormatVideoDev : Format {
@@ -226,21 +232,23 @@ t_symbol *safe_gensym(const char *name) {
 		has_tuner=false;
 		has_norm=false;
 		image=0;
-		//f = fopen(filename.data(),"r+");
-		//if (!f) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
-		//fd = fileno(f);
-		if (libv4l)
-			fd = v4l1_open(filename.data(),O_RDWR);
-		else 	fd =      open(filename.data(),O_RDWR);
+		if (libv4l) fd = v4l1_open(filename.data(),O_RDWR);
+		else 	    fd =      open(filename.data(),O_RDWR);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
-		initialize2();
+		WIOCTL(fd, VIDIOCGCAP, &vcaps);
+		dim = new Dim(0,0,0);
+		name = safe_gensym(vcaps.name);
+		WIOCTL(fd, VIDIOCGPICT,&vp);
+		detect_palettes();
+		_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
+		_0_colorspace(0,0,gensym("rgb"));
+		_0_channel(0,0,0);
 	}
 	void frame_finished (uint8 *buf);
 
 	void alloc_image ();
 	void dealloc_image ();
 	void frame_ask ();
-	void initialize2 ();
 	~FormatVideoDev () {
 		if (image) dealloc_image();
 		close(fd); // wtf
@@ -275,14 +283,24 @@ t_symbol *safe_gensym(const char *name) {
 	\attr t_symbol *name;
 
 	\decl 0 get (t_symbol *s=0);
+	
+	void detect_palettes () {
+		palettes=0;
+		std::ostringstream supp;
+		supp << "camera supports palettes :";
+#if 1 /* keep this at "1" most of the time, because at "0" it crashes certain camera drivers ! */
+		int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUYV,VIDEO_PALETTE_YUV420P};
+		for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
+			int p = checklist[i];
+#else
+		for (size_t p=1; p<17; p++) {
+#endif
+			vp.palette = p;
+			if (ioctl(fd, VIDIOCSPICT,&vp)>=0) {palettes |= 1<<p; supp << " " << p;}
+		}
+		post(supp);
+	}
 };
-
-#define DEBUG(args...) 42
-//#define DEBUG(args...) post(args)
-
-#define  IOCTL( F,NAME,ARG) (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
-#define WIOCTL( F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (error("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)),1))
-#define WIOCTL2(F,NAME,ARG) (IOCTL(F,NAME,ARG)<0 && (RAISE("%s: ioctl %s: %s",__FUNCTION__,#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 \def 0 get (t_symbol *s=0) {
 	// this is abnormal for a get-function
@@ -633,30 +651,6 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 \def 0 noise_reduction(int noise_reduction) {PWC()      WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);}
 \def int compression()     {PWC(0) int compression;     WIOCTL(fd, VIDIOCPWCSCQUAL,    &compression    ); return compression;    }
 \def 0 compression(int compression) {PWC()              WIOCTL(fd, VIDIOCPWCGCQUAL,    &compression    );}
-
-void FormatVideoDev::initialize2 () {
-	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	dim = new Dim(0,0,0);
-	name = safe_gensym(vcaps.name);
-	WIOCTL(fd, VIDIOCGPICT,&vp);
-	palettes=0;
-	std::ostringstream supp;
-	supp << "camera supports palettes :";
-#if 1 /* keep this at "1" most of the time, because at "0" it crashes certain camera drivers ! */
-	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUYV,VIDEO_PALETTE_YUV420P};
-	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
-		int p = checklist[i];
-#else
-	for (size_t p=1; p<17; p++) {
-#endif
-		vp.palette = p;
-		if (ioctl(fd, VIDIOCSPICT,&vp)>=0) {palettes |= 1<<p; supp << " " << p;}
-	}
-	post(supp);
-	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
-	_0_colorspace(0,0,gensym("rgb"));
-	_0_channel(0,0,0);
-}
 
 \end class FormatVideoDev {install_format("#io.videodev",4,"");}
 void startup_videodev () {
