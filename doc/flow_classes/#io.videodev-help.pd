@@ -1,45 +1,45 @@
-#N canvas 53 22 632 642 10;
+#N canvas 596 0 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 3 276 doc_i 1;
-#X obj 3 1315 doc_o 1;
-#X obj 3 1412 doc_also;
-#X obj 14 306 doc_ii 0;
-#X obj 97 328 doc_m i0 brightness;
-#X obj 97 862 doc_m i0 hue;
-#X obj 97 599 doc_m i0 colour;
-#X obj 97 656 doc_m i0 contrast;
-#X obj 97 1270 doc_m i0 whiteness;
-#X obj 97 713 doc_m i0 get;
-#X obj 97 814 doc_m i0 help;
-#X obj 97 350 doc_m i0 channel;
-#X obj 97 1147 doc_m i0 tuner;
-#X obj 97 919 doc_m i0 norm;
-#X obj 97 678 doc_m i0 frequency;
-#X obj 97 1029 doc_m i0 transfer symbol;
-#X obj 97 1226 doc_m i0 white_red;
-#X obj 97 1182 doc_m i0 white_blue;
-#X obj 97 1248 doc_m i0 white_speed;
-#X obj 97 1204 doc_m i0 white_delay;
-#X obj 97 306 doc_m i0 auto_gain;
-#X obj 97 884 doc_m i0 noise_reduction;
-#X obj 97 621 doc_m i0 compression;
-#X obj 97 411 doc_m i0 colorspace;
-#X obj 97 1007 doc_m i0 size;
-#X text 232 1007 \$1=y \$2=x;
-#X text 232 748 "min": minimum values for "size";
-#X text 232 770 "max": maximum values for "size";
-#X text 232 792 default: gets all attributes.;
-#X text 232 713 gets a specific attribute. a message is sent through
+#X obj 3 346 doc_i 1;
+#X obj 3 1385 doc_o 1;
+#X obj 3 1482 doc_also;
+#X obj 14 376 doc_ii 0;
+#X obj 97 398 doc_m i0 brightness;
+#X obj 97 932 doc_m i0 hue;
+#X obj 97 669 doc_m i0 colour;
+#X obj 97 726 doc_m i0 contrast;
+#X obj 97 1340 doc_m i0 whiteness;
+#X obj 97 783 doc_m i0 get;
+#X obj 97 884 doc_m i0 help;
+#X obj 97 420 doc_m i0 channel;
+#X obj 97 1217 doc_m i0 tuner;
+#X obj 97 989 doc_m i0 norm;
+#X obj 97 748 doc_m i0 frequency;
+#X obj 97 1099 doc_m i0 transfer symbol;
+#X obj 97 1296 doc_m i0 white_red;
+#X obj 97 1252 doc_m i0 white_blue;
+#X obj 97 1318 doc_m i0 white_speed;
+#X obj 97 1274 doc_m i0 white_delay;
+#X obj 97 376 doc_m i0 auto_gain;
+#X obj 97 954 doc_m i0 noise_reduction;
+#X obj 97 691 doc_m i0 compression;
+#X obj 97 481 doc_m i0 colorspace;
+#X obj 97 1077 doc_m i0 size;
+#X text 232 1077 \$1=y \$2=x;
+#X text 232 818 "min": minimum values for "size";
+#X text 232 840 "max": maximum values for "size";
+#X text 232 862 default: gets all attributes.;
+#X text 232 783 gets a specific attribute. a message is sent through
 right outlet.;
-#X text 232 1099 In case of mmap \, the extra numeric argument sets
+#X text 232 1169 In case of mmap \, the extra numeric argument sets
 the queue length in number of frames \, so you can select an appropriate
 tradeoff between efficiency and latency.;
-#X obj 0 1432 doc_f;
-#X obj 14 1345 doc_oo 0;
-#X obj 97 1345 doc_m o0 grid;
-#X obj 97 1367 doc_m o0 <any>;
-#X text 232 1345 image coming out;
-#X text 232 1367 most any inlet 0 message is also an outlet 0 message
+#X obj 0 1502 doc_f;
+#X obj 14 1415 doc_oo 0;
+#X obj 97 1415 doc_m o0 grid;
+#X obj 97 1437 doc_m o0 <any>;
+#X text 232 1415 image coming out;
+#X text 232 1437 most any inlet 0 message is also an outlet 0 message
 whose output can be triggered using 'get'.;
 #X text 353 27 get images from a V4L1 camera interface.;
 #X text 353 42 this is for Linux only.;
@@ -58,58 +58,64 @@ whose output can be triggered using 'get'.;
 #X obj 26 74 metro 100;
 #X obj 26 57 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
 ;
-#X text 232 306 0..65535: some other kind of contrast setting (PWC
+#X text 232 376 0..65535: some other kind of contrast setting (PWC
 only);
-#X text 232 350 connector selector : for example \, BTTV cards might
+#X text 232 420 connector selector : for example \, BTTV cards might
 have channel 1 as the RCA Composite input \, but have channels numbered
 0 \, 2 and 3 \, with different kinds of plugs. do not confuse this
 name with the channels in a colorspace.;
-#X text 232 411 "y": 1 channel: grey;
-#X text 232 455 "rgb": 3 channels: red \, green \, blue.;
-#X text 232 477 "magic": 3 channels like "yuv" \, with two exceptions
+#X text 232 481 "y": 1 channel: grey;
+#X text 232 525 "rgb": 3 channels: red \, green \, blue.;
+#X text 232 547 "magic": 3 channels like "yuv" \, with two exceptions
 : pixel values go from 16 to 239 (as given by video cards) instead
 of 0 to 255 \, and also \, picture size is half-width \, half-height
 \, as Y is shrunk to fit UV \, instead of UV being stretched to fit
 Y. this is designed to be used with the YUV420P (palette 15) mode only.
 ;
-#X text 232 599 0..65535: also called "saturation";
-#X text 232 656 0..65535: the main contrast setting;
-#X text 232 678 0..65535: for picking up a station on a TV channel.
+#X text 232 669 0..65535: also called "saturation";
+#X text 232 726 0..65535: the main contrast setting;
+#X text 232 748 0..65535: for picking up a station on a TV channel.
 you need to find country-specific tunings for this.;
-#X text 232 814 actually a GF-wide option. this prints a list of all
+#X text 232 884 actually a GF-wide option. this prints a list of all
 attribute names in the console. but this helppatch should be more helpful
 than the "help" method. :);
-#X text 232 862 0..65535: the main hueshift setting;
-#X text 232 621 0..3: a PWC-only setting \, but I don't have a PWC
+#X text 232 932 0..65535: the main hueshift setting;
+#X text 232 691 0..3: a PWC-only setting \, but I don't have a PWC
 camera that actually supports this.;
-#X text 232 884 0..3: a PWC-only setting \, but I don't have a PWC
+#X text 232 954 0..3: a PWC-only setting \, but I don't have a PWC
 camera that actually supports this.;
-#X text 232 919 0: PAL;
-#X text 232 941 1: NTSC;
-#X text 232 963 2: SECAM;
-#X text 232 985 3: auto;
-#X text 232 1029 "read": Some cameras/drivers only support this instead
+#X text 232 989 0: PAL;
+#X text 232 1011 1: NTSC;
+#X text 232 1033 2: SECAM;
+#X text 232 1055 3: auto;
+#X text 232 1099 "read": Some cameras/drivers only support this instead
 of mmap.;
-#X text 232 1064 "mmap": \$1=nframes (default:2) is the normal (and
+#X text 232 1134 "mmap": \$1=nframes (default:2) is the normal (and
 fast) way of transferring pictures from the camera.;
-#X text 232 1147 to pick UHF \, VHF \, ... or something like that.
+#X text 232 1217 to pick UHF \, VHF \, ... or something like that.
 usually unused.;
-#X text 232 1182 0..65535: offset for the V channel (blue-yellow balance)
+#X text 232 1252 0..65535: offset for the V channel (blue-yellow balance)
 ;
-#X text 232 1226 0..65535: offset for the U channel (red-cyan balance)
+#X text 232 1296 0..65535: offset for the U channel (red-cyan balance)
 ;
-#X text 232 1204 i don't really know this;
-#X text 232 1248 i don't really know this;
-#X text 232 1270 0..65535: another setting similar to brightness and
+#X text 232 1274 i don't really know this;
+#X text 232 1318 i don't really know this;
+#X text 232 1340 0..65535: another setting similar to brightness and
 contrast.;
-#X text 232 328 0..65535: the main brightness setting;
-#X text 232 433 "yuv": 3 channels: grey \, blue/yellow \, red/cyan.
+#X text 232 398 0..65535: the main brightness setting;
+#X text 232 503 "yuv": 3 channels: grey \, blue/yellow \, red/cyan.
 ;
-#X text 232 564 "rgba": 4 channels: red \, green \, blue \, alpha \,
+#X text 232 634 "rgba": 4 channels: red \, green \, blue \, alpha \,
 in which alpha is always set to 255;
-#X obj 103 1412 #camera;
-#X obj 157 1412 doc_link #io.dc1394;
-#X obj 285 1412 doc_link #io.quicktimecamera;
+#X obj 103 1482 #camera;
+#X obj 157 1482 doc_link #io.dc1394;
+#X obj 247 1482 doc_link #io.quicktimecamera;
+#X msg 29 267 open videodev /dev/video0 1;
+#X text 225 265 this one uses libv4l1 (the v4l1 library) \, instead
+of using classic v4l1 (the kernel interface). this allows virtualisation
+such as using a v4l2-only driver in a v4l1-only programme \, and such
+as auto-converting pixel formats between the driver and the programme.
+;
 #X connect 3 1 79 0;
 #X connect 3 1 80 0;
 #X connect 3 1 81 0;
