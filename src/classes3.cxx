@@ -1233,6 +1233,7 @@ GRID_INLET(0) {
 		this->n=n;
 		ninlets_set(this->n);
 	}
+	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
 	\decl void _n_set   (int inlet, float f) {
 		#define FOO(T) ((T *)*a)[inlet] = (T)f;
 		TYPESWITCH(a->nt,FOO,);
@@ -1355,16 +1356,13 @@ GRID_INPUT(2,r) {
 //****************************************************************
 
 static Numop *op_os8;
-\class GridFadeSpace : FObject {
+\class GridLopSpace : FObject {
 	\attr int which_dim;
 	\attr PtrGrid r;
 	\grin 0
 	\grin 1
-	PtrGrid fader_grid;
-	\constructor (int which_dim, Grid *r) {
-		this->which_dim = which_dim;
-		this->r=r;
-	}
+	PtrGrid r2;
+	\constructor (int which_dim, Grid *r) {this->which_dim = which_dim; this->r=r;}
 };
 GRID_INLET(0) {
 	if (in->dim->n<2) RAISE("at least 2 dimensions");
@@ -1373,26 +1371,23 @@ GRID_INLET(0) {
 	if (w<0 || w>=in->dim->n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in->dim->n);
 	in->set_chunk(w);
 	int sxc = in->dim->prod(w);
-	fader_grid = new Grid(new Dim(sxc),in->nt);
-	T *fader = (T *)*fader_grid;
+	r2 = new Grid(new Dim(sxc),in->nt);
+	T *rdata = (T *)*r2;
 	size_t rn = r->dim->prod();
-	//post("rn=%d sxc=%d",rn,sxc);
-	for (int i=0; i<sxc; i++) fader[i] = max(((T *)*r)[mod(i,rn)],T(1));
+	for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
 } GRID_FLOW {
 	int w = which_dim; if (w<0) w+=in->dim->n;
 	int sc = in->dim->prod(w+1);
 	int sxc = in->dim->prod(w);
-	T *fader = (T *)*fader_grid;
-	while (n) {
-		T tada[sxc+sc];
-		CLEAR(tada,sc);
-		for (int i=0; i<sxc; i++) tada[i+sc] = (tada[i]*(fader[i]-1) + data[i] + (fader[i]/2)) / fader[i];
+	T *rdata = (T *)*r2;
+	for (;n;n-=sxc, data+=sxc) {
+		T tada[sxc+sc]; CLEAR(tada,sc);
+		for (int i=0; i<sxc; i++) tada[i+sc] = (tada[i]*(256-rdata[i]) + data[i]*rdata[i] + 128) / 256;
 		out->send(sxc,tada+sc);
-		n-=sxc; data+=sxc;
 	}
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
-\end class {install("#fade_space",2,1);}
+\end class {install("#lop_space",2,1);}
 
 //****************************************************************
 void startup_flow_objects3 () {
