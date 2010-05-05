@@ -139,7 +139,6 @@ say #polygon_radial_map "find radius of a polygon from a given origin, sampled a
 say #line_to_polygon  "convert line (as point pair) to polygon (rotated rectangle)"
 say #draw_rect        "draw a rectangle in an image"
 say #draw_slider      "draw a slider in an image"
-say #edit_polygon     "draw a polygon in an image and react to mouse events"
 say #make_cross       "make cross-shaped polygon"
 say #draw_polygon    "draw polygon in an image"
 
