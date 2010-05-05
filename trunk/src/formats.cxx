@@ -163,7 +163,8 @@ struct GridHeader {
 	GridHeader head;
 	int endian;
 	NumberTypeE nt;
-	P<Dim> headerless_dim; // if null: headerful; if Dim: it is the assumed dimensions of received grids
+	Dim dim; // it is the assumed dimensions of received grids
+	bool headerless;
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		nt = int32_e;
@@ -183,11 +184,11 @@ struct GridHeader {
 };
 \def 0 bang () {
 	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
-	P<Dim> dim;
+	Dim dim;
 	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
 	//post("#in grid bang: offset %ld",ftell(f));
-	if (headerless_dim) {
-		dim = headerless_dim;
+	if (headerless) {
+		dim = this->dim;
 	} else {
 		int r = fread(&head,1,8,f);
 		if (feof(f)) {outlet_bang(bself->te_outlet); return;} /* damn */
@@ -211,7 +212,7 @@ struct GridHeader {
 		int32 dimv[head.dimn];
 		if (fread(dimv,1,head.dimn*4,f)<size_t(head.dimn*4)) RAISE("can't read dimension list");
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
-		dim = new Dim(head.dimn,dimv);
+		dim = Dim(head.dimn,dimv);
 	}
 	GridOutlet out(this,0,dim,nt);
 	long nn = dim->prod();
@@ -226,7 +227,7 @@ TYPESWITCH(nt,FOO,)
 }
 
 GRID_INLET(0) {
-	if (!headerless_dim) {
+	if (!headerless) {
 		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
 		switch (in->nt) {
 		case uint8_e: head.type = 9; break;
@@ -257,9 +258,10 @@ TYPESWITCH(in->nt,FOO,)
 		t_binbuf *b = (t_binbuf *)argv[0]; argc = binbuf_getnatom(b); argv = (t_atom2 *)binbuf_getvec(b);}
 	int v[argc];
 	for (int i=0; i<argc; i++) v[i] = argv[i];
-	headerless_dim = new Dim(argc,v);
+	dim = Dim(argc,v);
+	headerless = true;
 }
-\def 0 headerful () {headerless_dim = 0;}
+\def 0 headerful () {headerless = false;}
 \def 0 seek_byte (int64 pos) {fseek(f,pos,SEEK_SET);}
 
 //\def void raw_open_gzip_in(string filename) {
@@ -313,7 +315,7 @@ TYPESWITCH(in->nt,FOO,)
 	int maxnum = getuint();
 	if (maxnum!=255) RAISE("expected max to be 255 (8 bits per value)");
 	size_t sxc = sx*sc;
-	GridOutlet out(this,0,new Dim(sy,sx,sc),cast);
+	GridOutlet out(this,0,Dim(sy,sx,sc),cast);
 	uint8 row[sx*3];
 	switch (b) {
 		case '2': case '3': {

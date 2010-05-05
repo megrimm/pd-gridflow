@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "gridflow.hxx.fcs"
-static void expect_max_one_dim (P<Dim> d) {if (d->n>1) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
+static void expect_max_one_dim (const Dim &d) {if (d->n>1) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
@@ -42,7 +42,7 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 		sigout = new t_outlet *[chans];
 		for (int i=0; i<n; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
 		chans = n;
-		blah=new Grid(new Dim(16384,n),float32_e);
+		blah=new Grid(Dim(16384,n),float32_e);
 		start=0;
 		size=0;
 	}
@@ -106,7 +106,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
-	P<Dim> d = in->dim;
+	Dim &d = in->dim;
 	if (d->n != r->dim->n) RAISE("wrong number of dimensions");
 	int w = which_dim;
 	if (w<0) w+=d->n;
@@ -120,7 +120,7 @@ GRID_INLET(0) {
 			if (v[i]!=r->dim->v[i]) RAISE("dimensions mismatch: dim #%i, left is %d, right is %d",i,v[i],r->dim->v[i]);
 		}
 	}
-	out=new GridOutlet(this,0,new Dim(d->n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(d->n,v),in->nt);
 	in->set_chunk(w);
 } GRID_FLOW {
 	int w = which_dim;
@@ -178,13 +178,15 @@ FOO(float64)
 #undef FOO
 
 GRID_INLET(0) {
+	if (in->dim.n<1) RAISE("minimum 1 dimension");
 	out=new GridOutlet(this,0,in->dim);
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
 	long m = in->dim->prod(in->dim->n-1);
+	post("in->dim=%s m=%ld",in->dim.to_s(),m);
 	T *foo[m];
 	T  bar[m];
-	for (; n; n-=m,data+=m) {
+	if (m) for (; n; n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
 		qsort(foo,m,sizeof(T *),(comparator_t)GradeFunction<T>::comparator);
 		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
@@ -221,13 +223,13 @@ GRID_INLET(0) {
 		RAISE("would swap dimensions %d and %d but this grid has only %d dimensions", dim1,dim2,in->dim->n);
 	memswap(v+d1,v+d2,1);
 	if (d1==d2) {
-		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
+		out=new GridOutlet(this,0,Dim(in->dim->n,v), in->nt);
 	} else {
 		nd = in->dim->prod(1+max(d1,d2));
 		nc = in->dim->v[max(d1,d2)];
 		nb = nc&&nd ? in->dim->prod(1+min(d1,d2))/nc/nd : 0;
 		na = in->dim->v[min(d1,d2)];
-		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
+		out=new GridOutlet(this,0,Dim(in->dim->n,v), in->nt);
 		in->set_chunk(min(d1,d2));
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
@@ -264,7 +266,7 @@ GRID_INLET(0) {
 	if (d>=in->dim->n || d<0)
 		RAISE("would reverse dimension %d but this grid has only %d dimensions",
 			dim1,in->dim->n);
-	out=new GridOutlet(this,0,new Dim(in->dim->n,in->dim->v), in->nt);
+	out=new GridOutlet(this,0,Dim(in->dim->n,in->dim->v), in->nt);
 	in->set_chunk(d);
 } GRID_FLOW {
 	long f1=in->dim->prod(d), f2=in->dim->prod(d+1);
@@ -290,7 +292,7 @@ GRID_INLET(0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
 	in->set_chunk(1);
-	out=new GridOutlet(this,0,new Dim(2), in->nt);
+	out=new GridOutlet(this,0,Dim(2), in->nt);
 	sumx=0; sumy=0; sum=0; y=0;
 } GRID_FLOW {
 	int sx = in->dim->v[1];
@@ -316,7 +318,7 @@ GRID_INLET(0) {
 \end class {install("#centroid",1,3);}
 
 //****************************************************************
-static void expect_pair (P<Dim> dim) {if (dim->prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
+static void expect_pair (const Dim &dim) {if (dim.prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
 
 \class GridMoment : FObject {
 	\constructor (int order=1) {
@@ -339,8 +341,8 @@ GRID_INLET(0) {
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
 	in->set_chunk(1);
 	switch (order) {
-	    case 1: out=new GridOutlet(this,0,new Dim(2  ), in->nt); break;
-	    case 2: out=new GridOutlet(this,0,new Dim(2,2), in->nt); break;
+	    case 1: out=new GridOutlet(this,0,Dim(2  ), in->nt); break;
+	    case 2: out=new GridOutlet(this,0,Dim(2,2), in->nt); break;
 	    default: RAISE("supports only orders 1 and 2 for now");
 	}
 	sumx=0; sumy=0; sumxy=0; sum=0; y=0;
@@ -456,15 +458,15 @@ GRID_INLET(0) {
 				s.x/s.area};
 			float a[] = {s.area};
 			send_out(3,1,a);
-			GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
-			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
+			GridOutlet o2(this,2,Dim(2));   o2.send(2,cooked+4);
+			GridOutlet o1(this,1,Dim(2,2)); o1.send(4,cooked);
 		} else {
 			float32 cooked[4] = {s.y,s.x1,s.y,s.x2};
-			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
+			GridOutlet o1(this,1,Dim(2,2)); o1.send(4,cooked);
 		}
 		label++;
 	}
-	out = new GridOutlet(this,0,new Dim(sy,sx,1),in->nt);
+	out = new GridOutlet(this,0,Dim(sy,sx,1),in->nt);
 	out->send(n,dat);
 	DELBUF(dat);
 } GRID_END
@@ -488,7 +490,7 @@ GRID_INLET(0) {
 	COPY(v,in->dim->v,n);
 	v[n-1]--;
 	in->set_chunk(in->dim->n-1);
-	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(n,v),in->nt);
 } GRID_FLOW {
 	int m = in->dim->prod(in->dim->n-1);
 	for (; n; n-=m,data+=m) {
@@ -501,8 +503,8 @@ GRID_INLET(0) {
 
 //****************************************************************
 \class GridBorder : FObject {
-	\attr P<Dim> diml;
-	\attr P<Dim> dimr;
+	/*\attr */ Dim diml;
+	/*\attr */ Dim dimr;
 	PtrGrid diml_grid;
 	PtrGrid dimr_grid;
 	\grin 0
@@ -526,7 +528,7 @@ GRID_INLET(0) {
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i]=in->dim->v[i]+diml->v[i]+dimr->v[i];
 	in->set_chunk(0);
-	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(n,v),in->nt);
 } GRID_FLOW {
 	int sy = in->dim->v[0];
 	int sx = in->dim->v[1]; int zx = sx+diml->v[1]+dimr->v[1];
@@ -548,19 +550,14 @@ GRID_INPUT(2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
 
 \end class {install("#border",3,1);}
 
-static void expect_picture (P<Dim> d) {
-	if (d->n!=3) RAISE("(height,width,chans) dimensions please");}
-static void expect_rgb_picture (P<Dim> d) {
-	expect_picture(d);
-	if (d->get(2)!=3) RAISE("(red,green,blue) channels please");}
-static void expect_rgba_picture (P<Dim> d) {
-	expect_picture(d);
-	if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");}
+static void expect_picture (const Dim &d) {if (d->n!=3) RAISE("(height,width,chans) dimensions please");}
+static void expect_rgb_picture  (const Dim &d) {expect_picture(d); if (d->get(2)!=3) RAISE("(red,green,blue) channels please");}
+static void expect_rgba_picture (const Dim &d) {expect_picture(d); if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");}
 
 //****************************************************************
 //{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }
 
-static void expect_convolution_matrix (P<Dim> d) {
+static void expect_convolution_matrix (const Dim &d) {
 	if (d->n != 2) RAISE("only exactly two dimensions allowed for now (got %d)",
 		d->n);
 }
@@ -584,8 +581,8 @@ struct PlanEntry {long y,x; bool neutral;};
 		b.constrain(expect_convolution_matrix); plan=0;
 		this->op = op_mul;
 		this->fold = op_add;
-		this->seed = new Grid(new Dim(),int32_e,true);
-		this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
+		this->seed = new Grid(Dim(),int32_e,true);
+		this->b= r ? r : new Grid(Dim(1,1),int32_e,true);
 		this->wrap = true;
 		this->anti = true;
 	}
@@ -610,7 +607,7 @@ template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x)
 }
 
 template <class T> void GridConvolve::make_plan (T bogus) {
-	P<Dim> da = a->dim, db = b->dim;
+	Dim &db = b->dim;
 	long dby = db->get(0);
 	long dbx = db->get(1);
 	if (plan) delete[] plan;
@@ -640,8 +637,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 GRID_INLET(0) {
 	SAME_TYPE(in,b);
 	SAME_TYPE(in,seed);
-	P<Dim> da=in->dim, db=b->dim;
-	if (!db) RAISE("right inlet has no grid");
+	Dim &da=in->dim, &db=b->dim;
 	if (!seed) RAISE("seed missing");
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
@@ -655,7 +651,7 @@ GRID_INLET(0) {
 	//a=new Grid(da,in->nt); // with this condition it's 2% faster but takes more RAM.
 	int v[da->n]; COPY(v,da->v,da->n);
 	if (!wrap) {v[0]-=db->v[0]-1; v[1]-=db->v[1]-1;}
-	out=new GridOutlet(this,0,new Dim(da->n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(da->n,v),in->nt);
 } GRID_FLOW {
 	COPY((T *)*a+dex, data, n);
 } GRID_FINISH {
@@ -697,9 +693,8 @@ GRID_INPUT(1,b) {} GRID_END
 /* "#scale_by" does quick scaling of pictures by integer factors */
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
-static void expect_scale_factor (P<Dim> dim) {
-	if (dim->prod()!=1 && dim->prod()!=2)
-		RAISE("expecting only one or two numbers");
+static void expect_scale_factor (const Dim &dim) {
+	if (dim->prod()!=1 && dim->prod()!=2) RAISE("expecting only one or two numbers");
 }
 
 \class GridScaleBy : FObject {
@@ -723,9 +718,9 @@ static void expect_scale_factor (P<Dim> dim) {
 };
 
 GRID_INLET(0) {
-	P<Dim> a = in->dim;
+	Dim &a = in->dim;
 	expect_picture(a);
-	out=new GridOutlet(this,0,new Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
+	out=new GridOutlet(this,0,Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
 	in->set_chunk(1);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
@@ -778,12 +773,12 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 };
 
 GRID_INLET(0) {
-	P<Dim> a = in->dim;
+	Dim &a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
-	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
+	out=new GridOutlet(this,0,Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
 	in->set_chunk(1);
 	// i don't remember why two rows instead of just one.
-	temp=new Grid(new Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
+	temp=new Grid(Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp->dim->prod(1);
@@ -807,7 +802,7 @@ GRID_INLET(0) {
 			}
 			#undef LOOP
 			y++;
-			if (y%scaley==0 && out->dim) {
+			if (y%scaley==0 && out->sender) {
 				op_div->map(rowsize2,buf,(T)(scalex*scaley));
 				out->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
@@ -818,7 +813,7 @@ GRID_INLET(0) {
 	#undef Z
 	} else {
 	#define Z(z) buf[p+z]=data[i+z]
-		for (; n>0 && out->dim; data+=rowsize, n-=rowsize,y++) {
+		for (; n>0 && out->sender; data+=rowsize, n-=rowsize,y++) {
 			if (y%scaley!=0) continue;
 			#define LOOP(z) for (int i=0,p=0; p<rowsize2; i+=xinc, p+=z)
 			switch(in->dim->get(2)) {
@@ -850,7 +845,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 GRID_INLET(0) {
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
-	P<Dim> a = in->dim;
+	Dim &a = in->dim;
 	expect_rgba_picture(a);
 	if (a->get(1)!=r->dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r->dim->get(0)) RAISE("same height please");
@@ -878,9 +873,7 @@ GRID_INPUT(1,r) {} GRID_END
 // pad1,pad2 only are there for 32-byte alignment
 struct Line {int32 y1,x1,y2,x2,x,m,ox,pad2;};
 
-static void expect_polygon (P<Dim> d) {
-	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
-}
+static void expect_polygon (const Dim &d) {if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");}
 
 enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
@@ -927,7 +920,7 @@ void DrawPolygon::init_lines () {
 	if (!polygon) return;
 	int tnl = polygon->dim->get(0);
 	int nl = omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl;
-	lines=new Grid(new Dim(nl,8), int32_e);
+	lines=new Grid(Dim(nl,8), int32_e);
 	Line *ld = (Line *)(int32 *)*lines;
 	int32 *pd = *polygon;
 	for (int i=0,j=0; i<nl; i++) {
@@ -960,7 +953,7 @@ GRID_INLET(0) {
 	int nl = lines->dim->get(0);
 	qsort((int32 *)*lines,nl,sizeof(Line),order_by_starting_scanline);
 	int cn = color->dim->prod();
-	color2=new Grid(new Dim(cn*16), color->nt);
+	color2=new Grid(Dim(cn*16), color->nt);
 	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
 } GRID_FLOW {
 	int nl = lines->dim->get(0);
@@ -1038,7 +1031,7 @@ GRID_INPUT(2,polygon) {init_lines();} GRID_END
 \end class {install("#draw_polygon",3,1); add_creator("@draw_polygon");}
 
 //****************************************************************
-static void expect_position(P<Dim> d) {
+static void expect_position(const Dim &d) {
 	if (d->n!=1) RAISE("position should have 1 dimension, not %d", d->n);
 	if (d->v[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d->v[0]);
 }
@@ -1056,7 +1049,7 @@ static void expect_position(P<Dim> d) {
 		this->image.constrain(expect_picture);
 		if (image) this->image=image;
 		if (position) this->position=position;
-		else this->position=new Grid(new Dim(2),int32_e,true);
+		else this->position=new Grid(Dim(2),int32_e,true);
 	}
 	\grin 0
 	\grin 1
@@ -1229,7 +1222,7 @@ GRID_INLET(0) {
 	\constructor (int n=2, NumberTypeE nt=int32_e) {
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
-		a = new Grid(new Dim(n),nt,true);
+		a = new Grid(Dim(n),nt,true);
 		this->n=n;
 		ninlets_set(this->n);
 	}
@@ -1289,7 +1282,7 @@ GRID_INLET(0) {
 	float th = angle * M_PI / 18000;
 	for (int i=0; i<2; i++) for (int j=0; j<2; j++)
 		rotator[(i?to:from)*n+(j?to:from)] = (int32)round(scale*cos(th+(j-i)*M_PI/2));
-	GridOutlet out(this,0,new Dim(n,n),int32_e);
+	GridOutlet out(this,0,Dim(n,n),int32_e);
 	out.send(n*n,rotator);
 }
 \def 0 axis(int from, int to, int n) {
@@ -1302,7 +1295,7 @@ GRID_INLET(0) {
 }
 \end class {install("#rotatificator",2,1);}
 
-static void expect_min_one_dim (P<Dim> d) {
+static void expect_min_one_dim (const Dim &d) {
 	if (d->n<1) RAISE("expecting at least one dimension, got %s",d->to_s());}
 
 #define OP(x) op_dict[string(#x)]
@@ -1337,12 +1330,12 @@ GRID_INLET(0) {
 	int32 v[r->dim->n];
 	COPY(v,r->dim->v,r->dim->n-1);
 	v[r->dim->n-1]=1;
-	P<Dim> t = new Dim(r->dim->n,v);
+	Dim t = Dim(r->dim->n,v);
 	if (!t->equal(in->dim)) RAISE("left %s must be equal to right %s except last dimension should be 1",in->dim->to_s(),r->dim->to_s());
 	in->set_chunk(0);
 	int32 w[2] = {numClusters,r->dim->v[r->dim->n-1]};
-	sums   = new Grid(new Dim(2,w),r->nt,  true);
-	counts = new Grid(new Dim(1,w),int32_e,true);
+	sums   = new Grid(Dim(2,w),r->nt,  true);
+	counts = new Grid(Dim(1,w),int32_e,true);
 } GRID_FLOW {
 	#define FOO(U) make_stats(n,data,(U *)*r);
 	TYPESWITCH(r->nt,FOO,)
@@ -1375,7 +1368,7 @@ GRID_INLET(0) {
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(w);
 	int sxc = in->dim->prod(w);
-	r2 = new Grid(new Dim(sxc),in->nt);
+	r2 = new Grid(Dim(sxc),in->nt);
 	T *rdata = (T *)*r2;
 	size_t rn = r->dim->prod();
 	for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];

@@ -278,7 +278,7 @@ template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (cons
 //template <class T> class P : T * {};
 //a reference counting pointer class
 //note: T <= CObject
-//used mostly as P<Dim>, P<Grid>, P<BitPacking>
+//used mostly as P<Grid>, P<BitPacking>
 template <class T> class P {
 public:
 #define INCR if (p) p->refcount++;
@@ -302,7 +302,7 @@ public:
 };
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
-template <class T> inline void COPY(T *dest, T *src, long n) {
+template <class T> inline void COPY(T *dest, const T *src, long n) {
 	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
 template <class T> inline void CLEAR(T *dest, long n) {
@@ -329,7 +329,7 @@ struct MethodDecl {const char *selector; FMethod method;};
 // a Dim is a list of dimensions that describe the shape of a grid
 typedef int32 Card; /* should be switched to long int soon */
 struct Dim : CObject {
-	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
+	static const Card MAX_DIM=15; // maximum number of dimensions in a grid
 	Card n;
 	Card v[MAX_DIM]; // real stuff
 	void check(); // test invariants
@@ -338,6 +338,7 @@ struct Dim : CObject {
 	Dim(Card a)              {n=1;v[0]=a;              check();}
 	Dim(Card a,Card b)       {n=2;v[0]=a;v[1]=b;       check();}
 	Dim(Card a,Card b,Card c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	Dim &operator = (const Dim &a) {n=a.n; COPY(&*v,&*a.v,n); check(); return *this;}
 	Dim(Dim *a, Dim *b, Dim *c=0) {
 		n=a->n+b->n; if(c) n+=c->n;
 		if (n>Dim::MAX_DIM) RAISE("too many dims");
@@ -346,19 +347,24 @@ struct Dim : CObject {
 		if(c) COPY(v+a->n+b->n,c->v,c->n);
 	}
 	Card count() {return n;}
-	Card get(Card i) {return v[i];}
+	Card get       (Card i) const {return v[i];}
+	Card operator[](Card i) const {return v[i];}
+	const Dim & operator *() const {return *this;}
+	      Dim & operator *()       {return *this;}
+	const Dim *operator ->() const {return this;}
+	      Dim *operator ->()       {return this;}
 /*	Dim *range(Card i, Card j) {return new Dim(...);} */
-	Card prod(Card start=0, Card end=-1) {
+	Card prod(Card start=0, Card end=-1) const {
 		if (start<0) start+=n;
 		if (end  <0) end  +=n;
 		Card tot=1;
 		for (Card i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	char *to_s(); // should be std::string
-	bool equal(P<Dim> o) {
-		if (n!=o->n) return false;
-		for (Card i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
+	char *to_s() const; // should be std::string
+	bool equal(const Dim &o) {
+		if (n!=o.n) return false;
+		for (Card i=0; i<n; i++) if (v[i]!=o[i]) return false;
 		return true;
 	}
 };
@@ -569,26 +575,25 @@ static Numop *convert(const t_atom &x, Numop **bogus) {
 
 // ****************************************************************
 struct Grid : CObject {
-	P<Dim> dim;
+	Dim dim;
 	NumberTypeE nt;
 	void *data;
 	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
-	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) {
+	Grid(const Dim &dim, NumberTypeE nt, bool clear=false) {
 		state=1; 
-		if (!dim) RAISE("hell");
 		init(dim,nt);
 		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
 	}
 	Grid(const t_atom &x) {state=1; init_from_atom(x);}
 	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {state=1; init_from_list(n,a,nt_);}
-	template <class T> Grid(P<Dim> dim, T *data) {
+	template <class T> Grid(const Dim &dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T *)0);
 		this->data = data;
 	}
 	// parens are necessary to prevent overflow at 1/16th of the word size (256 megs)
-	long bytes() { return dim->prod()*(number_type_table[nt].size/8); }
-	P<Dim> to_dim () { return new Dim(dim->prod(),(int32 *)*this); }
+	long bytes() {return dim.prod()*(number_type_table[nt].size/8);}
+	Dim to_dim() {return Dim(dim.prod(),(int32 *)*this);}
 #define FOO(T) operator T *() { return (T *)data; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -599,14 +604,12 @@ EACH_NUMBER_TYPE(FOO)
 	}
 	~Grid() {if (state==1 && data) free(data);}
 private:
-	void init(P<Dim> dim, NumberTypeE nt) {
+	void init(const Dim &dim, NumberTypeE nt) {
 		this->dim = dim;
 		this->nt = nt;
 		data = 0;
-		if (dim) {
-			data = memalign(16,bytes()+16);
-			if (!data) RAISE("out of memory (?) trying to get %ld bytes",bytes());
-		}
+		data = memalign(16,bytes()+16);
+		if (!data) RAISE("out of memory (?) trying to get %ld bytes",bytes());
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
 	void init_from_atom(const t_atom &x);
@@ -617,7 +620,7 @@ static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);
 // DimConstraint interface:
 // return if d is acceptable
 // else RAISE with proper descriptive message
-typedef void (*DimConstraint)(P<Dim> d);
+typedef void (*DimConstraint)(const Dim &d);
 
 struct PtrGrid : public P<Grid> {
 	DimConstraint dc;
@@ -638,11 +641,11 @@ return *this;}
 #undef INCR
 #undef DECR
 
-static inline P<Dim> convert(const t_atom &x, P<Dim> *foo) {
+static inline Dim convert(const t_atom &x, Dim *foo) {
 	Grid *d = convert(x,(Grid **)0);
 	if (!d) RAISE("urgh");
-	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
-	return new Dim(d->dim->v[0],(int32 *)(d->data));
+	if (d->dim.n!=1) RAISE("dimension list must have only one dimension itself");
+	return Dim(d->dim[0],(int32 *)d->data);
 }
 static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
 
@@ -684,7 +687,7 @@ struct GridInlet : CObject {
 	FObject *parent;
 	const GridHandler *gh;
 	GridOutlet *sender;
-	P<Dim> dim;
+	Dim dim;
 	NumberTypeE nt; // kill this
 	long dex;
 	int chunk;
@@ -694,7 +697,7 @@ struct GridInlet : CObject {
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
 	void set_chunk(long whichdim);
-	int32 factor() {return buf?buf->dim->prod():1;} // which is usually not the same as this->dim->prod(chunk)
+	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *sender);
 	void finish();
 	template <class T> void flow(long n, T *data); // n=-1 is begin, and n=-2 is finish.
@@ -747,13 +750,15 @@ struct GridOutlet : CObject {
 	static const long MAX_PACKET_SIZE = 1<<12;
 // those are set only once
 	FObject *parent;
-	P<Dim> dim; // dimensions of the grid being sent
+	Dim dim; // dimensions of the grid being sent
 	NumberTypeE nt;
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
 	long dex;  // how many numbers were already sent in this connection
 
-	GridOutlet(FObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e);
+	GridOutlet *sender; // dummy (because of P<Dim> to Dim)
+
+	GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
 	~GridOutlet() {}
 	void callback(GridInlet *in);
 
@@ -828,7 +833,7 @@ extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 #define SAME_TYPE(_a_,_b_) if ((_a_)->nt != (_b_)->nt) RAISE("same type please (%s has %s; %s has %s)", \
 	#_a_, number_type_table[(_a_)->nt].name, \
 	#_b_, number_type_table[(_b_)->nt].name);
-static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
+static void SAME_DIM(int n, const Dim &a, int ai, const Dim &b, int bi) {
 	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
 	if (bi+n > b->n) RAISE("right hand: not enough dimensions");
 	for (int i=0; i<n; i++) {

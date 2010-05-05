@@ -64,10 +64,10 @@ public: template <class T>
 
 Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
 
-static void   expect_dim_dim_list    (P<Dim> d) {if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());}
-//static void expect_min_one_dim     (P<Dim> d) {if (d->n<1 ) RAISE("minimum 1 dimension");}
-static void   expect_max_one_dim     (P<Dim> d) {if (d->n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
-//static void expect_exactly_one_dim (P<Dim> d) {if (d->n!=1) RAISE("expecting Dim[n], got %s",d->to_s());}
+static void   expect_dim_dim_list    (const Dim &d) {if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());}
+//static void expect_min_one_dim     (const Dim &d) {if (d->n<1 ) RAISE("minimum 1 dimension");}
+static void   expect_max_one_dim     (const Dim &d) {if (d->n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
+//static void expect_exactly_one_dim (const Dim &d) {if (d->n!=1) RAISE("expecting Dim[n], got %s",d->to_s());}
 
 //****************************************************************
 \class GridCast : FObject {
@@ -90,32 +90,35 @@ GridHandler *stromgol; // remove this asap
 // out0 nt to be specified explicitly
 \class GridImport : FObject {
 	\attr NumberTypeE cast;
-	\attr P<Dim> dim; // size of grids to send
+	/*\attr*/ Dim dim; // size of grids to send
+	\attr bool per_message;
 	PtrGrid dim_grid;
 	\constructor (...) {
+		per_message = true;
 		dim_grid.constrain(expect_dim_dim_list);
 		this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
 		if (argc>2) RAISE("too many arguments");
 		if (argc>0 && argv[0]!=gensym("per_message")) {
+			per_message=false;
 			dim_grid=new Grid(argv[0]);
 			dim = dim_grid->to_dim();
 			if (!dim->prod()) RAISE("target grid size must not be zero");
 		}
 	}
 	~GridImport() {}
-	\decl 0 reset() {int32 foo[1]={0}; if (out) while (out->dim) out->send(1,foo);}
+	\decl 0 reset() {int32 foo[1]={0}; if (out) while (out->sender) out->send(1,foo);}
 	\decl 0 symbol(t_symbol *x);
 	\decl 0 to_ascii(...);
 	\decl 0 bang() {_0_list(0,0);}
 	//\decl 0 list(...);
-	\decl 1 per_message() {dim=0; dim_grid=0;}
+	\decl 1 per_message() {per_message=true; dim_grid=0;}
 	\grin 0
 	\grin 1 int32
 	template <class T> void process (long n, T *data) {
 		if (in.size()<=0) in.resize(1);
 		if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 		while (n) {
-			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
+			if (!out || !out->sender) out = new GridOutlet(this,0,per_message?in[0]->dim:dim,cast);
 			long n2 = min((long)n,out->dim->prod()-out->dex);
 			out->send(n2,data);
 			n-=n2; data+=n2;
@@ -125,15 +128,16 @@ GridHandler *stromgol; // remove this asap
 
 GRID_INLET(0) {} GRID_FLOW {process(n,data);} GRID_END
 GRID_INPUT(1,dim_grid) {
-	P<Dim> d = dim_grid->to_dim();
+	Dim d = dim_grid->to_dim();
 	if (!d->prod()) RAISE("target grid size must not be zero");
 	dim = d;
+	per_message=false;
 } GRID_END
 
 \def 0 symbol(t_symbol *x) {
 	const char *name = x->s_name;
 	long n = strlen(name);
-	if (!dim) out=new GridOutlet(this,0,new Dim(n));
+	if (per_message) out=new GridOutlet(this,0,Dim(n));
 	process(n,(uint8 *)name);
 }
 \def 0 to_ascii(...) {
@@ -141,14 +145,14 @@ GRID_INPUT(1,dim_grid) {
 	pd_oprint(os,argc,argv);
 	string s = os.str();
 	long n = s.length();
-	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
+	if (per_message) out=new GridOutlet(this,0,Dim(n),cast);
 	process(n,(uint8 *)s.data());
 }
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 	in[0]->from_list(argc,argv,cast);
-	if (!argc && !dim) out = new GridOutlet(this,0,new Dim(0),cast);
+	if (!argc && per_message) out = new GridOutlet(this,0,Dim(0),cast);
 }
 
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
@@ -365,7 +369,7 @@ GRID_INLET(0) {
 	long cs; // chunksize used in put_at
 	\constructor (Grid *r=0) {
 		put_at.constrain(expect_max_one_dim);
-		this->r = r?r:new Grid(new Dim(),int32_e,true);
+		this->r = r?r:new Grid(Dim(),int32_e,true);
 		op = op_put;
 		wdex  = NEWBUF(int32,Dim::MAX_DIM); // temporary buffer, copy of put_at
 		fromb = NEWBUF(int32,Dim::MAX_DIM);
@@ -421,7 +425,7 @@ GRID_INLET(0) {
 	int nd = nb-nc+na-1;
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r->dim->v+nc,nb-nc);
-	out=new GridOutlet(this,0,new Dim(nd,v),r->nt);
+	out=new GridOutlet(this,0,Dim(nd,v),r->nt);
 	if (nc>0) in->set_chunk(na-1);
 } GRID_FLOW {
 	int na = in->dim->n;
@@ -476,8 +480,8 @@ GRID_INLET(0) {
 GRID_INLET(1) {
 	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
-		if (in[0].dim) r.next = new Grid(in->dim,nt);
-		else           r      = new Grid(in->dim,nt);
+		if (in[0].sender) r.next = new Grid(in->dim,nt);
+		else              r      = new Grid(in->dim,nt);
 		return;
 	}
 	// put_at ( ... )
@@ -536,7 +540,7 @@ GRID_INLET(1) {
 \def 1 put_at (...) {
 	if (argv[0].a_type==A_LIST) put_at=convert(argv[0],(Grid **)0);
 	else {
-		put_at=new Grid(new Dim(argc),int32_e);
+		put_at=new Grid(Dim(argc),int32_e);
 		int32 *v = (int32 *)*put_at;
 		for (int i=0; i<argc; i++) v[i]=convert(argv[i],(int32 *)0);
 	}
@@ -549,7 +553,7 @@ GRID_INLET(1) {
 \class GridOp : FObject {
 	\attr Numop *op;
 	PtrGrid r;
-	\constructor (Numop *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(new Dim(),int32_e,true);}
+	\constructor (Numop *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(Dim(),int32_e,true);}
 	\grin 0
 	\grin 1
 };
@@ -610,7 +614,7 @@ GRID_INLET(0) {
 	COPY(v+yi,in->dim->v+an-bn,bn);
 	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
 	if (!op->on(*data)->fold) RAISE("operator %s does not support fold",op->name);
-	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
+	out=new GridOutlet(this,0,Dim(an-1,v),in->nt);
 	in->set_chunk(yi);
 	if (in->dim->prod(yi)==0) {
 		long n = out->dim->prod();
@@ -689,8 +693,8 @@ GRID_INLET(0) {
 	\constructor (Grid *r=0) {
 		this->op = op_mul;
 		this->fold = op_add;
-		this->seed = new Grid(new Dim(),int32_e,true);
-		this->r    = r ? r : new Grid(new Dim(),int32_e,true);
+		this->seed = new Grid(Dim(),int32_e,true);
+		this->r    = r ? r : new Grid(Dim(),int32_e,true);
 	}
 	\grin 0
 	\grin 1
@@ -723,7 +727,7 @@ MAKE_DOT(dot_add_mul,FOO)
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
-	P<Dim> a=in->dim, b=r->dim;
+	Dim a=in->dim, b=r->dim;
 	if (a->n<1) RAISE("a: minimum 1 dimension");
 	if (b->n<1) RAISE("b: minimum 1 dimension");
 	if (seed->dim->n != 0) RAISE("seed must be a scalar");
@@ -732,12 +736,12 @@ GRID_INLET(0) {
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
-	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(n,v),in->nt);
 	in->set_chunk(a->n-1);
 	long sjk=r->dim->prod(), sj=in->dim->prod(a->n-1), sk=sjk/sj;
 	long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk);
 	T *rdata = (T *)*r;
-	r2=new Grid(new Dim(chunk*sjk),r->nt);
+	r2=new Grid(Dim(chunk*sjk),r->nt);
 	T *buf3 = (T *)*r2;
 	for (long i=0; i<sj; i++)
 		for (long j=0; j<chunk; j++)
@@ -816,7 +820,7 @@ GRID_INPUT(1,r) {} GRID_END
 	PtrGrid r;
 	\constructor (Numop *op, Grid *r=0) {
 		this->op = op;
-		this->r = r ? r : new Grid(new Dim(),int32_e,true);
+		this->r = r ? r : new Grid(Dim(),int32_e,true);
 	}
 	\grin 0
 	\grin 1
@@ -824,13 +828,13 @@ GRID_INPUT(1,r) {} GRID_END
 
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
-	P<Dim> a = in->dim;
-	P<Dim> b = r->dim;
+	Dim a = in->dim;
+	Dim b = r->dim;
 	int n = a->n+b->n;
 	int32 v[n];
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
-	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
+	out=new GridOutlet(this,0,Dim(n,v),in->nt);
 } GRID_FLOW {
 	long b_prod = r->dim->prod();
 	if (!b_prod) return; /* nothing to do... and avoid deadly divisions by zero */
@@ -908,9 +912,9 @@ void GridFor::trigger (T bogus) {
 		if (nn[i]<0) nn[i]=0;
 		to2[i] = fromb[i]+stepb[i]*nn[i];
 	}
-	P<Dim> d;
-	if (from->dim->n==0) { d = new Dim(*nn); }
-	else { nn[n]=n;        d = new Dim(n+1,nn); }
+	Dim d;
+	if (from->dim->n==0) { d = Dim(*nn); }
+	else { nn[n]=n;        d = Dim(n+1,nn); }
 	int total = d->prod();
 	out=new GridOutlet(this,0,d,from->nt);
 	if (total==0) return;
@@ -953,20 +957,15 @@ GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(0) {
-	//in->set_mode(0);
-} GRID_FINISH {
-	outlet_bang(outlets[0]);
-} GRID_END
+GRID_INLET(0) {} GRID_FINISH {outlet_bang(outlets[0]);} GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
 \class GridDim : FObject {
 	\constructor () {}
 	\grin 0
 };
 GRID_INLET(0) {
-	GridOutlet out(this,0,new Dim(in->dim->n));
+	GridOutlet out(this,0,Dim(in->dim->n));
 	out.send(in->dim->n,in->dim->v);
-	//in->set_mode(0);
 } GRID_END
 \end class {install("#dim",1,1); add_creator("@dim");}
 \class GridType : FObject {
@@ -975,14 +974,13 @@ GRID_INLET(0) {
 };
 GRID_INLET(0) {
 	outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in->nt].name)));
-	/*in->set_mode(0);*/
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
 
 //****************************************************************
 //{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
 \class GridRedim : FObject {
-	\attr P<Dim> dim;
+	/*\attr*/ Dim dim;
 	PtrGrid dim_grid;
 	PtrGrid temp; // temp->dim is not of the same shape as dim
 	~GridRedim() {}
@@ -998,7 +996,7 @@ GRID_INLET(0) {
 
 GRID_INLET(0) {
 	long a=in->dim->prod(), b=dim->prod();
-	if (a<b) temp=new Grid(new Dim(a),in->nt);
+	if (a<b) temp=new Grid(Dim(a),in->nt);
 	out=new GridOutlet(this,0,dim,in->nt);
 } GRID_FLOW {
 	long i = dex;
@@ -1017,7 +1015,7 @@ GRID_INLET(0) {
 } GRID_END
 
 GRID_INPUT(1,dim_grid) {
-	P<Dim> d = dim_grid->to_dim();
+	Dim d = dim_grid->to_dim();
 //	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
 	dim = d;
 } GRID_END
