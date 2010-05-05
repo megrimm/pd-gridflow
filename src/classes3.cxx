@@ -1364,11 +1364,15 @@ static Numop *op_os8;
 	PtrGrid r2;
 	\constructor (int which_dim, Grid *r) {this->which_dim = which_dim; this->r=r;}
 };
+template <class T> inline T       shr8r (T       a) {return (a+128)>>8;}
+template <>        inline float32 shr8r (float32 a) {return a/256.0;}
+template <>        inline float64 shr8r (float64 a) {return a/256.0;}
 GRID_INLET(0) {
 	if (in->dim->n<2) RAISE("at least 2 dimensions");
-	out = new GridOutlet(this,0,in->dim,in->nt);
 	int w = which_dim; if (w<0) w+=in->dim->n;
 	if (w<0 || w>=in->dim->n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in->dim->n);
+	SAME_TYPE(in,r);
+	out = new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(w);
 	int sxc = in->dim->prod(w);
 	r2 = new Grid(new Dim(sxc),in->nt);
@@ -1382,7 +1386,7 @@ GRID_INLET(0) {
 	T *rdata = (T *)*r2;
 	for (;n;n-=sxc, data+=sxc) {
 		T tada[sxc+sc]; CLEAR(tada,sc);
-		for (int i=0; i<sxc; i++) tada[i+sc] = (tada[i]*(256-rdata[i]) + data[i]*rdata[i] + 128) / 256;
+		for (int i=0; i<sxc; i++) tada[i+sc] = shr8r(tada[i]*(256-rdata[i]) + data[i]*rdata[i] + 128);
 		out->send(sxc,tada+sc);
 	}
 } GRID_END
