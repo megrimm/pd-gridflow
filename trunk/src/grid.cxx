@@ -119,12 +119,12 @@ void GridInlet::begin(GridOutlet *sender) {
 	dex=0;
 	buf=0;
 	try {
-#define FOO(T) gh->flow(this,dex,-1,(T *)0); break;
+#define FOO(T) gh->flow(*this,dex,-1,(T *)0); break;
 		TYPESWITCH(sender->nt,FOO,)
 #undef FOO
 	} catch (Barf &barf) {this->sender=0; throw;}
 	this->dim = dim;
-	sender->callback(this);
+	sender->callback(*this);
 #ifdef TRACEBUFS
 	post("GridInlet:  %20s buf for recving from %p",dim->to_s(),sender);
 #endif
@@ -150,7 +150,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 		if (bufi==bufn) {
 			long newdex = dex+bufn;
 			CHECK_ALIGN(bufd,sender->nt);
-			try {gh->flow(this,dex,bufn,bufd);} CATCH_IT;
+			try {gh->flow(*this,dex,bufn,bufd);} CATCH_IT;
 			dex = newdex;
 			bufi = 0;
 		}
@@ -158,7 +158,7 @@ template <class T> void GridInlet::flow(long n, T *data) {
 	int m = (n/bufn)*bufn;
 	if (m) {
 		int newdex = dex + m;
-		try {gh->flow(this,dex,m,data);} CATCH_IT;
+		try {gh->flow(*this,dex,m,data);} CATCH_IT;
 		dex = newdex;
 	}
 	data += m;
@@ -170,7 +170,7 @@ void GridInlet::finish() {
 	CHECK_BUSY1(inlet);
 	if (dim.prod() != dex) post("%s: incomplete grid: %ld of %ld from [%s] to [%s]",
 	    ARGS(parent),dex,long(dim.prod()),ARGS(sender->parent),ARGS(parent));
-#define FOO(T) try {gh->flow(this,dex,-2,(T *)0);} CATCH_IT;
+#define FOO(T) try {gh->flow(*this,dex,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(sender->nt,FOO,)
 #undef FOO
 	dim=0; buf=0; dex=0; sender=0;
@@ -274,9 +274,9 @@ void GridOutlet::send_2(long n, T *data) {
 	}
 }
 
-void GridOutlet::callback(GridInlet *in) {
+void GridOutlet::callback(GridInlet &in) {
 	CHECK_BUSY1(outlet);
-	inlets.push_back(in);
+	inlets.push_back(&in);
 }
 
 void GridOutlet::finish () {
