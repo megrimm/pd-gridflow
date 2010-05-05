@@ -1472,7 +1472,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
 	\decl 1 symbol (t_symbol *than) {this->than=than;}
 };
-\end class {install("gf/string_<",2,1);}
+\end class {install("gf/string_<",2,1); class_sethelpsymbol(fclass->bfclass,gensym("gf/string_0x3c-help"));}
 
 \class GFStringLength : FObject {
 	\constructor () {}
