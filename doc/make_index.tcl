@@ -1,7 +1,8 @@
 proc say {k v} {set ::say($k) $v}
 proc category {k} {}
 source locale/english.tcl
-puts "#N canvas 0 0 632 659 10 ;"
+puts "#N canvas 0 0 632 659 10;"
+puts "#X obj 0 0 doc_demo;"
 set y 50
 set n 0
 foreach k [lsort [array names ::say *]] {

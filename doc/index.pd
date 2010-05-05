@@ -1,4 +1,5 @@
-#N canvas 0 0 632 659 10 ;
+#N canvas 0 0 632 659 10;
+#X obj 0 0 doc_demo;
 #X obj 138 50 # +;
 #X text 180 50 plain numeric operators on grids: + - * / etc;
 #X obj -6 82 #apply_colormap_channelwise;
