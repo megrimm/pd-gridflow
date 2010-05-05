@@ -77,11 +77,12 @@ void FormatQuartz_call(FormatQuartz *self);
 	GFView *widget; /* GridFlow's Cocoa widget */
 	int mouse_state;
 	t_clock *clock;
-	\constructor (t_symbol *mode) {
+	\constructor (t_symbol *mode, bool border=true) {
 		NSRect r = {{0,0}, {320,240}};
 		window = [[NSWindow alloc]
 			initWithContentRect: r
-			styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
+			styleMask: border ? (NSTitledWindowMask | NSMiniaturizableWindowMask 
+				                | NSClosableWindowMask) : NSBorderlessWindowMask
 			backing: NSBackingStoreBuffered
 			defer: YES];
 		widget = [[GFView alloc] initWithFrame: r];
