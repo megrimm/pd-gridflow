@@ -1,0 +1,71 @@
+#N canvas 594 22 632 722 10;
+#X obj 0 0 doc_h;
+#X obj 3 253 doc_i 1;
+#X obj 3 561 doc_o 1;
+#X obj 3 658 doc_also;
+#X obj 14 283 doc_ii 0;
+#X obj 97 450 doc_m i0 get;
+#X obj 97 507 doc_m i0 help;
+#X text 232 485 default: gets all attributes.;
+#X text 232 450 gets a specific attribute. a message is sent through
+right outlet.;
+#X obj 0 681 doc_f;
+#X obj 14 591 doc_oo 0;
+#X obj 97 591 doc_m o0 grid;
+#X obj 97 613 doc_m o0 <any>;
+#X text 232 591 image coming out;
+#X text 232 613 most any inlet 0 message is also an outlet 0 message
+whose output can be triggered using 'get'.;
+#X obj 51 141 print;
+#X obj 3 183 doc_c ...;
+#X text 224 210 you can send this to an [#in] \, but you could use
+[#camera] instead.;
+#X obj 36 72 metro 100;
+#X obj 36 55 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
+;
+#X text 388 42 get images from a Quicktime Camera;
+#X text 388 57 this is for Mac OSX only.;
+#X msg 42 92 open quicktimecamera 0 \, get;
+#X text 226 92 open first device;
+#X msg 58 217 open quicktimecamera 0;
+#X obj 36 122 #in;
+#X text 232 507 prints a list of all attribute names in the console
+;
+#X obj 103 658 #camera;
+#X obj 97 283 doc_m i0 brightness;
+#X obj 97 428 doc_m i0 contrast;
+#X obj 97 406 doc_m i0 colour;
+#X obj 97 529 doc_m i0 hue;
+#X obj 97 305 doc_m i0 colorspace;
+#X text 232 283 0..65536: the main brightness setting;
+#X text 232 406 0..65536: also called "saturation";
+#X text 232 428 0..65536: the main contrast setting;
+#X text 232 529 0..65536: the main hueshift setting;
+#X text 232 305 "y": 1 channel: grey;
+#X text 232 371 "rgba": 4 channels: red \, green \, blue \, alpha \,
+in which alpha is always set to 255;
+#X obj 157 658 doc_link #io.dc1394;
+#X obj 247 658 doc_link #io.videodev;
+#X text 232 327 "yuv": 3 channels: grey \, blue/yellow \, red/cyan
+;
+#X text 232 349 "rgb": 3 channels: red \, green \, blue (default);
+#X connect 3 1 27 0;
+#X connect 3 1 39 0;
+#X connect 3 1 40 0;
+#X connect 5 1 8 0;
+#X connect 5 1 7 0;
+#X connect 6 1 26 0;
+#X connect 11 1 13 0;
+#X connect 12 1 14 0;
+#X connect 18 0 25 0;
+#X connect 19 0 18 0;
+#X connect 22 0 25 0;
+#X connect 25 1 15 0;
+#X connect 28 1 33 0;
+#X connect 29 1 35 0;
+#X connect 30 1 34 0;
+#X connect 31 1 36 0;
+#X connect 32 1 37 0;
+#X connect 32 1 41 0;
+#X connect 32 1 42 0;
+#X connect 32 1 38 0;

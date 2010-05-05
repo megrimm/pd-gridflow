@@ -1,0 +1,50 @@
+#N canvas 0 0 632 514 10;
+#X obj 0 0 doc_h;
+#X obj 0 485 doc_f;
+#X obj 3 301 doc_o 1;
+#X obj 3 239 doc_i 1;
+#X obj 3 199 doc_c 0;
+#X obj 14 331 doc_oo 0;
+#X obj 14 269 doc_ii 0;
+#X obj 97 331 doc_m o0 float;
+#X text 232 331 integer >= 0 indicating the number of bytes in the
+symbol.;
+#X obj 97 269 doc_m i0 symbol;
+#X text 232 269 symbol to be measured;
+#X obj 14 97 gf/string_length;
+#X msg 14 58 symbol patate-poil;
+#X symbolatom 20 78 10 0 0 0 - - -;
+#X floatatom 14 116 5 0 0 0 - - -;
+#X obj 14 39 loadbang;
+#X obj 144 97 gf/string_length;
+#X symbolatom 150 78 10 0 0 0 - - -;
+#X floatatom 144 116 5 0 0 0 - - -;
+#X obj 144 39 loadbang;
+#X text 232 427 ISO-2022 (Japan \, etc) also encodes using multiple
+bytes \, among other multi-byte encodings. Much of Japanese text is
+encoded with this instead of Unicode.;
+#X msg 144 58 symbol «déjà»;
+#X text 184 117 this number explains the 4 extra spaces that won't
+go away \, in the above messagebox. if you have those spaces \, it
+is because your version of Pd does not understand Unicode. eventually
+gf/string_length's behaviour will change so that it counts codepoints
+(default) or bytes (optional).;
+#X text 232 353 this is usually the same as the number of characters
+\, except when having variable-bit encoding of Unicode (also known
+as UTF-8) in which 1 codepoint = 2 bytes (or sometimes 3 or 4). also
+\, note that Unicode allows characters that are made of several codepoints.
+;
+#X text 259 56 6 characters : a open-guillemet \, an acute e \, a grave
+a \, a close-guillemet.;
+#X connect 7 1 8 0;
+#X connect 7 1 20 0;
+#X connect 7 1 23 0;
+#X connect 9 1 10 0;
+#X connect 11 0 14 0;
+#X connect 12 0 11 0;
+#X connect 13 0 11 0;
+#X connect 15 0 12 0;
+#X connect 16 0 18 0;
+#X connect 17 0 16 0;
+#X connect 19 0 21 0;
+#X connect 21 0 16 0;

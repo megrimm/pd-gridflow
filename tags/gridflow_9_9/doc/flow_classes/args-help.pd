@@ -1,0 +1,61 @@
+#N canvas 594 0 632 695 10;
+#X text 308 137 demo default args;
+#X text 308 157 demo rest of args;
+#X text 308 197 demo missing args;
+#X text 308 177 demo comma args;
+#X obj 0 0 doc_h;
+#X obj 3 425 doc_i 1;
+#X obj 3 223 doc_c n;
+#X obj 14 455 doc_ii 0;
+#X obj 3 613 doc_o 1..;
+#X obj 14 253 doc_cc any;
+#X obj 97 253 doc_m cany symbol;
+#X text 232 253 "*" represents the rest of arguments;
+#X text 232 275 other symbols represent mandatory arguments;
+#X obj 0 697 doc_f;
+#X obj 14 643 doc_oo any;
+#X obj 97 643 doc_m oany <atom>;
+#X text 232 643 output of single argument;
+#X text 232 665 output of rest of arguments \, if last arg of [args]
+is a "*".;
+#X obj 97 665 doc_m oany <list>;
+#X text 232 477 sends one message per outlet right-to-left. if there
+is a wildcard (*) as the last argument \, any extra arguments go there
+as a list message. Then for any missing arguments that have default
+values \, the default values are sent \, right to left. Then for each
+present argument that is not extra \, that argument will be sent on
+its own outlet. Finally \, each init-message (comma-separated) is parsed
+from the arguments and sent (magically) to the first inlet of the abstraction
+itself.;
+#X text 232 332 represent optional arguments as nested-lists;
+#X text 232 354 inside the nested-list \, \$1 must be the name of the
+argument \, \$2 must be "a" (the single letter) \, and \$3 must be
+the default value. the "a" is actually for future use (type-checking).
+;
+#X text 232 297 the star can only occur once and at the end \, and
+all optionals must follow all mandatories.;
+#X obj 12 156 args-demo pommes poires ananas biscuits-soda;
+#X obj 12 37 cnv 15 100 25 empty empty Warning: 0 8 0 14 -262144 -258113
+0;
+#X obj 97 477 doc_m i0 loadbang;
+#X obj 97 455 doc_m i0 bang;
+#X text 232 455 Same as loadbang.;
+#X text 103 37 When using [args] inside a patch that also uses a [loadbang]
+for stuff that depends on those arguments \, you need to make sure
+that the [loadbang] in question is created AFTER [args]. This is the
+same problem as what happens with the order of multiple [loadbang]
+objects \, because [args] is implicitly a [loadbang] too.;
+#X obj 97 332 doc_m cany <list>;
+#X obj 12 196 args-demo;
+#X obj 12 136 args-demo blah;
+#X obj 12 176 args-demo dorval \, temperature -18 \, pression 99.5
+;
+#X connect 10 1 11 0;
+#X connect 10 1 12 0;
+#X connect 10 1 22 0;
+#X connect 15 1 16 0;
+#X connect 18 1 17 0;
+#X connect 25 1 19 0;
+#X connect 26 1 27 0;
+#X connect 29 1 20 0;
+#X connect 29 1 21 0;
