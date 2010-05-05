@@ -98,7 +98,7 @@ static bool gfeof(FILE *f) {
 	jpeg_stdio_src(&djpeg,f);
 	jpeg_read_header(&djpeg,TRUE);
 	int sx=djpeg.image_width, sy=djpeg.image_height, chans=djpeg.num_components;
-	GridOutlet out(this,0,new Dim(sy,sx,chans),cast);
+	GridOutlet out(this,0,Dim(sy,sx,chans),cast);
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*chans];
 	uint8 *rows[1] = { row };

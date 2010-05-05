@@ -119,7 +119,6 @@ void set_atom (t_atom *a, CvTermCriteria &tc) {
 }
 
 CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
-	P<Dim> d = g->dim;
 	int channels=1;
 	int dims=g->dim->n;
 	//post("mode=%d",(int)mode);
@@ -145,7 +144,7 @@ CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 }
 
 IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
-	P<Dim> d = g->dim;
+	Dim &d = g->dim;
 	if (d->n!=3) RAISE("expected 3 dimensions, got %s",d->to_s());
 	int channels=g->dim->v[2];
 	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
@@ -155,12 +154,12 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	return a;
 }
 
-void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim *dim=0) {
+void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim &dim) { // was defaulting to dim=Dim(m,n) before 9.10
 	int m = self->rows;
 	int n = self->cols;
 	int e = CV_MAT_TYPE(cvGetElemType(self));
 	int c = CV_MAT_CN(  cvGetElemType(self));
-	GridOutlet *out = new GridOutlet(obj,0,dim?dim:new Dim(m,n));
+	GridOutlet *out = new GridOutlet(obj,0,dim);
 	for (int i=0; i<m; i++) {
 		uchar *meuh = cvPtr2D(self,i,0,0);
 		switch (e) {
@@ -208,7 +207,7 @@ static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
 
 \class CvOp2 : CvOp1 {
 	PtrGrid r;
-	\constructor (Grid *r=0) {this->r = r?r:new Grid(new Dim(),int32_e,true);}
+	\constructor (Grid *r=0) {this->r = r?r:new Grid(Dim(),int32_e,true);}
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
 	\grin 0
 	\grin 1
@@ -446,7 +445,7 @@ GRID_INLET(0) {
 	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
 	int n = ret ? ret->total : 0;
-	out = new GridOutlet(this,0,new Dim(n,2,2));
+	out = new GridOutlet(this,0,Dim(n,2,2));
 	for (int i=0; i<n; i++) {
 		CvRect *r = (CvRect *)cvGetSeqElem(ret,i);
 		int32 duh[] = {r->y,r->x,r->y+r->height,r->x+r->width};
@@ -478,16 +477,15 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	int32 v[] = {in->dim->prod(0)/in->dim->prod(-1),in->dim->prod(-1)};
-	PtrGrid l = new Grid(new Dim(2,v),(T *)data);
+	PtrGrid l = new Grid(Dim(2,v),(T *)data);
 	CvArr *a = (CvMat *)cvGrid(l,mode,2);
-	PtrGrid o = new Grid(new Dim(1,v),int32_e);
+	PtrGrid o = new Grid(Dim(1,v),int32_e);
 	CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvKMeans2(a,numClusters,c,termcrit);
 	int w[in->dim->n];
 	COPY(w,in->dim->v,in->dim->n);
 	w[in->dim->n-1] = 1;
-	P<Dim> d = new Dim(in->dim->n,w);
-	out = new GridOutlet(this,0,d);
+	out = new GridOutlet(this,0,Dim(in->dim->n,w));
 	out->send(v[0],(int32 *)*o);
 	cvRelease(&a);
 	cvRelease(&c);

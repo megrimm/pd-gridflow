@@ -57,7 +57,7 @@ static std::map<string,const aa_driver *> drivers;
 		rparams = aa_getrenderparams();
 		if (!context) RAISE("opening aalib didn't work");
 		int32 v[]={context->imgheight,context->imgwidth,1};
-		post("aalib image size: %s",(new Dim(3,v))->to_s());
+		post("aalib image size: %s",Dim(3,v).to_s());
 	}
 	~FormatAALib () {if (context) aa_close(context);}
 	\decl 0 hidecursor ();
@@ -123,7 +123,7 @@ GRID_INLET(0) {
 
 \def 0 dump () {
 	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
-	GridOutlet out(this,0,new Dim(3,v));
+	GridOutlet out(this,0,Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
 		for (int x=0; x<aa_scrwidth(context); x++) {
 			int32 data[2];

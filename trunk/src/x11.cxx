@@ -81,7 +81,7 @@ typedef struct {
 	MotifWmHints motifWmHints;
 	int32 pos[2];
 	P<BitPacking> bit_packing;
-	P<Dim> dim;
+	Dim dim;
 	t_clock *clock;
 	std::string title;
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -464,7 +464,7 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
-	dim = new Dim(sy,sx,3);
+	dim = Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
 	current_x11 = this;

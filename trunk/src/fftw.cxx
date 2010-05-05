@@ -26,13 +26,14 @@
 
 \class GridFFT : FObject {
 	fftwf_plan plan;
-	P<Dim> lastdim; /* of last input (for plan cache) */
+	Dim lastdim; /* of last input (for plan cache) */
+	bool haslastdim;
 	long lastchans; /* of last input (for plan cache) */
 	\attr int sign; /* -1 or +1 */
 	\attr int skip; /* 0 (y and x) or 1 (x only) */
 	\attr bool real;
 	bool lastreal;
-	\constructor () {sign=-1; plan=0; lastdim=0; lastchans=0; skip=0; real=false;}
+	\constructor () {sign=-1; plan=0; haslastdim=false; lastchans=0; skip=0; real=false;}
 	\grin 0 float32
 };
 \def 0 sign (int sign) {
@@ -56,20 +57,20 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	if (skip==1 && real) RAISE("can't do 1-D FFT in real mode, sorry");
-	Dim *dim;
+	Dim dim;
 	if (!real) dim = in->dim;
 	else if (sign==-1) {
 		int v[Dim::MAX_DIM];
 		for (int i=0; i<in->dim->n; i++) v[i]=in->dim->v[i];
 		v[in->dim->n] = 2;
-		dim = new Dim(in->dim->n+1,v);
-	} else dim = new Dim(in->dim->n-1,in->dim->v);
+		dim = Dim(in->dim->n+1,v);
+	} else dim = Dim(in->dim->n-1,in->dim->v);
 	GridOutlet out(this,0,dim,in->nt);
 	float32 *tada = (float32 *)memalign(16,dim->prod()*sizeof(float32));
 	long chans = in->dim->n>=3 ? in->dim->get(2) : 1;
 	CHECK_ALIGN16(data,in->nt)
 	CHECK_ALIGN16(tada,in->nt)
-	if (plan && lastdim && lastdim!=in->dim && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
+	if (plan && haslastdim && !lastdim.equal(in->dim) && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
 	int v[] = {in->dim->v[0],in->dim->v[1],in->dim->n>2?in->dim->v[2]:1};
 //	if (chans==1) {
 //		if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);
