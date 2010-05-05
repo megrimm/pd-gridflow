@@ -1449,7 +1449,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 \class GFStringReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
-	\constructor (t_symbol *from, t_symbol *to=&s_) {this->from=from; this->to=to;}
+	\constructor (t_symbol *from=&s_, t_symbol *to=&s_) {this->from=from; this->to=to;}
 	\decl 0 symbol (t_symbol *victim);
 };
 \def 0 symbol (t_symbol *victim) {
