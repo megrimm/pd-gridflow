@@ -738,7 +738,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 9.9 configurator"
+DUAL.puts "This is the GridFlow 9.10 configurator"
 
 begin
   $features.each {|feature| try feature }
