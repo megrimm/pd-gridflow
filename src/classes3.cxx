@@ -183,7 +183,6 @@ GRID_INLET(0) {
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
 	long m = in->dim->prod(in->dim->n-1);
-	post("in->dim=%s m=%ld",in->dim.to_s(),m);
 	T *foo[m];
 	T  bar[m];
 	if (m) for (; n; n-=m,data+=m) {
