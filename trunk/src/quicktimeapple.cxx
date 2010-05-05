@@ -48,7 +48,7 @@ const char *oserr_find(long err)
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
 	uint8 *buffer;
 	uint8 *buf2;
-	P<Dim> dim;
+	Dim dim;
 	int nframe, nframes;
 	P<BitPacking> bit_packing3;
 	\constructor (t_symbol *mode, string filename) {
@@ -69,7 +69,7 @@ const char *oserr_find(long err)
 		post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
 		OffsetRect(&r, -r.left, -r.top);
 		SetMovieBox(movie, &r);
-		dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
+		dim = Dim(r.bottom-r.top, r.right-r.left, 4);
 		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 		buffer = new uint8[dim->prod()];
 		buf2 = new uint8[dim->prod()];
@@ -124,9 +124,9 @@ const char *oserr_find(long err)
 
 	GridOutlet out(this,0,dim,cast);
 	string cs = colorspace->s_name;
-	int sy = dim->v[0];
-	int sx = dim->v[1];
-	int sc = dim->v[2];
+	int sy = dim[0];
+	int sx = dim[1];
+	int sc = dim[2];
 	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
 	uint8 b2[ sx*3+3];
 	uint8 *buf = buffer; // sorry
@@ -215,7 +215,7 @@ void post_BitPacking(BitPacking *);
 	post_BitPacking(bit_packing3);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
 	this->colorspace=gensym(c.data());
-	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+	dim = Dim(dim[0],dim[1],c=="y"?1:c=="rgba"?4:3);
 }
 
 \classinfo {
