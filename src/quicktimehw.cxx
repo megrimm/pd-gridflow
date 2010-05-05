@@ -35,20 +35,22 @@ static std::map<string,string> fourccs;
 \class FormatQuickTimeHW : Format {
 	quicktime_t *anim;
 	int track;
-	P<Dim> dim;
+	Dim dim;
+	bool gotdim;
 	char *m_codec;
 	int colorspace;
 	int channels;
 	bool started;
-	P<Dim> force;
+	Dim force;
+	bool doforce;
 	float64 m_framerate;
 	P<BitPacking> bit_packing;
 	int jpeg_quality; // in theory we shouldn't need this, but...
 	float advance;
 	~FormatQuickTimeHW() {if (anim) quicktime_close(anim);}
 	\constructor (t_symbol *mode, string filename) {
-		track=0; dim=0; m_codec=const_cast<char *>(QUICKTIME_RAW);
-		started=false; force=0; m_framerate=29.97; bit_packing=0; jpeg_quality=75;
+		track=0; gotdim=false; m_codec=const_cast<char *>(QUICKTIME_RAW);
+		started=false; doforce=false; m_framerate=29.97; bit_packing=0; jpeg_quality=75;
 		advance = 0;
 // libquicktime may be nice, but it won't take a filehandle, only filename
 		filename = gf_find_file(filename);
@@ -84,7 +86,7 @@ static std::map<string,string> fourccs;
 	\attr bool with_audio;
 };
 
-\def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
+\def 0 force_size (int32 height, int32 width) {force = Dim(height, width); doforce=true;}
 \def 0 seek (int32 frame) {
 	quicktime_set_video_position(anim,clip(frame,int32(0),int32(quicktime_video_length(anim,track)-1)),track);
 }
@@ -106,7 +108,7 @@ static std::map<string,string> fourccs;
 		lqt_decode_audio_track(anim,0,output_f,samples,track);
 		float sound2[samples*achannels];
 		for (int i=0; i<samples; i++) for (int j=0; j<achannels; j++) sound2[i*achannels+j] = sound[j*samples+i];
-		GridOutlet out(this,0,new Dim(samples,achannels),float32_e);
+		GridOutlet out(this,0,Dim(samples,achannels),float32_e);
 		out.send(samples*achannels,sound2);
 		advance += samples;
 	    }
@@ -127,11 +129,11 @@ static std::map<string,string> fourccs;
 	case 32: colorspace=BC_RGBA8888; break;
 	default: post("strange quicktime. ask matju."); break;
 	}
-	if (force) {sy = force->get(0); sx = force->get(1);}
+	if (doforce) {sy = force->get(0); sx = force->get(1);}
 	uint8 buf[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
-	GridOutlet out(this,0,new Dim(sy,sx,channels),cast);
+	GridOutlet out(this,0,Dim(sy,sx,channels),cast);
 	out.send(sy*sx*channels,buf);
 	started=true;
 //	return INT2NUM(nframe);
@@ -148,9 +150,10 @@ static std::map<string,string> fourccs;
 \def 0 framerate (float64 f) {m_framerate=f; quicktime_set_framerate(anim, f);}
 
 \def 0 size (int32 height, int32 width) {
-	if (dim) RAISE("video size already set!");
+	if (gotdim) RAISE("video size already set!");
 	// first frame: have to do setup
-	dim = new Dim(height, width, 3);
+	dim = Dim(height,width,3);
+	gotdim = true;
 	quicktime_set_video(anim,1,dim->get(1),dim->get(0),m_framerate,m_codec);
 	quicktime_set_cmodel(anim,colorspace);
 }
@@ -159,7 +162,7 @@ GRID_INLET(0) {
 	if (in->dim->n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2)!=channels) RAISE("expecting %d channels (got %d)",channels,in->dim->get(2));
 	in->set_chunk(0);
-	if (dim) {
+	if (gotdim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
 	} else {
 		// first frame: have to do setup

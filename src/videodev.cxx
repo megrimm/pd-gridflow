@@ -219,7 +219,7 @@ t_symbol *safe_gensym(const char *name) {
 	int current_channel, current_tuner;
 	bool use_pwc;
 	P<BitPacking> bit_packing3, bit_packing4;
-	P<Dim> dim;
+	Dim dim;
 	bool has_frequency, has_tuner, has_norm;
 	bool use_libv4l;
 	int fd;
@@ -236,7 +236,7 @@ t_symbol *safe_gensym(const char *name) {
 		else 	    fd =      open(filename.data(),O_RDWR);
 		if (fd<0) RAISE("can't open device '%s': %s",filename.data(),strerror(errno));
 		WIOCTL(fd, VIDIOCGCAP, &vcaps);
-		dim = new Dim(0,0,0);
+		dim = Dim(0,0,0);
 		name = safe_gensym(vcaps.name);
 		WIOCTL(fd, VIDIOCGPICT,&vp);
 		detect_palettes();
@@ -327,7 +327,7 @@ t_symbol *safe_gensym(const char *name) {
 \def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
-	dim = new Dim(sy,sx,dim->v[2]);
+	dim = Dim(sy,sx,dim->v[2]);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	if (debug) gfpost(&grab_win);
 	grab_win.clipcount = 0;
@@ -370,7 +370,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int bs = dim->prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
-	GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
+	GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
 	if (vp.palette==VIDEO_PALETTE_YUYV) {
 		uint8 *bufy = buf;
 		if (cs=="y") {
@@ -599,7 +599,7 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3); else
 	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4);
 	this->colorspace=gensym(c.data());
-	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+	dim = Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
 }
 
 \def bool pwc ()         {return use_pwc;}

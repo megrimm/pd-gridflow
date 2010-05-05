@@ -251,7 +251,7 @@ GRID_INLET(1) {
 		  default: ::post("can't produce grid from pix type %d (0x%x)",  im.type, im.type  ); return;}
 		// on OSX, one was GL_UNSIGNED_INT_8_8_8_8 and the other was...?
 		int32 v[] = { im.ysize, im.xsize, channels };
-		GridOutlet out(this,0,new Dim(3,v),cast);
+		GridOutlet out(this,0,Dim(3,v),cast);
 		long sxc = im.xsize*channels;
 		long sy = v[0];
 		bool f = yflip^im.upsidedown;

@@ -142,7 +142,7 @@ struct Frame {uint8 *p; size_t n;};
 	int queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	P<BitPacking> bit_packing3, bit_packing4;
-	P<Dim> dim;
+	Dim dim;
 	int fd;
 	int palette;
 	v4l2_format         fmt;
@@ -218,7 +218,7 @@ struct Frame {uint8 *p; size_t n;};
 
 \def 0 size (int sy, int sx) {
 	// !@#$ bug here: won't flush the frame queue
-	dim = new Dim(sy,sx,3);
+	dim = Dim(sy,sx,3);
 	WIOCTL(fd, VIDIOC_G_FMT, &fmt); if (debug) gfpost(&fmt);
 	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4l2_pix_format &f = fmt.fmt.pix;
@@ -293,7 +293,7 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 	int palette = fmt.fmt.pix.pixelformat;
 	if (palette==V4L2_PIX_FMT_YUYV) {
 		uint8 *bufy = buf;
-		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
+		GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
 		if (cs=="y") {
 		    for(int y=0; y<sy; bufy+=sx, y++) {
 			for (int x=0,xx=0; x<sx; x+=2,xx+=4) {
@@ -324,7 +324,7 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 		}
 	} else if (palette==V4L2_PIX_FMT_YVU420) {
 		uint8 *bufy = buf, *bufu = buf+sx*sy, *bufv = buf+sx*sy*5/4;
-		GridOutlet out(this,0,cs=="magic"?new Dim(sy>>downscale,sx>>downscale,3):(Dim *)dim,cast);
+		GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
 		if (cs=="y") {
 		    out.send(sy*sx,buf);
 		} else if (cs=="rgb") {
@@ -481,7 +481,7 @@ GRID_INLET(0) {
 		bit_packing4 = new BitPacking(is_le(),3,4,masks);
 	} // else RAISE("huh?");
 	this->colorspace=gensym(c.data());
-	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
+	dim = Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
 
 \def int auto_gain()        {return v4l2_get_control(fd,V4L2_CID_AUTOGAIN);}
