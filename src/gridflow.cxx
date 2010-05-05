@@ -196,7 +196,7 @@ void Dim::check() {
 
 // !@#$ big leak machine?
 // returns a string like "Dim[240,320,3]"
-char *Dim::to_s() {
+char *Dim::to_s() const {
 	// if you blow 256 chars it's your own fault
 	char buf[256];
 	char *s = buf;
