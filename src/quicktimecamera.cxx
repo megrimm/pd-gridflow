@@ -179,7 +179,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 }
 
 \class FormatQuickTimeCamera : Format {
-  P<Dim> dim;
+  Dim dim;
   uint8 *buf;
   uint8 *buf2;
   VDC vdc;
@@ -197,11 +197,11 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   int m_quality;
   P<BitPacking> bit_packing3;
   \constructor (t_symbol *mode, int device) {
-	dim = new Dim(240,320,3);
+	dim = Dim(240,320,3);
 	_0_colorspace(0,0,gensym("rgb"));
 	OSErr e;
 	rect.top=rect.left=0;
-	rect.bottom=dim->v[0]; rect.right=dim->v[1];
+	rect.bottom=dim[0]; rect.right=dim[1];
 	int n=0, i, j;
 	Component c = 0;
 	ComponentDescription cd;
@@ -272,7 +272,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 
 	vdc = SGGetVideoDigitizerComponent(m_vc);
 
-	int sy = dim->v[0], sx = dim->v[1], sc = dim->v[2];
+	int sy = dim[0], sx = dim[1], sc = dim[2];
 	int dataSize = dim->prod();
 	buf  = new uint8[sy*sx*4];
 	buf2 = new uint8[sy*sx*4];
@@ -314,7 +314,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	OSErr e = VDGetDigitizerRect(vdc,&rect);
 	if (e!=noErr) RAISE("VDGetDigitizerRect error");
 	if (DEBUG) post("rect1: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
-	dim = new Dim(height,width,dim->v[2]);
+	dim = Dim(height,width,dim[2]);
 	rect.bottom = height;
 	rect.right = width;
 	if (DEBUG) post("rect2: top=%d left=%d bottom=%d right=%d",rect.top,rect.left,rect.bottom,rect.right);
@@ -363,7 +363,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	bit_packing3 = new BitPacking(is_le(),4,3,masks);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
 	this->colorspace=gensym(c.data());
-	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+	dim = Dim(dim[0],dim[1],c=="y"?1:c=="rgba"?4:3);
 }
 
 static int nn(int c) {return c?c:' ';}
@@ -371,9 +371,9 @@ static int nn(int c) {return c?c:' ';}
 \def 0 bang () {
 	GridOutlet out(this,0,dim,cast);
 	string cs = colorspace->s_name;
-	int sy = dim->v[0];
-	int sx = dim->v[1];
-	int sc = dim->v[2];
+	int sy = dim[0];
+	int sx = dim[1];
+	int sc = dim[2];
 	uint8 rgb[sx*4+4]; // with extra padding in case of odd size...
 	uint8 b2[ sx*3+3];
 	int bs = sx*sc;
