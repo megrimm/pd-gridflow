@@ -62,7 +62,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	init(Dim(n),nt);
 	CHECK_ALIGN(this->data,nt);
 	fill:
-	int nn = dim->prod();
+	int nn = dim.prod();
 	n = min(n,nn);
 #define FOO(T) { \
 	T *p = (T *)*this; \
@@ -95,7 +95,7 @@ void Grid::init_from_atom(const t_atom &x) {
 // why this would be changed afterwards.
 void GridInlet::set_chunk(long whichdim) {
 	chunk = whichdim;
-	long n = dim->prod(whichdim);
+	long n = dim.prod(whichdim);
 	if (!n) n=1;
 	if (n>1) {
 		buf=new Grid(Dim(n), sender->nt);
@@ -111,7 +111,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 
 void GridInlet::begin(GridOutlet *sender) {
 	if (this->sender) RAISE("grid inlet aborting from %s at %ld/%ld because of %s",
-		ARGS(this->sender->parent),long(dex),long(dim->prod()),ARGS(sender->parent));
+		ARGS(this->sender->parent),long(dex),long(dim.prod()),ARGS(sender->parent));
 	this->sender = sender;
 	if (!supports_type(sender->nt)) RAISE("number type %s not supported here", number_type_table[sender->nt].name);
 	this->nt = sender->nt;
@@ -136,9 +136,9 @@ template <class T> void GridInlet::flow(long n, T *data) {
 	CHECK_BUSY(inlet); CHECK_TYPE(*data,sender->nt); CHECK_ALIGN(data,sender->nt);
 	if (!n) return; // no data
 	long d = dex + bufi;
-	if (d+n > dim->prod()) {
-		post("grid input overflow: %ld of %ld from [%s] to [%s]", d+n, long(dim->prod()), ARGS(sender->parent), ARGS(parent));
-		n = dim->prod() - d;
+	if (d+n > dim.prod()) {
+		post("grid input overflow: %ld of %ld from [%s] to [%s]", d+n, long(dim.prod()), ARGS(sender->parent), ARGS(parent));
+		n = dim.prod() - d;
 		if (n<=0) return;
 	}
 	int bufn = factor();
@@ -168,8 +168,8 @@ template <class T> void GridInlet::flow(long n, T *data) {
 
 void GridInlet::finish() {
 	CHECK_BUSY1(inlet);
-	if (dim->prod() != dex) post("%s: incomplete grid: %ld of %ld from [%s] to [%s]",
-	    ARGS(parent),dex,long(dim->prod()),ARGS(sender->parent),ARGS(parent));
+	if (dim.prod() != dex) post("%s: incomplete grid: %ld of %ld from [%s] to [%s]",
+	    ARGS(parent),dex,long(dim.prod()),ARGS(sender->parent),ARGS(parent));
 #define FOO(T) try {gh->flow(this,dex,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(sender->nt,FOO,)
 #undef FOO
@@ -179,7 +179,7 @@ void GridInlet::finish() {
 template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	GridOutlet out(0,-1,g->dim,g->nt);
 	begin(&out);
-	size_t n = g->dim->prod();
+	size_t n = g->dim.prod();
 	if (n) out.send(n,(T *)*g); else finish();
 }
 
@@ -198,7 +198,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTyp
 	SETGRIDOUT(a,this);
 	if (parent) {
 		outlet_anything(parent->outlets[woutlet],bsym._grid,1,a);
-		if (!dim->prod()) finish();
+		if (!dim.prod()) finish();
 	}
 }
 
@@ -265,12 +265,12 @@ void GridOutlet::send_2(long n, T *data) {
 		} else {
 			//post("send_indirect %d",n);
 			if (!buf) create_buf();
-			int32 v = buf->dim->prod();
+			int32 v = buf->dim.prod();
 			if (bufi + n > v) flush();
 			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
-		if (dex==dim->prod()) finish();
+		if (dex==dim.prod()) finish();
 	}
 }
 
