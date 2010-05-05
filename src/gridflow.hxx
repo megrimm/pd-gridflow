@@ -652,7 +652,7 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 //****************************************************************
 // GridInlet represents a grid-aware inlet
 
-#define GRIDHANDLER_ARGS(T) GridInlet *in, long dex, long n, T *data
+#define GRIDHANDLER_ARGS(T) GridInlet &in, long dex, long n, T *data
 
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
@@ -696,6 +696,8 @@ struct GridInlet : CObject {
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
+	const GridInlet *operator ->() const {return this;}
+	      GridInlet *operator ->()       {return this;}
 	void set_chunk(long whichdim);
 	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *sender);
@@ -760,7 +762,9 @@ struct GridOutlet : CObject {
 
 	GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
 	~GridOutlet() {}
-	void callback(GridInlet *in);
+	void callback(GridInlet &in);
+//	const Dim *operator ->() const {return this;}
+//	      Dim *operator ->()       {return this;}
 
 	// send/send_direct: data belongs to caller, may be stack-allocated,
 	// receiver doesn't modify the data; in send(), there is buffering;
@@ -834,13 +838,13 @@ extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 	#_a_, number_type_table[(_a_)->nt].name, \
 	#_b_, number_type_table[(_b_)->nt].name);
 static void SAME_DIM(int n, const Dim &a, int ai, const Dim &b, int bi) {
-	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
-	if (bi+n > b->n) RAISE("right hand: not enough dimensions");
+	if (ai+n > a.n) RAISE("left hand: not enough dimensions");
+	if (bi+n > b.n) RAISE("right hand: not enough dimensions");
 	for (int i=0; i<n; i++) {
-		if (a->v[ai+i] != b->v[bi+i]) {
+		if (a[ai+i] != b[bi+i]) {
 			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
-				ai+i, a->v[ai+i],
-				bi+i, b->v[bi+i]);}}}
+				ai+i, a[ai+i],
+				bi+i, b[bi+i]);}}}
 
 void suffixes_are (const char *name, const char *suffixes);
 #define install(name,inlets,outlets) install2(fclass,name,inlets,outlets)

@@ -255,7 +255,7 @@ GRID_INLET(0) {
 			if (s.tellp()>trunc) return;
 		}
 	}
-	void dump_dims(std::ostream &s, GridInlet *in) {
+	void dump_dims(std::ostream &s, GridInlet &in) {
 		if (name && name!=&s_) s << name->s_name << ": ";
 		s << "Dim[";
 		for (int i=0; i<in->dim->n; i++) {
@@ -480,8 +480,9 @@ GRID_INLET(0) {
 GRID_INLET(1) {
 	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
-		if (in[0].sender) r.next = new Grid(in->dim,nt);
-		else              r      = new Grid(in->dim,nt);
+		//!@#$ this was supposed to be inlets[0].sender i suppose... but it's not.
+		if (in.sender) r.next = new Grid(in->dim,nt);
+		else           r      = new Grid(in->dim,nt);
 		return;
 	}
 	// put_at ( ... )
