@@ -1,6 +1,6 @@
 #N canvas 0 53 622 365 10;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect index.pd 2 9 1 13 -1 -262144
-0;
+#X obj 3 3 cnv 15 608 18 empty \$0-rect psychedelirium.pd 2 9 1 13
+-1 -262144 0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
@@ -14,7 +14,7 @@
 #X obj 6 107 gf/string_replace 0x40 @;
 #X obj 6 127 gf/string_replace 0x2a *;
 #X obj 6 147 gf/string_replace 0x2b +;
-#X msg 390 47 0 0;
+#X msg 280 27 0 0;
 #X obj 6 205 pack s s;
 #X obj 6 185 t a b;
 #X obj 51 186 symbol \$1;
@@ -24,14 +24,12 @@
 1;
 #X obj 393 159 loadbang;
 #X obj 401 179 print doc_h_loadbang;
-#X text 345 199 URGHHH;
 #X obj 393 255 t b b;
 #X obj 463 217 gf/canvas_dollarzero 1;
 #X obj 448 255 s;
 #X msg 463 236 symbol \$1-clock;
 #X obj 463 198 loadbang;
-#X obj 393 236 metro 200;
-#X msg 393 199 1;
+#X obj 393 236 metro 1000;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
 #X connect 3 0 6 0;
@@ -48,13 +46,12 @@
 #X connect 15 0 13 1;
 #X connect 16 0 4 0;
 #X connect 17 2 12 0;
-#X connect 18 0 27 0;
-#X connect 19 0 28 0;
+#X connect 18 0 26 0;
 #X connect 19 0 20 0;
-#X connect 22 1 24 0;
-#X connect 23 0 25 0;
-#X connect 25 0 24 1;
-#X connect 26 0 23 0;
-#X connect 27 0 22 0;
-#X connect 28 0 18 0;
+#X connect 19 0 18 0;
+#X connect 21 1 23 0;
+#X connect 22 0 24 0;
+#X connect 24 0 23 1;
+#X connect 25 0 22 0;
+#X connect 26 0 21 0;
 #X coords 0 -1 1 1 614 24 2 0 0;
