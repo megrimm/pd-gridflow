@@ -52,26 +52,26 @@ extern "C" {
 };
 
 GRID_INLET(0) {
-	if (in->dim->n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)!=3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	if (in.dim.n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2]!=3) RAISE("expecting 3 channels (got %d)",in.dim[2]);
 	in->set_chunk(1);
 	cjpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cjpeg);
 	jpeg_stdio_dest(&cjpeg,f);
-	cjpeg.image_width = in->dim->get(1);
-	cjpeg.image_height = in->dim->get(0);
+	cjpeg.image_width = in.dim[1];
+	cjpeg.image_height = in.dim[0];
 	cjpeg.input_components = 3;
 	cjpeg.in_color_space = JCS_RGB;
 	jpeg_set_defaults(&cjpeg);
 	jpeg_set_quality(&cjpeg,quality,false);
 	jpeg_start_compress(&cjpeg,TRUE);
 } GRID_FLOW {
-	int rowsize = in->dim->get(1)*in->dim->get(2);
-	int rowsize2 = in->dim->get(1)*3;
+	int rowsize = in.dim[1]*in.dim[2];
+	int rowsize2 = in.dim[1]*3;
 	uint8 row[rowsize2];
 	uint8 *rows[1] = {row};
 	while (n) {
-		bit_packing->pack(in->dim->get(1),data,row);
+		bit_packing->pack(in.dim[1],data,row);
 		jpeg_write_scanlines(&cjpeg,rows,1);
 		n-=rowsize; data+=rowsize;
 	}
