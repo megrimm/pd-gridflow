@@ -161,9 +161,9 @@ static std::map<string,string> fourccs;
 GRID_INLET(0) {
 	if (in.dim.n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in.dim[2]!=channels) RAISE("expecting %d channels (got %d)",channels,in.dim[2]);
-	in->set_chunk(0);
+	in.set_chunk(0);
 	if (gotdim) {
-		if (!dim.equal(in.dim)) RAISE("all frames should be same size");
+		if (dim != in.dim) RAISE("all frames should be same size");
 	} else {
 		// first frame: have to do setup
 		dim = in.dim;

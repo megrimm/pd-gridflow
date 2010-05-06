@@ -47,14 +47,14 @@
 	if (plan) {fftwf_destroy_plan(plan); plan=0;}
 }
 GRID_INLET(0) {
-	if (in->nt != float32_e)                  RAISE("expecting float32");
+	if (in.nt != float32_e)               RAISE("expecting float32");
 	if (real && sign==-1) {
 	  if (in.dim.n != 2 && in.dim.n != 3) RAISE("expecting 2 or 3 dimensions: rows,columns,channels?");
 	} else {
 	  if (in.dim.n != 3 && in.dim.n != 4) RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
-	  if (in.dim[in.dim.n-1]!=2)      RAISE("expecting Dim(...,2): real,imaginary (got %d)",in.dim[2]);
+	  if (in.dim[in.dim.n-1]!=2)          RAISE("expecting Dim(...,2): real,imaginary (got %d)",in.dim[2]);
 	}
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	if (skip==1 && real) RAISE("can't do 1-D FFT in real mode, sorry");
 	Dim dim;
@@ -70,7 +70,7 @@ GRID_INLET(0) {
 	long chans = in.dim.n>=3 ? in.dim[2] : 1;
 	CHECK_ALIGN16(data,in->nt)
 	CHECK_ALIGN16(tada,in->nt)
-	if (plan && haslastdim && !lastdim.equal(in.dim) && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
+	if (plan && haslastdim && lastdim != in.dim && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
 	int v[] = {in.dim[0],in.dim[1],in.dim.n>2?in.dim[2]:1};
 //	if (chans==1) {
 //		if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],data,tada,sign,0);

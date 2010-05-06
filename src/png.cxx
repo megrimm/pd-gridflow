@@ -46,7 +46,7 @@ GRID_INLET(0) {
 	if (in.dim.n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	int sc = in.dim[2];
 	if (sc<1 || sc>4)  RAISE("expecting 1 to 4 channels (got %d)",sc);
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) RAISE("!png");

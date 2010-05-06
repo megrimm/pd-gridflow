@@ -215,8 +215,8 @@ static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
 GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
-	if (!in->dim.equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in.dim.to_s(),r->dim.to_s());
-	in->set_chunk(0);
+	if (in.dim != r->dim) RAISE("dimension mismatch: left:%s right:%s",in.dim.to_s(),r->dim.to_s());
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,(T *)data);
 	PtrGrid o = new Grid(in.dim,in.nt);
@@ -258,7 +258,7 @@ GRID_INPUT2(1,r) {} GRID_END
 GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("should have 2 dimensions");
 	if (in.dim[0] != in.dim[1]) RAISE("matrix should be square");
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
 	PtrGrid l = new Grid(in.dim,(T *)data);
@@ -281,7 +281,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("should have 2 dimensions");
 	if (in.dim[0] != in.dim[1]) RAISE("matrix should be square");
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,(T *)data);
 	PtrGrid o0 = new Grid(in.dim,in.nt);
@@ -319,7 +319,7 @@ GRID_INLET(0) {
 	}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,in.nt); COPY((T *)*l,data,in.dim.prod());
 	IplImage *img = cvImageGrid(l);
@@ -338,7 +338,7 @@ GRID_INLET(0) {
 	~CvApproxPoly () {cvReleaseMemStorage(&storage);}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,(T *)data); CvArr *a = cvGrid(l,mode);
 	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
@@ -353,7 +353,7 @@ GRID_INLET(0) {
 	\constructor () {}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 //	cvCalcOpticalFlowHS(prev,curr,use_previous, CvArr* velx, CvArr* vely, lambda, CvTermCriteria criteria );
 } GRID_END
@@ -363,7 +363,7 @@ GRID_INLET(0) {
 	\constructor () {}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 } GRID_END
 \end class {install("cv/#CalcOpticalFlowLK",1,1);}
@@ -372,7 +372,7 @@ GRID_INLET(0) {
 	\constructor () {}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 } GRID_END
 \end class {install("cv/#CalcOpticalFlowBM",1,1);}
@@ -381,7 +381,7 @@ GRID_INLET(0) {
 	\constructor () {}
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 } GRID_END
 \end class {install("cv/#CalcOpticalFlowPyrLK",1,1);}
@@ -439,7 +439,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 	\grin 0
 };
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,(T *)data);
 	IplImage *img = cvImageGrid(l);
@@ -474,7 +474,7 @@ GRID_INLET(0) {
 
 GRID_INLET(0) {
 	if (in.dim.n<1) RAISE("should have at least 1 dimension");
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	int32 v[] = {in.dim.prod(0)/in.dim.prod(-1),in.dim.prod(-1)};
 	PtrGrid l = new Grid(Dim(2,v),(T *)data);
@@ -506,7 +506,7 @@ GRID_INLET(0) {
 };
 
 GRID_INLET(0) {
-	in->set_chunk(0);
+	in.set_chunk(0);
 } GRID_FLOW {
 	PtrGrid l = new Grid(in.dim,(T *)data);
 	CvArr *a = (CvMat *)cvGrid(l,mode,2);

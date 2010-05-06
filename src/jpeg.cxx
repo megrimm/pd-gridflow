@@ -54,7 +54,7 @@ extern "C" {
 GRID_INLET(0) {
 	if (in.dim.n!=3)      RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in.dim[2]!=3) RAISE("expecting 3 channels (got %d)",in.dim[2]);
-	in->set_chunk(1);
+	in.set_chunk(1);
 	cjpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cjpeg);
 	jpeg_stdio_dest(&cjpeg,f);
