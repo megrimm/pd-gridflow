@@ -939,7 +939,7 @@ void GridFor::trigger (T bogus) {
 \def 0 bang () {
 	SAME_TYPE(*from,to);
 	SAME_TYPE(*from,step);
-	if (!from->dim.equal(to->dim) || !to->dim.equal(step->dim))
+	if (from->dim!=to->dim || to->dim!=step->dim)
 		RAISE("dimension mismatch: from:%s to:%s step:%s",from->dim.to_s(),to->dim.to_s(),step->dim.to_s());
 #define FOO(T) trigger((T)0);
 	TYPESWITCH(from->nt,FOO,);

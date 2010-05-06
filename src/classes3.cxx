@@ -643,7 +643,7 @@ GRID_INLET(0) {
 	margy = (db[0]-1)/2;
 	margx = (db[1]-1)/2;
 	//if (a) post("for %p, a->dim=%s da=%s",this,a->dim.to_s(),da->to_s());
-	if (!a || !a->dim.equal(da)) a=new Grid(da,in.nt); // with this condition it's 2% faster on Linux but takes more RAM.
+	if (!a || a->dim != da) a=new Grid(da,in.nt); // with this condition it's 2% faster on Linux but takes more RAM.
 	//a=new Grid(da,in.nt); // with this condition it's 2% faster but takes more RAM.
 	int v[da.n]; COPY(v,da.v,da.n);
 	if (!wrap) {v[0]-=db[0]-1; v[1]-=db[1]-1;}
@@ -721,7 +721,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int rowsize = in.dim.prod(1);
 	T buf[rowsize*scalex];
-	int chans = in.dim.get(2);
+	int chans = in.dim[2];
 	#define Z(z) buf[p+z]=data[i+z]
 	for (; n>0; data+=rowsize, n-=rowsize) {
 		int p=0;
@@ -1324,7 +1324,7 @@ GRID_INLET(0) {
 	COPY(v,r->dim.v,r->dim.n-1);
 	v[r->dim.n-1]=1;
 	Dim t = Dim(r->dim.n,v);
-	if (!t.equal(in.dim)) RAISE("left %s must be equal to right %s except last dimension should be 1",in.dim.to_s(),r->dim.to_s());
+	if (t != in.dim) RAISE("left %s must be equal to right %s except last dimension should be 1",in.dim.to_s(),r->dim.to_s());
 	in.set_chunk(0);
 	int32 w[2] = {numClusters,r->dim[r->dim.n-1]};
 	sums   = new Grid(Dim(2,w),r->nt,  true);

@@ -347,10 +347,10 @@ struct Dim {
 		if(c) COPY(v+a->n+b->n,c->v,c->n);
 	}
 	Card count() {return n;}
-	Card get       (Card i) const {return v[i];}
+	//Card get     (Card i) const {return v[i];}
 	Card operator[](Card i) const {return v[i];}
-	const Dim & operator *() const {return *this;}
-	      Dim & operator *()       {return *this;}
+	//const Dim & operator *() const {return *this;}
+	//      Dim & operator *()       {return *this;}
 	//const Dim *operator ->() const {return this;}
 	//      Dim *operator ->()       {return this;}
 /*	Dim *range(Card i, Card j) {return new Dim(...);} */
@@ -362,11 +362,12 @@ struct Dim {
 		return tot;
 	}
 	char *to_s() const; // should be std::string
-	bool equal(const Dim &o) {
+	bool operator==(const Dim &o) const {
 		if (n!=o.n) return false;
 		for (Card i=0; i<n; i++) if (v[i]!=o[i]) return false;
 		return true;
 	}
+	bool operator!=(const Dim &o) const {return !operator==(o);}
 };
 
 //****************************************************************

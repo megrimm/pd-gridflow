@@ -188,7 +188,7 @@ GRID_INLET(0) {
 	if (in.dim[2] != 3) RAISE("expecting 3 channels: red,green,blue (got %d)",in.dim[2]);
 	int sx = in.dim[1], osx = dim[1];
 	int sy = in.dim[0], osy = dim[0];
-	in->set_chunk(1);
+	in.set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 } GRID_FLOW {
 	int bypl = screen->pitch;
