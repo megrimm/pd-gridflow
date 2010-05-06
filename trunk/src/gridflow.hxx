@@ -351,8 +351,8 @@ struct Dim {
 	Card operator[](Card i) const {return v[i];}
 	const Dim & operator *() const {return *this;}
 	      Dim & operator *()       {return *this;}
-	const Dim *operator ->() const {return this;}
-	      Dim *operator ->()       {return this;}
+	//const Dim *operator ->() const {return this;}
+	//      Dim *operator ->()       {return this;}
 /*	Dim *range(Card i, Card j) {return new Dim(...);} */
 	Card prod(Card start=0, Card end=-1) const {
 		if (start<0) start+=n;
