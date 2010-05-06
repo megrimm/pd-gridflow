@@ -1372,7 +1372,7 @@ GRID_INLET(0) {
 	T *rdata = (T *)*r2;
 	for (;n;n-=sxc, data+=sxc) {
 		T tada[sxc+sc]; CLEAR(tada,sc);
-		for (int i=0; i<sxc; i++) tada[i+sc] = shr8r(tada[i]*(256-rdata[i]) + data[i]*rdata[i] + 128);
+		for (int i=0; i<sxc; i++) tada[i+sc] = shr8r(tada[i]*256 + (data[i]-tada[i])*rdata[i]);
 		out->send(sxc,tada+sc);
 	}
 } GRID_END
