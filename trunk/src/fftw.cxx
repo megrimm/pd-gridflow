@@ -68,8 +68,8 @@ GRID_INLET(0) {
 	GridOutlet out(this,0,dim,in.nt);
 	float32 *tada = (float32 *)memalign(16,dim.prod()*sizeof(float32));
 	long chans = in.dim.n>=3 ? in.dim[2] : 1;
-	CHECK_ALIGN16(data,in->nt)
-	CHECK_ALIGN16(tada,in->nt)
+	CHECK_ALIGN16(data,in.nt)
+	CHECK_ALIGN16(tada,in.nt)
 	if (plan && haslastdim && lastdim != in.dim && chans!=lastchans && real==lastreal) {fftwf_destroy_plan(plan); plan=0;}
 	int v[] = {in.dim[0],in.dim[1],in.dim.n>2?in.dim[2]:1};
 //	if (chans==1) {

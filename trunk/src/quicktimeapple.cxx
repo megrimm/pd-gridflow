@@ -183,11 +183,9 @@ const char *oserr_find(long err)
 GRID_INLET(0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
-	if (in.dim.n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in.dim.get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in.dim[2]);
-	in->set_chunk(0);
+	if (in.dim.n  != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2] != 3) RAISE("expecting 3 channels (got %d)",in.dim[2]);
+	in.set_chunk(0);
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
