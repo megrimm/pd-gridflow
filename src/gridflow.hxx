@@ -328,7 +328,7 @@ struct MethodDecl {const char *selector; FMethod method;};
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 typedef int32 Card; /* should be switched to long int soon */
-struct Dim : CObject {
+struct Dim {
 	static const Card MAX_DIM=15; // maximum number of dimensions in a grid
 	Card n;
 	Card v[MAX_DIM]; // real stuff

@@ -321,11 +321,11 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,in->nt); COPY((T *)*l,data,in->dim->prod());
+	PtrGrid l = new Grid(in->dim,in->nt); COPY((T *)*l,data,in.dim.prod());
 	IplImage *img = cvImageGrid(l);
 	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
 	cvReleaseImageHeader(&img);
-	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in->dim->prod(),(T *)*l);
+	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in.dim.prod(),(T *)*l);
 } GRID_END
 \end class {install("cv/#Ellipse",1,2);}
 
@@ -476,7 +476,7 @@ GRID_INLET(0) {
 	if (in->dim->n<1) RAISE("should have at least 1 dimension");
 	in->set_chunk(0);
 } GRID_FLOW {
-	int32 v[] = {in->dim->prod(0)/in->dim->prod(-1),in->dim->prod(-1)};
+	int32 v[] = {in.dim.prod(0)/in.dim.prod(-1),in.dim.prod(-1)};
 	PtrGrid l = new Grid(Dim(2,v),(T *)data);
 	CvArr *a = (CvMat *)cvGrid(l,mode,2);
 	PtrGrid o = new Grid(Dim(1,v),int32_e);

@@ -173,7 +173,7 @@ GRID_INLET(1) {
 	im.allocate();
 } GRID_FLOW {
 	uint8 *buf = (uint8 *)m_pixBlock.image.data;
-	long sxc = in->dim->prod(1);
+	long sxc = in.dim.prod(1);
 	long sx = in->dim->v[1];
 	long chans = in->dim->get(2);
 	imageStruct &im = m_pixBlock.image;
