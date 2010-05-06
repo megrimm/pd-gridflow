@@ -658,7 +658,7 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 // C:Class I:Inlet
 #define GRID_INLET(I) \
 	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {\
-		((THISCLASS*)in->parent)->grin_##I(in,dex,n,data);}\
+		((THISCLASS*)in.parent)->grin_##I(in,dex,n,data);}\
 	template <class T> void THISCLASS::grin_##I  (GRIDHANDLER_ARGS(T)) {if (n==-1)
 #define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
@@ -667,11 +667,11 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
 // V is a PtrGrid instance-var
 #define GRID_INPUT(I,V) \
-	GRID_INLET(I) {V=new Grid(in->dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+dex,data,n);} GRID_FINISH
+	GRID_INLET(I) {V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+dex,data,n);} GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
-#define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in->dim,NumberTypeE_type_of(data));} \
+#define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in.dim,NumberTypeE_type_of(data));} \
 	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+dex,data,n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
@@ -696,8 +696,8 @@ struct GridInlet : CObject {
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
-	const GridInlet *operator ->() const {return this;}
-	      GridInlet *operator ->()       {return this;}
+//	const GridInlet *operator ->() const {return this;}
+//	      GridInlet *operator ->()       {return this;}
 	void set_chunk(long whichdim);
 	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *sender);
@@ -833,10 +833,10 @@ extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #undef ARGS
 #define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[???]")
-#define NOTEMPTY(_a_) if (!(_a_)) RAISE("'%s' is empty",#_a_);
-#define SAME_TYPE(_a_,_b_) if ((_a_)->nt != (_b_)->nt) RAISE("same type please (%s has %s; %s has %s)", \
-	#_a_, number_type_table[(_a_)->nt].name, \
-	#_b_, number_type_table[(_b_)->nt].name);
+#define NOTEMPTY(A) if (!(A)) RAISE("'%s' is empty",#A);
+#define SAME_TYPE(A,B) if ((A).nt != (B)->nt) RAISE("same type please (%s has %s; %s has %s)", \
+	#A, number_type_table[(A).nt].name, \
+	#B, number_type_table[(B)->nt].name);
 static void SAME_DIM(int n, const Dim &a, int ai, const Dim &b, int bi) {
 	if (ai+n > a.n) RAISE("left hand: not enough dimensions");
 	if (bi+n > b.n) RAISE("right hand: not enough dimensions");

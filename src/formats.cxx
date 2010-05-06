@@ -229,25 +229,25 @@ TYPESWITCH(nt,FOO,)
 GRID_INLET(0) {
 	if (!headerless) {
 		strncpy(head.magic,is_le()?"\x7fgrid":"\x7fGRID",5);
-		switch (in->nt) {
+		switch (in.nt) {
 		case uint8_e: head.type = 9; break;
 		case int16_e: head.type = 16; break;
 		case int32_e: head.type = 32; break;
 		default: RAISE("can't write that type of number to a file");
 		}
 		head.reserved = 0;
-		head.dimn = in->dim.n;
-		size_t sz = 4*in->dim.n;
+		head.dimn = in.dim.n;
+		size_t sz = 4*in.dim.n;
 #define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
-		if (fwrite(&head,1,8,f     )< 8) FRAISE(fwrite,f);
-		if (fwrite(in->dim.v,1,sz,f)<sz) FRAISE(fwrite,f);
+		if (fwrite(&head,1,8,f    )< 8) FRAISE(fwrite,f);
+		if (fwrite(in.dim.v,1,sz,f)<sz) FRAISE(fwrite,f);
 	}
 } GRID_FLOW {
 #define FOO(T) {T data2[n]; for(int i=0; i<n; i++) data2[i]=(T)data[i]; \
 		if (endian!=is_le()) swap_endian(n,data2); \
 		size_t sz = n*sizeof(T); \
 		if (fwrite(data2,1,sz,f)<sz) FRAISE(fwrite,f);}
-TYPESWITCH(in->nt,FOO,)
+TYPESWITCH(in.nt,FOO,)
 #undef FOO
 } GRID_FINISH {
 	fflush(f);
