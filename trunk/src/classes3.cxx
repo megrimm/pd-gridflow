@@ -125,7 +125,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
-	long a = in->dim->prod(w);
+	long a = in.dim.prod(w);
 	long b = r->dim->prod(w);
 	T *data2 = (T *)*r + dex*b/a;
 	if (a==3 && b==1) {
@@ -154,7 +154,7 @@ GRID_INLET(0) {
 		}
 	}
 } GRID_FINISH {
-	if (in->dim->prod()==0) out->send(r->dim->prod(),(T *)*r);
+	if (in.dim.prod()==0) out->send(r->dim->prod(),(T *)*r);
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
 \end class {install("#join",2,1); add_creator("@join");}
@@ -182,7 +182,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,in->dim);
 	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
-	long m = in->dim->prod(in->dim->n-1);
+	long m = in.dim.prod(in->dim->n-1);
 	T *foo[m];
 	T  bar[m];
 	if (m) for (; n; n-=m,data+=m) {
@@ -224,9 +224,9 @@ GRID_INLET(0) {
 	if (d1==d2) {
 		out=new GridOutlet(this,0,Dim(in->dim->n,v), in->nt);
 	} else {
-		nd = in->dim->prod(1+max(d1,d2));
+		nd = in.dim.prod(1+max(d1,d2));
 		nc = in->dim->v[max(d1,d2)];
-		nb = nc&&nd ? in->dim->prod(1+min(d1,d2))/nc/nd : 0;
+		nb = nc&&nd ? in.dim.prod(1+min(d1,d2))/nc/nd : 0;
 		na = in->dim->v[min(d1,d2)];
 		out=new GridOutlet(this,0,Dim(in->dim->n,v), in->nt);
 		in->set_chunk(min(d1,d2));
@@ -268,7 +268,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,Dim(in->dim->n,in->dim->v), in->nt);
 	in->set_chunk(d);
 } GRID_FLOW {
-	long f1=in->dim->prod(d), f2=in->dim->prod(d+1);
+	long f1=in.dim.prod(d), f2=in.dim.prod(d+1);
 	while (n) {
 		long hf1=f1/2;
 		T *data2 = data+f1-f2;
@@ -436,7 +436,7 @@ template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *
 }
 
 GRID_INLET(0) {
-	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
+	if (in->dim->n<2 || in.dim.prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
 	in->set_chunk(0);
 } GRID_FLOW {
 	int sy=in->dim->v[0], sx=in->dim->v[1];
@@ -491,7 +491,7 @@ GRID_INLET(0) {
 	in->set_chunk(in->dim->n-1);
 	out=new GridOutlet(this,0,Dim(n,v),in->nt);
 } GRID_FLOW {
-	int m = in->dim->prod(in->dim->n-1);
+	int m = in.dim.prod(in->dim->n-1);
 	for (; n; n-=m,data+=m) {
 		op_mul->map(m-1,data,(T)z);
 		op_div->map(m-1,data,data[m-1]);
@@ -722,7 +722,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
 	in->set_chunk(1);
 } GRID_FLOW {
-	int rowsize = in->dim->prod(1);
+	int rowsize = in.dim.prod(1);
 	T buf[rowsize*scalex];
 	int chans = in->dim->get(2);
 	#define Z(z) buf[p+z]=data[i+z]
@@ -779,7 +779,7 @@ GRID_INLET(0) {
 	// i don't remember why two rows instead of just one.
 	temp=new Grid(Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
 } GRID_FLOW {
-	int rowsize = in->dim->prod(1);
+	int rowsize = in.dim.prod(1);
 	int rowsize2 = temp->dim->prod(1);
 	T *buf = (T *)*temp; //!@#$ maybe should be something else than T ?
 	int xinc = in->dim->get(2)*scalex;
@@ -957,7 +957,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int nl = lines->dim->get(0);
 	Line *ld = (Line *)(int32 *)*lines;
-	int f = in->dim->prod(1);
+	int f = in.dim.prod(1);
 	int y = dex/f;
 	int cn = color->dim->prod();
 	T *cd = (T *)*color2;
@@ -1112,7 +1112,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(1);
 } GRID_FLOW {
-	int f = in->dim->prod(1);
+	int f = in.dim.prod(1);
 	int y = dex/f;
 	if (position->nt != int32_e) RAISE("position has to be int32");
 	int py = ((int32*)*position)[0], rsy = image->dim->v[0];
@@ -1173,7 +1173,7 @@ GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	long m = points->dim->v[1];
-	long cn = in->dim->prod(-color->dim->n); /* size of color (RGB=3, greyscale=1, ...) */
+	long cn = in.dim.prod(-color->dim->n); /* size of color (RGB=3, greyscale=1, ...) */
 	int32 *pdata = (int32 *)points->data;
 	T *cdata = (T *)color->data;
 	for (long i=0; i<n; i++) {
@@ -1366,15 +1366,15 @@ GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	in->set_chunk(w);
-	int sxc = in->dim->prod(w);
+	int sxc = in.dim.prod(w);
 	r2 = new Grid(Dim(sxc),in->nt);
 	T *rdata = (T *)*r2;
 	size_t rn = r->dim->prod();
 	for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
 } GRID_FLOW {
 	int w = which_dim; if (w<0) w+=in->dim->n;
-	int sc = in->dim->prod(w+1);
-	int sxc = in->dim->prod(w);
+	int sc = in.dim.prod(w+1);
+	int sxc = in.dim.prod(w);
 	T *rdata = (T *)*r2;
 	for (;n;n-=sxc, data+=sxc) {
 		T tada[sxc+sc]; CLEAR(tada,sc);

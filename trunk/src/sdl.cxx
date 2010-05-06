@@ -37,7 +37,7 @@ void FormatSDL_call(FormatSDL *self);
 static int in_use = 0;
 static bool full_screen = false;
 static int mousex,mousey,mousem;
-static P<Dim> dim;
+static Dim dim;
 static t_class *sdl_global_class; /* this pointer is also a dummy pd object */
 
 SDL_Surface *screen;
@@ -90,7 +90,7 @@ static void report_pointer () {
 }
 
 void resize_window (int sx, int sy) {
-	dim = new Dim(sy,sx,3);
+	dim = Dim(sy,sx,3);
 	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
 	if (!screen) RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
 }
@@ -192,7 +192,7 @@ GRID_INLET(0) {
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 } GRID_FLOW {
 	int bypl = screen->pitch;
-	int sxc = in->dim->prod(1);
+	int sxc = in.dim.prod(1);
 	int sx = in->dim->get(1);
 	int y = dex/sxc;
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
