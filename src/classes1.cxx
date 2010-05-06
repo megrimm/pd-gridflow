@@ -566,9 +566,9 @@ GRID_INLET(0) {
 			op->name,op->size,in.dim.to_s(),r->dim.to_s());
 	out=new GridOutlet(this,0,in.dim,in.nt);
 	//if (out->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",out->inlets[0]->dim.to_s());
-	if (!out->buf) out->create_buf(); /* force it now (hack) */
+	if (out->fresh) out->create_buf(); /* force it now (hack) */
 } GRID_FLOW {
-	long moton = out->buf->dim.prod();
+	long moton = out->buf.dim.prod();
 	T *rdata = (T *)*r;
 	long loop = r->dim.prod();
 	while (n) {

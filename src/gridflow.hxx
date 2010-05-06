@@ -347,12 +347,7 @@ struct Dim {
 		if(c) COPY(v+a->n+b->n,c->v,c->n);
 	}
 	Card count() {return n;}
-	//Card get     (Card i) const {return v[i];}
 	Card operator[](Card i) const {return v[i];}
-	//const Dim & operator *() const {return *this;}
-	//      Dim & operator *()       {return *this;}
-	//const Dim *operator ->() const {return this;}
-	//      Dim *operator ->()       {return this;}
 /*	Dim *range(Card i, Card j) {return new Dim(...);} */
 	Card prod(Card start=0, Card end=-1) const {
 		if (start<0) start+=n;
@@ -580,7 +575,7 @@ struct Grid : CObject {
 	NumberTypeE nt;
 	void *data;
 	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
-	Grid(const Dim &dim, NumberTypeE nt, bool clear=false) {
+	Grid(const Dim &dim=Dim(), NumberTypeE nt=int32_e, bool clear=false) {
 		state=1; 
 		init(dim,nt);
 		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
@@ -604,8 +599,7 @@ EACH_NUMBER_TYPE(FOO)
 		return foo;
 	}
 	~Grid() {if (state==1 && data) free(data);}
-private:
-	void init(const Dim &dim, NumberTypeE nt) {
+	void init(const Dim &dim=Dim(), NumberTypeE nt=int32_e) {
 		this->dim = dim;
 		this->nt = nt;
 		data = 0;
@@ -776,8 +770,9 @@ struct GridOutlet : CObject {
 	#undef FOO
 	template <class T> void send_2(long n, T *data);
 	void flush(); // goes with send();
-	PtrGrid buf; // temporary buffer
+	Grid buf; // temporary buffer
 	long bufi; // number of bytes used in the buffer
+	bool fresh; /* 0 = buf was inited */
 	template <class T> void send_direct(long n, T *data);
 	void finish();
 	void create_buf();

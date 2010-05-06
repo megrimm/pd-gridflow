@@ -193,7 +193,7 @@ void GridInlet::from_grid(Grid *g) {
 /* **************** GridOutlet ************************************ */
 
 GridOutlet::GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_) {
-	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; buf=0; sender=this;
+	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; sender=this; fresh=true;
 	t_atom a[1];
 	SETGRIDOUT(a,this);
 	if (parent) {
@@ -209,13 +209,14 @@ void GridOutlet::create_buf () {
 	// biggest packet size divisible by lcm_factor
 	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
 	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
-	buf=new Grid(Dim(v),nt);
+	buf.init(Dim(v),nt);
 #ifdef TRACEBUFS
 	std::ostringstream text;
 	oprintf(text,"GridOutlet: %20s buf for sending to  ",buf->dim->to_s());
 	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
 	post("%s",text.str().data());
 #endif
+	fresh=false;
 }
 
 // send modifies dex; send_direct doesn't
@@ -230,10 +231,10 @@ void GridOutlet::send_direct(long n, T *data) {
 }
 
 void GridOutlet::flush() {
-	if (!buf) return;
+	if (fresh) return;
 	if (!bufi) return;
-#define FOO(T) send_direct(bufi,(T *)*buf);
-	TYPESWITCH(buf->nt,FOO,)
+#define FOO(T) send_direct(bufi,(T *)buf);
+	TYPESWITCH(buf.nt,FOO,)
 #undef FOO
 	bufi = 0;
 }
@@ -264,10 +265,10 @@ void GridOutlet::send_2(long n, T *data) {
 			send_direct(n,data);
 		} else {
 			//post("send_indirect %d",n);
-			if (!buf) create_buf();
-			int32 v = buf->dim.prod();
+			if (fresh) create_buf();
+			int32 v = buf.dim.prod();
 			if (bufi + n > v) flush();
-			COPY((T *)*buf+bufi,data,n);
+			COPY((T *)buf+bufi,data,n);
 			bufi += n;
 		}
 		if (dex==dim.prod()) finish();
