@@ -215,7 +215,7 @@ struct GridHeader {
 		dim = Dim(head.dimn,dimv);
 	}
 	GridOutlet out(this,0,dim,nt);
-	long nn = dim->prod();
+	long nn = dim.prod();
 	
 #define FOO(T) {T data[nn]; size_t nnn = fread(data,1,nn*sizeof(T),f); \
 	if (nnn<nn*sizeof(T)) pd_error(bself,"can't read grid data (body): %s", feof(f) ? "end of file" : strerror(ferror(f))); \
@@ -236,11 +236,11 @@ GRID_INLET(0) {
 		default: RAISE("can't write that type of number to a file");
 		}
 		head.reserved = 0;
-		head.dimn = in->dim->n;
-		size_t sz = 4*in->dim->n;
+		head.dimn = in->dim.n;
+		size_t sz = 4*in->dim.n;
 #define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
-		if (fwrite(&head,1,8,f      )< 8) FRAISE(fwrite,f);
-		if (fwrite(in->dim->v,1,sz,f)<sz) FRAISE(fwrite,f);
+		if (fwrite(&head,1,8,f     )< 8) FRAISE(fwrite,f);
+		if (fwrite(in->dim.v,1,sz,f)<sz) FRAISE(fwrite,f);
 	}
 } GRID_FLOW {
 #define FOO(T) {T data2[n]; for(int i=0; i<n; i++) data2[i]=(T)data[i]; \
@@ -319,7 +319,7 @@ TYPESWITCH(in->nt,FOO,)
 	uint8 row[sx*3];
 	switch (b) {
 		case '2': case '3': {
-			size_t n = out.dim->prod();
+			size_t n = out.dim.prod();
 			int32 x;
 			for (size_t i=0; i<n; i++) if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);
 		} break;
@@ -329,15 +329,15 @@ TYPESWITCH(in->nt,FOO,)
 	}
 }
 GRID_INLET(0) {
-	if (in->dim->n!=3) RAISE("need 3 dimensions");
-	int sc = in->dim->v[2];
+	if (in.dim.n!=3) RAISE("need 3 dimensions");
+	int sc = in.dim[2];
 	if (sc!=1 && sc!=3) RAISE("need 1 or 3 channels");
 	fprintf(f, sc==3 ? "P6\n" : "P5\n");
-	fprintf(f,"%d %d 255\n",in->dim->v[1],in->dim->v[0]);
-	in->set_chunk(1);
+	fprintf(f,"%d %d 255\n",in.dim[1],in.dim[0]);
+	in.set_chunk(1);
 } GRID_FLOW {
-	int sx = in->dim->v[1];
-	int sc = in->dim->v[2];
+	int sx = in.dim[1];
+	int sc = in.dim[2];
 	size_t sxc = sx*sc;
 	uint8 row[sxc];
 	while (n) {

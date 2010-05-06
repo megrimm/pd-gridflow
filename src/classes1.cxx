@@ -64,10 +64,10 @@ public: template <class T>
 
 Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
 
-static void   expect_dim_dim_list    (const Dim &d) {if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());}
-//static void expect_min_one_dim     (const Dim &d) {if (d->n<1 ) RAISE("minimum 1 dimension");}
-static void   expect_max_one_dim     (const Dim &d) {if (d->n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
-//static void expect_exactly_one_dim (const Dim &d) {if (d->n!=1) RAISE("expecting Dim[n], got %s",d->to_s());}
+static void   expect_dim_dim_list    (const Dim &d) {if (d.n!=1) RAISE("dimension list should be Dim[n], not %s",d.to_s());}
+//static void expect_min_one_dim     (const Dim &d) {if (d.n<1 ) RAISE("minimum 1 dimension");}
+static void   expect_max_one_dim     (const Dim &d) {if (d.n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
+//static void expect_exactly_one_dim (const Dim &d) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
 
 //****************************************************************
 \class GridCast : FObject {
@@ -129,7 +129,7 @@ GridHandler *stromgol; // remove this asap
 GRID_INLET(0) {} GRID_FLOW {process(n,data);} GRID_END
 GRID_INPUT(1,dim_grid) {
 	Dim d = dim_grid->to_dim();
-	if (!d->prod()) RAISE("target grid size must not be zero");
+	if (!d.prod()) RAISE("target grid size must not be zero");
 	dim = d;
 	per_message=false;
 } GRID_END
@@ -729,17 +729,17 @@ GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
 	Dim &a=in.dim, &b=r->dim;
-	if (a->n<1) RAISE("a: minimum 1 dimension");
-	if (b->n<1) RAISE("b: minimum 1 dimension");
+	if (a.n<1) RAISE("a: minimum 1 dimension");
+	if (b.n<1) RAISE("b: minimum 1 dimension");
 	if (seed->dim.n != 0) RAISE("seed must be a scalar");
-	int n = a->n+b->n-2;
-	SAME_DIM(1,a,a->n-1,b,0);
+	int n = a.n+b.n-2;
+	SAME_DIM(1,a,a.n-1,b,0);
 	int32 v[n];
-	COPY(v,a->v,a->n-1);
-	COPY(v+a->n-1,b->v+1,b->n-1);
+	COPY(v,a.v,a.n-1);
+	COPY(v+a.n-1,b.v+1,b.n-1);
 	out=new GridOutlet(this,0,Dim(n,v),in.nt);
-	in.set_chunk(a->n-1);
-	long sjk=r->dim.prod(), sj=in.dim.prod(a->n-1), sk=sjk/sj;
+	in.set_chunk(a.n-1);
+	long sjk=r->dim.prod(), sj=in.dim.prod(a.n-1), sk=sjk/sj;
 	long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk);
 	T *rdata = (T *)*r;
 	r2=new Grid(Dim(chunk*sjk),r->nt);
@@ -830,10 +830,10 @@ GRID_INPUT(1,r) {} GRID_END
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	Dim &a = in.dim, &b = r->dim;
-	int n = a->n+b->n;
+	int n = a.n+b.n;
 	int32 v[n];
-	COPY(v,a->v,a->n);
-	COPY(v+a->n,b->v,b->n);
+	COPY(v,a.v,a.n);
+	COPY(v+a.n,b.v,b.n);
 	out=new GridOutlet(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
 	long b_prod = r->dim.prod();
@@ -915,7 +915,7 @@ void GridFor::trigger (T bogus) {
 	Dim d;
 	if (from->dim.n==0) {d = Dim(*nn);}
 	else {nn[n]=n;       d = Dim(n+1,nn);}
-	int total = d->prod();
+	int total = d.prod();
 	out=new GridOutlet(this,0,d,from->nt);
 	if (total==0) return;
 	int k=0;
@@ -1016,7 +1016,7 @@ GRID_INLET(0) {
 
 GRID_INPUT(1,dim_grid) {
 	Dim d = dim_grid->to_dim();
-//	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
+//	if (!d.prod()) RAISE("target grid size must not be zero"); else post("d.prod=%d",d.prod());
 	dim = d;
 } GRID_END
 

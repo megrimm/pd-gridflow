@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "gridflow.hxx.fcs"
-static void expect_max_one_dim (const Dim &d) {if (d->n>1) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
+static void expect_max_one_dim (const Dim &d) {if (d.n>1) RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
@@ -107,20 +107,20 @@ GRID_INLET(0) {
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	Dim &d = in.dim;
-	if (d->n != r->dim.n) RAISE("wrong number of dimensions");
+	if (d.n != r->dim.n) RAISE("wrong number of dimensions");
 	int w = which_dim;
-	if (w<0) w+=d->n;
-	if (w<0 || w>=d->n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,d->n);
-	int32 v[d->n];
-	for (int i=0; i<d->n; i++) {
-		v[i] = d->get(i);
+	if (w<0) w+=d.n;
+	if (w<0 || w>=d.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,d.n);
+	int32 v[d.n];
+	for (int i=0; i<d.n; i++) {
+		v[i] = d[i];
 		if (i==w) {
 			v[i]+=r->dim[i];
 		} else {
 			if (v[i]!=r->dim[i]) RAISE("dimensions mismatch: dim #%i, left is %d, right is %d",i,v[i],r->dim[i]);
 		}
 	}
-	out=new GridOutlet(this,0,Dim(d->n,v),in.nt);
+	out=new GridOutlet(this,0,Dim(d.n,v),in.nt);
 	in.set_chunk(w);
 } GRID_FLOW {
 	int w = which_dim;
@@ -519,9 +519,9 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	int n = in.dim.n;
 	if (n!=3) RAISE("only 3 dims supported for now");
-	if (diml->n != n) RAISE("diml mismatch");
-	if (dimr->n != n) RAISE("dimr mismatch");
-	if (diml->v[2] || dimr->v[2]) RAISE("can't augment channels (todo)");
+	if (diml.n != n) RAISE("diml mismatch");
+	if (dimr.n != n) RAISE("dimr mismatch");
+	if (diml[2] || dimr[2]) RAISE("can't augment channels (todo)");
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i]=in.dim[i]+diml[i]+dimr[i];
 	in.set_chunk(0);
@@ -533,13 +533,13 @@ GRID_INLET(0) {
 	int sxc = sx*sc; int zxc = zx*zc;
 	int32 duh[zxc];
 	for (int x=0; x<zxc; x++) duh[x]=0;
-	for (int y=0; y<diml->v[0]; y++) out->send(zxc,duh);
+	for (int y=0; y<diml[0]; y++) out->send(zxc,duh);
 	for (int y=0; y<sy; y++) {
 		out->send(diml[1]*sc,duh);
 		out->send(sxc,data+y*sxc);
 		out->send(dimr[1]*sc,duh);
 	}	
-	for (int i=0; i<dimr->v[0]; i++) out->send(zxc,duh);
+	for (int i=0; i<dimr[0]; i++) out->send(zxc,duh);
 } GRID_END
 
 GRID_INPUT(1,diml_grid) {diml = diml_grid->to_dim();} GRID_END
@@ -547,16 +547,15 @@ GRID_INPUT(2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
 
 \end class {install("#border",3,1);}
 
-static void expect_picture (const Dim &d) {if (d->n!=3) RAISE("(height,width,chans) dimensions please");}
-static void expect_rgb_picture  (const Dim &d) {expect_picture(d); if (d->get(2)!=3) RAISE("(red,green,blue) channels please");}
-static void expect_rgba_picture (const Dim &d) {expect_picture(d); if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");}
+static void expect_picture (const Dim &d) {if (d.n!=3) RAISE("(height,width,chans) dimensions please");}
+static void expect_rgb_picture  (const Dim &d) {expect_picture(d); if (d[2]!=3) RAISE("(red,green,blue) channels please");}
+static void expect_rgba_picture (const Dim &d) {expect_picture(d); if (d[2]!=4) RAISE("(red,green,blue,alpha) channels please");}
 
 //****************************************************************
 //{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }
 
 static void expect_convolution_matrix (const Dim &d) {
-	if (d->n != 2) RAISE("only exactly two dimensions allowed for now (got %d)",
-		d->n);
+	if (d.n!=2) RAISE("only exactly two dimensions allowed for now (got %d)",d.n);
 }
 
 // entry in a compiled convolution kernel
@@ -605,8 +604,8 @@ template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x)
 
 template <class T> void GridConvolve::make_plan (T bogus) {
 	Dim &db = b->dim;
-	long dby = db->get(0);
-	long dbx = db->get(1);
+	long dby = db[0];
+	long dbx = db[1];
 	if (plan) delete[] plan;
 	plan = new PlanEntry[dbx*dby];
 	long i=0;
@@ -636,19 +635,19 @@ GRID_INLET(0) {
 	SAME_TYPE(in,seed);
 	Dim &da=in.dim, &db=b->dim;
 	if (!seed) RAISE("seed missing");
-	if (db->n != 2) RAISE("right grid must have two dimensions");
-	if (da->n < 2) RAISE("left grid has less than two dimensions");
+	if (db.n != 2) RAISE("right grid must have two dimensions");
+	if (da.n < 2) RAISE("left grid has less than two dimensions");
 	if (seed->dim.n != 0) RAISE("seed must be scalar");
-	if (da->get(0) < db->get(0)) RAISE("grid too small (y): %d < %d", da->get(0), db->get(0));
-	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d", da->get(1), db->get(1));
-	margy = (db->get(0)-1)/2;
-	margx = (db->get(1)-1)/2;
+	if (da[0] < db[0]) RAISE("grid too small (y): %d < %d", da[0], db[0]);
+	if (da[1] < db[1]) RAISE("grid too small (x): %d < %d", da[1], db[1]);
+	margy = (db[0]-1)/2;
+	margx = (db[1]-1)/2;
 	//if (a) post("for %p, a->dim=%s da=%s",this,a->dim.to_s(),da->to_s());
 	if (!a || !a->dim.equal(da)) a=new Grid(da,in.nt); // with this condition it's 2% faster on Linux but takes more RAM.
 	//a=new Grid(da,in.nt); // with this condition it's 2% faster but takes more RAM.
-	int v[da->n]; COPY(v,da->v,da->n);
-	if (!wrap) {v[0]-=db->v[0]-1; v[1]-=db->v[1]-1;}
-	out=new GridOutlet(this,0,Dim(da->n,v),in.nt);
+	int v[da.n]; COPY(v,da.v,da.n);
+	if (!wrap) {v[0]-=db[0]-1; v[1]-=db[1]-1;}
+	out=new GridOutlet(this,0,Dim(da.n,v),in.nt);
 } GRID_FLOW {
 	COPY((T *)*a+dex, data, n);
 } GRID_FINISH {
@@ -717,7 +716,7 @@ static void expect_scale_factor (const Dim &dim) {
 GRID_INLET(0) {
 	Dim &a = in.dim;
 	expect_picture(a);
-	out=new GridOutlet(this,0,Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in.nt);
+	out=new GridOutlet(this,0,Dim(a[0]*scaley,a[1]*scalex,a[2]),in.nt);
 	in.set_chunk(1);
 } GRID_FLOW {
 	int rowsize = in.dim.prod(1);
@@ -771,8 +770,8 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 
 GRID_INLET(0) {
 	Dim &a = in.dim;
-	if (a->n!=3) RAISE("(height,width,chans) please");
-	out=new GridOutlet(this,0,Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in.nt);
+	if (a.n!=3) RAISE("(height,width,chans) please");
+	out=new GridOutlet(this,0,Dim(a[0]/scaley,a[1]/scalex,a[2]),in.nt);
 	in.set_chunk(1);
 	// i don't remember why two rows instead of just one.
 	temp=new Grid(Dim(2,in.dim[1]/scalex,in.dim[2]),in.nt);
@@ -844,8 +843,8 @@ GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	Dim &a = in.dim;
 	expect_rgba_picture(a);
-	if (a->get(1)!=r->dim[1]) RAISE("same width please");
-	if (a->get(0)!=r->dim[0]) RAISE("same height please");
+	if (a[1]!=r->dim[1]) RAISE("same width please");
+	if (a[0]!=r->dim[0]) RAISE("same height please");
 	in.set_chunk(2);
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
@@ -870,7 +869,7 @@ GRID_INPUT(1,r) {} GRID_END
 // pad1,pad2 only are there for 32-byte alignment
 struct Line {int32 y1,x1,y2,x2,x,m,ox,pad2;};
 
-static void expect_polygon (const Dim &d) {if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");}
+static void expect_polygon (const Dim &d) {if (d.n!=2 || d[1]!=2) RAISE("expecting Dim[n,2] polygon");}
 
 enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
@@ -1029,8 +1028,8 @@ GRID_INPUT(2,polygon) {init_lines();} GRID_END
 
 //****************************************************************
 static void expect_position(const Dim &d) {
-	if (d->n!=1) RAISE("position should have 1 dimension, not %d", d->n);
-	if (d->v[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d->v[0]);
+	if (d.n!=1) RAISE("position should have 1 dimension, not %d", d.n);
+	if (d[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d[0]);
 }
 
 \class DrawImage : FObject {
@@ -1290,7 +1289,7 @@ GRID_INLET(0) {
 \end class {install("#rotatificator",2,1);}
 
 static void expect_min_one_dim (const Dim &d) {
-	if (d->n<1) RAISE("expecting at least one dimension, got %s",d->to_s());}
+	if (d.n<1) RAISE("expecting at least one dimension, got %s",d.to_s());}
 
 #define OP(x) op_dict[string(#x)]
 \class GridClusterAvg : FObject {
@@ -1325,7 +1324,7 @@ GRID_INLET(0) {
 	COPY(v,r->dim.v,r->dim.n-1);
 	v[r->dim.n-1]=1;
 	Dim t = Dim(r->dim.n,v);
-	if (!t->equal(in.dim)) RAISE("left %s must be equal to right %s except last dimension should be 1",in.dim.to_s(),r->dim.to_s());
+	if (!t.equal(in.dim)) RAISE("left %s must be equal to right %s except last dimension should be 1",in.dim.to_s(),r->dim.to_s());
 	in.set_chunk(0);
 	int32 w[2] = {numClusters,r->dim[r->dim.n-1]};
 	sums   = new Grid(Dim(2,w),r->nt,  true);
