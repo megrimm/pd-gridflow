@@ -211,7 +211,7 @@ struct Frame {uint8 *p; size_t n;};
 		t_atom a[2];
 		//SETFLOAT(a+0,cap.minheight); SETFLOAT(a+1,cap.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
 		//SETFLOAT(a+0,cap.maxheight); SETFLOAT(a+1,cap.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),2,a);
+		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); outlet_anything(outlets[0],gensym("size"),2,a);
 		SETSYMBOL(a,gensym("mmap")); outlet_anything(outlets[0],gensym("transfer"),1,a);
 	}
 }
@@ -267,8 +267,8 @@ void FormatV4L2::frame_ask () {
 	//if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	//vmmap.frame = queue[queuesize++] = next_frame;
 	//vmmap.format = vp.palette;
-	//vmmap.width  = dim->get(1);
-	//vmmap.height = dim->get(0);
+	//vmmap.width  = dim[1];
+	//vmmap.height = dim[0];
 	struct v4l2_buffer vbuf;
 	memset(&vbuf, 0, sizeof(buf)); //CLEAR(vbuf);
 	vbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -285,9 +285,9 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
 	/* picture is converted here. */
-	int sy = dim->get(0);
-	int sx = dim->get(1);
-	int bs = dim->prod(1); if (downscale) bs/=2;
+	int sy = dim[0];
+	int sx = dim[1];
+	int bs = dim.prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
 	int palette = fmt.fmt.pix.pixelformat;
@@ -481,7 +481,7 @@ GRID_INLET(0) {
 		bit_packing4 = new BitPacking(is_le(),3,4,masks);
 	} // else RAISE("huh?");
 	this->colorspace=gensym(c.data());
-	dim = Dim(dim->v[0],dim->v[1],c=="y"?1:3);
+	dim = Dim(dim[0],dim[1],c=="y"?1:3);
 }
 
 \def int auto_gain()        {return v4l2_get_control(fd,V4L2_CID_AUTOGAIN);}

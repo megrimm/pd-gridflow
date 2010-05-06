@@ -71,9 +71,9 @@ const char *oserr_find(long err)
 		SetMovieBox(movie, &r);
 		dim = Dim(r.bottom-r.top, r.right-r.left, 4);
 		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
-		buffer = new uint8[dim->prod()];
-		buf2 = new uint8[dim->prod()];
-		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim->prod(1));
+		buffer = new uint8[dim.prod()];
+		buf2 = new uint8[dim.prod()];
+		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
 		if (err) ERR("QTNewGWorldFromPtr");
 		_0_colorspace(0,0,gensym("rgba"));
 		return;
@@ -151,7 +151,7 @@ const char *oserr_find(long err)
 			out.send(bs,b2);
 		}
 	} else if (cs=="rgb") {
-		int n = dim->prod()/3;
+		int n = dim.prod()/3;
 		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
 			buf2[j+0] = buf[i+0];
 			buf2[j+1] = buf[i+1];
@@ -159,9 +159,9 @@ const char *oserr_find(long err)
 		}*/
 		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 		bit_packing3->unpack(n,buf,buf2);
-		out.send(dim->prod(),buf2);
+		out.send(dim.prod(),buf2);
 	} else if (cs=="rgba") { // does this really work on PPC ?
-		int n = dim->prod()/4;
+		int n = dim.prod()/4;
 		if (is_le()) {
 			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
 
@@ -169,7 +169,7 @@ const char *oserr_find(long err)
 			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] << 8) | 0x000000ff;
 		}
 		
-		out.send(dim->prod(),buf2);
+		out.send(dim.prod(),buf2);
 	} else
 		RAISE("colorspace problem");
 
@@ -183,9 +183,9 @@ const char *oserr_find(long err)
 GRID_INLET(0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
-	if (in->dim->n != 3)
+	if (in.dim.n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
+	if (in.dim.get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_chunk(0);
 } GRID_FLOW {

@@ -43,8 +43,8 @@ extern "C" {
 };
 
 GRID_INLET(0) {
-	if (in->dim->n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
-	int sc = in->dim->get(2);
+	if (in.dim.n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	int sc = in.dim[2];
 	if (sc<1 || sc>4)  RAISE("expecting 1 to 4 channels (got %d)",sc);
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -60,13 +60,13 @@ GRID_INLET(0) {
 		PNG_COLOR_TYPE_RGB,
 		PNG_COLOR_TYPE_RGBA,
 	};
-	int sc = in->dim->v[2];
-	png_set_IHDR(png,info,in->dim->v[1],in->dim->v[0],8, color_type[sc-1],
+	int sc = in.dim[2];
+	png_set_IHDR(png,info,in.dim[1],in.dim[0],8, color_type[sc-1],
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png,info);
 	png_set_packing(png);
 // this would have been the GRID_FLOW section
-	int rowsize = in->dim->get(1)*sc;
+	int rowsize = in.dim[1]*sc;
 	uint8 row[rowsize];
 	while (n) {
 		for (int i=0; i<rowsize; i++) row[i]=data[i];

@@ -154,21 +154,21 @@ static std::map<string,string> fourccs;
 	// first frame: have to do setup
 	dim = Dim(height,width,3);
 	gotdim = true;
-	quicktime_set_video(anim,1,dim->get(1),dim->get(0),m_framerate,m_codec);
+	quicktime_set_video(anim,1,dim[1],dim[0],m_framerate,m_codec);
 	quicktime_set_cmodel(anim,colorspace);
 }
 
 GRID_INLET(0) {
-	if (in->dim->n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)!=channels) RAISE("expecting %d channels (got %d)",channels,in->dim->get(2));
+	if (in.dim.n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2]!=channels) RAISE("expecting %d channels (got %d)",channels,in.dim[2]);
 	in->set_chunk(0);
 	if (gotdim) {
-		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
+		if (!dim.equal(in.dim)) RAISE("all frames should be same size");
 	} else {
 		// first frame: have to do setup
-		dim = in->dim;
+		dim = in.dim;
 		// this is a duplicate: see _0_size. what should I do with that?
-		quicktime_set_video(anim,1,dim->get(1),dim->get(0),m_framerate,m_codec);
+		quicktime_set_video(anim,1,dim[1],dim[0],m_framerate,m_codec);
 		quicktime_set_cmodel(anim,colorspace);
 		quicktime_set_depth(anim,8*channels,track);
 	}

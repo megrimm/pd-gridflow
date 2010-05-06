@@ -184,16 +184,16 @@ void FormatSDL::call() {HandleEvent(); clock_delay(cloque,20);}
 void FormatSDL_call(FormatSDL *self) {self->call();}
 
 GRID_INLET(0) {
-	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3) RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
-	int sx = in->dim->get(1), osx = dim->get(1);
-	int sy = in->dim->get(0), osy = dim->get(0);
+	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2] != 3) RAISE("expecting 3 channels: red,green,blue (got %d)",in.dim[2]);
+	int sx = in.dim[1], osx = dim[1];
+	int sy = in.dim[0], osy = dim[0];
 	in->set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 } GRID_FLOW {
 	int bypl = screen->pitch;
 	int sxc = in.dim.prod(1);
-	int sx = in->dim->get(1);
+	int sx = in.dim[1];
 	int y = dex/sxc;
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
@@ -202,7 +202,7 @@ GRID_INLET(0) {
 	}
 	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 } GRID_FINISH {
-	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
+	SDL_UpdateRect(screen,0,0,in.dim[1],in.dim[0]);
 } GRID_END
 
 \def 0 setcursor  (int shape) {SDL_ShowCursor(SDL_ENABLE);}

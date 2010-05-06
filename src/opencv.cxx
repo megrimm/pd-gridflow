@@ -120,37 +120,37 @@ void set_atom (t_atom *a, CvTermCriteria &tc) {
 
 CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 	int channels=1;
-	int dims=g->dim->n;
+	int dims=g->dim.n;
 	//post("mode=%d",(int)mode);
-	if (mode==cv_mode_channels && g->dim->n==0) RAISE("CV: channels dimension required for 'mode channels'");
-	if ((mode==cv_mode_auto && g->dim->n>=3) || mode==cv_mode_channels) channels=g->dim->v[--dims];
+	if (mode==cv_mode_channels && g->dim.n==0) RAISE("CV: channels dimension required for 'mode channels'");
+	if ((mode==cv_mode_auto && g->dim.n>=3) || mode==cv_mode_channels) channels=g->dim[--dims];
 	if (channels>64) RAISE("CV: too many channels. max 64, got %d",channels);
 	//post("channels=%d dims=%d nt=%d",channels,dims,g->nt);
 	//post("bits=%d",number_type_table[g->nt].size);
-	//if (dims==2) return cvMat(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt),g->data);
+	//if (dims==2) return cvMat(g->dim[0],g->dim[1],cv_eltype(g->nt),g->data);
 	if (reqdims>=0 && reqdims!=dims) RAISE("CV: wrong number of dimensions. expected %d, got %d", reqdims, dims);
 	if (dims==2) {
-		CvMat *a = cvCreateMatHeader(g->dim->v[0],g->dim->v[1],CV_MAKETYPE(cv_eltype(g->nt),channels));
-		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
+		CvMat *a = cvCreateMatHeader(g->dim[0],g->dim[1],CV_MAKETYPE(cv_eltype(g->nt),channels));
+		cvSetData(a,g->data,g->dim.prod(1)*(number_type_table[g->nt].size/8));
 		return a;
 	}
 	if (dims==1) {
-		CvMat *a = cvCreateMatHeader(g->dim->v[0],           1,CV_MAKETYPE(cv_eltype(g->nt),channels));
-		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
+		CvMat *a = cvCreateMatHeader(g->dim[0],           1,CV_MAKETYPE(cv_eltype(g->nt),channels));
+		cvSetData(a,g->data,g->dim.prod(1)*(number_type_table[g->nt].size/8));
 		return a;
 	}
-	RAISE("unsupported number of dimensions (got %d)",g->dim->n);
+	RAISE("unsupported number of dimensions (got %d)",g->dim.n);
 	//return 0;
 }
 
 IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	Dim &d = g->dim;
 	if (d->n!=3) RAISE("expected 3 dimensions, got %s",d->to_s());
-	int channels=g->dim->v[2];
+	int channels=g->dim[2];
 	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
 	CvSize size = {d->v[1],d->v[0]};
 	IplImage *a = cvCreateImageHeader(size,ipl_eltype(g->nt),channels);
-	cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
+	cvSetData(a,g->data,g->dim.prod(1)*(number_type_table[g->nt].size/8));
 	return a;
 }
 
@@ -215,11 +215,11 @@ static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
 GRID_INLET(0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
-	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
+	if (!in->dim.equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in.dim.to_s(),r->dim.to_s());
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
-	PtrGrid o = new Grid(in->dim,in->nt);
+	PtrGrid l = new Grid(in.dim,(T *)data);
+	PtrGrid o = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
 	CvArr *c = cvGrid(o,mode);
@@ -227,8 +227,8 @@ GRID_INLET(0) {
 	cvRelease(&a);
 	cvRelease(&b);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in->dim,in->nt);
-	out->send(o->dim->prod(),(T *)o->data);
+	out = new GridOutlet(this,0,in.dim,in.nt);
+	out->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 GRID_INPUT2(1,r) {} GRID_END
 \end class {}
@@ -256,21 +256,21 @@ GRID_INPUT2(1,r) {} GRID_END
 	\grin 0
 };
 GRID_INLET(0) {
-	if (in->dim->n!=2) RAISE("should have 2 dimensions");
-	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
+	if (in.dim.n!=2) RAISE("should have 2 dimensions");
+	if (in.dim[0] != in.dim[1]) RAISE("matrix should be square");
 	in->set_chunk(0);
 } GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
-	PtrGrid l = new Grid(in->dim,(T *)data);
-	PtrGrid o = new Grid(in->dim,in->nt);
+	PtrGrid l = new Grid(in.dim,(T *)data);
+	PtrGrid o = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *c = cvGrid(o,mode);
 	//post("a=%p, b=%p", a, b);
 	cvInvert(a,c);
 	cvRelease(&a);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in->dim,in->nt);
-	out->send(o->dim->prod(),(T *)o->data);
+	out = new GridOutlet(this,0,in.dim,in.nt);
+	out->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 \end class {install("cv/#Invert",1,1);}
 
@@ -279,14 +279,14 @@ GRID_INLET(0) {
 	\constructor () {}
 };
 GRID_INLET(0) {
-	if (in->dim->n!=2) RAISE("should have 2 dimensions");
-	if (in->dim->v[0] != in->dim->v[1]) RAISE("matrix should be square");
+	if (in.dim.n!=2) RAISE("should have 2 dimensions");
+	if (in.dim[0] != in.dim[1]) RAISE("matrix should be square");
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
-	PtrGrid o0 = new Grid(in->dim,in->nt);
-	PtrGrid o1 = new Grid(in->dim,in->nt);
-	PtrGrid o2 = new Grid(in->dim,in->nt);
+	PtrGrid l = new Grid(in.dim,(T *)data);
+	PtrGrid o0 = new Grid(in.dim,in.nt);
+	PtrGrid o1 = new Grid(in.dim,in.nt);
+	PtrGrid o2 = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *c0 = cvGrid(o0,mode);
 	CvArr *c1 = cvGrid(o1,mode);
@@ -296,9 +296,9 @@ GRID_INLET(0) {
 	cvRelease(&c0);
 	cvRelease(&c1);
 	cvRelease(&c2);
-	out = new GridOutlet(this,2,in->dim,in->nt); out->send(o2->dim->prod(),(T *)o2->data);
-	out = new GridOutlet(this,1,in->dim,in->nt); out->send(o1->dim->prod(),(T *)o1->data);
-	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o0->dim->prod(),(T *)o0->data);
+	out = new GridOutlet(this,2,in.dim,in.nt); out->send(o2->dim.prod(),(T *)o2->data);
+	out = new GridOutlet(this,1,in.dim,in.nt); out->send(o1->dim.prod(),(T *)o1->data);
+	out = new GridOutlet(this,0,in.dim,in.nt); out->send(o0->dim.prod(),(T *)o0->data);
 } GRID_END
 \end class {install("cv/#SVD",1,3);}
 
@@ -321,11 +321,11 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,in->nt); COPY((T *)*l,data,in.dim.prod());
+	PtrGrid l = new Grid(in.dim,in.nt); COPY((T *)*l,data,in.dim.prod());
 	IplImage *img = cvImageGrid(l);
 	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
 	cvReleaseImageHeader(&img);
-	out = new GridOutlet(this,0,in->dim,in->nt); out->send(in.dim.prod(),(T *)*l);
+	out = new GridOutlet(this,0,in.dim,in.nt); out->send(in.dim.prod(),(T *)*l);
 } GRID_END
 \end class {install("cv/#Ellipse",1,2);}
 
@@ -340,7 +340,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data); CvArr *a = cvGrid(l,mode);
+	PtrGrid l = new Grid(in.dim,(T *)data); CvArr *a = cvGrid(l,mode);
 	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
 	seq=seq; //blah
 } GRID_END
@@ -441,7 +441,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid l = new Grid(in.dim,(T *)data);
 	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
 	int n = ret ? ret->total : 0;
@@ -473,7 +473,7 @@ GRID_INLET(0) {
 //for (CvTypeInfo *t = cvFirstType(); t; t=t->next) post("type %s",t->type_name);
 
 GRID_INLET(0) {
-	if (in->dim->n<1) RAISE("should have at least 1 dimension");
+	if (in.dim.n<1) RAISE("should have at least 1 dimension");
 	in->set_chunk(0);
 } GRID_FLOW {
 	int32 v[] = {in.dim.prod(0)/in.dim.prod(-1),in.dim.prod(-1)};
@@ -482,10 +482,10 @@ GRID_INLET(0) {
 	PtrGrid o = new Grid(Dim(1,v),int32_e);
 	CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvKMeans2(a,numClusters,c,termcrit);
-	int w[in->dim->n];
-	COPY(w,in->dim->v,in->dim->n);
-	w[in->dim->n-1] = 1;
-	out = new GridOutlet(this,0,Dim(in->dim->n,w));
+	int w[in.dim.n];
+	COPY(w,in.dim.v,in.dim.n);
+	w[in.dim.n-1] = 1;
+	out = new GridOutlet(this,0,Dim(in.dim.n,w));
 	out->send(v[0],(int32 *)*o);
 	cvRelease(&a);
 	cvRelease(&c);
@@ -508,14 +508,14 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid l = new Grid(in.dim,(T *)data);
 	CvArr *a = (CvMat *)cvGrid(l,mode,2);
-	PtrGrid o = new Grid(in->dim,float32_e);
+	PtrGrid o = new Grid(in.dim,float32_e);
 	CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvCornerHarris(a,c,block_size,aperture_size,k);
 	cvRelease(&a);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in->dim,in->nt); out->send(o->dim->prod(),(T *)o->data);
+	out = new GridOutlet(this,0,in.dim,in.nt); out->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 
 \end class {install("cv/#CornerHarris",1,1);}

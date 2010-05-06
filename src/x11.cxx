@@ -312,7 +312,7 @@ typedef struct {
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
 	if ((mode&2)==0) return;
-	int zy=dim->get(0), zx=dim->get(1);
+	int zy=dim[0], zx=dim[1];
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
@@ -360,15 +360,15 @@ void FormatX11::set_wm_hints () {
 	XWMHints wmh;
 	char buf[256],*bufp=buf;
 	if (title=="") {
-		sprintf(buf,"GridFlow (%d,%d,%d)",dim->get(0),dim->get(1),dim->get(2));
+		sprintf(buf,"GridFlow (%d,%d,%d)",dim[0],dim[1],dim[2]);
 	} else {
 		sprintf(buf,"%.255s",title.data());
 	}
 	XTextProperty wtitle; XStringListToTextProperty((char **)&bufp, 1, &wtitle);
 	XSizeHints sh;
 	sh.flags=PSize|PMaxSize|PMinSize;
-	sh.min_width  = sh.max_width  = sh.width  = dim->get(1);
-	sh.min_height = sh.max_height = sh.height = dim->get(0);
+	sh.min_width  = sh.max_width  = sh.width  = dim[1];
+	sh.min_height = sh.max_height = sh.height = dim[0];
 	wmh.input = True;
 	wmh.flags = InputHint;
 	XSetWMProperties(display,window,&wtitle,&wtitle,0,0,&sh,&wmh,0);
@@ -438,9 +438,9 @@ void FormatX11::call() {
 void FormatX11_call(FormatX11 *p) {p->call();}
 
 \def 0 bang () {
-	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0), (unsigned)-1, ZPixmap, ximage, 0, 0);
+	XGetSubImage(display, window, 0, 0, dim[1], dim[0], (unsigned)-1, ZPixmap, ximage, 0, 0);
 	GridOutlet out(this,0,dim,cast);
-	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
+	int sy=dim[0], sx=dim[1], bs=dim.prod(1);
 	uint8 b2[bs];
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = image + ximage->bytes_per_line * y;
@@ -595,23 +595,23 @@ void FormatX11::resize_window (int sx, int sy) {
 }
 
 GRID_INLET(0) {
-	if (in->dim->n != 3)
+	if (in.dim.n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)
-		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in->dim->get(2));
-	int sx = in->dim->get(1), osx = dim->get(1);
-	int sy = in->dim->get(0), osy = dim->get(0);
+	if (in.dim[2]!=3 && in.dim[2]!=4)
+		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
+	int sx = in.dim[1], osx = dim[1];
+	int sy = in.dim[0], osy = dim[0];
 	in->set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
-	if (in->dim->get(2)!=bit_packing->size) {
+	if (in.dim[2]!=bit_packing->size) {
 		bit_packing->mask[3]=0;
 		bit_packing = new BitPacking(bit_packing->endian,
-		  bit_packing->bytes, in->dim->get(2), bit_packing->mask);
+		  bit_packing->bytes, in.dim[2], bit_packing->mask);
 	}
 } GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
-	int sxc = in->dim->prod(1);
-	int sx = in->dim->get(1);
+	int sxc = in.dim.prod(1);
+	int sx = in.dim[1];
 	int y = dex/sxc;
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		// convert line
@@ -621,7 +621,7 @@ GRID_INLET(0) {
 		} else bit_packing->pack(sx, data, image+y*bypl);
 	}
 } GRID_FINISH {
-	show_section(0,0,in->dim->get(1),in->dim->get(0));
+	show_section(0,0,in.dim[1],in.dim[0]);
 } GRID_END
 
 \def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
