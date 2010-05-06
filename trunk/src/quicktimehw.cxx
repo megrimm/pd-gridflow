@@ -129,7 +129,7 @@ static std::map<string,string> fourccs;
 	case 32: colorspace=BC_RGBA8888; break;
 	default: post("strange quicktime. ask matju."); break;
 	}
-	if (doforce) {sy = force->get(0); sx = force->get(1);}
+	if (doforce) {sy = force[0]; sx = force[1];}
 	uint8 buf[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);

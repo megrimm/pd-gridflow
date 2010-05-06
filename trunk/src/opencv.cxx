@@ -145,10 +145,10 @@ CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 
 IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	Dim &d = g->dim;
-	if (d->n!=3) RAISE("expected 3 dimensions, got %s",d->to_s());
+	if (d.n!=3) RAISE("expected 3 dimensions, got %s",d.to_s());
 	int channels=g->dim[2];
 	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
-	CvSize size = {d->v[1],d->v[0]};
+	CvSize size = {d[1],d[0]};
 	IplImage *a = cvCreateImageHeader(size,ipl_eltype(g->nt),channels);
 	cvSetData(a,g->data,g->dim.prod(1)*(number_type_table[g->nt].size/8));
 	return a;

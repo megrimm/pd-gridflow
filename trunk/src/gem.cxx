@@ -155,16 +155,16 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 //#define NTIMES(FOO) for (; N>=4; N-=4) {FOO FOO FOO FOO} for (; N; N--) {FOO}
 
 GRID_INLET(1) {
-	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
-	int c = in->dim->get(2);
-	if (c!=3 && c!=4)    RAISE("expecting 3 or 4 channels (got %d)",in->dim->get(2));
+	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	int c = in.dim[2];
+	if (c!=3 && c!=4)    RAISE("expecting 3 or 4 channels (got %d)",in.dim[2]);
 	in->set_chunk(1);
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
-	im.ysize = in->dim->get(0);
-	im.xsize = in->dim->get(1);
+	im.ysize = in.dim[0];
+	im.xsize = in.dim[1];
 	im.type = GL_UNSIGNED_BYTE;
-	switch (in->dim->get(2)) {
+	switch (in.dim[2]) {
 	    case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
 	    case 3: im.csize = 4; im.format = GEM_RGBA;     break;
 	    case 4: im.csize = 4; im.format = GEM_RGBA;     break;
@@ -174,8 +174,8 @@ GRID_INLET(1) {
 } GRID_FLOW {
 	uint8 *buf = (uint8 *)m_pixBlock.image.data;
 	long sxc = in.dim.prod(1);
-	long sx = in->dim->v[1];
-	long chans = in->dim->get(2);
+	long sx = in.dim[1];
+	long chans = in.dim[2];
 	imageStruct &im = m_pixBlock.image;
 	im.upsidedown = !yflip;
 	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) {
