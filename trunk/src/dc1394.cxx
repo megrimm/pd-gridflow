@@ -268,9 +268,9 @@ static void rien (int) {timeout=1; post("timeout2");}
 	//signal(SIGALRM,rien);
 	if (dc1394_single_capture(rh,&camera)!=DC1394_SUCCESS) RAISE("dc1394_single_capture error");
 	//setitimer(ITIMER_REAL,0,0);
-	out=new GridOutlet(this,0,new Dim(height,width,1));
-	//out->send(out->dim->prod(),(uint8 *)camera.capture_buffer);
-	for (int i=0; i<height; i++) out->send(out->dim->prod(1),(uint8 *)camera.capture_buffer+640*i);
+	out=new GridOutlet(this,0,Dim(height,width,1));
+	//out->send(out->dim.prod(),(uint8 *)camera.capture_buffer);
+	for (int i=0; i<height; i++) out->send(out->dim.prod(1),(uint8 *)camera.capture_buffer+640*i);
 	//if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
 	//post("frame_height=%d",camera.frame_height);
 	//post("frame_width=%d" ,camera.frame_width);
