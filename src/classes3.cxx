@@ -1343,12 +1343,13 @@ GRID_INPUT(2,r) {
 
 static Numop *op_os8;
 \class GridLopSpace : FObject {
+	\attr bool reverse;
 	\attr int which_dim;
 	\attr PtrGrid r;
 	\grin 0
 	\grin 1
 	PtrGrid r2;
-	\constructor (int which_dim, Grid *r) {this->which_dim = which_dim; this->r=r;}
+	\constructor (int which_dim, Grid *r) {this->which_dim = which_dim; this->r=r; reverse=false;}
 };
 template <class T> inline T       shr8r (T       a) {return (a+128)>>8;}
 template <>        inline float32 shr8r (float32 a) {return a/256.0;}
@@ -1371,9 +1372,16 @@ GRID_INLET(0) {
 	int sxc = in.dim.prod(w);
 	T *rdata = (T *)*r2;
 	for (;n;n-=sxc, data+=sxc) {
-		T tada[sxc+sc]; CLEAR(tada,sc);
-		for (int i=0; i<sxc; i++) tada[i+sc] = shr8r(tada[i]*256 + (data[i]-tada[i])*rdata[i]);
-		out->send(sxc,tada+sc);
+		T tada[sxc+sc];
+		if (reverse) {
+			CLEAR(tada+sxc,sc);
+			for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rdata[i]);
+			out->send(sxc,tada);
+		} else {
+			CLEAR(tada,sc);
+			for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rdata[i]);
+			out->send(sxc,tada+sc);
+		}
 	}
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
@@ -1384,4 +1392,3 @@ void startup_flow_objects3 () {
 	op_os8 = OP(*>>8);
 	\startall
 }
-
