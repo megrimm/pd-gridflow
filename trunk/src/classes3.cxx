@@ -1365,23 +1365,27 @@ GRID_INLET(0) {
 	r2 = new Grid(Dim(sxc),in.nt);
 	T *rdata = (T *)*r2;
 	size_t rn = r->dim.prod();
-	for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
+	if (rn>1) for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
 } GRID_FLOW {
 	int w = which_dim; if (w<0) w+=in.dim.n;
 	int sc = in.dim.prod(w+1);
 	int sxc = in.dim.prod(w);
 	T *rdata = (T *)*r2;
+	size_t rn = r->dim.prod();
+	T rvalue = *(T *)*r;
 	for (;n;n-=sxc, data+=sxc) {
-		T tada[sxc+sc];
-		if (reverse) {
-			CLEAR(tada+sxc,sc);
-			for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rdata[i]);
-			out->send(sxc,tada);
-		} else {
-			CLEAR(tada,sc);
-			for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rdata[i]);
-			out->send(sxc,tada+sc);
-		}
+	    T tada[sxc+sc];
+	    if (reverse) {
+		CLEAR(tada+sxc,sc);
+		if (rn==1) for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rvalue  );
+		else       for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rdata[i]);
+		out->send(sxc,tada);
+	    } else {
+		CLEAR(tada,sc);
+		if (rn==1) for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rvalue  );
+		else       for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rdata[i]);
+		out->send(sxc,tada+sc);
+	    }
 	}
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
