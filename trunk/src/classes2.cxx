@@ -652,8 +652,8 @@ static t_pd *seesend;
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 	}
 	void compute_size () { /* 1 is a fudge due to how Tk sizes work vis-à-vis pixel counting */
-		sy = my1 + (buf ? buf->dim->v[0] : 48) + my2 - 1;
-		sx = mx1 + (buf ? buf->dim->v[1] : 64) + mx2 - 1;
+		sy = my1 + (buf ? buf->dim[0] : 48) + my2 - 1;
+		sx = mx1 + (buf ? buf->dim[1] : 64) + mx2 - 1;
 	}
 	~GridSee () {
 		if (spy) pd_free((t_pd *)spy);
@@ -679,9 +679,9 @@ static t_pd *seesend;
 	void sendbuf () {
 	    std::ostringstream os;
 	    int i=0,j=0,t=0;
-	    int chans = buf->dim->get(2);
-	    int xs = buf->dim->get(1);
-	    int ys = buf->dim->get(0);
+	    int chans = buf->dim[2];
+	    int xs = buf->dim[1];
+	    int ys = buf->dim[0];
 	    compute_size();
 	    if (fast) {
 		sys_vgui("encoding system iso8859-1; image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,xs,ys);
@@ -735,11 +735,10 @@ static t_pd *seesend;
 	NEWWB
 };
 GRID_INLET(0) {
-	if (in->dim->n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2)<1 || in->dim->get(2)>4)
-		RAISE("expecting 1 to 4 channels: y, ya, rgb, rgba (got %d)",in->dim->get(2));
-	in->set_chunk(0);
-	buf=new Grid(in->dim,NumberTypeE_type_of(data));
+	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2]<1 || in.dim[2]>4) RAISE("expecting 1 to 4 channels: y, ya, rgb, rgba (got %d)",in.dim[2]);
+	in.set_chunk(0);
+	buf=new Grid(in.dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
 	COPY((T *)*buf+dex,data,n);
 	changed();
