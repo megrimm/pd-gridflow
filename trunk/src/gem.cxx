@@ -157,8 +157,8 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 GRID_INLET(1) {
 	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	int c = in.dim[2];
-	if (c!=3 && c!=4)    RAISE("expecting 3 or 4 channels (got %d)",in.dim[2]);
-	in->set_chunk(1);
+	if (c!=3 && c!=4)  RAISE("expecting 3 or 4 channels (got %d)",in.dim[2]);
+	in.set_chunk(1);
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
 	im.ysize = in.dim[0];
