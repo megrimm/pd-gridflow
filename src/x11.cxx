@@ -601,7 +601,7 @@ GRID_INLET(0) {
 		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
 	int sx = in.dim[1], osx = dim[1];
 	int sy = in.dim[0], osy = dim[0];
-	in->set_chunk(1);
+	in.set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in.dim[2]!=bit_packing->size) {
 		bit_packing->mask[3]=0;
