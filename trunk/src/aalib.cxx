@@ -69,17 +69,15 @@ static std::map<string,const aa_driver *> drivers;
 
 GRID_INLET(0) {
 	if (!context) RAISE("boo");
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	switch (in->dim->get(2)) {
+	if (in.dim.n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	switch (in.dim[2]) {
 	case 1: raw_mode = false; break;
 	case 2: raw_mode = true; break;
-	default:
-		RAISE("expecting 1 greyscale channel (got %d)",in->dim->get(2));
+	default: RAISE("expecting 1 greyscale channel (got %d)",in.dim[2]);
 	}
-	in->set_chunk(1);
+	in.set_chunk(1);
 } GRID_FLOW {
-	int f = in->dim->prod(1);
+	int f = in.dim.prod(1);
 	if (raw_mode) {
 		int sx = min(f,aa_scrwidth(context));
 		int y = dex/f;
