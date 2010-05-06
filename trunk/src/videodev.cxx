@@ -320,14 +320,14 @@ t_symbol *safe_gensym(const char *name) {
 		string foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
 		SETSYMBOL(a,gensym(foo.data()));
 		outlet_anything(outlets[0],gensym("palette"),1,a);
-		SETFLOAT(a+0,dim->v[0]); SETFLOAT(a+1,dim->v[1]); outlet_anything(outlets[0],gensym("size"),    2,a);
+		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); outlet_anything(outlets[0],gensym("size"),    2,a);
 	}
 }
 
 \def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
-	dim = Dim(sy,sx,dim->v[2]);
+	dim = Dim(sy,sx,dim[2]);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	if (debug) gfpost(&grab_win);
 	grab_win.clipcount = 0;
@@ -354,8 +354,8 @@ void FormatVideoDev::frame_ask () {
 	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	vmmap.frame = queue[queuesize++] = next_frame;
 	vmmap.format = vp.palette;
-	vmmap.width  = dim->get(1);
-	vmmap.height = dim->get(0);
+	vmmap.width  = dim[1];
+	vmmap.height = dim[0];
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
 	//gfpost(&vmmap);
 	next_frame = (next_frame+1) % vmbuf.frames;
@@ -365,9 +365,9 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	string cs = colorspace->s_name;
 	int downscale = cs=="magic";
 	/* picture is converted here. */
-	int sy = dim->get(0);
-	int sx = dim->get(1);
-	int bs = dim->prod(1); if (downscale) bs/=2;
+	int sy = dim[0];
+	int sx = dim[1];
+	int bs = dim.prod(1); if (downscale) bs/=2;
 	uint8 b2[bs];
 	//post("frame_finished sy=%d sx=%d bs=%d, vp.palette = %d; colorspace = %s",sy,sx,bs,vp.palette,cs.data());
 	GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
@@ -599,7 +599,7 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 	if (palette==VIDEO_PALETTE_RGB24 ) RGB(0xff0000,0x00ff00,0x0000ff,3); else
 	if (palette==VIDEO_PALETTE_RGB32 ) RGB(0xff0000,0x00ff00,0x0000ff,4);
 	this->colorspace=gensym(c.data());
-	dim = Dim(dim->v[0],dim->v[1],c=="y"?1:c=="rgba"?4:3);
+	dim = Dim(dim[0],dim[1],c=="y"?1:c=="rgba"?4:3);
 }
 
 \def bool pwc ()         {return use_pwc;}

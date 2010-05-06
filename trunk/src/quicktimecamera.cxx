@@ -273,15 +273,15 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 	vdc = SGGetVideoDigitizerComponent(m_vc);
 
 	int sy = dim[0], sx = dim[1], sc = dim[2];
-	int dataSize = dim->prod();
+	int dataSize = dim.prod();
 	buf  = new uint8[sy*sx*4];
 	buf2 = new uint8[sy*sx*4];
 	m_rowBytes = sx*4;
 	e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,&rect,NULL,NULL,0,buf,m_rowBytes);
 	if (0/*yuv*/) {
-		int dataSize = dim->prod()*2/4;
+		int dataSize = dim.prod()*2/4;
 		buf = new uint8[dataSize];
-		m_rowBytes = dim->prod(1)*2/4;
+		m_rowBytes = dim.prod(1)*2/4;
 		e=QTNewGWorldFromPtr (&m_srcGWorld,k422YpCbCr8CodecType,&rect,NULL,NULL,0,buf,m_rowBytes);
 	}
 	if (e!=noErr) RAISE("error #%d at QTNewGWorldFromPtr",e);
@@ -397,7 +397,7 @@ static int nn(int c) {return c?c:' ';}
 			out.send(bs,b2);
 		}
 	} else if (cs=="rgb") {
-		int n = dim->prod()/3;
+		int n = dim.prod()/3;
 		/*for (int i=0,j=0; i<n; i+=4,j+=3) {
 			buf2[j+0] = buf[i+0];
 			buf2[j+1] = buf[i+1];
@@ -405,15 +405,15 @@ static int nn(int c) {return c?c:' ';}
 		}*/
 		//bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
 		bit_packing3->unpack(n,buf,buf2);
-		out.send(dim->prod(),buf2);
+		out.send(dim.prod(),buf2);
 	} else if (cs=="rgba") {
-		int n = dim->prod()/4;
+		int n = dim.prod()/4;
 		if (is_le()) {
 			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] >> 8) | 0xff000000;
 		} else {
 			for (int i=0; i<n; i++) ((uint32 *)buf2)[i] = (((uint32 *)buf)[i] << 8) | 0x000000ff;
 		}
-		out.send(dim->prod(),buf2);
+		out.send(dim.prod(),buf2);
 	} else
 		RAISE("colorspace problem");
 	SGIdle(m_sg);
