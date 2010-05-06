@@ -1362,10 +1362,11 @@ GRID_INLET(0) {
 	out = new GridOutlet(this,0,in.dim,in.nt);
 	in.set_chunk(w);
 	int sxc = in.dim.prod(w);
+	size_t rn = r->dim.prod();
+	if (rn==1) sxc=1; // fudge
 	r2 = new Grid(Dim(sxc),in.nt);
 	T *rdata = (T *)*r2;
-	size_t rn = r->dim.prod();
-	if (rn>1) for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
+	for (int i=0; i<sxc; i++) rdata[i] = ((T *)*r)[mod(i,rn)];
 } GRID_FLOW {
 	int w = which_dim; if (w<0) w+=in.dim.n;
 	int sc = in.dim.prod(w+1);
