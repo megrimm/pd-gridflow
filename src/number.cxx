@@ -188,9 +188,9 @@ DEF_OP(sub,  a-b, 0, side==at_right && x==0, false)
 DEF_OP(bus,  b-a, 0, side==at_left  && x==0, false)
 DEF_OP(mul,  a*b, 1, x==1, x==0)
 DEF_OP(mulshr8, (a*b)>>8, T(256), sizeof(T)!=1 && x==T(256), x==0)
-DEF_OP(div,  b==0 ? (T)0 :      a/b , 1, side==at_right && x==1, false)
+DEF_OP(div,  b==0 ? T(0) :      a/b , 1, side==at_right && x==1, false)
 DEF_OP(div2, b==0 ?    0 : div2(a,b), 1, side==at_right && x==1, false)
-DEF_OP(vid,  a==0 ? (T)0 :      b/a , 1, side==at_left  && x==1, false)
+DEF_OP(vid,  a==0 ? T(0) :      b/a , 1, side==at_left  && x==1, false)
 DEF_OP(vid2, a==0 ?    0 : div2(b,a), 1, side==at_left  && x==1, false)
 DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), 0, false, (side==at_left && x==0) || (side==at_right && x==1))
 DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), 0, false, (side==at_left && x==0) || (side==at_right && x==1))
@@ -280,8 +280,10 @@ template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
 //!@#$ neutral,is_neutral,is_absorbent are impossible to use here
 DEF_OP(cx_mul,     a*b,       1, false, false)
 DEF_OP(cx_mulconj, a*conj(b), 1, false, false)
-DEF_OP(cx_div,     a/b,       1, false, false)
-DEF_OP(cx_divconj, a/conj(b), 1, false, false)
+DEF_OP(cx_div,     b==Plex<T>(0,0) ? T(0) : a/b,       1, false, false)
+DEF_OP(cx_divconj, b==Plex<T>(0,0) ? T(0) : a/conj(b), 1, false, false)
+DEF_OP(cx_vid,     b==Plex<T>(0,0) ? T(0) : b/a,       1, false, false)
+DEF_OP(cx_vidconj, b==Plex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false)
 DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
 DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
 DEF_OP(cx_sin,  sin(a-b),   0, false, false)
@@ -392,6 +394,9 @@ Numop op_table4[] = {
 	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_div,     "C./",     0,2),
 	DECL_VOP(cx_divconj, "C./conj", 0,2),
+	DECL_VOP(cx_vid,     "C.inv*",  0,2),
+//	DECL_VOP(cx_vidconj, "C.conjinv*",  0,2), how to name this ?
+//	DECL_VOP(cx_vidconj, "C.invconj*",  0,2),
 	DECL_VOP(cx_sqsub,   "C.sq-",   OP_COMM,2),
 	DECL_VOP(cx_abssub,  "C.abs-",  OP_COMM,2),
 	DECL_VOP_NOFOLD_FLOAT(cx_sin,  "C.sin",  0,2),
