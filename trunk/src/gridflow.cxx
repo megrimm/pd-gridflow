@@ -585,16 +585,12 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	for (int i=0; i<ac; i++) argv[i+1] = at[i];
 	int argc = handle_braces(ac,argv+1);
 	SETFLOAT(argv+0,winlet);
-	char buf[256];
-	sprintf(buf,"_n_%s",selector->s_name);
 	FMethod m;
-	m = funcall_lookup(bself,buf);
-	if (m) {m(bself->self,argc+1,argv); return;}
-	sprintf(buf,"_%d_%s",winlet,selector->s_name);
-	m = funcall_lookup(bself,buf);
-	if (m) {m(bself->self,argc,argv+1); return;}
-	m = funcall_lookup(bself,"anything");
-	if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv); return;}
+	char buf[256];
+
+	sprintf(buf,"_%d_%s",winlet,selector->s_name); m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc  ,argv+1); return;}
+	sprintf(buf,"_n_%s",selector->s_name);         m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc+1,argv  ); return;}
+	m = funcall_lookup(bself,"anything");        if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv  ); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself);}
 }
