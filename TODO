@@ -1,33 +1,30 @@
-$Id$
-
 x = done
 L = much later (whenever we get to know how to do it...)
 
-9.9, assigned to Patrick:
+9.10, assigned to Patrick:
 [1] [#io.quicktimeapple] déboguer farfisa_2.mov
-[2] [#io.quicktimeapple] accélérer le décodage (essayer avec farfisa_2.mov)
-[ ] [#io.quicktimecamera] minsize, size, maxsize
-[ ] [#io.quicktimecamera] colorspace magic
+[L] [#io.quicktimecamera] minsize, size, maxsize
+[L] unifier les décodeurs de colorspaces dans tous les modules de caméra, et les accélérer
+[L] [#io.quartz] fullscreen mode
+[L] [#io.quicktimeapple out] grid, codec, quality.
+[L] add [cv/#SVD] etc (-lcv) to OSX packages
+[L] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
+[L] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
+    par exemple, les binaires gras pour 3 cpus.
+[ ] [#io.quicktimecamera] crash when opening busy camera (?) or is it when opening two cameras at once ?
+[ ] libv4l dans l'package ubuntu
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
-[L] [#io.quartz] fullscreen mode
-[ ] [#io.quicktimeapple out] grid, codec, quality.
-[ ] add [cv/#SVD] etc (-lcv) to OSX packages
-[ ] on PPC, retest [#to_pix] with alpha etc...
-[ ] [#io.quicktimecamera] crash when opening busy camera (?)
-    or is it when opening two cameras at once ?
-[ ] libv4l dans l'package ubuntu
-[ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
-[ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
+[ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 
-9.9, unassigned:
-[ ] comma arg does self-bang
+9.10, unassigned:
+[x] [#pack]: support _0_list
 [ ] lqtgavl
-[ ] [#rotate] : round not floor
-[ ] svn dollar id dollar : redo it or remove it
+[x] [#rotate] : round not floor
+[x] cvs dollar id dollar : redo it or remove it
 [ ] heat.pd still sucks (?)
 [ ] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
 [ ] accelerate [#outer ignore (0)]
@@ -45,11 +42,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] alias numops so that it's more pd-like
 [ ] [#pack, cast] ?
 [ ] [# /exp] as inverse of [# log*]
-[ ] make a rounding [# *>>8]
+[ ] make a rounding [# *>>8] ?
 [ ] [#fft] sign crash
-[ ] [#many] when $1 is abstraction :
-    error: canvas: no method for 'receive'
-    error: canvas: no method for 'send'
 [ ] [#import] bug (see atelier)
 [ ] remove RAISE from grid.cxx, because of all the problems it causes.
     generally, be a lot more careful about exception handling, because
@@ -106,9 +100,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
-[ ] reintroduce set_mode(0)
 [ ] [#fold] is slowwww
-[ ] [route3] will be like [route] but doesn't trim.
+[ ] [route3] will be like [route] but won't trim.
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
@@ -117,8 +110,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
 [ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
-[ ] [#in libv4l] et/ou [#in videodev] that works upstairs with UYVY or whatever it is (some kind of 422)
-    COULDN'T REPRODUCE THIS BUG !!!
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
 [ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
 [ ] make single abstraction that replaces all picture converters and more.
@@ -137,7 +128,7 @@ L = much later (whenever we get to know how to do it...)
     [ ] seedless #inner
     [ ] automatic type conversion
 
-9.10 or later
+9.11 or later
 [L] threaded v4l1, v4l2, dc1394.
 [L] regular dc1394 options
 [L] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
@@ -147,7 +138,7 @@ L = much later (whenever we get to know how to do it...)
 [L] [#camera] [#cast] setting ? or not ?
 [L] fix SDL modifiers
 
-// 9.9
+// was for 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 //DEF_OP(pingpong,  
 
