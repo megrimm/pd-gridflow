@@ -1,5 +1,4 @@
 #!/usr/bin/make
-# $Id$
 
 include config.make
 COMMON_DEPS = config.make Makefile src/source_filter.rb
