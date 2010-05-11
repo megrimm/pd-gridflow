@@ -1,6 +1,4 @@
 /*
-	$Id: sdl.c 4620 2009-11-01 21:16:58Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 

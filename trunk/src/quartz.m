@@ -1,6 +1,4 @@
 /*
-	$Id: quartz.m 4517 2009-10-30 16:01:30Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2008 by Mathieu Bouchard
 

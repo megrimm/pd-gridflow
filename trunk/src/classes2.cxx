@@ -1,6 +1,4 @@
 /*
-	$Id: flow_objects.c 4097 2008-10-03 19:49:03Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 

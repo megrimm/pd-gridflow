@@ -1,6 +1,4 @@
 /*
-	$Id$
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 
