@@ -1,0 +1,51 @@
+#N canvas 480 0 620 717 10;
+#X obj 0 0 doc_demo;
+#X obj 0 682 doc_f;
+#X text 96 38 IMAGES;
+#X text 24 69 the default format of an image in GridFlow is a grid
+that has three dimensions \, in which the first one is for the rows
+\, the second one is for the columns \, and the third one is for channels.
+Thus they are often numbered like this (starting at 0) :;
+#X text 93 146 0 : rows;
+#X text 93 159 1 : columns;
+#X text 93 173 2 : channels;
+#X text 22 197 However \, they don't need to be represented like that
+\, so \, you can change the order of dimensions \, but this changes
+the order of the data in memory \, and most of all \, it won't work
+with any classes that assume the default numbering of the dimensions.
+In several cases \, though \, the class doesn't care about the numbering
+\, and it is up to the user to know which dimension is which \, and
+it is in this context that it is possible to use alternate representations.
+;
+#X text 97 483 Because Grids are made of 32-bit integers \, a three-channel
+picture uses 96 bpp (bits per pixel) \, and have to be downscaled to
+24 bpp (or 16 bpp) for display. That huge amount of slack is there
+because when you create your own effects you often have intermediate
+results that need to be of higher precision than a normal picture.
+Especially \, results of multiplications are big and should not overflow
+before you divide them back to normal \; and similarly \, you can have
+negative values all over \, as long as you take care of them before
+they get to the display. In the final conversion \, high bits are just
+ignored. This means: black is 0 \, maximum is 255 \, and values wrap
+like with % 256 If you want to clip them \, you may use [# max 0] and
+[# min 255] objects.;
+#X text 80 321 CHANNELS AND COLOR MODELS;
+#X text 289 340 Channels for the YUV color model are :;
+#X text 24 339 Channels for the RGB color model are :;
+#X text 315 352 0 : grey;
+#X text 49 352 0 : red;
+#X text 49 364 1 : green;
+#X text 49 377 2 : blue;
+#X text 290 395 Channels for the Y color model are :;
+#X text 321 406 0 : grey;
+#X text 315 365 1 : blue/yellow (blue minus grey);
+#X text 321 377 2 : red/cyan (red minus grey);
+#X text 294 417 (only one channel !);
+#X text 49 402 0 : red;
+#X text 49 414 1 : green;
+#X text 49 427 2 : blue;
+#X text 24 389 Channels for the RGBA color model are :;
+#X text 49 439 3 : opacity;
+#X text 321 442 0 : grey;
+#X text 290 431 Channels for the YA color model are :;
+#X text 321 455 1 : opacity;

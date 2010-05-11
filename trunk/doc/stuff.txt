@@ -1,21 +1,4 @@
 
-Picture Protocol
-  This section is useful if you want to know what a picture is in terms of a grid.
-  A picture is a three-dimensional Grid: 0:rows 1:columns 2:channels
-
-Channels for the RGB color model are:  0:red 1:green 2:blue
- 	Because Grids are made of 32-bit integers, a three-channel picture uses 
-	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
-	for display. That huge amount of slack is there because when you create 
-	your own effects you often have intermediate results that need to be of 
-	higher precision than a normal picture. Especially, results of multiplications 
-	are big and should not overflow before you divide them back to normal; 
-	and similarly, you can have negative values all over, as long as you take 
-	care of them before they get to the display.
- 	In the final conversion, high bits are just ignored. This means: black is 
-	0, maximum is 255, and values wrap like with % 256. If you want to 
-	clip them, you may use [# max 0] and [# min 255] objects.
-
 The following are called VecOps because each operation happens between more than just two numbers.
 A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
 If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.
@@ -84,11 +67,9 @@ Introduction
 	three-dimensional Grid in which the two "channels" are Y and X,
 	representing row-and-column positions in a separate picture.
 	
-	 Other shapes of grids could be designed to represent various things;
-	for example, configuration for blur effects. Grids could be useful for
+	Other shapes of grids could be designed to represent various things;
+	for example, configuration for blur effects (#convolve). Grids could be useful for
 	things not directly related to raster pictures (e.g. sound recordings).
-	Those are all kinds of things you could actually develop _within_ the
-	PureData / GridFlow framework. You don't need to wait for me.
 
 
 GridFlow Release
