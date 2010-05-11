@@ -279,9 +279,13 @@ template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (cons
 //a reference counting pointer class
 //note: T <= CObject
 //used mostly as P<Grid>, P<BitPacking>
+extern char *short_backtrace ();
 template <class T> class P {
 public:
-#define INCR if (p) p->refcount++;
+
+//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
+//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
+#define INCR if (p) {p->refcount++;}
 #define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
 	T *p;
 	P()               {p=0;}
@@ -302,15 +306,9 @@ public:
 };
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
-template <class T> inline void COPY(T *dest, const T *src, long n) {
-	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
-}
-template <class T> inline void CLEAR(T *dest, long n) {
-	memset(dest,0,n*sizeof(T));
-}
-template <class T> static void memswap (T *a, T *b, long n) {
-	T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
-}
+template <class T> inline void COPY  (T *dest, const T *src, long n) {gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));}
+template <class T> inline void CLEAR (T *dest,               long n) {memset(dest,0,n*sizeof(T));}
+template <class T> static void memswap (T *a,  T *b,         long n) {T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);}
 
 //****************************************************************
 
@@ -424,12 +422,12 @@ NumberTypeE NumberTypeE_find (string sym);
 NumberTypeE NumberTypeE_find (const t_atom &sym);
 
 #define TYPESWITCH(T,C,E) switch (T) { \
-  case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
-  case int32_e:   C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
+  case uint8_e:   C(uint8)   break;         case   int16_e: C(int16)   break; \
+  case int32_e:   C(int32)   break; NONLITE(case   int64_e: C(int64)   break;) \
   case float32_e: C(float32) break; NONLITE(case float64_e: C(float64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
 #define TYPESWITCH_JUSTINT(T,C,E) switch (T) { \
-  case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
+  case uint8_e: C(uint8) break;           case int16_e: C(int16) break; \
   case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
 
@@ -526,18 +524,12 @@ struct Numop {
     return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	template <class T> inline void map(long n, T *as, T b) {
-		on(*as)->map(n,(T *)as,b);}
-	template <class T> inline void zip(long n, T *as, T *bs) {
-		on(*as)->zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, T *as, T *bs) {
-		typename NumopOn<T>::Fold f = on(*as)->fold;
-		if (!f) RAISE("operator %s does not support fold",name);
-		f(an,n,(T *)as,(T *)bs);}
-	template <class T> inline void scan(long an, long n, T *as, T *bs) {
-		typename NumopOn<T>::Scan f = on(*as)->scan;
-		if (!f) RAISE("operator %s does not support scan",name);
-		f(an,n,(T *)as,(T *)bs);}
+	template <class T> inline void map(long n, T *as, T b)   {on(*as)->map(n,(T *)as,     b );}
+	template <class T> inline void zip(long n, T *as, T *bs) {on(*as)->zip(n,(T *)as,(T *)bs);}
+	template <class T> inline void fold(long an, long n, T *as, T *bs) {typename NumopOn<T>::Fold f = on(*as)->fold;
+		if (f) f(an,n,as,bs); else RAISE("operator %s does not support fold",name);}
+	template <class T> inline void scan(long an, long n, T *as, T *bs) {typename NumopOn<T>::Scan f = on(*as)->scan;
+		if (f) f(an,n,as,bs); else RAISE("operator %s does not support scan",name);}
 
 	Numop(const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
@@ -559,7 +551,6 @@ extern std::map<string,Numop *> vop_dict;
 static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_symbol->s_name));}
 
-
 static Numop *convert(const t_atom &x, Numop **bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
 	string k = string(x.a_symbol->s_name);
@@ -578,7 +569,7 @@ struct Grid : CObject {
 	Grid(const Dim &dim=Dim(), NumberTypeE nt=int32_e, bool clear=false) {
 		state=1; 
 		init(dim,nt);
-		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
+		if (clear) CLEAR((char *)data,bytes());
 	}
 	Grid(const t_atom &x) {state=1; init_from_atom(x);}
 	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {state=1; init_from_list(n,a,nt_);}
@@ -623,13 +614,8 @@ struct PtrGrid : public P<Grid> {
 	P<Grid> next;
 	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
-//	PtrGrid(       P<Grid> _p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
-	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {
-          p=_p;
-INCR;}
-	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim);
-DECR; p=_p; INCR;
-return *this;}
+	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {            p=_p; INCR;}
+	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
@@ -652,8 +638,7 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(I) \
-	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {\
-		((THISCLASS*)in.parent)->grin_##I(in,dex,n,data);}\
+	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {((THISCLASS*)in.parent)->grin_##I(in,dex,n,data);}\
 	template <class T> void THISCLASS::grin_##I  (GRIDHANDLER_ARGS(T)) {if (n==-1)
 #define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
@@ -691,8 +676,6 @@ struct GridInlet : CObject {
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
-//	const GridInlet *operator ->() const {return this;}
-//	      GridInlet *operator ->()       {return this;}
 	void set_chunk(long whichdim);
 	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
 	void begin(GridOutlet *sender);
