@@ -60,7 +60,7 @@ typedef std::string string;
 #define sys_gui(s) sys_gui(const_cast<char *>(s))
 
 #ifdef DES_BUGS
-#define DEF_IN(self) post("> self=%08x %s",long(self),methodspec);
+#define DEF_IN post("> self=%08x %s",long(self),context);
 #else
 #define DEF_IN
 #endif
@@ -220,6 +220,11 @@ struct Barf {
 	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
+
+#define    MINARGS(CONTEXT,ARGC,MIN    ) if ((ARGC)<(MIN)                ) \
+	RAISE("in %s, got %d args instead of at least %d"            ,(CONTEXT),(ARGC),(MIN)      );
+#define MINMAXARGS(CONTEXT,ARGC,MIN,MAX) if ((ARGC)<(MIN) || (ARGC)>(MAX)) \
+	RAISE("in %s, got %d args instead of at least %d, at most %d",(CONTEXT),(ARGC),(MIN),(MAX));
 
 //****************************************************************
 
