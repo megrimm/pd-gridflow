@@ -148,6 +148,11 @@ def handle_decl(line)
 	end
 end
 
+def check_argc(m)
+	if m.maxargs==-1 then Out.print    "MINARGS(context,argc,#{m.minargs})"
+	else                  Out.print "MINMAXARGS(context,argc,#{m.minargs},#{m.maxargs})" end
+end
+
 def handle_def(line,in_class_block=false)
 	m = parse_methoddecl(line,"\\{?.*$")
 	term = line[/\{.*/]
@@ -168,12 +173,10 @@ def handle_def(line,in_class_block=false)
 	end
 	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
 	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
-	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "DEF_IN(self);"
+	if /^_(\d+)_(\w+)$/ =~ m.selector then context = "inlet #{$1} method #{$2}" else context = m.selector end
+	Out.print "static const char *context = \"method #{m.selector}\"; DEF_IN;"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
-	Out.print "if (argc<#{m.minargs}"
-	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
-	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
+	check_argc m
 	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -183,7 +186,7 @@ def handle_def(line,in_class_block=false)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print "); DEF_OUT(self);} #{m.rettype} "
+	Out.print ");DEF_OUT;} #{m.rettype} "
 	Out.print "#{classname}::" unless in_class_block
 	Out.print m.selector+"(VA"
 	#puts "m=#{m} n=#{n}"
@@ -198,11 +201,8 @@ def handle_constructor(line)
 	raise "missing \\class #{where}" if not frame or not ClassDecl===frame
 	m = parse_methoddecl("void constructor"+line,"(.*)$")
 	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
-	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
-	Out.print "DEF_IN(this);"
-	Out.print "if (argc<#{m.minargs}"
-	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
-	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
+	Out.print "const char *context = \"constructor\"; DEF_IN;"
+	check_argc m
 	Out.print "#{m.selector}(sel,argc,argv"
 	m.arglist.each_with_index{|arg,i|
 		if arg.default then
@@ -211,7 +211,7 @@ def handle_constructor(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");DEF_OUT(this);}"
+	Out.print ");DEF_OUT;}"
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ") "+line[/\{.*/]
