@@ -14,22 +14,7 @@ behaviour (or crash!).
 There are two exceptions: [#store] and # allow right-inlet grids to be buffered if an operation is occuring on left inlet. This 
 should make many programs simpler.
 
-
-Introduction
-
-	 The philosophy that guides PureData is a simple but powerful one:
-	the software must first provide the user with generic tools
-	rather than imposing pre-cooked effects. In other words the user
-	should have total freedom. 
-
-	 GridFlow follows that philosophy: it first defines elementary
-	mathematical operations. Those can in turn be used as simple
-	visual effects or be combined to produce more complex effects.
-
-	 The strategy followed by most video plugins for PureData and MAX/MSP, is
-	to provide the user first with constructs for manipulating video
-	streams at a fairly high level. The strategy put forward by GridFlow
-	is different.
+Introduction [...]
 
 	 It can be said that in all those video plugins there are three layers:
 	the first, the low level, is not accessible to non-programmers (and fairly
