@@ -1,6 +1,4 @@
 /*
-	$Id: flow_objects.c 4548 2009-10-31 20:26:25Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 
@@ -357,7 +355,6 @@ GRID_INLET(0) {
 // in1: whatever nt
 // out0: same nt as in1
 \class GridStore : FObject {
-
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
@@ -757,29 +754,18 @@ GRID_INLET(0) {
 	while (n) {
 		if (chunk*sj>n) chunk=n/sj;
 		if (sj<=4 && sk<=4) switch ((sj-1)*4+(sk-1)) {
-#define DOT_ADD_MUL_3(sj,sk) for (int i=0; i<chunk; i++) dot_add_mul<T,sj,sk>( buf2+sk*i,data+sj*i,(T *)*r);
-		case  0: DOT_ADD_MUL_3(1,1); break;
-		case  1: DOT_ADD_MUL_3(1,2); break;
-		case  2: DOT_ADD_MUL_3(1,3); break;
-		case  3: DOT_ADD_MUL_3(1,4); break;
-		case  4: DOT_ADD_MUL_3(2,1); break;
-		case  5: DOT_ADD_MUL_3(2,2); break;
-		case  6: DOT_ADD_MUL_3(2,3); break;
-		case  7: DOT_ADD_MUL_3(2,4); break;
-		case  8: DOT_ADD_MUL_3(3,1); break;
-		case  9: DOT_ADD_MUL_3(3,2); break;
-		case 10: DOT_ADD_MUL_3(3,3); break;
-		case 11: DOT_ADD_MUL_3(3,4); break;
-		case 12: DOT_ADD_MUL_3(4,1); break;
-		case 13: DOT_ADD_MUL_3(4,2); break;
-		case 14: DOT_ADD_MUL_3(4,3); break;
-		case 15: DOT_ADD_MUL_3(4,4); break;
+		#define DOT_ADD_MUL_3(sj,sk) \
+			case (sj-1)*4+(sk-1): for (int i=0; i<chunk; i++) dot_add_mul<T,sj,sk>( buf2+sk*i,data+sj*i,(T *)*r); break;
+		DOT_ADD_MUL_3(1,1) DOT_ADD_MUL_3(1,2) DOT_ADD_MUL_3(1,3) DOT_ADD_MUL_3(1,4)
+		DOT_ADD_MUL_3(2,1) DOT_ADD_MUL_3(2,2) DOT_ADD_MUL_3(2,3) DOT_ADD_MUL_3(2,4)
+		DOT_ADD_MUL_3(3,1) DOT_ADD_MUL_3(3,2) DOT_ADD_MUL_3(3,3) DOT_ADD_MUL_3(3,4)
+		DOT_ADD_MUL_3(4,1) DOT_ADD_MUL_3(4,2) DOT_ADD_MUL_3(4,3) DOT_ADD_MUL_3(4,4)
 		} else switch (sj) {
-#define DOT_ADD_MUL_2(sj) for (int i=0; i<chunk; i++) dot_add_mul<T,sj>(sk,buf2+sk*i,data+sj*i,(T *)*r);
-		case 1: DOT_ADD_MUL_2(1); break;
-		case 2: DOT_ADD_MUL_2(2); break;
-		case 3: DOT_ADD_MUL_2(3); break;
-		case 4: DOT_ADD_MUL_2(4); break;
+#define DOT_ADD_MUL_2(sj) case sj: for (int i=0; i<chunk; i++) dot_add_mul<T,sj>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		DOT_ADD_MUL_2(1)
+		DOT_ADD_MUL_2(2)
+		DOT_ADD_MUL_2(3)
+		DOT_ADD_MUL_2(4)
 		default:for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
 		}
 		out->send(chunk*sk,buf2);
