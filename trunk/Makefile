@@ -131,7 +131,7 @@ abstractions/inv\*.pd: abstractions/inv0x2a.pd
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS)src/*.fcs format/*.fcs $(patsubst %,deprecated/@%.pd,$(DEPRECATED))
+	rm -f $(OBJS2) $(OBJS) src/*.fcs format/*.fcs $(patsubst %,deprecated/@%.pd,$(DEPRECATED))
 
 distclean:: clean
 	rm -f config.make config.log config.h
