@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 =begin
-	$Id: source_filter.rb 4452 2009-10-27 15:59:57Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 

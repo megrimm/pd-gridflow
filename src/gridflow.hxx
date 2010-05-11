@@ -1,6 +1,4 @@
 /*
-	$Id: gridflow.h 4535 2009-10-31 14:50:38Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 

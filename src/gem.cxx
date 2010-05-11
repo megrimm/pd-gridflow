@@ -1,6 +1,4 @@
 /*
-	$Id: gem.c 4621 2009-11-01 21:18:17Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 
@@ -235,12 +233,15 @@ GRID_INLET(1) {
 			((GemState92 *)state)->image;
 		if (!pb) {::post("gemstate has no pix"); return;}
 		imageStruct &im = pb->image;
+		//im.convertTo(im,GEM_RGBA);
 		BitPacking *bp;
 		switch (im.format) {
 		  case GL_RGBA: bp = bp_rgba; break;
 		  #ifdef GL_VERSION_1_2
 		  case GL_BGRA: bp = bp_bgra; break;
 		  #endif
+		  //case GL_LUMINANCE: break;
+		  //case 0x85b9: break;
 		  default: ::post("can't produce grid from pix format %d (0x%x)",im.format,im.format); return;}
 		switch (im.type) {
 		  case GL_UNSIGNED_BYTE: break; /*ok*/

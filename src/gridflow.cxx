@@ -1,6 +1,4 @@
 /*
-	$Id: rubyext.c 3621 2008-04-19 01:47:38Z matju $
-
 	GridFlow
 	Copyright (c) 2001-2010 by Mathieu Bouchard
 
