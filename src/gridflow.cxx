@@ -913,15 +913,32 @@ void startup_format();
 STARTUP_LIST(void)
 
 void blargh () {
+  fprintf(stderr,"begin blargh()");
 #if defined(MACOSX) || defined(__WIN32__)
   fprintf(stderr,"unhandled exception\n");
 #else
   void *array[25];
-  int nSize = backtrace(array, 25);
+  int nSize = backtrace(array,25);
   char **symbols = backtrace_symbols(array, nSize);
   for (int i=0; i<nSize; i++) fprintf(stderr,"%d: %s\n",i,symbols[i]);
   free(symbols);
 #endif
+  fprintf(stderr,"end blargh()");
+}
+
+char *short_backtrace () {
+	static char buf[1024]; buf[0]=0;
+	void *array[6];
+	int nSize = backtrace(array,4);
+	char **symbols = backtrace_symbols(array, nSize);
+	for (int i=3,j=0; i<nSize; i++) {
+		char *a = strchr(symbols[i],'(');
+		char *b = strchr(symbols[i],'+');
+		if (a&&b) j+=sprintf(buf+j,"%s%.*s",i>3?", \n  ":"[",b-a-1,a+1);
+		else      j+=sprintf(buf+j,"%s%s"  ,i>3?", \n  ":"[",symbols[i]);
+	}
+	sprintf(buf+strlen(buf),"]");
+	return buf;
 }
 
 static t_gobj *canvas_last (t_canvas *self) {
