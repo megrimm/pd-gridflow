@@ -99,7 +99,7 @@ GRID_INLET(0) {
 	\grin 1
 	\constructor (int which_dim=-1, Grid *r=0) {
 		this->which_dim = which_dim;
-		this->r=r;
+		this->r=r?r:new Grid(Dim(),int32_e,true);
 	}
 };
 
@@ -1221,7 +1221,7 @@ GRID_INLET(0) {
 	}
 	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
 	\decl void _n_set   (int inlet, float f) {
-		#define FOO(T) ((T *)*a)[inlet] = (T)f;
+		#define FOO(T) ((T *)*a)[inlet] = T(f);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
@@ -1232,6 +1232,11 @@ GRID_INLET(0) {
 		#define FOO(T) out->send(n,(T *)*a);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
+	}
+	\decl 0 list (...) {
+		if (argc>n) argc=n;
+		for (int i=0; i<argc; i++) _n_set(0,0,i,argv[i]);
+		_0_bang(0,0);
 	}
 	//\grin 0
 };
