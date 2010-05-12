@@ -251,17 +251,7 @@ def handle_end(line)
 	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
 	$stack.push frame
 	frame.grins.each {|i,v|
-		cli = "#{cl}::grinw_#{i}"
-		k = case v[1]  # b s i l f d
-		when    nil   ; [1,1,1,1,1,1]
-		when   'int32'; [0,0,1,0,0,0]
-		when   'int'  ; [1,1,1,1,0,0]
-		when 'float'  ; [0,0,0,0,1,1]
-		when 'float32'; [0,0,0,0,1,0]
-		when 'float64'; [0,0,0,0,0,1]
-		else raise 'BORK BORK BORK' end
-		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
-		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
+		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN_#{v[1]||'all'}(#{cl}::grinw_#{i});"
 		check = "CHECK_GRIN(#{cl},#{i});"
 		handle_def "#{i} grid(GridOutlet *foo) {#{check}in[#{i}]->begin(foo);}"
 		handle_def "#{i} list(...)             {#{check}in[#{i}]->from_list(argc,argv);}" if not frame.methods["_#{i}_list" ].done
