@@ -493,7 +493,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 }
 \def 0 very_long_name_that_nobody_uses(...) {
 	if (text.str().length()) text << "\n";
-	for (int i=0; i<argc; i++) text << (char)INT(argv[i]);
+	for (int i=0; i<argc; i++) text << char(TO(int32,argv[i]));
 }
 \end class {
 #ifdef DESIRE

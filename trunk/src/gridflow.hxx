@@ -245,7 +245,6 @@ BUILTIN_SYMBOLS(FOO)
 
 struct Numop;
 struct Pointer;
-#define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
 
 // trick to be able to define methods in t_atom

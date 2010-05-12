@@ -170,14 +170,9 @@ typedef struct {
 			} else {
 				if (winspec.a_type==A_SYMBOL) {
 					const char *winspec2 = string(winspec).data();
-					if (strncmp(winspec2,"0x",2)==0) {
-						window = strtol(winspec2+2,0,16);
-					} else {
-						window = atoi(winspec2); // huh?
-					}
-				} else {
-					window = INT(winspec);
-				}
+					if (strncmp(winspec2,"0x",2)==0) window = strtol(winspec2+2,0,16);
+					else 				 window = atoi(winspec2); // huh?
+				} else window = TO(int32,winspec);
 				is_owner = false;
 				sy = sx = pos[0] = pos[1] = 0;
 			}
