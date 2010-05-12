@@ -94,9 +94,9 @@ Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
     text = os.str();
 }
 
-void Barf::error(BFObject *bself) {
+void Barf::error(BFObject *bself, int winlet, const char *selector) {
 	if (!bself) RAISE("wtf?");
-	pd_error(bself,"%s: %s",bself->binbuf_string().data(),text.data());
+	pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,selector?selector:"(???)",text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 	std::ostringstream os; os << s->s_name;
@@ -579,7 +579,7 @@ static void BFObject_loadbang (BFObject *bself) {
     try {
 	FMethod m = funcall_lookup(bself,"_0_loadbang");
 	m(bself->self,0,0);
-    } catch (Barf &oozy) {oozy.error(bself);}
+    } catch (Barf &oozy) {oozy.error(bself,0,"loadbang");}
 }
 
 static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
@@ -598,7 +598,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	sprintf(buf,"_n_%s",selector->s_name);         m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc+1,argv  ); return;}
 	m = funcall_lookup(bself,"anything");        if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv  ); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf &oozy) {oozy.error(bself);}
+    } catch (Barf &oozy) {oozy.error(bself,winlet,selector->s_name);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);
@@ -662,7 +662,7 @@ static void BFObject_delete (BFObject *bself) {
 	try {
 	     delete bself->self;
 	     bself->self = (FObject *)0xdeadbeef;
-	} catch (Barf &oozy) {oozy.error(bself);}
+	} catch (Barf &oozy) {oozy.error(bself,-1,"destructor");}
 }
 
 //****************************************************************
@@ -940,7 +940,7 @@ char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 			char *demangled = (char *)malloc(1024);
 			size_t length;
 			int status;
-			char *result = abi::__cxa_demangle(mangled,demangled,&length,&status);
+			/* char *result = */ abi::__cxa_demangle(mangled,demangled,&length,&status);
 			j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
 			free(demangled);
 		}
@@ -1087,7 +1087,7 @@ BUILTIN_SYMBOLS(FOO)
 		   "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}}\n");
 	delete[] dirresult;
 	delete[] dirname;
-    } catch (Barf &oozy) {oozy.error(0);}
+    } catch (Barf &oozy) {oozy.error(0,-1,(char *)0);}
     signal(SIGSEGV,SIG_DFL);
     signal(SIGABRT,SIG_DFL);
     signal(SIGILL,SIG_DFL);

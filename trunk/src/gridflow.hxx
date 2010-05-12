@@ -191,7 +191,7 @@ struct Barf {
   string text;
   Barf(const char *s, ...);
   Barf(const char *file, int line, const char *func, const char *s, ...);
-  void error(BFObject *self);
+  void error(BFObject *self, int winlet, const char *selector);
   void error(t_symbol *s, int argc, t_atom *argv);
   ~Barf() {}
 };
