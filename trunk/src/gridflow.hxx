@@ -709,6 +709,10 @@ private:
 #define GRIN_float32(G) GRIN(0,0,0,0,G,0)
 #define GRIN_float64(G) GRIN(0,0,0,0,0,G)
 
+#define GRINDECL(I) \
+	template <class T>        void grin_##I  (GRIDHANDLER_ARGS(T)); \
+	template <class T> static void grinw_##I (GRIDHANDLER_ARGS(T)); \
+	static GridHandler grid_##I##_hand;
 
 // for use by source_filter.rb ONLY (for \decl \def \constructor)
 #define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
