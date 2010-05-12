@@ -25,19 +25,19 @@ $classes = []
 $exit = 0
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
-MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:continue)
+MethodDecl = Struct.new(:rettype,:selector,:args,:minargs,:maxargs,:where,:continue)
 Arg  = Struct.new(:type,:name,:default)
 Attr = Struct.new(:type,:name,:default,:virtual)
 
 class MethodDecl
 	def ==(o)
 		return false unless rettype==o.rettype && maxargs==o.maxargs
-		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
+		args.each_index{|i| args[i] == o.args[i] or return false }
 		return true
 	end
 	def ===(o)
 		return false unless rettype==o.rettype && maxargs==o.maxargs
-		arglist.each_index{|i| arglist[i].type == o.arglist[i].type and arglist[i].default == o.arglist[i].default or return false }
+		args.each_index{|i| args[i].type == o.args[i].type and args[i].default == o.args[i].default or return false }
 		return true
 	end
 	attr_accessor :done
@@ -74,19 +74,19 @@ end
 def parse_methoddecl(line,term)
 	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*(#{term})/.match line or
 		raise "syntax error #{where} #{line}"
-	rettype,selector,arglist,continue = $1,$2,$3,$4,$6
+	rettype,selector,args,continue = $1,$2,$3,$4,$6
 	if /^\d+$/ =~ rettype then
 		selector = "_"+rettype+"_"+selector
 		rettype = "void"
 	end
-	arglist,minargs,maxargs = parse_arglist arglist
-	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where,continue)
+	args,minargs,maxargs = parse_args args
+	MethodDecl.new(rettype,selector,args,minargs,maxargs,where,continue)
 end
 
-def parse_arglist(arglist)
-	arglist = arglist.split(/,/)
-	maxargs = arglist.length
-	args = arglist.map {|arg|
+def parse_args(args)
+	args = args.split(/,/)
+	maxargs = args.length
+	args = args.map {|arg|
 		if /^\s*\.\.\.\s*$/.match arg then maxargs=-1; next end
 		/^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/.match arg or
 			raise "syntax error in \"#{arg}\" #{where}"
@@ -98,8 +98,8 @@ def parse_arglist(arglist)
 	[args,minargs,maxargs]
 end
 
-def unparse_arglist(arglist,with_default=true)
-	arglist.map {|arg|
+def unparse_args(args,with_default=true)
+	args.map {|arg|
 		x="#{arg.type} #{arg.name}"
 		x << '=' << arg.default if with_default and arg.default
 		x
@@ -138,7 +138,7 @@ def handle_decl(line)
 	  handle_def(line,true)
 	else
 	  Out.print "#{m.rettype} #{m.selector}(VA"
-	  Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
+	  Out.print ", #{unparse_args m.args}" if m.args.length>0
 	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);"
 	end
 end
@@ -149,7 +149,7 @@ def check_argc(m)
 end
 
 def pass_args(m)
-	m.arglist.each_with_index{|arg,i|
+	m.args.each_with_index{|arg,i|
 		if arg.default then Out.print ",argc<#{i+1}?#{arg.default}:"
 		else		    Out.print                            "," end
 		Out.print "convert(argv[#{i}],(#{arg.type}*)0)"
@@ -187,7 +187,7 @@ def handle_def(line,in_class_block=false)
 	Out.print m.rettype+" "
 	Out.print "#{classname}::" unless in_class_block
 	Out.print m.selector+"(VA"
-	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
+	Out.print ","+unparse_args(n.args,false) if m.args.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
 end
@@ -202,7 +202,7 @@ def handle_constructor(line)
 	Out.print "#{m.selector}(sel,argc,argv"
 	pass_args m
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
-	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
+	Out.print ", #{unparse_args m.args}" if m.args.length>0
 	Out.print ") "+line[/\{.*/]
 end
 
