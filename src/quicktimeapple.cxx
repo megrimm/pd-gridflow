@@ -73,7 +73,7 @@ const char *oserr_find(long err)
 		buf2 = new uint8[dim.prod()];
 		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
 		if (err) ERR("QTNewGWorldFromPtr");
-		_0_colorspace(0,0,gensym("rgba"));
+		_0_colorspace(gensym("rgba"));
 		return;
 	}
 	~FormatQuickTimeApple() {
@@ -93,7 +93,7 @@ const char *oserr_find(long err)
 };
 
 \def 0 seek (int frame) {nframe=frame;}
-\def 0 rewind () {_0_seek(0,0,0);}
+\def 0 rewind () {_0_seek(0);}
 
 \def 0 bang () {
 	CGrafPtr savedPort;
