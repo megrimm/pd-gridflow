@@ -58,9 +58,9 @@ typedef std::string string;
 #define sys_gui(s) sys_gui(const_cast<char *>(s))
 
 #ifdef DES_BUGS
-#define DEF_IN post("> self=%08x %s",long(self),context);
+#define DEF_IN(CONTEXT) static const char *context = CONTEXT; post("> self=%08x %s",long(self),context);
 #else
-#define DEF_IN
+#define DEF_IN(CONTEXT) static const char *context = CONTEXT;
 #endif
 #define DEF_OUT
 

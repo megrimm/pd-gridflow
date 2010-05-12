@@ -178,7 +178,7 @@ def handle_def(line,in_class_block=false)
 	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
 	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
 	if /^_(\d+)_(\w+)$/ =~ m.selector then context = "inlet #{$1} method #{$2}" else context = m.selector end
-	Out.print "static const char *context = \"method #{m.selector}\"; DEF_IN;"
+	Out.print "DEF_IN(\"method #{m.selector}\");"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	check_argc m
 	Out.print "foo = " if m.rettype!="void"
@@ -197,7 +197,7 @@ def handle_constructor(line)
 	raise "missing \\class #{where}" if not frame or not ClassDecl===frame
 	m = parse_methoddecl("void constructor"+line,"(.*)$")
 	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
-	Out.print "const char *context = \"constructor\"; DEF_IN;"
+	Out.print "DEF_IN(\"constructor\");"
 	check_argc m
 	Out.print "#{m.selector}(sel,argc,argv"
 	pass_args m
@@ -231,8 +231,6 @@ end
 def handle_grin(line)
 	fields = line.split(/\s+/)
 	i = fields[0].to_i
-	c = $stack[-1].name
-	frame = $stack[-1]
 	Out.print "GRINDECL(#{i})"
 	handle_decl "#{i} grid(GridOutlet *foo);"
 	handle_decl "#{i} list(...);"
@@ -241,13 +239,12 @@ def handle_grin(line)
 end
 
 def handle_end(line)
-	frame = $stack.pop
+	frame = $stack[-1]
 	fields = line.split(/\s+/)
 	n = fields.length
 	if not ClassDecl===frame then raise "\\end: frame is not a \\class" end
 	cl = frame.name
 	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
-	$stack.push frame
 	frame.grins.each {|i,v|
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN_#{v[1]||'all'}(#{cl}::grinw_#{i});"
 		check = "CHECK_GRIN(#{cl},#{i});"
