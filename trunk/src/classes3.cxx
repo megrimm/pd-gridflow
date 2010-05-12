@@ -101,7 +101,6 @@ GRID_INLET(0) {
 };
 
 GRID_INLET(0) {
-	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	Dim &d = in.dim;
 	if (d.n != r->dim.n) RAISE("wrong number of dimensions");
@@ -830,13 +829,12 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 //****************************************************************
 \class GridLayer : FObject {
 	PtrGrid r;
-	\constructor () {r.constrain(expect_rgb_picture);}
+	\constructor () {r.constrain(expect_rgb_picture); r=new Grid(Dim(1,1,3),int32_e,true);}
 	\grin 0 int
 	\grin 1 int
 };
 
 GRID_INLET(0) {
-	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	Dim &a = in.dim;
 	expect_rgba_picture(a);
@@ -900,14 +898,15 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 		this->color.constrain(expect_max_one_dim);
 		this->polygon.constrain(expect_polygon);
 		this->op = op;
-		if (color) this->color=color;
-		if (polygon) {this->polygon=polygon; init_lines();}
+		this->color   = color   ? color   : new Grid(Dim(1)  ,int32_e,true);
+		this->polygon = polygon ? polygon : new Grid(Dim(0,2),int32_e,true);
+		changed();
 	}
 	\grin 0
 	\grin 1
 	\grin 2 int32
 	void init_lines();
-	void changed(t_symbol *s) {init_lines();}
+	void changed(t_symbol *s=0) {init_lines();}
 };
 void DrawPolygon::init_lines () {
 	if (!polygon) return;
@@ -934,12 +933,10 @@ static int order_by_starting_scanline (const void *a, const void *b) {return ((L
 static int order_by_column            (const void *a, const void *b) {return ((Line *)a)->x  - ((Line *)b)->x;}
 
 GRID_INLET(0) {
-	NOTEMPTY(color);
-	NOTEMPTY(polygon);
-	NOTEMPTY(lines);
 	SAME_TYPE(in,color);
 	if (in.dim.n!=3) RAISE("expecting 3 dimensions");
-	if (in.dim[2]!=color->dim[0]) RAISE("image does not have same number of channels as stored color");
+	if (in.dim[2]!=color->dim[0]) RAISE("image does not have same number of channels (%d) as stored color (%d)",
+	    in.dim[2], color->dim[0]);
 	out=new GridOutlet(this,0,in.dim,in.nt);
 	lines_start = lines_stop = 0;
 	in.set_chunk(1);
