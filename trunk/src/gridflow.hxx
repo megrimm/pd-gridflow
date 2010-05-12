@@ -219,10 +219,13 @@ struct Barf {
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
 
-#define    MINARGS(CONTEXT,ARGC,MIN    ) if ((ARGC)<(MIN)                ) \
-	RAISE("in %s, got %d args instead of at least %d"            ,(CONTEXT),(ARGC),(MIN)      );
-#define MINMAXARGS(CONTEXT,ARGC,MIN,MAX) if ((ARGC)<(MIN) || (ARGC)>(MAX)) \
-	RAISE("in %s, got %d args instead of at least %d, at most %d",(CONTEXT),(ARGC),(MIN),(MAX));
+#define  EXACTARGS(N      ) if (argc!=(N)             ) \
+	RAISE("in %s, got %d args instead of %d"                     ,context,argc,(N));
+#define    MINARGS(MIN    ) if (argc<(MIN)            ) \
+	RAISE("in %s, got %d args instead of at least %d"            ,context,argc,(MIN));
+#define MINMAXARGS(MIN,MAX) if (argc<(MIN)||argc>(MAX)) \
+	RAISE("in %s, got %d args instead of at least %d, at most %d",context,argc,(MIN),(MAX));
+
 #define CLASSINFO(THISCLASS) \
 	static void THISCLASS##_startup (FClass *fclass); \
 	static FObject *THISCLASS##_allocator (BFObject *bself, MESSAGE) {return new THISCLASS(bself,sel,argc,argv);} \
