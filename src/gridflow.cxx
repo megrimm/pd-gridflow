@@ -72,7 +72,9 @@ t_symbol *gridflow_folder;
 
 //using namespace std;
 
-BuiltinSymbols bsym;
+#define FOO(SYM,NAME) t_symbol *s_##SYM;
+BUILTIN_SYMBOLS(FOO)
+#undef FOO
 
 Barf::Barf(const char *s, ...) {
     std::ostringstream os;
@@ -821,8 +823,6 @@ void install2(FClass *fclass, const char *name, int inlets, int outlets) {
 	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
 
-static t_symbol *s_comma;
-
 /* This code handles nested lists because PureData doesn't do it */
 int handle_braces(int ac, t_atom *av) {
 	int stack[16];
@@ -1027,7 +1027,6 @@ void allow_big_stack () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
-    s_comma = gensym(",");
     post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
@@ -1050,7 +1049,7 @@ extern "C" void gridflow_setup () {
 	#ifndef __WIN32__
         srandom(rdtsc());
     #endif
-#define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
+#define FOO(SYM,NAME) s_##SYM = gensym(NAME);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	startup_number();
