@@ -95,7 +95,7 @@ void FormatQuartz_call(FormatQuartz *self);
 		[window setAcceptsMouseMovedEvents: YES];
 		clock = clock_new(this,(t_method)FormatQuartz_call);
 		clock_delay(clock,0);
-		_0_move(0,0,0,0);
+		_0_move(0,0);
 		mouse_state = 0;
 	}
 	~FormatQuartz () {

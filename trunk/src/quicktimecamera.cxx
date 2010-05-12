@@ -196,7 +196,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
   P<BitPacking> bit_packing3;
   \constructor (t_symbol *mode, int device) {
 	dim = Dim(240,320,3);
-	_0_colorspace(0,0,gensym("rgb"));
+	_0_colorspace(gensym("rgb"));
 	OSErr e;
 	rect.top=rect.left=0;
 	rect.bottom=dim[0]; rect.right=dim[1];
@@ -323,7 +323,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 }
 
 \def 0 get (t_symbol *s=0) {
-	FObject::_0_get(argc,argv,s);
+	FObject::_0_get(s);
 	if (!s) {
 		DigitizerInfo di;
 		OSErr e = VDGetDigitizerInfo(vdc,&di);
