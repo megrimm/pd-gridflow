@@ -323,9 +323,6 @@ struct CObject {
 	virtual ~CObject() {}
 };
 
-// you shouldn't use MethodDecl directly (used by source_filter.rb)
-struct MethodDecl {const char *selector; FMethod method;};
-
 #undef check
 
 //****************************************************************
@@ -705,6 +702,8 @@ private:
 #define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
 #define MESSAGE2 sel,argc,argv
 #define MESSAGE3 t_symbol *, int, t_atom2 *
+// you shouldn't use MethodDecl directly (used by source_filter.rb)
+struct MethodDecl {const char *selector; FMethod method;};
 struct AttrDecl {
 	string name;
 	string type;
@@ -715,12 +714,12 @@ struct FClass {
 	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);
 	const char *cname; // C++ name (not PD name)
-	int methodsn; MethodDecl *methods;
 	FClass *super;
 	int ninlets;
 	int noutlets;
 	t_class *bfclass;
 	string name;
+	std::map<string,FMethod> methods;
 	std::map<string,AttrDecl *> attrs;
 };
 

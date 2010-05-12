@@ -211,9 +211,7 @@ def handle_classinfo(line)
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
 	Out.print "static void #{cl}_startup (FClass *fclass); ALLOCATOR(#{cl});"
-	Out.print "static MethodDecl #{cl}_methods[] = {"
-	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(FMethod)#{frame.name}::#{method.selector}_wrap }" }.join(",")
-	Out.print "}; FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect},COUNT(#{cl}_methods),#{cl}_methods};"
+	Out.print "FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect}};"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
@@ -226,7 +224,8 @@ def handle_classinfo(line)
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(outlets[noutlets-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"
-	frame.attrs.each {|name,attr| Out.print "fclass->attrs[\"#{name}\"] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
+	frame.methods.each {|name,method| Out.print "fclass->methods[\"#{name}\"] = FMethod(#{frame.name}::#{method.selector}_wrap);" }
+	frame.attrs.each   {|name,attr|   Out.print "fclass->  attrs[\"#{name}\"           ] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
 	Out.print line.chomp
 end
 
