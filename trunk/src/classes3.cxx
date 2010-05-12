@@ -1223,6 +1223,7 @@ GRID_INLET(0) {
 		#undef FOO
 	}
 	\decl 0 list (...) {
+		//post("YOUHOU, de %s", short_backtrace(0,4));
 		if (argc>n) argc=n;
 		for (int i=0; i<argc; i++) _n_set(i,argv[i]);
 		_0_bang();
