@@ -921,6 +921,8 @@ void blargh () {
   fprintf(stderr,"end blargh()");
 }
 
+/* for debugging... linux-only */
+#if !defined(MACOSX) && !defined(__WIN32__)
 char *short_backtrace () {
 	static char buf[1024]; buf[0]=0;
 	void *array[6];
@@ -935,6 +937,7 @@ char *short_backtrace () {
 	sprintf(buf+strlen(buf),"]");
 	return buf;
 }
+#endif
 
 static t_gobj *canvas_last (t_canvas *self) {
 #ifdef DESIRE
