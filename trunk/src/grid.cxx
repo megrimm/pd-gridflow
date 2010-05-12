@@ -43,15 +43,14 @@
 
 void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	t_atom2 *a = (t_atom2 *)aa;
-	t_symbol *delim = gensym("#");
 	for (int i=0; i<n; i++) {
-		if (a[i] == delim) {
+		if (a[i] == s_sharp) {
 			int32 v[i];
 			if (i!=0 && a[i-1].a_type==A_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
 			init(Dim(i,v),nt);
 			CHECK_ALIGN(this->data,nt);
-			if (a[i] != delim) i++;
+			if (a[i] != s_sharp) i++;
 			i++; a+=i; n-=i;
 			goto fill;
 		}
@@ -195,7 +194,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTyp
 	t_atom a[1];
 	SETGRIDOUT(a,this);
 	if (parent) {
-		outlet_anything(parent->outlets[woutlet],bsym._grid,1,a);
+		outlet_anything(parent->outlets[woutlet],s_grid,1,a);
 		if (!dim.prod()) finish();
 	}
 }

@@ -237,16 +237,11 @@ struct FObject;
 struct t_atom2;
 typedef void (*FMethod)(FObject *, int, t_atom2 *);
 
-#define BUILTIN_SYMBOLS(MACRO) \
-	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
-	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(_in,"in") MACRO(_out,"out")
-
-extern struct BuiltinSymbols {
-#define FOO(_sym_,_str_) t_symbol *_sym_;
+#define BUILTIN_SYMBOLS(MACRO) MACRO(grid,"grid") MACRO(sharp,"#") MACRO(comma,",")
+	
+#define FOO(_sym_,_str_) extern t_symbol *s_##_sym_;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-} bsym;
 
 struct Numop;
 struct Pointer;
