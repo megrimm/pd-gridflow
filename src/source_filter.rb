@@ -124,11 +124,8 @@ def handle_attr(line)
 	end
 	type.gsub!(/\s+$/,"")
 	type.gsub!(/^\s+/,"")
-	if type=="bool" then
-		handle_decl "0 #{name} (#{type} #{name}=true);"
-	else
-		handle_decl "0 #{name} (#{type} #{name});"
-	end
+	if type=="bool" then handle_decl "0 #{name} (#{type} #{name}=true);"
+	else		     handle_decl "0 #{name} (#{type} #{name});" end
 end
 
 def handle_decl(line)
@@ -149,6 +146,15 @@ end
 def check_argc(m)
 	if m.maxargs==-1 then Out.print    "MINARGS(context,argc,#{m.minargs})"
 	else                  Out.print "MINMAXARGS(context,argc,#{m.minargs},#{m.maxargs})" end
+end
+
+def pass_args(m)
+	m.arglist.each_with_index{|arg,i|
+		if arg.default then Out.print ",argc<#{i+1}?#{arg.default}:"
+		else		    Out.print                            "," end
+		Out.print "convert(argv[#{i}],(#{arg.type}*)0)"
+	}
+	Out.print ");DEF_OUT;}"
 end
 
 def handle_def(line,in_class_block=false)
@@ -177,21 +183,13 @@ def handle_def(line,in_class_block=false)
 	check_argc m
 	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
-	m.arglist.each_with_index{|arg,i|
-		if arg.default then
-			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
-		else
-			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
-		end
-	}
-	Out.print ");DEF_OUT;} #{m.rettype} "
+	pass_args m
+	Out.print m.rettype+" "
 	Out.print "#{classname}::" unless in_class_block
 	Out.print m.selector+"(VA"
-	#puts "m=#{m} n=#{n}"
 	Out.print ","+unparse_arglist(n.arglist,false) if m.arglist.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
-	#Out.print "/*in_class_block=#{in_class_block.inspect}*/"
 end
 
 def handle_constructor(line)
@@ -202,14 +200,7 @@ def handle_constructor(line)
 	Out.print "const char *context = \"constructor\"; DEF_IN;"
 	check_argc m
 	Out.print "#{m.selector}(sel,argc,argv"
-	m.arglist.each_with_index{|arg,i|
-		if arg.default then
-			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
-		else
-			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
-		end
-	}
-	Out.print ");DEF_OUT;}"
+	pass_args m
 	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ") "+line[/\{.*/]
@@ -219,8 +210,7 @@ def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
-	Out.print "static void #{cl}_startup (FClass *fclass);"
-	Out.print "static FObject *#{cl}_allocator (BFObject *bself, MESSAGE) {return new #{cl}(bself,sel,argc,argv);}"
+	Out.print "static void #{cl}_startup (FClass *fclass); ALLOCATOR(#{cl});"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method| "{ \"#{method.selector}\",(FMethod)#{frame.name}::#{method.selector}_wrap }" }.join(",")
 	Out.print "}; FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect},COUNT(#{cl}_methods),#{cl}_methods};"
@@ -228,10 +218,7 @@ def handle_classinfo(line)
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
 		get << "if (s==gensym(\"#{name}\")) set_atom(a,#{name}#{virtual}); else "
-		if frame.methods["_0_"+name].done then
-			#STDERR.puts "skipping already defined \\attr #{name}"
-			next
-		end
+		next if frame.methods["_0_"+name].done
 		type,name,default = attr.to_a
 		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name}; changed(gensym(\"#{name}\"));}"
 	}
@@ -248,7 +235,7 @@ def handle_grin(line)
 	i = fields[0].to_i
 	c = $stack[-1].name
 	frame = $stack[-1]
-	Out.print "template <class T> void grin_#{i}(GRIDHANDLER_ARGS(T));"
+	Out.print "template <class T>        void grin_#{i}  (GRIDHANDLER_ARGS(T));"
 	Out.print "template <class T> static void grinw_#{i} (GRIDHANDLER_ARGS(T));"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "#{i} grid(GridOutlet *foo);"
@@ -267,7 +254,7 @@ def handle_end(line)
 	$stack.push frame
 	frame.grins.each {|i,v|
 		cli = "#{cl}::grinw_#{i}"
-		k = case v[1]
+		k = case v[1]  # b s i l f d
 		when    nil   ; [1,1,1,1,1,1]
 		when   'int32'; [0,0,1,0,0,0]
 		when   'int'  ; [1,1,1,1,0,0]
@@ -277,13 +264,10 @@ def handle_end(line)
 		else raise 'BORK BORK BORK' end
 		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
-		handle_def "#{i} grid(GridOutlet *foo) {CHECK_GRIN(#{cl},#{i});"+
-			"in[#{i}]->begin(foo);}"
-		handle_def "#{i} list(...) {CHECK_GRIN(#{cl},#{i});"+
-			"in[#{i}]->from_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
-		handle_def "#{i} float(float f) {CHECK_GRIN(#{cl},#{i});"+
-			"t_atom2 a[1]; SETFLOAT(a,f);"+
-			"in[#{i}]->from_atom(1,a);}" if not frame.methods["_#{i}_float"].done
+		check = "CHECK_GRIN(#{cl},#{i});"
+		handle_def "#{i} grid(GridOutlet *foo) {#{check}in[#{i}]->begin(foo);}"
+		handle_def "#{i} list(...)             {#{check}in[#{i}]->from_list(argc,argv);}" if not frame.methods["_#{i}_list" ].done
+		handle_def "#{i} float(float f)        {#{check}in[#{i}]->from_float(f);}"        if not frame.methods["_#{i}_float"].done
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop
