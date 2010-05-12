@@ -223,8 +223,10 @@ struct Barf {
 	RAISE("in %s, got %d args instead of at least %d"            ,(CONTEXT),(ARGC),(MIN)      );
 #define MINMAXARGS(CONTEXT,ARGC,MIN,MAX) if ((ARGC)<(MIN) || (ARGC)>(MAX)) \
 	RAISE("in %s, got %d args instead of at least %d, at most %d",(CONTEXT),(ARGC),(MIN),(MAX));
-#define ALLOCATOR(THISCLASS) \
-	static FObject *THISCLASS##_allocator (BFObject *bself, MESSAGE) {return new THISCLASS(bself,sel,argc,argv);}
+#define CLASSINFO(THISCLASS) \
+	static void THISCLASS##_startup (FClass *fclass); \
+	static FObject *THISCLASS##_allocator (BFObject *bself, MESSAGE) {return new THISCLASS(bself,sel,argc,argv);} \
+	FClass ci##THISCLASS = {THISCLASS##_allocator,THISCLASS##_startup};
 
 //****************************************************************
 
@@ -713,7 +715,6 @@ typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
 struct FClass {
 	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);
-	const char *cname; // C++ name (not PD name)
 	FClass *super;
 	int ninlets;
 	int noutlets;
