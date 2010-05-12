@@ -795,10 +795,9 @@ void list_free (t_list *self) {binbuf_free(self);}
 
 //----------------------------------------------------------------
 
-void fclass_install(FClass *fclass, FClass *super, size_t bytes) {
+void fclass_install(FClass *fclass, FClass *super) {
 	fclass->super = super;
 	if (fclass->startup) fclass->startup(fclass);
-	fclass->bytes = bytes;
 }
 
 void install2(FClass *fclass, const char *name, int inlets, int outlets) {

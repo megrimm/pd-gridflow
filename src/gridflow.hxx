@@ -721,11 +721,10 @@ struct FClass {
 	int noutlets;
 	t_class *bfclass;
 	string name;
-	size_t bytes;
 	std::map<string,AttrDecl *> attrs;
 };
 
-void fclass_install(FClass *fc, FClass *super, size_t bytes);
+void fclass_install(FClass *fc, FClass *super);
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
