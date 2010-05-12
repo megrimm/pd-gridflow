@@ -62,9 +62,9 @@ extern t_class *text_class;
 #endif
 #undef check
 
-//#ifdef __GNUC__
+#ifdef __GNUC__
 #include <cxxabi.h>
-//#endif
+#endif
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
