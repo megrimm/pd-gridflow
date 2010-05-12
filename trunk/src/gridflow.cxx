@@ -545,8 +545,10 @@ string gf_find_file (string x) {
 #define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
 
 static FMethod funcall_lookup (FClass *fclass, const char *sel) {
-	int n = fclass->methodsn;
-	for (int i=0; i<n; i++) if (strcmp(fclass->methods[i].selector,sel)==0) return fclass->methods[i].method;
+	string s = sel;
+	typeof(fclass->methods) &m = fclass->methods;
+	typeof(m.begin()) it = m.find(s);
+	if (it!=m.end()) return it->second;
 	if (fclass->super) return funcall_lookup(fclass->super,sel);
 	return 0;
 }
@@ -892,7 +894,7 @@ int handle_braces(int ac, t_atom *av) {
 	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name.data());
 	post(")");
 	post("methods (");
-	for (int i=0; i<fc->methodsn; i++) post("    %s",fc->methods[i].selector);
+	foreach(meth,fc->methods) post("    %s",meth->first.data());
 	post(")");
 }
 \classinfo {}
