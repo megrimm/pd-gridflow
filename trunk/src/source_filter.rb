@@ -210,8 +210,7 @@ def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
-	Out.print "static void #{cl}_startup (FClass *fclass); ALLOCATOR(#{cl});"
-	Out.print "FClass ci#{cl} = {#{cl}_allocator,#{cl}_startup,#{cl.inspect}};"
+	Out.print "CLASSINFO(#{cl})"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
@@ -225,7 +224,7 @@ def handle_classinfo(line)
 	handle_def get if frame.attrs.size>0
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"
 	frame.methods.each {|name,method| Out.print "fclass->methods[\"#{name}\"] = FMethod(#{frame.name}::#{method.selector}_wrap);" }
-	frame.attrs.each   {|name,attr|   Out.print "fclass->  attrs[\"#{name}\"           ] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
+	frame.attrs.each   {|name,attr|   Out.print "fclass->  attrs[\"#{name}\"] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
 	Out.print line.chomp
 end
 
