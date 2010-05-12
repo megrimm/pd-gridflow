@@ -155,7 +155,7 @@ def pass_args(m)
 	m.args.each_with_index{|arg,i|
 		Out.print "," if i>0 or m.maxargs==-1
 		Out.print "argc<#{i+1}?#{arg.default}:" if arg.default
-		Out.print "convert(argv[#{i}],(#{arg.type}*)0)"
+		Out.print "TO(#{arg.type},argv[#{i}])"
 	}
 	Out.print ");DEF_OUT;}"
 end
