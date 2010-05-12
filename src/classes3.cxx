@@ -1310,7 +1310,7 @@ static void expect_min_one_dim (const Dim &d) {
 		}
 		for (int i=0; i<numClusters; i++) OP(/)->map(chans,sdata+i*chans,(T)cdata[i]);
 		out = new GridOutlet(this,1,counts->dim,counts->nt); out->send(counts->dim.prod(),(int32 *)*counts);
-		out = new GridOutlet(this,0,  sums->dim,sums->nt);   out->send(  sums->dim.prod(),(T     *)*  sums);
+		out = new GridOutlet(this,0,  sums->dim,  sums->nt); out->send(  sums->dim.prod(),(T     *)*  sums);
 	}
 };
 

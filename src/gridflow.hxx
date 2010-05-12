@@ -826,7 +826,6 @@ extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #undef ARGS
 #define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[???]")
-#define NOTEMPTY(A) if (!(A)) RAISE("'%s' is empty",#A);
 #define SAME_TYPE(A,B) if ((A).nt != (B)->nt) RAISE("same type please (%s has %s; %s has %s)", \
 	#A, number_type_table[(A).nt].name, \
 	#B, number_type_table[(B)->nt].name);
