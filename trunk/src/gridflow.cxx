@@ -40,10 +40,10 @@
 #include <limits.h>
 
 #ifdef HAVE_DESIREDATA
-#warning Bleuet
+//#warning Bleuet
 #include "desire.h"
 #else
-#warning Vanille
+//#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"

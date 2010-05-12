@@ -338,7 +338,7 @@ GRID_INLET(0) {
 			if (row>maxrows) {puts("..."); break;}
 		}
 	}
-	end_hook(0,0);
+	end_hook();
 } GRID_FINISH {
 	std::ostringstream head;
 	dump_dims(head,in);
@@ -873,7 +873,8 @@ GRID_INPUT(1,r) {} GRID_END
 		this->to  =to;
 		this->step=step;
 	}
-	\decl 0 set (Grid *r=0) {from=new Grid(argv[0]);}
+	//\decl 0 set (Grid *l=0) {from=new Grid(argv[0]);}
+	\decl 0 set (Grid *l=0) {from=l;}
 	\decl 0 bang ();
 	\grin 0
 	\grin 1
@@ -934,7 +935,7 @@ void GridFor::trigger (T bogus) {
 
 GRID_INPUT(2,step) {} GRID_END
 GRID_INPUT(1,to) {} GRID_END
-GRID_INPUT(0,from) {_0_bang(0,0);} GRID_END
+GRID_INPUT(0,from) {_0_bang();} GRID_END
 \end class {install("#for",3,1); add_creator("@for");}
 
 //****************************************************************

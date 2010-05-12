@@ -168,7 +168,7 @@ static void stop () {
 			break;
 		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 		}
-		_0_title(0,0,string("GridFlow SDL"));
+		_0_title(string("GridFlow SDL"));
 	}
 	\grin 0 int
 	~FormatSDL () {

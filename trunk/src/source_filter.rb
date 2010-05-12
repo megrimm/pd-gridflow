@@ -137,8 +137,9 @@ def handle_decl(line)
 	if /^\{/ =~ m.continue
 	  handle_def(line,true)
 	else
-	  Out.print "#{m.rettype} #{m.selector}(VA"
-	  Out.print ", #{unparse_args m.args}" if m.args.length>0
+	  Out.print "#{m.rettype} #{m.selector}("
+	  Out.print "VA" if m.maxargs<0
+	  Out.print unparse_args m.args if m.args.length>0
 	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);"
 	end
 end
@@ -149,9 +150,10 @@ def check_argc(m)
 end
 
 def pass_args(m)
+	if m.maxargs==-1 then Out.print "argc,argv" end
 	m.args.each_with_index{|arg,i|
-		if arg.default then Out.print ",argc<#{i+1}?#{arg.default}:"
-		else		    Out.print                            "," end
+		Out.print "," if i>0 or m.maxargs==-1
+		Out.print "argc<#{i+1}?#{arg.default}:" if arg.default
 		Out.print "convert(argv[#{i}],(#{arg.type}*)0)"
 	}
 	Out.print ");DEF_OUT;}"
@@ -182,12 +184,13 @@ def handle_def(line,in_class_block=false)
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	check_argc m
 	Out.print "foo = " if m.rettype!="void"
-	Out.print " self->#{m.selector}(argc,argv"
+	Out.print " self->#{m.selector}("
 	pass_args m
 	Out.print m.rettype+" "
 	Out.print "#{classname}::" unless in_class_block
-	Out.print m.selector+"(VA"
-	Out.print ","+unparse_args(n.args,false) if m.args.length>0
+	Out.print m.selector+"("
+	Out.print "VA" if m.maxargs<0
+	Out.print unparse_args(n.args,false) if m.args.length>0
 	Out.print ")#{term} "
 	qlass.methods[m.selector].done=true
 end
@@ -199,9 +202,12 @@ def handle_constructor(line)
 	Out.print "#{frame.name}(BFObject *bself, MESSAGE) : #{frame.supername}(bself,MESSAGE2) {"
 	Out.print "DEF_IN(\"constructor\");"
 	check_argc m
-	Out.print "#{m.selector}(sel,argc,argv"
+	Out.print "#{m.selector}(sel"
+	Out.print "," if m.maxargs!=0
 	pass_args m
-	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
+	#Out.print "/* m.maxargs = #{m.maxargs} */"
+	Out.print "#{m.rettype} #{m.selector}(t_symbol *sel"
+	Out.print ", VA" if m.maxargs<0
 	Out.print ", #{unparse_args m.args}" if m.args.length>0
 	Out.print ") "+line[/\{.*/]
 end
@@ -213,7 +219,7 @@ def handle_classinfo(line)
 	Out.print "CLASSINFO(#{cl})"
 	get="void ___get(t_symbol *s=0) {t_atom a[1];"
 	frame.attrs.each {|name,attr|
-		virtual = if attr.virtual then "(0,0)" else "" end
+		virtual = if attr.virtual then "()" else "" end
 		get << "if (s==gensym(\"#{name}\")) set_atom(a,#{name}#{virtual}); else "
 		next if frame.methods["_0_"+name].done
 		type,name,default = attr.to_a

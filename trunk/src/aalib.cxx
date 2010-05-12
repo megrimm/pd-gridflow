@@ -41,7 +41,7 @@ static std::map<string,const aa_driver *> drivers;
 	\attr bool autodraw;
 	bool raw_mode;
 	/* !@#$ varargs missing here */
-	\constructor (t_symbol *mode, string target) {
+	\constructor (t_symbol *mode, string target, ...) {
 		context=0; autodraw=1;
 		argc-=2; argv+=2;
 		char *argv2[argc];

@@ -32,7 +32,7 @@ extern "C" {
 	png_structp png;
 	png_infop info;
 	\constructor (t_symbol *mode, string filename) {
-		Format::_0_open(0,0,mode,filename);
+		Format::_0_open(mode,filename);
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 		bit_packing = new BitPacking(is_le(),3,3,mask);
 	}

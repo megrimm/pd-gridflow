@@ -158,15 +158,15 @@ struct Frame {uint8 *p; size_t n;};
 		//WIOCTL(fd, VIDIOCGCAP, &cap);
 		WIOCTL(fd, VIDIOC_QUERYCAP, &cap);
 		//_0_size(0,0,cap.maxheight,cap.maxwidth);
-		_0_size(0,0,240,320);
+		_0_size(240,320);
 		t_symbol *card = safe_gensym((char *)cap.card,sizeof(cap.card));
 		//t_symbol *bus = safe_gensym((char *)cap.bus_info,sizeof(cap.bus_info));
 		//this->name = symprintf("%s_on_%s",card->s_name,bus->s_name);
 		this->name = card;
 		//WIOCTL(fd, VIDIOCGPICT,&vp);
 		//int checklist[] = {V4L2_PIX_FMT_RGB24,V4L2_PIX_FMT_YVU420};
-		_0_colorspace(0,0,gensym("rgb"));
-		_0_channel(0,0,0);
+		_0_colorspace(gensym("rgb"));
+		_0_channel(0);
 	}
 	void frame_finished (uint8 *buf);
 
@@ -203,7 +203,7 @@ struct Frame {uint8 *p; size_t n;};
 };
 
 \def 0 get (t_symbol *s=0) {
-	FObject::_0_get(argc,argv,s);
+	FObject::_0_get(s);
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
 		t_atom a[2];

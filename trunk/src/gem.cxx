@@ -222,7 +222,7 @@ GRID_INLET(1) {
 	\constructor () {
 		yflip = false;
 		cast = int32_e;
-		_0_colorspace(0,0,gensym("rgba"));
+		_0_colorspace(gensym("rgba"));
 	}
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);

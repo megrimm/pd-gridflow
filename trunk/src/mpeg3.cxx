@@ -43,15 +43,12 @@
 	#endif
 		if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
 	}
-	\decl 0 seek (int32 frame);
-	\decl 0 rewind ();
+	\decl 0 seek (int32 frame) {
+		mpeg3_set_frame(mpeg,clip(frame,int32(0),int32(mpeg3_video_frames(mpeg,track)-1)),track);
+	}
+	\decl 0 rewind () {_0_seek(0);}
 	\decl 0 bang ();
 };
-
-\def 0 seek (int32 frame) {
-	mpeg3_set_frame(mpeg,clip(frame,int32(0),int32(mpeg3_video_frames(mpeg,track)-1)),track);
-}
-\def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
 	int nframe = mpeg3_get_frame(mpeg,track);
