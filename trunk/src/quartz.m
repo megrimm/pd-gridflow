@@ -312,14 +312,14 @@ static void convert_number_type(int n, T *out, S *in) {
 }
 
 GRID_INLET(0) {
-	if (in->dim->n!=3) RAISE("expecting 3 dims, not %d", in->dim->n);
-	int c=in->dim->get(2);
-	if (c!=3&&c!=4) RAISE("expecting 3 or 4 channels, not %d", in->dim->get(2));
-	[widget imageHeight: in->dim->get(0) width: in->dim->get(1)];
-	in->set_chunk(1);
+	if (in.dim.n!=3) RAISE("expecting 3 dims, not %d", in.dim.n);
+	int c=in.dim[2];
+	if (c!=3&&c!=4) RAISE("expecting 3 or 4 channels, not %d", in.dim[2]);
+	[widget imageHeight: in.dim[0] width: in.dim[1]];
+	in.set_chunk(1);
 } GRID_FLOW {
-	int off = dex/in->dim->prod(2);
-	int c=in->dim->get(2);
+	int off = dex/in.dim.prod(2);
+	int c=in.dim[2];
 	uint8 *data2 = ((uint8 *)[widget imageData])+off*4;
 //	convert_number_type(n,data2,data);
 	if (c==3) {
