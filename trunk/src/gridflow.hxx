@@ -223,6 +223,8 @@ struct Barf {
 	RAISE("in %s, got %d args instead of at least %d"            ,(CONTEXT),(ARGC),(MIN)      );
 #define MINMAXARGS(CONTEXT,ARGC,MIN,MAX) if ((ARGC)<(MIN) || (ARGC)>(MAX)) \
 	RAISE("in %s, got %d args instead of at least %d, at most %d",(CONTEXT),(ARGC),(MIN),(MAX));
+#define ALLOCATOR(THISCLASS) \
+	static FObject *THISCLASS##_allocator (BFObject *bself, MESSAGE) {return new THISCLASS(bself,sel,argc,argv);}
 
 //****************************************************************
 
@@ -686,6 +688,7 @@ struct GridInlet : CObject {
 	template <class T> void flow(long n, T *data); // n=-1 is begin, and n=-2 is finish.
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
 	void from_atom(VA) {Grid t(argv[0]); from_grid(&t);}
+	void from_float(float f) {t_atom2 a[1]; SETFLOAT(a,f); from_atom(1,a);}
 	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);
 private:
