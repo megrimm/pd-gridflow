@@ -286,7 +286,7 @@ template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (cons
 //a reference counting pointer class
 //note: T <= CObject
 //used mostly as P<Grid>, P<BitPacking>
-extern char *short_backtrace ();
+extern char *short_backtrace (int start=3, int end=4);
 template <class T> class P {
 public:
 

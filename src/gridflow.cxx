@@ -55,12 +55,16 @@ extern t_class *text_class;
 //#include "bundled/g_canvas.h"
 //#endif
 
-/* for exception-handling in 0.9.x... Linux-only */
+/* for exception-handling in 0.9.x and 9.x... Linux-only */
 #if !defined(MACOSX) && !defined(__WIN32__)
 #include <exception>
 #include <execinfo.h>
 #endif
 #undef check
+
+//#ifdef __GNUC__
+#include <cxxabi.h>
+//#endif
 
 std::map<string,FClass *> fclasses;
 std::map<t_class *,FClass *> fclasses_pd;
@@ -923,16 +927,24 @@ void blargh () {
 
 /* for debugging... linux-only */
 #if !defined(MACOSX) && !defined(__WIN32__)
-char *short_backtrace () {
+char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 	static char buf[1024]; buf[0]=0;
-	void *array[6];
-	int nSize = backtrace(array,4);
+	void *array[end];
+	int nSize = backtrace(array,end);
 	char **symbols = backtrace_symbols(array, nSize);
-	for (int i=3,j=0; i<nSize; i++) {
+	for (int i=start,j=0; i<nSize; i++) {
 		char *a = strchr(symbols[i],'(');
 		char *b = strchr(symbols[i],'+');
-		if (a&&b) j+=sprintf(buf+j,"%s%.*s",i>3?", \n  ":"[",b-a-1,a+1);
-		else      j+=sprintf(buf+j,"%s%s"  ,i>3?", \n  ":"[",symbols[i]);
+		if (a&&b) {
+			char mangled[1024]; sprintf(mangled,"%.*s",b-a-1,a+1);
+			char *demangled = (char *)malloc(1024);
+			size_t length;
+			int status;
+			char *result = __cxxabiv1::__cxa_demangle(mangled,demangled,&length,&status);
+			j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
+			free(demangled);
+		}
+		else    j+=sprintf(buf+j,"%s%s",  i>start?", \n  ":"[",symbols[i]);
 	}
 	sprintf(buf+strlen(buf),"]");
 	return buf;
