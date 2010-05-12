@@ -1036,10 +1036,9 @@ static void expect_position(const Dim &d) {
 		alpha=false; tile=false;
 		this->op = op;
 		this->position.constrain(expect_position);
-		this->image.constrain(expect_picture);
-		if (image) this->image=image;
-		if (position) this->position=position;
-		else this->position=new Grid(Dim(2),int32_e,true);
+		this->image   .constrain(expect_picture);
+		this->image    = image    ? image    : new Grid(Dim(1,1,3),int32_e,true);
+		this->position = position ? position : new Grid(Dim(2),int32_e,true);
 	}
 	\grin 0
 	\grin 1
@@ -1086,8 +1085,6 @@ template <class T> void DrawImage::draw_segment(T *obuf, T *ibuf, int ry, int x0
 }
 
 GRID_INLET(0) {
-	NOTEMPTY(image);
-	NOTEMPTY(position);
 	SAME_TYPE(in,image);
 	if (in.dim.n!=3) RAISE("expecting 3 dimensions");
 	if (image->dim.n!=3) RAISE("expecting 3 dimensions in right_hand");
@@ -1143,8 +1140,8 @@ GRID_INPUT(2,position) {} GRID_END
 	\grin 2 int32
 	\constructor (Numop *op=op_put, Grid *color=0, Grid *points=0) {
 		this->op = op;
-		if (color) this->color=color;
-		if (points) this->points=points;
+		this->color  = color  ? color  : new Grid(Dim(),int32_e,true);
+		this->points = points ? points : new Grid(Dim(),int32_e,true);
 	}
 };
 
@@ -1152,8 +1149,6 @@ GRID_INPUT(1,color) {} GRID_END
 GRID_INPUT(2,points) {} GRID_END
 
 GRID_INLET(0) {
-	NOTEMPTY(color);
-	NOTEMPTY(points);
 	SAME_TYPE(in,color);
 	out=new GridOutlet(this,0,in.dim,in.nt);
 	if (points->dim.n!=2) RAISE("points should be a 2-D grid");
@@ -1296,7 +1291,11 @@ static void expect_min_one_dim (const Dim &d) {
 	\attr PtrGrid r;
 	\attr PtrGrid sums;
 	\attr PtrGrid counts;
-	\constructor (int v) {_1_float(0,0,v); r.constrain(expect_min_one_dim);}
+	\constructor (int v) {
+		_1_float(0,0,v);
+		r.constrain(expect_min_one_dim);
+		r = new Grid(Dim(0));
+	}
 	\decl 1 float (int v) {numClusters = v;}
 	\grin 0 int32
 	\grin 2
@@ -1310,15 +1309,12 @@ static void expect_min_one_dim (const Dim &d) {
 			cdata[*ldata]++;
 		}
 		for (int i=0; i<numClusters; i++) OP(/)->map(chans,sdata+i*chans,(T)cdata[i]);
-		out = new GridOutlet(this,1,counts->dim,counts->nt);
-		out->send(counts->dim.prod(),(int32 *)*counts);
-		out = new GridOutlet(this,0,sums->dim,sums->nt);
-		out->send(sums->dim.prod(),(T *)*sums);
+		out = new GridOutlet(this,1,counts->dim,counts->nt); out->send(counts->dim.prod(),(int32 *)*counts);
+		out = new GridOutlet(this,0,  sums->dim,sums->nt);   out->send(  sums->dim.prod(),(T     *)*  sums);
 	}
 };
 
 GRID_INLET(0) {
-	NOTEMPTY(r);
 	int32 v[r->dim.n];
 	COPY(v,r->dim.v,r->dim.n-1);
 	v[r->dim.n-1]=1;
