@@ -458,14 +458,9 @@ GRID_INLET(0) {
 	\attr int numClusters;
 	\attr CvTermCriteria termcrit;
 	\grin 0 float32
-	\decl 1 float (int v);
-	\constructor (int v) {
-		_1_float(0,0,v);
-		termcrit = CvTermCriteria();
-	}
+	\decl 1 float (int v) {numClusters = v;}
+	\constructor (int v) {_1_float(v); termcrit = CvTermCriteria();}
 };
-
-\def 1 float (int v) {numClusters = v;}
 
 //post("typeof(a)=%p typeof(c)=%p typeof(CvMat)=%p",cvTypeOf(a),cvTypeOf(c),cvFindType("opencv-matrix"));
 //for (CvTypeInfo *t = cvFirstType(); t; t=t->next) post("type %s",t->type_name);

@@ -21,10 +21,10 @@
 
 #include "gridflow.hxx.fcs"
 #ifdef DESIRE
-#warning Bleuet
+//#warning Bleuet
 #include "desire.h"
 #else
-#warning Vanille
+//#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"
@@ -207,7 +207,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listflatten",1,1);}
 
 // does not do recursive comparison of lists.
-static bool atom_eq (t_atom &a, t_atom &b) {
+static bool atom_eq (const t_atom &a, const t_atom &b) {
 	if (a.a_type!=b.a_type) return false;
 	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
 	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
@@ -228,9 +228,9 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 		at = new t_atom[argc];
 		for (int i=0; i<argc; i++) at[i] = argv[i];
 	}
-	\decl 0 float( float     f) {find(argv);}
-	\decl 0 symbol(t_symbol *s) {find(argv);}
-	void find (t_atom *a) {
+	\decl 0 float (t_atom2 a) {find(&a);}
+	\decl 0 symbol(t_atom2 a) {find(&a);}
+	void find (const t_atom *a) {
 		int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
 		outlet_float(outlets[0],i==ac?-1:i);
 	}
@@ -280,11 +280,11 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 		int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
 		outlet_float(outlets[i],f);
 	}
-	\decl 0 list(float f) {_0_float(argc,argv,f);}
+	\decl 0 list(float f) {_0_float(f);}
 	\decl void _n_float(int i, float f);
 };
  // precedence problem in dispatcher... does this problem still exist?
-\def void _n_float(int i, float f) {if (!i) _0_float(argc,argv,f); else mosusses[i-1] = f;}
+\def void _n_float(int i, float f) {if (!i) _0_float(f); else mosusses[i-1] = f;}
 \end class {install("range",1,1); add_creator("gf/range");}
 
 //****************************************************************
@@ -1055,21 +1055,21 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class UserTime : FObject {
 	clock_t time;
-	\constructor () {_0_bang(argc,argv);}
+	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
 	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
 };
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
-	\constructor () {_0_bang(argc,argv);}
+	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
 	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
 };
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
-	\constructor () {_0_bang(argc,argv);}
+	\constructor () {_0_bang();}
 	\decl 0 bang () {time=rdtsc();}
 	\decl 1 bang () {outlet_float(outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 };
@@ -1099,9 +1099,9 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		}
 		format = o.str();
 	}
-	\decl 0 bang  ()             {_0_list(0,0);}
-	\decl 0 float (float f)      {_0_list(argc,argv);}
-	\decl 0 symbol (t_symbol *s) {_0_list(argc,argv);}
+	\decl 0 bang   ()          {_0_list(0,0);}
+	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...);
 };
 
@@ -1550,8 +1550,8 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
 		if (!s) {
-			_0_get(0,0,gensym("version"));
-			_0_get(0,0,gensym("folder"));
+			_0_get(gensym("version"));
+			_0_get(gensym("folder"));
 		}
 		if (s==gensym("version")) {
 			t_atom a[3];

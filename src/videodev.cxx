@@ -235,9 +235,9 @@ t_symbol *safe_gensym(const char *name) {
 		name = safe_gensym(vcaps.name);
 		WIOCTL(fd, VIDIOCGPICT,&vp);
 		detect_palettes();
-		_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
-		_0_colorspace(0,0,gensym("rgb"));
-		_0_channel(0,0,0);
+		_0_size(vcaps.maxheight,vcaps.maxwidth);
+		_0_colorspace(gensym("rgb"));
+		_0_channel(0);
 	}
 	void frame_finished (uint8 *buf);
 
@@ -306,7 +306,7 @@ t_symbol *safe_gensym(const char *name) {
 	if (!use_pwc && (s==gensym("white_mode")      || s==gensym("white_red")   || s==gensym("white_blue") ||
 			 s==gensym("white_speed")     || s==gensym("white_delay") || s==gensym("auto_gain")  ||
 			 s==gensym("noise_reduction") || s==gensym("compression") || s==gensym("framerate"))) return;
-	FObject::_0_get(argc,argv,s);
+	FObject::_0_get(s);
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
 		t_atom a[2];
@@ -528,7 +528,7 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) warn("no channel #%d", value);
 	//gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
+	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0);
 	has_tuner = (vcaps.type & VID_TYPE_TUNER && vchan.tuners > 1);
 }
 \def int channel () {return current_channel;}

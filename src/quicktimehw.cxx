@@ -60,7 +60,7 @@ static std::map<string,string> fourccs;
 				RAISE("quicktime: unsupported codec: %s", quicktime_video_compressor(anim,track));
 	*/
 		}
-		_0_colorspace(0,0,string("rgb"));
+		_0_colorspace(string("rgb"));
 		quicktime_set_cpus(anim,1);
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 		bit_packing = new BitPacking(is_le(),3,3,mask);
@@ -68,7 +68,7 @@ static std::map<string,string> fourccs;
 	}
 	\decl 0 bang ();
 	\decl 0 seek (int32 frame);
-	\decl 0 rewind ();
+	\decl 0 rewind () {_0_seek(0);}
 	\decl 0 force_size (int32 height, int32 width);
 	\decl 0 colorspace (string c);
 	\decl 0 parameter (string name, int32 value);
@@ -88,7 +88,6 @@ static std::map<string,string> fourccs;
 \def 0 seek (int32 frame) {
 	quicktime_set_video_position(anim,clip(frame,int32(0),int32(quicktime_video_length(anim,track)-1)),track);
 }
-\def 0 rewind () {_0_seek(0,0,0);}
 
 \def 0 bang () {
 	if (with_audio) {

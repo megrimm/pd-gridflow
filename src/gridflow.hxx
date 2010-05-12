@@ -851,7 +851,6 @@ void add_creator2(FClass *fclass, const char *name);
 void add_creator3(FClass *fclass, const char *name);
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
 void call_super(int argc, t_atom *argv);
-#define SUPER call_super(argc,argv);
 
 \class Format : FObject {
 	int mode;

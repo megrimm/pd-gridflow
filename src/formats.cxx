@@ -110,7 +110,7 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 	if (mode==gensym("out")) fmode="w"; else
 	#endif
 	RAISE("bad mode");
-	if (f) _0_close(0,0);
+	if (f) _0_close();
 	if (mode==gensym("in")) {filename = gf_find_file(filename);}
 	f = fopen(filename.data(),fmode);
 	if (!f) RAISE("can't open file '%s': %s",filename.data(),strerror(errno));
@@ -129,7 +129,7 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 \def 0 cast(NumberTypeE nt) {cast = nt;}
 
 \def 0 seek(int frame) {
-	if (!frame) {_0_rewind(0,0); return;}
+	if (!frame) {_0_rewind(); return;}
 	RAISE("don't know how to seek for frame other than # 0");
 }
 
@@ -142,7 +142,7 @@ Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
 	frame = 0;
 }
 
-Format::~Format () {_0_close(0,0);}
+Format::~Format () {_0_close();}
 \end class Format {}
 
 /* This is the Grid format I defined: */
@@ -167,7 +167,7 @@ struct GridHeader {
 	\constructor (t_symbol *mode, string filename) {
 		nt = int32_e;
 		endian = is_le();
-		_0_open(0,0,mode,filename);
+		_0_open(mode,filename);
 	}
 	\decl 0 bang ();
 	\decl 0 headerless (...);
@@ -221,7 +221,7 @@ struct GridHeader {
 	out.send(nn,(T *)data);}
 TYPESWITCH(nt,FOO,)
 #undef FOO
-	SUPER;
+	call_super(0,0);
 }
 
 GRID_INLET(0) {
@@ -277,9 +277,7 @@ TYPESWITCH(in.nt,FOO,)
 
 \class FormatNetPBM : Format {
 	\grin 0
-	\constructor (t_symbol *mode, string filename) {
-		Format::_0_open(0,0,mode,filename);
-	}
+	\constructor (t_symbol *mode, string filename) {Format::_0_open(mode,filename);}
 	uint32 getuint() {
 		uint32 i=0;
 		char ch; do {

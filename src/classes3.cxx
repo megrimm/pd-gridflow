@@ -1214,8 +1214,8 @@ GRID_INLET(0) {
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
-	\decl void _n_float (int inlet, float f) {_n_set(argc,argv,inlet,f); _0_bang(argc,argv);}
-	\decl void _n_list  (int inlet, float f) {_n_set(argc,argv,inlet,f); _0_bang(argc,argv);}
+	\decl void _n_float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
+	\decl void _n_list  (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl 0 bang () {
 		out=new GridOutlet(this,0,a->dim,a->nt);
 		#define FOO(T) out->send(n,(T *)*a);
@@ -1224,8 +1224,8 @@ GRID_INLET(0) {
 	}
 	\decl 0 list (...) {
 		if (argc>n) argc=n;
-		for (int i=0; i<argc; i++) _n_set(0,0,i,argv[i]);
-		_0_bang(0,0);
+		for (int i=0; i<argc; i++) _n_set(i,argv[i]);
+		_0_bang();
 	}
 	//\grin 0
 };
@@ -1259,7 +1259,7 @@ GRID_INLET(0) {
 	\decl 0 axis (int from, int to, int n);
 	\constructor (int from=0, int to=1, int n=2) {
 		angle=0;
-		_0_axis(0,0,from,to,n);
+		_0_axis(from,to,n);
 	}
 	\decl 1 float(int angle) {this->angle = angle;}
 };
@@ -1292,7 +1292,7 @@ static void expect_min_one_dim (const Dim &d) {
 	\attr PtrGrid sums;
 	\attr PtrGrid counts;
 	\constructor (int v) {
-		_1_float(0,0,v);
+		_1_float(v);
 		r.constrain(expect_min_one_dim);
 		r = new Grid(Dim(0));
 	}

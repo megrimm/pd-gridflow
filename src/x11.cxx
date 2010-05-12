@@ -208,9 +208,9 @@ typedef struct {
 			Window root; int x,y; unsigned sx,sy,sb,depth;
 			XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
 			post("sx=%d sy=%d",sx,sy);
-			_0_out_size(argc,argv,sy,sx);
+			_0_out_size(sy,sx);
 		}
-		_0_border(0,0,1);
+		_0_border(1);
 	}
 
 	\decl 0 bang ();
