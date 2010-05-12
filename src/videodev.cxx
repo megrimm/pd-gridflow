@@ -39,15 +39,12 @@
 
 #ifdef HAVE_LIBV4L1
 #include <libv4l1.h>
-//#define open   v4l1_open
 #define close  v4l1_close
 #define ioctl  v4l1_ioctl
 #define mmap   v4l1_mmap
 #define munmap v4l1_munmap
 #define read   v4l1_read
-#warning Using libv4l1 !!!
 #else
-#warning NOT Using libv4l1 !!!
 #define v4l1_open(a,b) (RAISE("this [#io.videodev] wasn't compiled with libv4l1 support"),-1)
 #endif
 
