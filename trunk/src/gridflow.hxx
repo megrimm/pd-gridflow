@@ -700,7 +700,16 @@ private:
 #define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TL,TF,TD}
 #else
 #define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TF}
+#define GRIN_all(G)     GRIN(G,G,G,G,G,G)
+#define GRIN_int(G)     GRIN(G,G,G,G,0,0)
+#define GRIN_int32(G)   GRIN(0,0,G,0,0,0)
+#define GRIN_float(G)   GRIN(0,0,0,0,G,G)
+#define GRIN_float32(G) GRIN(0,0,0,0,G,0)
+#define GRIN_float64(G) GRIN(0,0,0,0,0,G)
+
 #endif // HAVE_LITE
+
+// for use by source_filter.rb ONLY (for \decl \def \constructor)
 #define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
 #define MESSAGE2 sel,argc,argv
 #define MESSAGE3 t_symbol *, int, t_atom2 *
