@@ -940,7 +940,7 @@ char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 			char *demangled = (char *)malloc(1024);
 			size_t length;
 			int status;
-			char *result = __cxxabiv1::__cxa_demangle(mangled,demangled,&length,&status);
+			char *result = abi::__cxa_demangle(mangled,demangled,&length,&status);
 			j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
 			free(demangled);
 		}
