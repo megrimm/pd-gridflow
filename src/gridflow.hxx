@@ -58,9 +58,9 @@ typedef std::string string;
 #define sys_gui(s) sys_gui(const_cast<char *>(s))
 
 #ifdef DES_BUGS
-#define DEF_IN(CONTEXT) static const char *context = CONTEXT; post("> self=%08x %s",long(self),context);
+#define DEF_IN(CONTEXT) static const char *context = CONTEXT; context=context; post("> self=%08x %s",long(self),context);
 #else
-#define DEF_IN(CONTEXT) static const char *context = CONTEXT;
+#define DEF_IN(CONTEXT) static const char *context = CONTEXT; context=context;
 #endif
 #define DEF_OUT
 
@@ -219,12 +219,9 @@ struct Barf {
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
 
-#define  EXACTARGS(N      ) if (argc!=(N)             ) \
-	RAISE("in %s, got %d args instead of %d"                     ,context,argc,(N));
-#define    MINARGS(MIN    ) if (argc<(MIN)            ) \
-	RAISE("in %s, got %d args instead of at least %d"            ,context,argc,(MIN));
-#define MINMAXARGS(MIN,MAX) if (argc<(MIN)||argc>(MAX)) \
-	RAISE("in %s, got %d args instead of at least %d, at most %d",context,argc,(MIN),(MAX));
+#define  EXACTARGS(N      ) if (argc!=(N)             ) RAISE("got %d args instead of %d"                     ,argc,(N));
+#define    MINARGS(MIN    ) if (argc<(MIN)            ) RAISE("got %d args instead of at least %d"            ,argc,(MIN));
+#define MINMAXARGS(MIN,MAX) if (argc<(MIN)||argc>(MAX)) RAISE("got %d args instead of at least %d, at most %d",argc,(MIN),(MAX));
 
 #define CLASSINFO(THISCLASS) \
 	static void THISCLASS##_startup (FClass *fclass); \
