@@ -510,7 +510,7 @@ GRID_INLET(1) {
 	cs = in.dim.prod(chunk);
 } GRID_FLOW {
 	if (!put_at) { // reassign
-		COPY(((T *)*(r.next ? r.next.p : &*r.p))+dex, data, n);
+		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in.dex, data, n);
 		return;
 	}
 	// put_at (...)
@@ -573,7 +573,7 @@ GRID_INLET(0) {
 		T tada[pn];
 		COPY(tada,data,pn);
 		if (loop>1) {
-			if (dex+pn <= loop) op->zip(pn/op->size,tada,rdata+out->dex); else {
+			if (in.dex+pn <= loop) op->zip(pn/op->size,tada,rdata+out->dex); else {
 				// !@#$ should prebuild and reuse this array when "loop" is small
 				T data2[pn];
 				long ii = mod(out->dex,loop);
@@ -985,7 +985,7 @@ GRID_INLET(0) {
 	if (a<b) temp=new Grid(Dim(a),in.nt);
 	out=new GridOutlet(this,0,dim,in.nt);
 } GRID_FLOW {
-	long i = dex;
+	long i = in.dex;
 	if (!temp) {long n2 = min(n,   dim.prod()-i);                             if (n2>0) out->send(n2,data);}
 	else       {long n2 = min(n,in.dim.prod()-i); COPY((T *)*temp+i,data,n2); if (n2>0) out->send(n2,data);}
 } GRID_FINISH {

@@ -605,7 +605,7 @@ GRID_INLET(0) {
 	int bypl = ximage->bytes_per_line;
 	int sxc = in.dim.prod(1);
 	int sx = in.dim[1];
-	int y = dex/sxc;
+	int y = in.dex/sxc;
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		// convert line
 		if (use_stripes) {

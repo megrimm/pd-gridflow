@@ -123,7 +123,7 @@ GRID_INLET(0) {
 	if (w<0) w+=in.dim.n;
 	long a = in.dim.prod(w);
 	long b = r->dim.prod(w);
-	T *data2 = (T *)*r + dex*b/a;
+	T *data2 = (T *)*r + in.dex*b/a;
 	if (a==3 && b==1) {
 		int m = n+n*b/a;
 		T data3[m];
@@ -645,7 +645,7 @@ GRID_INLET(0) {
 	if (!wrap) {v[0]-=db[0]-1; v[1]-=db[1]-1;}
 	out=new GridOutlet(this,0,Dim(da.n,v),in.nt);
 } GRID_FLOW {
-	COPY((T *)*a+dex, data, n);
+	COPY((T *)*a+in.dex, data, n);
 } GRID_FINISH {
 	make_plan((T)0);
 	long dbx = b->dim[1];
@@ -776,7 +776,7 @@ GRID_INLET(0) {
 	int rowsize2 = temp->dim.prod(1);
 	T *buf = (T *)*temp; //!@#$ maybe should be something else than T ?
 	int xinc = in.dim[2]*scalex;
-	int y = dex / rowsize;
+	int y = in.dex / rowsize;
 	int chans=in.dim[2];
 	#define Z(z) buf[p+z]+=data[i+z]
 	if (smoothly) {
@@ -843,7 +843,7 @@ GRID_INLET(0) {
 	in.set_chunk(2);
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
-	T *rr = ((T *)*r) + dex*3/4;
+	T *rr = ((T *)*r) + in.dex*3/4;
 	T foo[n*3/4];
 #define COMPUTE_ALPHA(c,a) \
 	foo[j+c] = (data[i+c]*data[i+a] + rr[j+c]*(256-data[i+a])) >> 8
@@ -949,7 +949,7 @@ GRID_INLET(0) {
 	int nl = lines->dim[0];
 	Line *ld = (Line *)(int32 *)*lines;
 	int f = in.dim.prod(1);
-	int y = dex/f;
+	int y = in.dex/f;
 	int cn = color->dim.prod();
 	T *cd = (T *)*color2;
 	while (n) {
@@ -1099,7 +1099,7 @@ GRID_INLET(0) {
 	in.set_chunk(1);
 } GRID_FLOW {
 	int f = in.dim.prod(1);
-	int y = dex/f;
+	int y = in.dex/f;
 	if (position->nt != int32_e) RAISE("position has to be int32");
 	int py = ((int32*)*position)[0], rsy = image->dim[0];
 	int px = ((int32*)*position)[1], rsx = image->dim[1], sx=in.dim[1];
