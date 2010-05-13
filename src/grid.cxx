@@ -49,7 +49,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 			if (i!=0 && a[i-1].a_type==A_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = TO(int32,a[j]);
 			init(Dim(i,v),nt);
-			CHECK_ALIGN(this->data,nt);
+			CHECK_ALIGN(data,nt);
 			if (a[i] != s_sharp) i++;
 			i++; a+=i; n-=i;
 			goto fill;
@@ -57,7 +57,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	}
 	if (n!=0 && a[0].a_type==A_SYMBOL) {nt = NumberTypeE_find(a[0]); a++; n--;}
 	init(Dim(n),nt);
-	CHECK_ALIGN(this->data,nt);
+	CHECK_ALIGN(data,nt);
 	fill:
 	int nn = dim.prod();
 	n = min(n,nn);
@@ -77,7 +77,7 @@ void Grid::init_from_atom(const t_atom &x) {
 		init_from_list(binbuf_getnatom(b),binbuf_getvec(b));
 	} else if (x.a_type==A_FLOAT) {
 		init(Dim(),int32_e);
-		CHECK_ALIGN(this->data,nt);
+		CHECK_ALIGN(data,nt);
 		((int32 *)*this)[0] = (int32)a.a_float;
 	} else {
 		std::ostringstream s; s << x;
@@ -94,10 +94,7 @@ void GridInlet::set_chunk(long whichdim) {
 	chunk = whichdim;
 	long n = dim.prod(whichdim);
 	if (!n) n=1;
-	if (n>1) {
-		buf=new Grid(Dim(n), sender->nt);
-		bufi=0;
-	} else buf=0;
+	if (n>1) {buf=new Grid(Dim(n), sender->nt); bufi=0;} else buf=0;
 }
 
 bool GridInlet::supports_type(NumberTypeE nt) {
@@ -228,8 +225,7 @@ void GridOutlet::send_direct(long n, T *data) {
 }
 
 void GridOutlet::flush() {
-	if (fresh) return;
-	if (!bufi) return;
+	if (fresh || !bufi) return;
 #define FOO(T) send_direct(bufi,(T *)buf);
 	TYPESWITCH(buf.nt,FOO,)
 #undef FOO
@@ -240,11 +236,9 @@ template <class T, class S>
 static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) out[i]=(T)in[i];}
 
 //!@#$ buffering in outlet still is 8x faster...?
-//!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send_2(long n, T *data) {
-	//if (inlets.size()==1 && inlets[0]->buf) post("GridOutlet::send(%ld), bufsize %ld",long(n),long(inlets[0]->buf->dim->prod()));
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data,nt);
 	if (NumberTypeE_type_of(data)!=nt) {
