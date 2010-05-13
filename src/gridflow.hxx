@@ -659,15 +659,15 @@ EACH_NUMBER_TYPE(FOO)
 
 struct FObject;
 struct GridInlet : CObject {
-	FObject *parent;
-	const GridHandler *gh;
-	GridOutlet *sender;
-	Dim dim;
-	NumberTypeE nt; // kill this
-	long dex;
-	int chunk;
-	PtrGrid buf;// factor-chunk buffer
-	long bufi;   // buffer index: how much of buf is filled
+	// set once ever
+	FObject *parent; const GridHandler *gh;
+	
+	// set once per transmission
+	GridOutlet *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
+	
+	// modified continually
+	long dex; int chunk; PtrGrid buf; /* factor-chunk buffer */ long bufi; /* buffer index: how much of buf is filled */
+
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), chunk(-1), bufi(0) {}
 	~GridInlet() {}
@@ -734,39 +734,36 @@ void fclass_install(FClass *fc, FClass *super);
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
 struct GridOutlet : CObject {
-// number of (minimum,maximum) BYTES to send at once
-// starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
+	// number of (minimum,maximum) BYTES to send at once
 	static const long MIN_PACKET_SIZE = 1<<8;
 	static const long MAX_PACKET_SIZE = 1<<12;
-// those are set only once
-	FObject *parent;
-	Dim dim; // dimensions of the grid being sent
-	NumberTypeE nt;
-	std::vector<GridInlet *> inlets; // which inlets are we connected to
-// those are updated during transmission
-	long dex;  // how many numbers were already sent in this connection
 
+	// read-only (set-once)
+	FObject *parent; Dim dim; NumberTypeE nt; std::vector<GridInlet *> inlets;
 	GridOutlet *sender; // dummy (because of P<Dim> to Dim)
+
+	// continually changed
+	long dex; // how many numbers were already sent in this connection
+	Grid buf; // temporary buffer
+	long bufi; // number of bytes used in the buffer
+	bool fresh; /* 0 = buf was inited */
 
 	GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
 	~GridOutlet() {}
 	void callback(GridInlet &in);
-//	const Dim *operator ->() const {return this;}
-//	      Dim *operator ->()       {return this;}
 
 	// send/send_direct: data belongs to caller, may be stack-allocated,
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
+	// the macro is probably a hack to force correct behaviour in some special cases,
+	// in a way that I couldn't have had by using templates.
 	#define FOO(T) void send(long n, T *data) {send_2(n,data);}
 	EACH_NUMBER_TYPE(FOO)
 	#undef FOO
 	template <class T> void send_2(long n, T *data);
-	void flush(); // goes with send();
-	Grid buf; // temporary buffer
-	long bufi; // number of bytes used in the buffer
-	bool fresh; /* 0 = buf was inited */
 	template <class T> void send_direct(long n, T *data);
+	void flush(); // goes with send();
 	void finish();
 	void create_buf();
 };
@@ -828,11 +825,8 @@ extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 static void SAME_DIM(int n, const Dim &a, int ai, const Dim &b, int bi) {
 	if (ai+n > a.n) RAISE("left hand: not enough dimensions");
 	if (bi+n > b.n) RAISE("right hand: not enough dimensions");
-	for (int i=0; i<n; i++) {
-		if (a[ai+i] != b[bi+i]) {
-			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
-				ai+i, a[ai+i],
-				bi+i, b[bi+i]);}}}
+	for (int i=0; i<n; i++) if (a[ai+i] != b[bi+i])
+			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d", ai+i, a[ai+i], bi+i, b[bi+i]);}
 
 void suffixes_are (const char *name, const char *suffixes);
 #define install(name,inlets,outlets) install2(fclass,name,inlets,outlets)
