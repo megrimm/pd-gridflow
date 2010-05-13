@@ -176,7 +176,7 @@ GRID_INLET(1) {
 	long chans = in.dim[2];
 	imageStruct &im = m_pixBlock.image;
 	im.upsidedown = !yflip;
-	for (long y=dex/sxc; n; data+=sxc, n-=sxc, y++) {
+	for (long y=in.dex/sxc; n; data+=sxc, n-=sxc, y++) {
 		if (chans==3) {
 			uint8 *buf2 = buf+y*sx*im.csize;
 			T    *data2 = data;

@@ -631,31 +631,28 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 //****************************************************************
 // GridInlet represents a grid-aware inlet
 
-#define GRIDHANDLER_ARGS(T) GridInlet &in, long dex, long n, T *data
+#define GRIDHANDLER_ARGS(T) GridInlet &in, long n, T *data
 
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(I) \
-	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {((THISCLASS*)in.parent)->grin_##I(in,dex,n,data);}\
+	template <class T> void THISCLASS::grinw_##I (GRIDHANDLER_ARGS(T)) {((THISCLASS*)in.parent)->grin_##I(in,n,data);}\
 	template <class T> void THISCLASS::grin_##I  (GRIDHANDLER_ARGS(T)) {if (n==-1)
 #define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
 #define GRID_END }
 
-/* macro for defining a gridinlet's behaviour as just storage (no backstore) */
+/* macros for defining a gridinlet's behaviour as just storage (without and with backstore, respectively) */
 // V is a PtrGrid instance-var
 #define GRID_INPUT(I,V) \
-	GRID_INLET(I) {V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+dex,data,n);} GRID_FINISH
-
-// macro for defining a gridinlet's behaviour as just storage (with backstore)
-// V is a PtrGrid instance-var
+	GRID_INLET(I) {V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in.dex,data,n);} GRID_FINISH
 #define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in.dim,NumberTypeE_type_of(data));} \
-	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+dex,data,n);} GRID_FINISH
+	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in.dex,data,n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 #define FOO(T) void (*flow_##T)(GRIDHANDLER_ARGS(T)); \
-	       void   flow     (GRIDHANDLER_ARGS(T)) const {flow_##T(in,dex,n,data);}
+	       void   flow     (GRIDHANDLER_ARGS(T)) const {flow_##T(in,n,data);}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;

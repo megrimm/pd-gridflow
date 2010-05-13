@@ -738,7 +738,7 @@ GRID_INLET(0) {
 	in.set_chunk(0);
 	buf=new Grid(in.dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
-	COPY((T *)*buf+dex,data,n);
+	COPY((T *)*buf+in.dex,data,n);
 	changed();
 } GRID_END
 \end class {
@@ -1114,7 +1114,6 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 }
 \end class {install("gf.error",1,0);}
 
-//****************************************************************
 \class ForEach : FObject {
 	\constructor () {}
 	\decl 0 list (...) {for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);}
