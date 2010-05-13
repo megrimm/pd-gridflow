@@ -722,6 +722,7 @@ template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) 
 MAKE_DOT(dot_add_mul,FOO)
 #undef FOO
 
+#define MAX_PACKET_SIZE 4096
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
@@ -737,7 +738,7 @@ GRID_INLET(0) {
 	out=new GridOutlet(this,0,Dim(n,v),in.nt);
 	in.set_chunk(a.n-1);
 	long sjk=r->dim.prod(), sj=in.dim.prod(a.n-1), sk=sjk/sj;
-	long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk);
+	long chunk = max(1L,MAX_PACKET_SIZE/sjk);
 	T *rdata = (T *)*r;
 	r2=new Grid(Dim(chunk*sjk),r->nt);
 	T *buf3 = (T *)*r2;
@@ -747,7 +748,7 @@ GRID_INLET(0) {
 	use_dot = op==op_mul && fold==op_add && seed->dim.n==0 && *(T *)*seed==0;
 } GRID_FLOW {
     long sjk=r->dim.prod(), sj=in.dim.prod(in.dim.n-1), sk=sjk/sj;
-    long chunk = max(1L,GridOutlet::MAX_PACKET_SIZE/sjk), off=chunk;
+    long chunk = max(1L,MAX_PACKET_SIZE/sjk), off=chunk;
     T buf [chunk*sk];
     T buf2[chunk*sk];
     if (use_dot) {
