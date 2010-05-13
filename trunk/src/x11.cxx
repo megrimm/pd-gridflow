@@ -138,7 +138,7 @@ typedef struct {
 			if (argc<2) RAISE("open x11 display: not enough args");
 			strcpy(host,string(argv[1]).data());
 			for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
-			post("mode `display', DISPLAY=`%s'",host);
+			//post("mode `display', DISPLAY=`%s'",host);
 			open_display(host);
 			i=2;
 		} else RAISE("x11 destination syntax error");
@@ -202,7 +202,7 @@ typedef struct {
 		if ((mode&4)!=0) {
 			Window root; int x,y; unsigned sx,sy,sb,depth;
 			XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
-			post("sx=%d sy=%d",sx,sy);
+			//post("sx=%d sy=%d",sx,sy);
 			_0_out_size(sy,sx);
 		}
 		_0_border(1);
