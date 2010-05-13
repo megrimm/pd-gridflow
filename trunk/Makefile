@@ -8,7 +8,7 @@ RUBY = ruby
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
-CFLAGS += -Wall -Wno-unused -Wunused-variable -g -I.
+CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
@@ -47,16 +47,15 @@ all:: $(PD_LIB) aliases
 
 CFLAGS += -DPDSUF=\"$(PDSUF)\"
 
+#ifeq ($(PLAIN),1)
+#endif
+
 %.hxx.fcs: %.hxx $(COMMON_DEPS)
 	$(FILT) $< $@
 %.cxx.fcs: %.cxx $(COMMON_DEPS2)
 	$(FILT) $< $@
-%.c.fcs: %.c $(COMMON_DEPS2)
-	$(FILT) $< $@
 %.m.fcs: %.m $(COMMON_DEPS2)
 	$(FILT) $< $@
-%.o: %.c.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
 %.o: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
 %.1.o: %.cxx.fcs $(COMMON_DEPS2)
@@ -69,7 +68,6 @@ CFLAGS += -DPDSUF=\"$(PDSUF)\"
 	$(CXX) -xc++ $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
-
 %.s: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) $(CFLAGS) -S $< -o $@
 %.e: %.cxx.fcs $(COMMON_DEPS2)
