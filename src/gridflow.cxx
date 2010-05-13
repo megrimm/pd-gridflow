@@ -737,8 +737,8 @@ string BFObject::binbuf_string () {
 	if (!b) return "[???]";
 	std::ostringstream s;
 	int n = binbuf_getnatom(b);
-	t_atom *at = binbuf_getvec(b);
-	for (int i=0; i<n; i++) s << (i ? " " : "[") << at[i];
+	t_atom2 *at = (t_atom2 *)binbuf_getvec(b);
+	for (int i=0; i<n; i++) s << (i ? at[i].a_type==A_COMMA ? "" : " " : "[") << at[i];
 	s << "]";
 	return s.str();
 }
@@ -932,20 +932,20 @@ char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 	void *array[end];
 	int nSize = backtrace(array,end);
 	char **symbols = backtrace_symbols(array, nSize);
+	char *demangled = (char *)malloc(1024); size_t length=1024; int status;
 	for (int i=start,j=0; i<nSize; i++) {
 		char *a = strchr(symbols[i],'(');
 		char *b = strchr(symbols[i],'+');
 		if (a&&b) {
 			char mangled[1024]; sprintf(mangled,"%.*s",b-a-1,a+1);
-			char *demangled = (char *)malloc(1024);
-			size_t length;
-			int status;
-			/* char *result = */ abi::__cxa_demangle(mangled,demangled,&length,&status);
-			j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
-			free(demangled);
+			if (abi::__cxa_demangle(mangled,demangled,&length,&status))
+				j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
+			else
+			j+=sprintf(buf+j,"%s%s",  i>start?", \n  ":"[",symbols[i]);
 		}
 		else    j+=sprintf(buf+j,"%s%s",  i>start?", \n  ":"[",symbols[i]);
 	}
+	free(demangled);
 	sprintf(buf+strlen(buf),"]");
 	return buf;
 }
