@@ -72,6 +72,7 @@ op {+} { A + B } {brightness, crossfade} {move, morph}
 op {-} { A - B } {brightness, motion detection} {move, motion detection}
 op {inv+} { B - A } {negate then contrast} {180 degree rotate then move}
 op {*} { A * B } {contrast} {zoom out}
+op {*>>8} { (A * B) >> 8 } {contrast} {zoom out}
 op {/} { A / B, rounded towards zero } {contrast} {zoom in}
 op {div} { A / B, rounded downwards } {contrast} {zoom in}
 op {inv*} { B / A, rounded towards zero }
