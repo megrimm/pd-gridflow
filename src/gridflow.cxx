@@ -95,8 +95,8 @@ Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
 }
 
 void Barf::error(BFObject *bself, int winlet, const char *selector) {
-	if (!bself) RAISE("wtf?");
-	pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,selector?selector:"(???)",text.data());
+	if (!bself) ::error("[???] inlet %d method %s: %s"                              ,winlet,selector?selector:"(???)",text.data());
+	else    pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,selector?selector:"(???)",text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 	std::ostringstream os; os << s->s_name;
