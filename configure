@@ -101,10 +101,7 @@ def launch stdin,stdout,stderr,*command # -> returncode
 	child
 end
 
-def join_pid pid
-	Process.waitpid2(pid)[1]
-end
-
+def join_pid pid; Process.waitpid2(pid)[1] end
 module Future; end
 
 class Feature
@@ -127,7 +124,6 @@ class Feature
 	attr2 :uses_feature
 	attr2 :test
 	attr2 :options
-	attr2 :unless_feature
 	attr2 :action
 	attr2 :defines
 	def find_h name
@@ -510,7 +506,6 @@ Feature.add {
 		"}}
 Feature.add {
 	tag :quicktimehw
-	unless_feature :quicktimeapple
 	name "Plaum's LibQuickTime"
 	uses_so Or[
 		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"],
@@ -700,7 +695,6 @@ def try feature
 	}
 	if feature.status==:disabled then DUAL.puts Dark+arrow+"disabled (by author)"; return end
 	if not $features_h[feature.tag] then DUAL.puts Dark+arrow+"disabled (by user)"; return end
-	fu = feature.unless_feature || []
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
 		if $conf[:FEATURES][f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
@@ -731,9 +725,7 @@ def try feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
-	for k,v in feature.defines||{} do
-		$conf[:DEFINES][k]=(if Proc===v then v[] else v end)
-	end
+	for k,v in feature.defines||{} do $conf[:DEFINES][k]=(if Proc===v then v[] else v end) end
 	true
 end
 
@@ -750,22 +742,13 @@ puts Light
 
 $conf[:LDSOFLAGS].uniq!
 
-if not $conf[:FEATURES][:gcc3]
-  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
-  puts "(you might use --force-gcc3 to pretend at your own risk)"
-  exit 1
-end
-
-if not $conf[:FEATURES][:puredata]
-  puts "PureData support is required (since GridFlow 0.9.0)"
-end
+if not $conf[:FEATURES][:gcc3] then puts "You should install gcc 4 (or gcc 3 if you can't get gcc 4)"; exit 1 end
+if not $conf[:FEATURES][:puredata] then puts "PureData support is required"; exit 1 end
 
 #--------------------------------#
 
 LOG.puts "-"*64
-for z in [:LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
-  LOG.puts "#{z}: #{$conf[z].inspect}"
-end
+for z in [:LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do LOG.puts "#{z}: #{$conf[z].inspect}" end
 LOG.puts "-"*64
 RUBY = "$(RUBY_INSTALL_NAME)"
 
@@ -783,11 +766,6 @@ File.open("./config.make","w") {|f|
   f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
-  if OSX then
-    f.puts "OS = darwin"
-  else
-    f.puts "OS = linux"
-  end
 } # end open config.make
 
 #--------------------------------#
