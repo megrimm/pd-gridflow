@@ -540,10 +540,10 @@ Feature.add {
 			#include <stdio.h>
 			int main () {
 			printf("#define PD_VERSION_INT %d\\n", (int)(
-			#ifdef PD_MAJOR_VERSION
-				PD_MAJOR_VERSION*100+PD_MINOR_VERSION
-			#else
+			#ifdef PD_VERSION
 				PD_VERSION*100
+			#else
+				PD_MAJOR_VERSION*100+PD_MINOR_VERSION
 			#endif
 			)); return 0;}`}}
 Feature.add {
