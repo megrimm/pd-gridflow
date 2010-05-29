@@ -29,7 +29,10 @@ else
     CFLAGS += -mms-bitfields
   else
     PDSUF = .pd_linux
-    PDBUNDLEFLAGS = -shared -rdynamic -fPIC
+    ifeq ($(HAVE_GCC64),yes)
+      CFLAGS += -fPIC
+    endif
+    PDBUNDLEFLAGS = -shared -rdynamic
   endif
 endif
 PD_LIB = gridflow$(PDSUF)
