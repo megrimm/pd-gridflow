@@ -1073,13 +1073,15 @@ BUILTIN_SYMBOLS(FOO)
 	        "proc pdtk_text_set {a b e        } {pdtk_text_sept $a $b       [encoding convertfrom $e]      }\n");
 #endif
         sys_vgui("set gfdir {%s}\n",dirresult);
-	sys_gui("proc gf_menu_open {} {\n"
-		"set z $::pd_opendir; set ::pd_opendir $::gfdir/examples; menu_open; set ::pd_opendir $z}\n");
+	sys_gui("proc gf_menu_open {parent} {\n"
+		"set z $::pd_opendir; set ::pd_opendir $::gfdir/examples;"
+		"if {[catch {menu_open}]} {menu_open $parent};"
+		"set ::pd_opendir $z}\n");
 	sys_gui("proc gridflow_add_to_help {menu} {\n"
 		   "$menu add separator\n"
 		   "$menu add command -label {GridFlow About}      -command {pd pd open about.pd $::gfdir/doc \\;}\n"
 		   "$menu add command -label {GridFlow Help Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
-		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open}\n"
+		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open %W}\n"
 		 "}\n"
 		 "catch {gridflow_add_to_help .mbar.help}\n"
 		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
