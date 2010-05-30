@@ -362,7 +362,7 @@ void startup_gem () {
 		//post("GemState::tickTime found at [%d], so pixBlock is probably at [%d]",i,j);	
 		if      (j==3) {gem = 93;}
 		else if (j==5) {gem = 92;}
-		else error("GridFlow: can't detect this version of GEM");
+		else error("GridFlow: can't detect this version of GEM: j=%d",j);
 	}
 	//post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
 	//delete dummy;
