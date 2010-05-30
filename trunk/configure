@@ -293,7 +293,7 @@ Feature.add {
 Feature.add {
 	tag :pentium
 	name "Pentium-compatible CPU"
-	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
+	action proc { (CONFIG["arch"] =~ /i\d86/) and $conf[:DEFINES][:CPU] ||= "pentium" }
 	options ["HAVE_PENTIUM"]
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
