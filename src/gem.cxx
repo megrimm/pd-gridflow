@@ -360,12 +360,13 @@ void startup_gem () {
 	else {
 		int j = i-2-2*sizeof(void*)/sizeof(float);
 		//post("GemState::tickTime found at [%d], so pixBlock is probably at [%d]",i,j);	
-		if      (j==3) {gem = 93;}
-		else if (j==5) {gem = 92;}
-		else error("GridFlow: can't detect this version of GEM: j=%d",j);
+		if      (j==3        ) {gem = 93;}
+		else if (j==5 || j==6) {gem = 92;}
+		else error("GridFlow: can't detect this version of GEM: i=%d j=%d",i,j);
 	}
 	//post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
 	//delete dummy;
+	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
 }
 
 /*
