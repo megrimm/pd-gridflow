@@ -1081,7 +1081,7 @@ BUILTIN_SYMBOLS(FOO)
 		   "$menu add separator\n"
 		   "$menu add command -label {GridFlow About}      -command {pd pd open about.pd $::gfdir/doc \\;}\n"
 		   "$menu add command -label {GridFlow Help Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
-		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open %W}\n"
+		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open .}\n"
 		 "}\n"
 		 "catch {gridflow_add_to_help .mbar.help}\n"
 		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
