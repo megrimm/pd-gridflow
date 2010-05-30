@@ -276,7 +276,7 @@ Feature.add {
 Feature.add {
 	tag :gcc64
 	name "GNU C++ in 64-bit mode"
-	options ["GCC64"]
+	options ["HAVE_GCC64"]
 	test proc {
 		c_test %{
 		#include <stdio.h>
