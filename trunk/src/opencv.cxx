@@ -20,7 +20,11 @@
 */
 
 #include "gridflow.hxx.fcs"
+#define int64 int64_hack
+#define uint64 uint64_hack
 #include <opencv/cv.h>
+#undef int64
+#undef uint64
 #include <errno.h>
 
 #define cvRelease(euh) cvRelease((void **)(euh))
