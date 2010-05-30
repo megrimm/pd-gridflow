@@ -937,9 +937,9 @@ char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 		char *a = strchr(symbols[i],'(');
 		char *b = strchr(symbols[i],'+');
 		if (a&&b) {
-			char mangled[1024]; sprintf(mangled,"%.*s",b-a-1,a+1);
+			char mangled[1024]; sprintf(mangled,"%.*s",int(b-a-1),a+1);
 			if (abi::__cxa_demangle(mangled,demangled,&length,&status))
-				j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",length,demangled);
+				j+=sprintf(buf+j,"%s%.*s",i>start?", \n  ":"[",int(length),demangled);
 			else
 			j+=sprintf(buf+j,"%s%s",  i>start?", \n  ":"[",symbols[i]);
 		}
