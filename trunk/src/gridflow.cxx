@@ -592,10 +592,10 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	int argc = handle_braces(ac,argv+1);
 	SETFLOAT(argv+0,winlet);
 	FMethod m;
-	char buf[256];
+	char buf[64], bof[64];
 
 	sprintf(buf,"_%d_%s",winlet,selector->s_name); m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc  ,argv+1); return;}
-	sprintf(buf,"_n_%s",selector->s_name);         m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc+1,argv  ); return;}
+	sprintf(bof,"_n_%s",selector->s_name);         m=funcall_lookup(bself,bof); if (m) {m(bself->self,argc+1,argv  ); return;}
 	m = funcall_lookup(bself,"anything");        if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv  ); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,selector->s_name);}
