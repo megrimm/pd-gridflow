@@ -52,6 +52,8 @@ struct _outlet {
 };
 #endif
 
+#define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
+
 //****************************************************************
 
 struct ArgSpec {
@@ -173,6 +175,26 @@ void Args::process_args (int argc, t_atom *argv) {
 	 * et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut. */
 };
 \end class {install("setargs",1,1);}
+
+\class GFAttr : FObject {
+	std::map<t_symbol *,t_atom2> table;
+	\constructor () {}
+	\decl 0 get (t_symbol *s=0) {
+		if (s) {
+			typeof(table.begin()) f = table.find(s);
+			if (f!=table.end()) outlet_anything(outlets[0],s,1,&f->second);
+		} else {
+			foreach(it,table) outlet_anything(outlets[0],it->first,1,&it->second);
+		}
+		
+	}
+	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
+	\decl void anything (string s, t_atom2 a) {
+		t_symbol *sel = gensym(s.data()+3);
+		table[sel]=a;
+	}
+};
+\end class {install("attr",1,1);}
 
 //****************************************************************
 
@@ -300,36 +322,39 @@ string ssprintf(const char *fmt, ...) {
 }
 */
 
+static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {return &r;}
+
 \class GFPrint : FObject {
-	t_symbol *prefix;
+	string prefix;
 	t_pd *gp;
-	\constructor (t_symbol *s=0) {
-		prefix=s?s:gensym("print");
+	\constructor (const t_atom *s=0) {
+		std::ostringstream text;
+		if (s) text << *s; else text << "print";
+		prefix = text.str();
 		t_atom a[1];
-		SETSYMBOL(a,prefix);
+		SETSYMBOL(a,gensym(prefix.data()));
 		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
 		gp = pd_newest();
 		SETPOINTER(a,(t_gpointer *)bself);
 	}
 	~GFPrint () {pd_free(gp);}
 	\decl 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
-	\decl void anything (...);
+	\decl void anything (...) {
+		std::ostringstream text;
+		text << prefix << ":";
+		t_symbol *l = gensym("_0_list");
+		t_symbol *f = gensym("_0_float");
+		if      (argv[0]==f && argc==2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[0]==l && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[0]==l && argc==2 && argv[1].a_type==A_SYMBOL ) {text << " symbol" ;}
+		else if (argv[0]==l && argc==2 && argv[1].a_type==A_POINTER) {text << " pointer";}
+		else if (argv[0]==l && argc==1) {text << " bang";}
+		else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
+		for (int i=1; i<argc; i++) {text << " " << argv[i];}
+		post("%s",text.str().data());
+	}
 };
-\def void anything(...) {
-	std::ostringstream text;
-	text << prefix->s_name << ":";
-	t_symbol *s = gensym("_0_list");
-	t_symbol *f = gensym("_0_float");
-	if      (argv[0]==f && argc==2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
-	else if (argv[0]==s && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
-	else if (argv[0]==s && argc==2 && argv[1].a_type==A_SYMBOL ) {text << " symbol" ;}
-	else if (argv[0]==s && argc==2 && argv[1].a_type==A_POINTER) {text << " pointer";}
-	else if (argv[0]==s && argc==1) {text << " bang";}
-	else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
-	for (int i=1; i<argc; i++) {text << " " << argv[i];}
-	post("%s",text.str().data());
-}
-\end class {install("gf.print",1,0); add_creator3(fclass,"print");}
+\end class {install("gf/print",1,0); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
 
 //****************************************************************
 
@@ -1350,7 +1375,6 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictWeakOrdering */ {
 	return a->te_ypix < b->te_ypix;
 }
-#define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 static t_class *inlet_class, *floatinlet_class, *symbolinlet_class, *pointerinlet_class;
 static bool ISINLET(t_pd *o) {
   t_class *c=pd_class(o);
@@ -1468,7 +1492,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
 	\decl 1 symbol (t_symbol *than) {this->than=than;}
 };
-\end class {install("gf/string_<",2,1); class_sethelpsymbol(fclass->bfclass,gensym("gf/string_0x3c-help"));}
+\end class {install("gf/string_<",2,1); class_sethelpsymbol(fclass->bfclass,gensym("gf/string_0x3c"));}
 
 \class GFStringLength : FObject {
 	\constructor () {}
