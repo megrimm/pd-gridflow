@@ -1,5 +1,5 @@
 #N canvas 365 39 684 583 10;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect Untitled-1 2 9 1 13 -1 -262144
+#X obj 3 3 cnv 15 608 18 empty \$0-rect ♯for 2 9 1 13 -1 -262144
 0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -131,8 +131,8 @@
 #X obj 203 250 sel;
 #X obj 203 269 symbol;
 #X msg 203 288 obj 0 0 doc_\$1;
-#X msg 193 166 c \, i \, o \, f;
 #X obj 175 147 t b b b;
+#X msg 193 166 c \, i \, o \, also \, f;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
@@ -197,7 +197,7 @@
 #X connect 65 2 11 0;
 #X connect 66 0 41 0;
 #X connect 68 0 52 0;
-#X connect 69 0 104 0;
+#X connect 69 0 103 0;
 #X connect 73 0 75 0;
 #X connect 74 0 81 0;
 #X connect 75 0 74 0;
@@ -231,8 +231,8 @@
 #X connect 100 0 101 0;
 #X connect 101 0 102 0;
 #X connect 102 0 19 0;
-#X connect 103 0 99 0;
-#X connect 104 0 50 0;
-#X connect 104 1 103 0;
-#X connect 104 2 48 0;
+#X connect 103 0 50 0;
+#X connect 103 1 104 0;
+#X connect 103 2 48 0;
+#X connect 104 0 99 0;
 #X coords 0 -1 1 1 614 24 2 0 0;
