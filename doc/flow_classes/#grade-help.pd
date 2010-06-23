@@ -1,45 +1,52 @@
-#N canvas 690 0 632 680 10;
-#X text 143 55 splits a dim[a... \, b] grid into dim[b] vectors that
-each contain numbers from 0 to b-1 indicating the ordering of the values.
-the result is a dim[a... \, b] grid.;
-#X floatatom 19 114 5 0 0 0 - - -;
-#X floatatom 60 114 5 0 0 0 - - -;
-#X floatatom 101 114 5 0 0 0 - - -;
-#X floatatom 142 114 5 0 0 0 - - -;
-#X obj 19 146 #pack 4;
-#X obj 19 179 #grade;
-#X obj 19 208 #print;
+#N canvas 596 0 632 610 10;
+#X floatatom 19 54 5 0 0 0 - - -;
+#X floatatom 51 54 5 0 0 0 - - -;
+#X floatatom 83 54 5 0 0 0 - - -;
+#X floatatom 115 54 5 0 0 0 - - -;
+#X obj 19 86 #pack 4;
+#X obj 19 105 #grade;
 #X obj 0 0 doc_h;
-#X obj 3 250 doc_c 0;
-#X obj 3 290 doc_i 1;
-#X obj 3 350 doc_o 1;
-#X obj 14 380 doc_oo 0;
-#X obj 14 320 doc_ii 0;
-#X obj 97 320 doc_m i0 grid;
-#X obj 97 380 doc_m o0 grid;
-#X text 232 380 splits a Dim[A... \, B] grid into Dim[B] vectors \,
-producing new Dim[B] vectors that each contain numbers from 0 to B-1
-indicating the ordering of the values. The result is a Dim[A... \,
-B] grid.;
-#X text 232 441 for example \, connecting a [#grade] to a [#outer ignore
-0] to a [#store] object \, storing a single vector into [#store] \,
-and sending the same vector to [#grade] \, will sort the values of
-the vector. however for higher-dimensional grids \, what should go
-between [#store] and [#grade] to achieve the same result would be more
-complex.;
-#X text 232 541 you may achieve different kinds of sorting by applying
+#X obj 3 157 doc_c 0;
+#X obj 3 197 doc_i 1;
+#X obj 3 446 doc_o 1;
+#X obj 14 476 doc_oo 0;
+#X obj 14 227 doc_ii 0;
+#X obj 97 227 doc_m i0 grid;
+#X obj 97 476 doc_m o0 grid;
+#X text 232 336 you may achieve different kinds of sorting by applying
 various filters before [#grade]. the possibilities are unlimited. if
 you plug [#grade] directly into another [#grade] \, you will get the
 inverse arrangement \, which allows to take the sorted values and make
 them unsorted in the original way. note that this is really not the
 same as just listing the values backwards.;
-#X obj 0 651 doc_f;
-#X connect 1 0 5 0;
-#X connect 2 0 5 1;
-#X connect 3 0 5 2;
-#X connect 4 0 5 3;
-#X connect 5 0 6 0;
-#X connect 6 0 7 0;
-#X connect 15 1 16 0;
-#X connect 15 1 17 0;
-#X connect 15 1 18 0;
+#X obj 0 576 doc_f;
+#X obj 3 556 doc_also;
+#X obj 103 556 #sort;
+#X text 232 288 For a grid of size (m... n) \, each piece of size (n)
+is considered separately \, making many separate gradings \, and everything
+is put together in a grid of size (m... n).;
+#X obj 19 124 display;
+#X text 236 58 indicates how values have to be placed in order to be
+sorted. can be used for sorting \, but also other activities related
+to sorting \, such as finding the biggest element \, finding the median
+\, equalising colours \, etc.;
+#X text 232 227 For a grid of size (n) \, gives a "top" of elements
+\, from smallest to largest. This is a crucial component for making
+[#sort] (look at the inside of a [#sort] object for an example).;
+#X text 232 498 Values produced are ranging from 0 to n-1 \, because
+that's the normal numbering of grid elements in GridFlow \, and is
+what [#store] expects.;
+#X text 232 476 Grid of the same size as input \, but in numbertype
+"i".;
+#X connect 0 0 4 0;
+#X connect 1 0 4 1;
+#X connect 2 0 4 2;
+#X connect 3 0 4 3;
+#X connect 4 0 5 0;
+#X connect 5 0 19 0;
+#X connect 12 1 21 0;
+#X connect 12 1 18 0;
+#X connect 12 1 14 0;
+#X connect 13 1 23 0;
+#X connect 13 1 22 0;
+#X connect 16 1 17 0;
