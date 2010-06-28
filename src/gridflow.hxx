@@ -565,12 +565,12 @@ struct Grid : CObject {
 	void *data;
 	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
 	Grid(const Dim &dim=Dim(), NumberTypeE nt=int32_e, bool clear=false) {
-		state=1; 
+		data=0; state=1;
 		init(dim,nt);
 		if (clear) CLEAR((char *)data,bytes());
 	}
-	Grid(const t_atom &x) {state=1; init_from_atom(x);}
-	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {state=1; init_from_list(n,a,nt_);}
+	Grid(const t_atom &x) {data=0; state=1; init_from_atom(x);}
+	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
 	template <class T> Grid(const Dim &dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T *)0);
@@ -591,7 +591,7 @@ EACH_NUMBER_TYPE(FOO)
 	void init(const Dim &dim=Dim(), NumberTypeE nt=int32_e) {
 		this->dim = dim;
 		this->nt = nt;
-		data = 0;
+		if (data) free(data);
 		data = memalign(16,bytes()+16);
 		if (!data) RAISE("out of memory (?) trying to get %ld bytes",bytes());
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
