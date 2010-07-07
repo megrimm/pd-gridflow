@@ -1,13 +1,16 @@
 /* $Id$ */
 
-version 9.10 (2010.05...):
+version 9.10 (2010.06...):
 
- * added example qbert.pd
+ * added examples qbert.pd, remap_video.pd
  * [#lop_space]: faster, and added method "reverse"
  * fix division by zero in [# C./] and [# C./conj]
  * added [# C.inv*]
  * [#pack]: support multi-element list in left inlet
  * [#join]: no more "empty grids".
+ * better error messages for not enough args, too many args, wrong args, etc.
+ * [print]: make more like the builtin [print] it overrides
+ * added classes [attr], ...
 
 version 9.9 (2010.05.05):
 
