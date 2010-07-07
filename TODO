@@ -1,32 +1,16 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
-9.10, assigned to Patrick:
-[1] [#io.quicktimeapple] déboguer farfisa_2.mov
-[L] [#io.quicktimecamera] minsize, size, maxsize
-[L] unifier les décodeurs de colorspaces dans tous les modules de caméra, et les accélérer
-[L] [#io.quartz] fullscreen mode
-[L] [#io.quicktimeapple out] grid, codec, quality.
-[L] add [cv/#SVD] etc (-lcv) to OSX packages
-[L] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
-[L] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
-    par exemple, les binaires gras pour 3 cpus.
-[ ] [#io.quicktimecamera] crash when opening busy camera (?) or is it when opening two cameras at once ?
-[ ] libv4l dans l'package ubuntu
-[ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
-    (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
-     vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
-     présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
-     [pix_video] et [#camera] en alternance.)
-[ ] [#from_pix]: rajouter un [pix_rgba] implicite...
-
 9.10, unassigned:
-[x] [#pack]: support _0_list
+
+[ ] révision de patchs d'aide compliquées ou mal dites, comme [#grade] et autres.
+    donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
+[ ] est-ce que "omit odd" marche vraiment, ou devrait-il s'appeler "omit even" ?
+
+[ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
-[x] [#rotate] : round not floor
-[x] cvs dollar id dollar : redo it or remove it
 [ ] heat.pd still sucks (?)
-[ ] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
+[!] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
 [ ] accelerate [#outer ignore (0)]
 [ ] [#print] float32 can use up crazy number of digits
 [ ] [lb]
@@ -38,7 +22,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] <errordeveloper> 10101/devel/proj/diamond/misc/src/gridflow-9.8/gridflow.pd_linux: undefined symbol: png_write_destroy
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
--------- vous êtes ici
 [ ] alias numops so that it's more pd-like
 [ ] [#pack, cast] ?
 [ ] [# /exp] as inverse of [# log*]
@@ -54,9 +37,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
-[ ] [listread] has a different outlet_atom than [foreach] does
-[ ] <mescalinum> matju: anyway, in #-help.pd, object [doc/numop] is still error
-[ ] bug: see #io.ppm-test.pd
+[ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm
 [ ] bug: see #fft*-test.pd
 [ ] merge threshold.pd, simple_mask.pd, color_detect.pd
 [ ] on which classes do we add an attr-outlet ?
@@ -93,8 +74,6 @@ L = much later (whenever we get to know how to do it...)
 		but wouldn't have [doc_m] as a subnode.
 [ ] [print], [gf.print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
-[ ] probably a problem with loadbang: when making a new helppatch, it's better to save it and reload immediately,
-    to prevent a lot of redraw bugs.
 [ ] support "get" in abstractions... automatically, through [args] ?
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] reimplement negative indices in [listelement] and [listsublist]
@@ -105,11 +84,10 @@ L = much later (whenever we get to know how to do it...)
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
-[ ] make [#draw_points]
+[ ] make [#draw_points] or equivalent (with several dot colours)
 [ ] distinguish between C++ types Grid* and GridFlow*
 [ ] see vsync-test.pd: probably something nasty in grid.cxx
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
-[ ] remove implicit (argc,argv) from \decl that doesn't use wildcard «...».
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
 [ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
 [ ] make single abstraction that replaces all picture converters and more.
@@ -119,14 +97,14 @@ L = much later (whenever we get to know how to do it...)
 [ ] [display] visible outside redrectangle in [doc_h]
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
-[ ] get rid of NOTEMPTY
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 [ ] add default values in docs
-[ ] use sand.pd as basis for introducing those features :
-    [ ] seedless #convolve
-    [ ] seedless #inner
-    [ ] automatic type conversion
+[!] use sand.pd as basis for introducing those features :
+    [!] seedless #convolve
+    [!] seedless #inner
+    [!] automatic type conversion
+[!] [route] - 1[shunt] sends a message (bug)
 
 9.11 or later
 [L] threaded v4l1, v4l2, dc1394.
@@ -137,6 +115,7 @@ L = much later (whenever we get to know how to do it...)
 [L] [range] name conflict.
 [L] [#camera] [#cast] setting ? or not ?
 [L] fix SDL modifiers
+[ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
 
 // was for 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
@@ -311,6 +290,22 @@ User Interface
 [ ] generic vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
+
+OSX:
+[1] [#io.quicktimeapple] déboguer farfisa_2.mov
+[L] [#io.quicktimecamera] minsize, size, maxsize
+[L] unifier les décodeurs de colorspaces dans tous les modules de caméra, et les accélérer
+[L] [#io.quartz] fullscreen mode
+[L] [#io.quicktimeapple out] grid, codec, quality.
+[L] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
+[L] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
+    par exemple, les binaires gras pour 3 cpus.
+[ ] [#io.quicktimecamera] crash when opening busy camera (?) or is it when opening two cameras at once ?
+[ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
+    (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
+     vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
+     présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
+     [pix_video] et [#camera] en alternance.)
 
 -mfpmath=sse2
 
