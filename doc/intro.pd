@@ -1,6 +1,6 @@
-#N canvas 536 96 624 506 10;
+#N canvas 536 96 624 370 10;
 #X obj 0 0 doc_demo;
-#X obj 0 467 doc_f;
+#X obj 0 337 doc_f;
 #X text 35 31 INTRODUCTION;
 #X text 63 61 The philosophy that guides PureData is a simple but powerful
 one : the software must first provide the user with generic flexible

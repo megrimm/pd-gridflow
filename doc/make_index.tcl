@@ -2,9 +2,32 @@ proc say {k v} {set ::say($k) $v}
 proc category {k} {}
 source locale/english.tcl
 puts "#N canvas 0 0 632 659 10;"
-puts "#X obj 0 0 doc_demo;"
-set y 50
+set y 0
+puts "#X obj 0 $y doc_demo;"; incr y 32
+puts "#X obj 3 $y doc_section General Topics;"; incr y 32
+
+foreach {k v} {
+  about {about GridFlow (credits, etc)}
+  intro {the main goal of this library (but not the only one)}
+  grid  {what is a grid ?}
+  image {an image of pixels is just one way to use a grid}
+  numtype {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
+  numop {numops represent ways of combining two numbers (usually)}
+} {
+  set k "doc_link $k 1"
+  set w [string length $k]
+  set w [expr {$w*6+4}]
+  incr w -36 ;# à cause de doc_link
+  incr w -12 ;# à cause du $2 de doc_link
+  regsub -all {\s?,} $v { \, } v
+  puts "#X obj [expr 160-$w] $y $k;"
+  puts "#X text 180 $y $v;"
+  incr y 32
+}
+
+puts "#X obj 3 $y doc_section Object Classes;"; incr y 32
 set n 0
+
 foreach k [lsort [array names ::say *]] {
 	set h 0 ;# gets clipped to 32 later, or replaced by whatever
 	set v $::say($k)
