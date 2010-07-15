@@ -40,7 +40,7 @@ static inline uint64 weight(uint64 x) {uint64 k;
 
 #ifdef PASS1
 NumberType number_type_table[] = {
-#define FOO(_sym_,_size_,_flags_,args...) NumberType( #_sym_, _size_, _flags_, args ),
+#define FOO(ABBR,SYM,SIZE,FLAGS) NumberType(#ABBR,#SYM,SIZE,FLAGS),
 NUMBER_TYPES(FOO)
 #undef FOO
 };
@@ -426,7 +426,7 @@ void startup_number () {
 	for (int i=0; i<COUNT(number_type_table); i++) {
 		number_type_table[i].index = (NumberTypeE) i;
 		char a[64];
-		strcpy(a,number_type_table[i].aliases);
+		strcpy(a,number_type_table[i].alias);
 		char *b = strchr(a,',');
 		if (b) {
 			*b=0;
