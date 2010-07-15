@@ -1,37 +1,36 @@
-#N canvas 526 145 632 583 10;
+#N canvas 520 48 632 626 10;
 #X obj 0 0 doc_h;
-#X obj 0 549 doc_f;
-#X obj 3 361 doc_i 2;
-#X obj 3 445 doc_o 1;
-#X obj 14 475 doc_oo 0;
-#X obj 14 391 doc_ii 0;
-#X obj 14 413 doc_ii 1;
-#X obj 14 268 doc_cc 0;
-#X text 232 316 relative name of object to be checked for. the \$0
+#X obj 0 592 doc_f;
+#X obj 3 400 doc_i 2;
+#X obj 3 488 doc_o 1;
+#X obj 14 518 doc_oo 0;
+#X obj 14 432 doc_ii 0;
+#X obj 14 456 doc_ii 1;
+#X obj 14 270 doc_cc 0;
+#X text 232 355 relative name of object to be checked for. the \$0
 of the parent will be automatically added (with a slash).;
-#X obj 97 391 doc_m i0 bang;
-#X obj 97 413 doc_m i1 symbol;
-#X obj 232 413 doc_same 0;
-#X obj 97 475 doc_m o0 float;
-#X text 232 391 perform a check and output the result;
-#X text 232 475 0: not found;
-#X text 232 497 1: found;
-#X obj 3 529 doc_also;
+#X obj 97 432 doc_m i0 bang;
+#X obj 97 456 doc_m i1 symbol;
+#X obj 232 456 doc_same 0;
+#X obj 97 518 doc_m o0 float;
+#X text 232 432 perform a check and output the result;
+#X text 232 518 0: not found;
+#X text 232 540 1: found;
+#X obj 3 572 doc_also;
 #X text 268 78 to be used only directly inside an abstraction that
 is to be found directly in a help-patch.;
 #X text 268 48 find whether a certain part of the doc exists so far
 \, in the current help-patch.;
-#X obj 3 529 doc_also;
-#X obj 97 316 doc_m c1 symbol;
-#X obj 97 268 doc_m c0 float;
+#X obj 97 355 doc_m c1 symbol;
+#X obj 97 270 doc_m c0 float;
 #X obj 3 238 doc_c 2;
-#X obj 14 316 doc_cc 1;
-#X text 232 268 uplevel from [doc_exist] to help-patch. this is 1 if
+#X obj 14 355 doc_cc 1;
+#X text 232 270 uplevel from [doc_exist] to help-patch. this is 1 if
 [doc_exist] is directly in the help-patch \, 2 if it is directly inside
 [doc_h] \, etc.;
-#X obj 103 529 doc_link doc_h;
-#X obj 163 529 doc_link doc_make;
-#X obj 241 529 doc_link doc_add;
+#X obj 103 572 doc_link doc_h;
+#X obj 163 572 doc_link doc_make;
+#X obj 241 572 doc_link doc_add;
 #X obj 4 187 doc_exist 1;
 #X obj 4 206 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
 ;
@@ -52,21 +51,28 @@ mangling is to enforce a sorting-order.;
 #X text 95 97 outlet 1 doesn't;
 #X text 119 119 in inlet 0 \, method bang exists;
 #X text 121 138 ... but method float doesn't;
+#X text 232 318 this is one more than the uplevel you'd use for a [gf/canvas_dollarzero].
+;
+#X obj 14 432 doc_ii 0;
+#X obj 14 456 doc_ii 1;
+#X obj 14 518 doc_oo 0;
+#X obj 14 355 doc_cc 1;
 #X connect 9 1 13 0;
 #X connect 10 1 11 0;
 #X connect 12 1 14 0;
 #X connect 12 1 15 0;
+#X connect 16 1 24 0;
 #X connect 16 1 25 0;
 #X connect 16 1 26 0;
-#X connect 16 1 27 0;
-#X connect 20 1 8 0;
-#X connect 21 1 24 0;
-#X connect 28 0 29 0;
-#X connect 30 0 34 0;
-#X connect 33 0 34 0;
-#X connect 34 0 28 0;
-#X connect 34 1 28 1;
-#X connect 35 0 34 0;
-#X connect 36 0 34 0;
-#X connect 37 0 34 0;
-#X connect 39 0 34 0;
+#X connect 19 1 8 0;
+#X connect 20 1 23 0;
+#X connect 20 1 43 0;
+#X connect 27 0 28 0;
+#X connect 29 0 33 0;
+#X connect 32 0 33 0;
+#X connect 33 0 27 0;
+#X connect 33 1 27 1;
+#X connect 34 0 33 0;
+#X connect 35 0 33 0;
+#X connect 36 0 33 0;
+#X connect 38 0 33 0;
