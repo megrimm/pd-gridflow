@@ -1,28 +1,27 @@
-#N canvas 557 126 632 375 10;
+#N canvas 557 126 632 368 10;
 #X obj 0 0 doc_h;
-#X obj 3 321 doc_also;
-#X obj 0 341 doc_f;
-#X obj 20 46 doc_section doc_section is a blue bar such as this one
+#X obj 3 314 doc_also;
+#X obj 0 334 doc_f;
+#X obj 3 27 doc_section doc_section is a blue bar such as this one
 ;
-#X obj 3 166 doc_c any;
-#X obj 14 196 doc_cc any;
-#X obj 97 196 doc_m cany <atom>;
-#X text 232 196 arguments will be concatenated using nbsp characters
+#X obj 3 157 doc_c any;
+#X obj 14 189 doc_cc any;
+#X obj 97 189 doc_m cany <atom>;
+#X text 232 189 arguments will be concatenated using nbsp characters
 to form a IEM label.;
-#X obj 3 241 doc_i 0;
-#X obj 3 281 doc_o 0;
-#X text 197 118 unlike those other four \, it doesn't do autoplacement
+#X obj 3 234 doc_i 0;
+#X obj 3 274 doc_o 0;
+#X text 147 98 unlike those other four \, it doesn't do autoplacement
 and thus it does not require a [doc_h] header bar to be present in
 the same patch.;
-#X text 199 70 ...but not including the standard blue bars for creation
+#X text 149 50 ...but not including the standard blue bars for creation
 arguments \, inlets \, outlets \, and see_also \, that you can see
 below.;
-#X obj 103 321 doc_link doc_h;
-#X obj 163 321 doc_link doc_c;
-#X obj 223 321 doc_link doc_i;
-#X obj 283 321 doc_link doc_o;
-#X obj 343 321 doc_link doc_also;
-#X obj 3 321 doc_also;
+#X obj 103 314 doc_link doc_h;
+#X obj 163 314 doc_link doc_c;
+#X obj 223 314 doc_link doc_i;
+#X obj 283 314 doc_link doc_o;
+#X obj 343 314 doc_link doc_also;
 #X connect 1 1 12 0;
 #X connect 1 1 13 0;
 #X connect 1 1 14 0;
