@@ -387,15 +387,15 @@ NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 #define NONLITE(x...) x
 #endif
 #define NUMBER_TYPES(MACRO) \
-	MACRO(uint8, 8,NT_UNSIGNED, "u8,b") \
-	MACRO(int16,16,0,           "i16,s") \
-	MACRO(int32,32,0,           "i32,i") \
-	MACRO(int64,64,NT_NOTLITE,  "i64,l") \
-	MACRO(float32,32,NT_FLOAT,  "f32,f") \
-	MACRO(float64,64,NT_NOTLITE|NT_FLOAT, "f64,d")
+	MACRO(b,uint8, 8,NT_UNSIGNED) \
+	MACRO(s,int16,16,0          ) \
+	MACRO(i,int32,32,0          ) \
+	MACRO(l,int64,64,NT_NOTLITE ) \
+	MACRO(f,float32,32,NT_FLOAT ) \
+	MACRO(d,float64,64,NT_NOTLITE|NT_FLOAT)
 
 enum NumberTypeE {
-#define FOO(_sym_,args...) _sym_##_e,
+#define FOO(ABBR,SYM,SIZE,FLAGS) SYM##_e,
 NUMBER_TYPES(FOO)
 #undef FOO
 number_type_table_end
@@ -407,13 +407,13 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
 struct NumberType : CObject {
+	const char *alias;
 	const char *name;
 	int size;
 	int flags;
-	const char *aliases;
 	NumberTypeE index;
-	NumberType(const char *name_, int size_, int flags_, const char *aliases_) :
-		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
+	NumberType(const char *alias_, const char *name_, int size_, int flags_) :
+		alias(alias_), name(name_), size(size_), flags(flags_) {}
 };
 
 NumberTypeE NumberTypeE_find (string sym);
