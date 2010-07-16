@@ -1,35 +1,35 @@
-#N canvas 568 85 632 603 10;
+#N canvas 596 114 632 568 10;
 #X obj 0 0 doc_h;
-#X obj 0 569 doc_f;
-#X obj 3 164 doc_c 2;
-#X obj 3 507 doc_o 1;
-#X obj 14 537 doc_oo 0;
-#X obj 14 453 doc_ii 0;
-#X obj 14 194 doc_cc 0;
-#X obj 14 216 doc_cc 1;
-#X obj 97 537 doc_m o0 grid;
-#X obj 97 453 doc_m i0 grid;
-#X obj 3 423 doc_i 2;
-#X obj 14 475 doc_ii 1;
-#X obj 97 475 doc_m i1 grid;
-#X obj 97 216 doc_m c1 grid;
-#X obj 97 194 doc_m c0 float;
-#X text 232 194 number of the dimension to apply the low-pass filter
+#X obj 0 534 doc_f;
+#X obj 3 101 doc_c 2;
+#X obj 3 452 doc_o 1;
+#X obj 14 482 doc_oo 0;
+#X obj 14 396 doc_ii 0;
+#X obj 14 133 doc_cc 0;
+#X obj 14 157 doc_cc 1;
+#X obj 97 482 doc_m o0 grid;
+#X obj 97 396 doc_m i0 grid;
+#X obj 3 364 doc_i 2;
+#X obj 14 420 doc_ii 1;
+#X obj 97 420 doc_m i1 grid;
+#X obj 97 157 doc_m c1 grid;
+#X obj 97 133 doc_m c0 float;
+#X text 232 133 number of the dimension to apply the low-pass filter
 on;
-#X obj 44 58 #lop_space 1 16;
-#X obj 232 475 doc_same 1;
-#X text 232 453 grid to be low-passed;
-#X text 232 537 result;
-#X text 232 216 coefficients of the filter. 0 means the output will
+#X obj 24 48 #lop_space 1 16;
+#X obj 232 420 doc_same 1;
+#X text 232 396 grid to be low-passed;
+#X text 232 482 result;
+#X text 232 157 coefficients of the filter. 0 means the output will
 be all zeroes. 256 leaves picture unchanged. values inside that range
 will give a blur (low pass). negative values gives unstable results.
 values between 256 and 512 will give a kind of sharpening effect. values
 beyond that are unstable.;
-#X obj 293 51 lop~;
-#X text 167 51 apply something like;
-#X text 168 69 from row to row or column to column in the same image.
+#X obj 273 41 lop~;
+#X text 147 41 apply something like;
+#X text 148 59 from row to row or column to column in the same image.
 ;
-#N canvas 0 0 450 259 test-cutoff 0;
+#N canvas 495 187 663 316 test-cutoff 0;
 #X obj 16 91 # cos* 1000;
 #X obj 16 148 # sq-;
 #X obj 16 167 #fold +;
@@ -39,12 +39,15 @@ beyond that are unstable.;
 #X obj 16 186 # / 1024;
 #X obj 16 205 # sqrt;
 #X obj 16 34 metro 100;
-#X obj 16 17 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
+#X obj 154 3 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
 ;
 #X floatatom 109 92 5 0 0 0 - - -;
 #X obj 116 168 display;
 #X obj 16 129 #lop_space 1 171;
 #X obj 16 72 # * 2250;
+#X obj 156 29 display;
+#X obj 155 55 display;
+#X obj 213 59 print;
 #X connect 0 0 5 0;
 #X connect 1 0 2 0;
 #X connect 2 0 6 0;
@@ -53,19 +56,26 @@ beyond that are unstable.;
 #X connect 6 0 7 0;
 #X connect 7 0 3 0;
 #X connect 8 0 4 0;
+#X connect 8 0 15 0;
+#X connect 8 0 16 0;
 #X connect 9 0 8 0;
+#X connect 9 0 14 0;
 #X connect 10 0 12 1;
 #X connect 12 0 1 0;
 #X connect 12 0 11 0;
 #X connect 13 0 0 0;
-#X restore 332 115 pd test-cutoff;
-#X text 232 290 Nyquist/2 has a cutoff at about 171;
-#X text 232 312 Nyquist/4 has a cutoff at about 188;
-#X text 232 334 Nyquist/8 has a cutoff at about 135;
-#X text 232 356 Nyquist/16 has a cutoff at about 83 \, etcætera;
-#X obj 466 105 rpole~;
-#X text 232 378 generally \, [#lop_space d n] is closely related to
+#X restore 522 29 pd test-cutoff;
+#X text 232 231 Nyquist/2 has a cutoff at about 171;
+#X text 232 253 Nyquist/4 has a cutoff at about 188;
+#X text 232 275 Nyquist/8 has a cutoff at about 135;
+#X text 232 297 Nyquist/16 has a cutoff at about 83 \, etcætera;
+#X text 232 319 generally \, [#lop_space d n] is closely related to
 [rpole~ n/256]---[*~ 1-n/256];
+#X obj 3 514 doc_also;
+#X obj 103 514 #convolve;
+#X obj 169 514 #fade;
+#X obj 211 514 rpole~;
+#X obj 259 514 lop~;
 #X connect 8 1 19 0;
 #X connect 9 1 18 0;
 #X connect 12 1 17 0;
@@ -74,5 +84,9 @@ beyond that are unstable.;
 #X connect 13 1 26 0;
 #X connect 13 1 27 0;
 #X connect 13 1 28 0;
-#X connect 13 1 30 0;
+#X connect 13 1 29 0;
 #X connect 14 1 15 0;
+#X connect 30 1 31 0;
+#X connect 30 1 32 1;
+#X connect 30 1 33 0;
+#X connect 30 1 34 0;
