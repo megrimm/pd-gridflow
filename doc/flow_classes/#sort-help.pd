@@ -1,4 +1,4 @@
-#N canvas 484 76 632 642 10;
+#N canvas 484 24 632 642 10;
 #X obj 28 250 #sort;
 #X msg 28 45 0 1 1 2 3 5 8 13 21 34 55 89;
 #X msg 28 102 12 # 666;
@@ -11,17 +11,16 @@
 #X obj 28 159 #outer + (0);
 #X obj 58 274 display;
 #X obj 0 0 doc_h;
-#X obj 3 311 doc_c 0;
-#X obj 3 351 doc_i 1;
-#X obj 3 535 doc_o 1;
-#X obj 3 597 doc_also;
-#X obj 103 597 #grade;
-#X obj 14 565 doc_oo 0;
-#X obj 14 381 doc_ii 0;
-#X obj 0 617 doc_f;
-#X obj 97 381 doc_m i0 grid;
-#X obj 97 565 doc_m o0 grid;
-#X obj 3 597 doc_also;
+#X obj 3 305 doc_c 0;
+#X obj 3 345 doc_i 1;
+#X obj 3 531 doc_o 1;
+#X obj 3 593 doc_also;
+#X obj 103 593 #grade;
+#X obj 14 561 doc_oo 0;
+#X obj 14 377 doc_ii 0;
+#X obj 0 613 doc_f;
+#X obj 97 377 doc_m i0 grid;
+#X obj 97 561 doc_m o0 grid;
 #X text 113 132 shuffle : grading a bunch of uniformly distributed
 random numbers is a good way to produce a quite uniformly distributed
 random permutation (a fair shuffling).;
@@ -29,16 +28,15 @@ random permutation (a fair shuffling).;
 ;
 #X text 69 241 unshuffle... this also uses [#grade] [#outer] [#store]
 internally... have a look;
-#X text 232 381 grid of size (n) to be sorted;
-#X text 232 403 this takes an average time proportional to n*log(n)
+#X text 232 377 grid of size (n) to be sorted;
+#X text 232 399 this takes an average time proportional to n*log(n)
 (a pass on the data takes n time \, and sorting something with a twice
 bigger n takes an extra pass \, thus the log(n)... in base two);
-#X obj 3 597 doc_also;
-#X text 232 464 this does not support sorting grids in more dimensions
+#X text 232 460 this does not support sorting grids in more dimensions
 : then you have to decide a policy for how the sorting to happen. If
 you have a suggestion about what [#sort] should do with multidimensional
 grids \, contact the author.;
-#X text 232 565 sorted data \, of same size and type as the input.
+#X text 232 561 sorted data \, of same size and type as the input.
 ;
 #X connect 0 0 10 0;
 #X connect 1 0 6 0;
@@ -52,7 +50,7 @@ grids \, contact the author.;
 #X connect 7 0 2 0;
 #X connect 9 0 4 0;
 #X connect 15 1 16 0;
+#X connect 20 1 25 0;
 #X connect 20 1 26 0;
 #X connect 20 1 27 0;
-#X connect 20 1 29 0;
-#X connect 21 1 30 0;
+#X connect 21 1 28 0;
