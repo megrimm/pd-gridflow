@@ -1,5 +1,5 @@
 #N canvas 301 61 916 502 10;
-#X obj 0 20 cnv 15 126 17 \$0-rect_s \$0-rect list 4 9 1 9 -261615
+#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect float 4 9 1 9 -261615
 -1 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
@@ -71,7 +71,7 @@
 #X msg 481 448 3;
 #X obj 481 474 gf/canvas_setgop 0;
 #X obj 446 158 doc_bottom 1;
-#X obj 118 0 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
+#X obj 118 20 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
 -261682 -1 -1;
 #X msg 508 448 1;
 #X obj 604 33 r \$0-create_s;
@@ -82,7 +82,7 @@
 #X obj 631 109 gf/canvas_index 0;
 #X obj 640 52 gf/canvas_filename 1;
 #X obj 604 155 pack f f f;
-#X obj 128 72 doc_editmode 118 1;
+#X obj 128 81 doc_editmode 118 1;
 #X msg 604 174 text 232 \$3 ... \, connect \$2 1 \$1 0 \, last_activate
 ;
 #X msg 482 375 wire_dotted 255 170 0;
@@ -94,6 +94,8 @@
 #X obj 128 1 doc_layout ~unspecified~ 126 20 dummy;
 #X msg 482 355 box_dotted 255 170 0;
 #X obj 317 411 max 22;
+#X obj 11 58 inlet;
+#X text 49 57 needed because we use [args];
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -165,4 +167,4 @@
 #X connect 60 2 6 0;
 #X connect 60 2 55 0;
 #X connect 62 0 16 0;
-#X coords 0 -1 1 1 126 17 1 0 0;
+#X coords 0 -1 1 1 126 17 2 0 0;
