@@ -1,4 +1,4 @@
-#N canvas 56 6 632 685 10;
+#N canvas 56 0 632 685 10;
 #X text 13 34 This object imports a grid \, usually an image \, video
 or live stream.;
 #X msg 362 126 open working.jpg;
@@ -56,7 +56,7 @@ codec parameters and after setting framerate and codec.;
 #X connect 11 0 9 0;
 #X connect 25 0 9 0;
 #X connect 26 0 9 0;
-#X restore 333 572 pd quicktime file messages;
+#X restore 349 572 pd quicktime file messages;
 #X obj 354 150 #in;
 #X floatatom 202 195 5 0 0 0 - - -;
 #X msg 202 151 set 2;
@@ -129,7 +129,7 @@ not mmap.;
 #X connect 11 0 14 0;
 #X connect 12 0 14 0;
 #X connect 13 0 14 0;
-#X restore 293 695 pd more info about video devices;
+#X restore 309 695 pd more info about video devices;
 #X text 169 213 (and turn off the metro);
 #X text 244 195 <-- vary this;
 #X text 352 74 IMAGE FILES:;
@@ -206,19 +206,19 @@ the device is locked by another object or application that opened it
 #X obj 139 1527 #camera;
 #X obj 354 172 #out window \, title working;
 #X obj 356 280 #out window \, title sewing;
-#X text 237 641 to get screenshots. see also [pix_snap];
-#X text 246 501 picture formats;
-#X text 247 571 movie formats;
-#X text 236 461 generic file format that can encode any grid.;
+#X text 253 641 to get screenshots. see also [pix_snap];
+#X text 262 501 picture formats;
+#X text 263 571 movie formats;
+#X text 252 461 generic file format that can encode any grid.;
 #X obj 3 1527 doc_also;
 #X obj 97 1250 doc_m i0 <any>;
 #X text 232 1250 passed to the file format handler currently open.
 If none is open \, this will send a "not_open" message on outlet 1
 ;
-#X text 244 694 cameras;
-#X obj 237 478 doc_accolade;
-#X obj 237 548 doc_accolade;
-#X obj 236 671 doc_accolade;
+#X text 260 694 cameras;
+#X obj 253 478 doc_accolade;
+#X obj 253 548 doc_accolade;
+#X obj 252 671 doc_accolade;
 #X obj 114 695 doc_link #io.dc1394;
 #X text 33 750 note that [#out] supports some more modules (those that
 are only for output);
@@ -234,7 +234,7 @@ are only for output);
 #X obj 114 715 doc_link #io.quicktimecamera;
 #X obj 114 593 doc_link #io.mpeg;
 #X msg 115 619 open quicktime;
-#X text 236 617 alias for either quicktimeapple or quicktimehw;
+#X text 252 617 alias for either quicktimeapple or quicktimehw;
 #X connect 1 0 7 0;
 #X connect 2 0 7 0;
 #X connect 7 0 73 0;
