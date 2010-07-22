@@ -1,0 +1,21 @@
+#!/usr/bin/env tclsh
+
+source ../../tcl/pd_parser.tcl
+
+foreach fname [glob *-help.pd cv/*-help.pd gf/*-help.pd] {
+  set f [open $fname]
+  set g [open png/[regsub {pd$} $fname html] w]
+  puts $g "<html><head><title>$fname</title></head>"
+  puts $g "<style type=\"text/css\">.hidden\{font-size: 8px\; color: white\}</style>"
+  puts $g "<body>"
+  puts $g "<img src=\"[regsub {pd$} $fname png]\"><br clear=\"left\">"
+  puts $g "<p class=\"hidden\">"
+  foreach line [pd_mess_split [read $f]] {
+    if {[lindex $line 1] == "text"} {puts $g [lrange $line 4 end]}
+  }
+  puts $g "</p></body></html>"
+  close $f
+  close $g
+  #exit
+}
+
