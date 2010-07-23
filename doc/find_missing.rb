@@ -46,7 +46,7 @@ def report text,list
   puts "(#{list.size})"
 end
 
-report "missing from help files: ", ab-c
+report "missing from help files: ", ab-c-%w[cv/#Add cv/#And cv/#Div cv/#Mul cv/#Or cv/#Sub cv/#Xor]
 puts ""
 report "orphan help files:", c-ab
 puts ""
