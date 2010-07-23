@@ -22,7 +22,7 @@
 #X obj 93 124 route bang;
 #X obj 297 247 gf.error unknown suffix '%s';
 #X obj 297 228 list;
-#X msg 28 417 obj 0 20 gf.not_open;
+#X msg 28 417 obj 0 20 gf/not_open;
 #X obj 9 398 t a a a;
 #X obj 96 372 t b a;
 #X obj 503 298 symbol;
@@ -34,7 +34,7 @@
 #X obj 512 197 symbol \$2;
 #X obj 512 178 loadbang;
 #X msg 74 492 connect 0 0 2 0 \, connect 2 0 1 0 \, loadbang;
-#X msg 96 391 else obj 0 20 gf.not_open;
+#X msg 96 391 else obj 0 20 gf/not_open;
 #N canvas 0 0 450 449 aliases 1;
 #X obj 35 18 inlet;
 #X obj 35 95 class_exists;
