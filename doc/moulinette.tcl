@@ -139,9 +139,9 @@ op {C.tanh } {tanh(A-B)}
 op {C.exp  } {exp(A-B)}
 op {C.log  } {log(A-B)}
 
-#section {vecops for other things}
-#op {cart2pol}
-#op {pol2cart}
+section {vecops for other things}
+op {c2p} {hypot,atan two-in-one}
+op {p2c} {cos*,sin* two-in-one}
 
 incr y 10
 set outletid $oid
