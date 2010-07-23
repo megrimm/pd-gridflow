@@ -14,8 +14,6 @@ proc msg  {args} {write [concat [list #X msg ] $args]; incr ::oid}
 proc text {args} {write [concat [list #X text] $args]; incr ::oid}
 
 set fh [open numop.pd w]
-write [list #N canvas 0 0 1024 768 10]
-write [list #X obj 0 0 doc_demo]
 set oid 1
 set y 30
 set row 0
@@ -24,7 +22,9 @@ set col1 96
 set col2 [expr $col1+350]
 set col3 [expr $col2+230]
 set col4 [expr $col3+230]
-set rowsize 26
+set rowsize 19
+write [list #N canvas 0 0 [expr $col4+10] 640 10]
+write [list #X obj 0 0 doc_demo]
 
 obj 0 $y cnv 15 $col4 22 empty empty empty 20 12 0 14 20 -66577 0
 text 10 $y op name
@@ -39,10 +39,10 @@ incr y 24
 # for vecops, the two analogy-columns were labelled:
 #   meaning in geometric context (indexmaps, polygons, in which each complex number is a point)
 #   meaning in spectrum context (FFT) in which each number is a (cosine,sine) pair
-proc op {op desc {extra1 ""} {extra2 ""}} {
+proc op {op desc {extra1 ""} {extra2 ""} {size 19}} {
 	global y
 	if {$::row&1} {set bg -233280} {set bg -249792}
-	obj 0 $y cnv 15 $::col4 [expr $::rowsize-2] empty empty empty 20 12 0 14 $bg -66577 0
+	obj 0 $y cnv 15 $::col4 [expr $size-2] empty empty empty 20 12 0 14 $bg -66577 0
 	lappend ::msgboxes $::oid
 	set x 10
 	foreach op1 $op {msg $x $y op $op; incr 50}
@@ -50,7 +50,7 @@ proc op {op desc {extra1 ""} {extra2 ""}} {
 	if {$extra1 != ""} {text $::col2 [expr {$y-4}] $extra1}
 	if {$extra2 != ""} {text $::col3 [expr {$y-4}] $extra2}
 	incr ::row
-	incr ::y $::rowsize
+	incr ::y $size
 }
 
 proc draw_columns {} {
@@ -104,8 +104,8 @@ op {<} { is A less than B ? }
 op {>=} {is A not less than B ? }
 op {sin*} { B * sin(A) in centidegrees } {--} {waves, rotations}
 op {cos*} { B * cos(A) in centidegrees } {--} {waves, rotations}
-op {atan} { arctan(A/B) in centidegrees } {--} {find angle to origin; (part of polar transform)}
-op {tanh*} { B * tanh(A) in centidegrees } {smooth clipping} {smooth clipping (of individual points); neural sigmoid, fuzzy logic}
+op {atan} { arctan(A/B) in centidegrees } {--} {find angle to origin; (part of polar transform)} 28
+op {tanh*} { B * tanh(A) in centidegrees } {smooth clipping} {smooth clipping (of individual points); neural sigmoid, fuzzy logic} 28
 op {log*} { B * log(A) (in base e) }
 op {gamma} { floor(pow(a/256.0,256.0/b)*256.0) } {gamma correction}
 op {**} { A**B, that is, A raised to power B } {gamma correction}
@@ -115,9 +115,9 @@ op {sqrt} { square root of A, rounded downwards }
 op {sq-} { (A-B) times (A-B) }
 op {avg} { (A+B)/2 }
 op {hypot} { distance function: square root of (A*A+B*B) }
-op {clip+} { like A+B but overflow causes clipping instead of wrapping around }
-op {clip-} { like A-B but overflow causes clipping instead of wrapping around }
-op {erf*} { integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) }
+op {clip+} { like A+B but overflow causes clipping instead of wrapping around } {} {} 28
+op {clip-} { like A-B but overflow causes clipping instead of wrapping around } {} {} 28
+op {erf*} { integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) } {} {} 28
 op {weight} { number of "1" bits in an integer}
 op {sin} {sin(A-B) in radians, float only}
 op {cos} {cos(A-B) in radians, float only}
