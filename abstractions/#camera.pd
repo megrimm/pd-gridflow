@@ -265,17 +265,17 @@ sorry;
 #X obj 416 172 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 8
 -62784 -44926 -1;
 #X obj 432 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
-empty 0 -6 1 10 -233017 -195568 -195568 0 256;
+empty 0 -6 1 10 -62784 -44926 -1 30 256;
 #X obj 155 178 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
-20 7 1 8 -233017 -195568 -195568 0 65535;
+20 7 1 8 -62784 -44926 -1 0 65535;
 #X text 389 106 presets:;
 #X text 162 166 ------- PWC ONLY: -------;
 #X obj 155 256 hradio 12 1 0 4 \$0-s_noise_reduction \$0-noise_reduction
-_0_1_2_3_noise_reduction -2 7 1 8 -233017 -195568 -195568 0;
+_0_1_2_3_noise_reduction -2 7 1 8 -62784 -44926 -1 1;
 #X obj 155 268 hradio 12 1 0 4 \$0-s_compression \$0-compression _0_1_2_3_compression
--2 7 1 8 -233017 -195568 -195568 0;
-#X obj 9 185 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
--195568 0 1;
+-2 7 1 8 -62784 -44926 -1 1;
+#X obj 9 185 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
+-1 1 1;
 #X text 25 170 use PWC;
 #X obj 417 232 vradio 12 1 0 6 \$0-s_colorspace_e \$0-colorspace_e
 empty 0 -8 0 10 -62784 -44926 -1 2;
@@ -290,29 +290,29 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 286 45 NTSC;
 #X text 285 57 SECAM;
 #X text 285 68 auto;
-#X obj 6 6 cnv 15 480 20 empty \$0-title USB_Video_Class_Video 4 10
-1 12 -1 -262144 0;
+#X obj 6 6 cnv 15 480 20 empty \$0-title Logitech_QuickCam_Pro_4000
+4 10 1 12 -1 -262144 0;
 #X obj 384 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
--6 1 10 -233017 -1 -195568 24 256;
+-6 1 10 -233017 -1 -195568 120 256;
 #X obj 432 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
--6 1 10 -233017 -1 -195568 32 256;
+-6 1 10 -233017 -1 -195568 160 256;
 #X obj 384 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxheight empty 0
--6 1 10 -233017 -1 -195568 4096 256;
+-6 1 10 -233017 -1 -195568 480 256;
 #X obj 432 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxwidth empty 0
--6 1 10 -233017 -1 -195568 4096 256;
+-6 1 10 -233017 -1 -195568 640 256;
 #X text 347 79 max:;
 #X text 347 51 min:;
 #X text 369 214 Palette:;
-#X obj 155 107 gf.nbxhsl \$0 contrast;
+#X obj 155 107 gf/nbxhsl \$0 contrast;
 #X obj 125 408 #in;
-#X obj 155 119 gf.nbxhsl \$0 brightness;
-#X obj 155 131 gf.nbxhsl \$0 colour;
-#X obj 155 143 gf.nbxhsl \$0 hue;
-#X obj 155 155 gf.nbxhsl \$0 whiteness;
-#X obj 155 193 gf.nbxhsl \$0 white_red;
-#X obj 155 205 gf.nbxhsl \$0 white_blue;
-#X obj 155 217 gf.nbxhsl \$0 white_speed;
-#X obj 155 85 gf.nbxhsl \$0 frequency;
+#X obj 155 119 gf/nbxhsl \$0 brightness;
+#X obj 155 131 gf/nbxhsl \$0 colour;
+#X obj 155 143 gf/nbxhsl \$0 hue;
+#X obj 155 155 gf/nbxhsl \$0 whiteness;
+#X obj 155 193 gf/nbxhsl \$0 white_red;
+#X obj 155 205 gf/nbxhsl \$0 white_blue;
+#X obj 155 217 gf/nbxhsl \$0 white_speed;
+#X obj 155 85 gf/nbxhsl \$0 frequency;
 #X text 431 289 none(bad);
 #X text 431 276 magic;
 #X text 430 265 rgba;
@@ -401,8 +401,8 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 42 137 6;
 #X text 42 152 7;
 #X text 42 168 OFF;
-#X obj 155 229 gf.nbxhsl \$0 white_delay;
-#X obj 155 241 gf.nbxhsl \$0 auto_gain;
+#X obj 155 229 gf/nbxhsl \$0 white_delay;
+#X obj 155 241 gf/nbxhsl \$0 auto_gain;
 #X obj 89 229 doc_accolade \, color 10;
 #N canvas 0 22 450 300 minmaxsize 0;
 #X obj 12 13 r \$0-minsize;
@@ -428,8 +428,8 @@ empty 0 -8 0 10 -62784 -44926 -1 2;
 #X obj 53 429 s \$0-api;
 #X obj 7 391 route device api;
 #X obj 53 410 gf/selector;
-#X obj 25 187 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
--195568 0 1;
+#X obj 25 187 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
+-1 1 1;
 #X obj 7 410 mod 9;
 #X text 40 185 use PWC (in v4l1);
 #X connect 2 0 53 0;
