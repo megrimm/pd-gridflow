@@ -70,7 +70,7 @@
 1;
 #X obj 28 453 shunt;
 #X obj 55 472 #t;
-#X obj 233 204 gf.oneshot;
+#X obj 233 204 gf/oneshot;
 #X text 334 103 manual translation;
 #X text 289 129 at the bottom left of this patch;
 #X text 301 115 this will be exactly detected;

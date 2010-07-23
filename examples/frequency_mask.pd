@@ -49,7 +49,7 @@
 #X obj 304 532 # * 255;
 #X obj 304 494 #cast i;
 #X obj 314 251 t b a;
-#X obj 249 270 gf.oneshot;
+#X obj 249 270 gf/oneshot;
 #X obj 456 344 display;
 #X obj 13 107 t a b;
 #X obj 304 570 #out window \, title mask;
