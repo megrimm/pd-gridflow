@@ -22,16 +22,16 @@ set row 0
 set msgboxes {}
 set col1 96
 set col2 [expr $col1+350]
-set col3 [expr $col2+250]
-set col4 [expr $col3+250]
-set rowsize 28
+set col3 [expr $col2+230]
+set col4 [expr $col3+230]
+set rowsize 26
 
-obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
+obj 0 $y cnv 15 $col4 22 empty empty empty 20 12 0 14 20 -66577 0
 text 10 $y op name
 text $col1 $y description
 text $col2 $y "effect on pixels"
 text $col3 $y "effect on coords"
-incr y $rowsize
+incr y 24
 
 # onpixels = meaning in pixel context (pictures, palettes)
 # oncoords = meaning in spatial context (indexmaps, polygons)
@@ -46,9 +46,9 @@ proc op {op desc {extra1 ""} {extra2 ""}} {
 	lappend ::msgboxes $::oid
 	set x 10
 	foreach op1 $op {msg $x $y op $op; incr 50}
-	text $::col1 [expr {$y-2}] $desc
-	if {$extra1 != ""} {text $::col2 $y $extra1}
-	if {$extra2 != ""} {text $::col3 $y $extra2}
+	text                     $::col1 [expr {$y-4}] $desc
+	if {$extra1 != ""} {text $::col2 [expr {$y-4}] $extra1}
+	if {$extra2 != ""} {text $::col3 [expr {$y-4}] $extra2}
 	incr ::row
 	incr ::y $::rowsize
 }
@@ -65,7 +65,7 @@ proc numbertype {op desc {extra1 ""} {extra2 ""}} {op $op $desc $extra1 $extra2}
 set sections {}
 proc section {desc} {
 	lappend ::sections [list $::y $desc]
-	incr ::y 20
+	incr ::y 16
 }
 
 section {numops}
@@ -89,13 +89,13 @@ op {lcm} {least common multiple}
 op {|} { A or B, bitwise } {bright munchies} {bottomright munchies}
 op {^} { A xor B, bitwise } {symmetric munchies (fractal checkers)} {symmetric munchies (fractal checkers)}
 op {&} { A and B, bitwise } {dark munchies} {topleft munchies}
-op {<<} { A * (2**(B % 32)), which is left-shifting } {like *} {like *}
-op {>>} { A / (2**(B % 32)), which is right-shifting } {like /,div} {like /,div}
+op {<<} { A * pow(2,mod(B,32)), which is left-shifting } {like *} {like *}
+op {>>} { A / pow(2,mod(B,32)), which is right-shifting } {like /,div} {like /,div}
 op {||} { if A is zero then B else A }
 op {&&} { if A is zero then zero else B}
 op {min} { the lowest value in A,B } {clipping} {clipping (of individual points)}
 op {max} { the highest value in A,B } {clipping} {clipping (of individual points)}
-op {cmp} { -1 when A<B; 0 when A=B; 1 when A>B. }
+op {cmp} { -1 when A<B, 0 when A=B, 1 when A>B }
 op {==} { is A equal to B ? 1=true, 0=false }
 op {!=} { is A not equal to B ? }
 op {>} { is A greater than B ? }
@@ -104,8 +104,8 @@ op {<} { is A less than B ? }
 op {>=} {is A not less than B ? }
 op {sin*} { B * sin(A) in centidegrees } {--} {waves, rotations}
 op {cos*} { B * cos(A) in centidegrees } {--} {waves, rotations}
-op {atan} { arctan(A/B) in centidegrees } {--} {find angle to origin (part of polar transform)}
-op {tanh*} { B * tanh(A) in centidegrees } {smooth clipping} {smooth clipping (of individual points), neural sigmoid, fuzzy logic}
+op {atan} { arctan(A/B) in centidegrees } {--} {find angle to origin; (part of polar transform)}
+op {tanh*} { B * tanh(A) in centidegrees } {smooth clipping} {smooth clipping (of individual points); neural sigmoid, fuzzy logic}
 op {log*} { B * log(A) (in base e) }
 op {gamma} { floor(pow(a/256.0,256.0/b)*256.0) } {gamma correction}
 op {**} { A**B, that is, A raised to power B } {gamma correction}
@@ -115,8 +115,8 @@ op {sqrt} { square root of A, rounded downwards }
 op {sq-} { (A-B) times (A-B) }
 op {avg} { (A+B)/2 }
 op {hypot} { distance function: square root of (A*A+B*B) }
-op {clip+} { like A+B but overflow causes clipping instead of wrapping around (coming soon) }
-op {clip-} { like A-B but overflow causes clipping instead of wrapping around (coming soon) }
+op {clip+} { like A+B but overflow causes clipping instead of wrapping around }
+op {clip-} { like A-B but overflow causes clipping instead of wrapping around }
 op {erf*} { integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) }
 op {weight} { number of "1" bits in an integer}
 op {sin} {sin(A-B) in radians, float only}
@@ -150,13 +150,13 @@ incr y 20
 
 foreach msgbox $msgboxes {write [list #X connect $msgbox 0 $outletid 0]}
 
+draw_columns
+
 foreach section $sections {
 	mset {y1 desc} $section
-	obj 0 $y1 cnv 15 $::col4 18 empty empty empty 20 12 0 14 -248881 -66577 0
-	text 10 $y1 $desc
+	obj 0 $y1 cnv 15 $::col4 14 empty empty empty 20 12 0 14 -248881 -66577 0
+	text 10 [expr $y1-2] $desc
 }
-
-draw_columns
 
 p {
 	note: a centidegree is 0.01 degree. There are 36000 centidegrees in a circle.
