@@ -86,7 +86,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 	}
 	free(s);
 }
-\end class {install("gf.suffix_lookup",1,3);}
+\end class {install("gf/suffix_lookup",1,3);}
 
 \class Format : FObject
 Format::Format (BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {
