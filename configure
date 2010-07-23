@@ -435,7 +435,7 @@ Feature.add {
 		#include#
 		};
 		int main () {
-		#define T(a) printf("%s:%d; ",#a,sizeof(a));
+		#define T(a) printf("%s:%ld; ",#a,long(sizeof(a)));
 		T(png_uint_32)T(long)puts("");
 		if (!png_check_sig) return 1;
 		return 0;}`}}
