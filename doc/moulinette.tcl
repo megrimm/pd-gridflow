@@ -43,7 +43,8 @@ proc op {op desc {extra1 ""} {extra2 ""}} {
 	if {$::row&1} {set bg -233280} {set bg -249792}
 	obj 0 $y cnv 15 $::col4 [expr $::rowsize-2] empty empty empty 20 12 0 14 $bg -66577 0
 	lappend ::msgboxes $::oid
-	msg 10 $y op $op
+	set x 10
+	foreach op1 $op {msg $x $y op $op; incr 50}
 	text $::col1 $y $desc
 	if {$extra1 != ""} {text $::col2 $y $extra1}
 	if {$extra2 != ""} {text $::col3 $y $extra2}
@@ -164,53 +165,4 @@ p {
 }
 
 close $fh
-set fh [open numtype.pd w]
-write [list #N canvas 0 0 1024 768 10]
-set y 0
-set row 0
-set oid 0
-set col1 192
-set col2 384
-set col3 608
-set col4 1024
-set rowsize 64
 
-obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
-text 10 $y op names
-text $col1 $y range
-text $col2 $y precision
-text $col3 $y description
-incr y 32
-
-numbertype {b  u8   uint8} {0 to 255} {1} {
-	unsigned 8-bit integer. this is the usual size of numbers taken from files and cameras, and
-	written to files and to windows. (however #in converts to int32 unless otherwise specified.)}
-numbertype {s i16   int16} {-32768 to 32767} {1}
-numbertype {i i32   int32} {-(1<<31) to (1<<31)-1} {1} {
-	signed 32-bit integer. this is used by default throughout GridFlow.
-}
-numbertype {l i64   int64} {-(1<<63) to (1<<63)-1} {1}
-numbertype {f f32 float32} {-(1<<128) to (1<<128)} {23 bits or 0.000012%}
-numbertype {d f64 float64} {-(1<<2048) to (1<<2048)} {52 bits or 0.000000000000022%}
-
-draw_columns
-
-p {High-performance computation requires precise and quite peculiar
-	definitions of numbers and their representation.}
-p {Inside most programs, numbers are written down as strings of 
-	bits. A bit is either zero or one. Just like the decimal system 
-	uses units, tens, hundreds, the binary system uses units, twos, 
-	fours, eights, sixteens, and so on, doubling every time.}
-p {One notation, called integer allows for only integer values to be 
-	written (no fractions). when it is unsigned, no negative values may 
-	be written. when it is signed, one bit indicates whether the number 
-	is positive or negative. Integer storage is usually fixed-size, so you have 
-	bounds on the size of numbers, and if a result is too big it "wraps around", truncating the biggest 
-	bits.}
-p {Another notation, called floating point (or float) stores numbers using 
-	a fixed number of significant digits, and a scale factor that allows for huge numbers 
-	and tiny fractions at once. Note that 1/3 has periodic digits, but even 0.1 has periodic digits, 
-	in binary coding; so expect some slight roundings; the precision offered should be 
-	sufficient for most purposes. Make sure the errors of rounding don't accumulate, though.}
-
-close $fh
