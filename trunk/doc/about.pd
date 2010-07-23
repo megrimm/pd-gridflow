@@ -1,33 +1,28 @@
-#N canvas 0 0 648 535 10;
-#X obj 2 500 doc_f;
-#N canvas 0 0 743 313 (subpatch) 0;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect empty 2 9 1 13 -1 -262144 0
-;
-#X obj 511 3 cnv 15 100 18 empty \$0-rect2 GridFlow 1.0 2 9 1 12
--1 -262144 0;
-#X coords 0 -1 1 1 614 24 1 0 0;
-#X restore 0 9 pd;
-#X text 96 310 Development of GridFlow 0.3.0 - 0.5.0 was made possible
+#N canvas 426 42 634 448 10;
+#X obj 0 415 doc_f;
+#X text 96 244 Development of GridFlow 0.3.0 - 0.5.0 was made possible
 in part by a grant from the HRDC (DRHC) to Artengine.;
-#X text 96 341 Development of... much of GridFlow 0.8.x and 0.9.0 was
+#X text 96 275 Development of... much of GridFlow 0.8.x and 0.9.0 was
 made possible in part by a grant from the CSHRC.;
-#X text 96 401 Development of GridFlow 0.9.0 was made possible in part
+#X text 96 335 Development of GridFlow 0.9.0 was made possible in part
 by Alexandre Castonguay's cooking.;
-#X text 96 290 GridFlow is sponsored by Artengine.;
-#X text 96 73 C++ Programming : Mathieu Bouchard;
-#X text 96 100 Pd Programming (abstractions) : Mathieu Bouchard;
-#X text 19 47 Credits;
-#X text 16 261 Sponsors;
-#X text 96 371 Development of [#from_pix] and [#to_pix] was sponsored
+#X text 96 48 C++ Programming : Mathieu Bouchard;
+#X text 96 65 Pd Programming (abstractions) : Mathieu Bouchard;
+#X text 96 305 Development of [#from_pix] and [#to_pix] was sponsored
 by Videographe PARC;
-#X text 96 430 Development of GridFlow 0.9.3 and later has used Videographe
-as a meeting place. Since 0.9.6 \, the room is called Departement de
-Diagrammologie Algorithmique.;
-#X text 96 195 OSX porting : Mathieu Bouchard \, Patrick Boivin.;
-#X text 119 209 (and formerly \, James Tittle \, Adam Lindsay \, etc.)
+#X text 96 136 OSX porting : Mathieu Bouchard \, Patrick Boivin.;
+#X text 119 150 (and formerly \, James Tittle \, Adam Lindsay \, etc.)
 ;
-#X text 96 160 Tutorials and former Pd Help Files : Darsha Hewitt \,
+#X text 96 101 Tutorials and former Pd Help Files : Darsha Hewitt \,
 Stephanie Brodeur \, Alexandre Castonguay;
-#X text 96 130 current Pd Help Files : Mathieu Bouchard \, Patrick
-Boivin;
-#X text 97 238 Win32 porting : Mathieu Bouchard;
+#X text 97 169 Win32 porting : Mathieu Bouchard;
+#X obj 3 27 doc_section Credits;
+#X obj 3 191 doc_section Sponsors;
+#X text 96 82 Current Pd Help Files : Mathieu Bouchard \, Patrick Boivin
+;
+#X text 96 364 Development of GridFlow 0.9.3 and later has used Videographe
+as a meeting place. Since 0.9.6 \, the room is called Département
+de Diagrammologie Algorithmique.;
+#X text 96 211 http://gridflow.ca is hosted by Artengine. this also
+includes the mailing lists and the SVN.;
+#X obj 0 0 doc_demo;
