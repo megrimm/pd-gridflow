@@ -153,13 +153,13 @@
 #X msg 339 43 \$2.c yview moveto \$1;
 #X obj 302 321 #join 0;
 #X obj 350 321 #t;
-#X obj 341 245 gf.oneshot;
+#X obj 341 245 gf/oneshot;
 #X obj 302 245 t a a;
 #X obj 341 264 #dim;
 #X obj 341 283 #to_list;
 #X msg 341 302 0 \$2 3 #;
 #X obj 302 226 #reverse 0;
-#X obj 311 439 gf.oneshot 0;
+#X obj 311 439 gf/oneshot 0;
 #X obj 389 439 b;
 #X obj 48 562 gf/string_replace -help.pd -help.png;
 #X obj 311 458 #reverse 0;

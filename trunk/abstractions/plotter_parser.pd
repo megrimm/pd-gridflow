@@ -28,7 +28,7 @@
 #X obj 302 33 list prepend;
 #X obj 390 33 t a;
 #X obj 279 66 list;
-#X obj 127 201 gf.oneshot;
+#X obj 127 201 gf/oneshot;
 #X obj 156 88 ascii_to_f;
 #X msg 290 224 print_from_ascii;
 #X connect 0 0 3 0;
