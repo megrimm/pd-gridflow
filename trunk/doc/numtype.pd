@@ -1,41 +1,37 @@
-#N canvas 372 0 808 699 10;
-#X obj -1 30 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -195568 -66577
+#N canvas 372 0 748 699 10;
+#X obj -1 30 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -195568 -66577
 0;
-#X text 182 34 range;
-#X text 336 34 precision;
-#X text 461 34 description;
-#X obj -1 62 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
+#X text 146 34 range;
+#X text 258 34 precision;
+#X text 383 34 description;
+#X obj -1 62 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
 0;
-#X text 182 82 0 to 255;
-#X text 326 82 1;
-#X text 451 63 unsigned 8-bit integer. this is the usual size of numbers
+#X text 143 82 0 to 255;
+#X text 242 82 1;
+#X text 383 63 unsigned 8-bit integer. this is the usual size of numbers
 taken from files and cameras \, and written to files and to windows.
 (however #in converts to int32 unless otherwise specified.);
-#X obj 0 126 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
+#X obj 0 126 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
 0;
-#X text 182 146 -32768 to 32767;
-#X text 326 146 1;
-#X obj 0 190 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
+#X text 142 146 -32768 to 32767;
+#X text 242 146 1;
+#X obj 0 190 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
 0;
-#X text 182 210 -(1<<31) to (1<<31)-1;
-#X text 326 210 1;
-#X text 451 191 signed 32-bit integer. this is used by default throughout
+#X text 242 210 1;
+#X text 383 191 signed 32-bit integer. this is used by default throughout
 GridFlow.;
-#X obj 0 254 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
+#X obj 0 254 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
 0;
-#X text 182 274 -(1<<63) to (1<<63)-1;
-#X text 326 274 1;
-#X obj 0 318 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
+#X text 242 274 1;
+#X obj 0 318 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -249792 -66577
 0;
-#X text 182 338 -(1<<128) to (1<<128);
-#X obj 0 382 cnv 16 800 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
+#X obj 0 382 cnv 16 720 62 empty \$0-bar empty 20 12 0 14 -233280 -66577
 0;
-#X text 182 402 -(1<<2048) to (1<<2048);
-#X obj 177 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
+#X obj 140 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
 0;
-#X obj 324 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
+#X obj 253 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
 0;
-#X obj 450 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
+#X obj 379 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
 0;
 #X text 10 456 High-performance computation requires precise and quite
 peculiar definitions of numbers and their representation.;
@@ -44,40 +40,49 @@ strings of bits. A bit is either zero or one. Just like the decimal
 system uses units \, tens \, hundreds \, the binary system uses units
 \, twos \, fours \, eights \, sixteens \, and so on \, doubling every
 time.;
-#X text 420 456 One notation \, called integer allows for only integer
+#X text 380 456 One notation \, called integer allows for only integer
 values to be written (no fractions). when it is unsigned \, no negative
 values may be written. when it is signed \, one bit indicates whether
 the number is positive or negative. Integer storage is usually fixed-size
 \, so you have bounds on the size of numbers \, and if a result is
 too big it "wraps around" \, truncating the biggest bits.;
-#X text 420 562 Another notation \, called floating point (or float)
+#X text 380 562 Another notation \, called floating point (or float)
 stores numbers using a fixed number of significant digits \, and a
 scale factor that allows for huge numbers and tiny fractions at once.
 Note that 1/3 has periodic digits \, but even 0.1 has periodic digits
 \, in binary coding \; so expect some slight roundings \; the precision
 offered should be sufficient for most purposes. Make sure the errors
 of rounding don't accumulate \, though.;
-#X msg 14 149 cast s;
-#X msg 14 85 cast b;
-#X msg 14 213 cast i;
-#X msg 18 279 cast l;
-#X msg 14 341 cast f;
-#X msg 14 405 cast d;
-#X msg 88 82 cast uint8;
-#X msg 88 146 cast int16;
-#X msg 88 210 cast int32;
-#X msg 88 274 cast int64;
-#X msg 88 338 cast float32;
-#X msg 88 402 cast float64;
-#X text 6 34 short name;
-#X obj 77 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
+#X msg 4 149 cast s;
+#X msg 4 85 cast b;
+#X msg 4 213 cast i;
+#X msg 4 279 cast l;
+#X msg 4 341 cast f;
+#X msg 4 405 cast d;
+#X msg 58 85 cast uint8;
+#X msg 58 149 cast int16;
+#X msg 58 213 cast int32;
+#X msg 58 277 cast int64;
+#X msg 58 341 cast float32;
+#X msg 58 405 cast float64;
+#X obj 54 30 cnv 1 1 416 empty empty empty -1 12 0 14 -262144 -66577
 0;
-#X text 96 34 long name;
+#X text 66 37 long name;
 #X obj 0 0 doc_demo;
 #X obj 13 665 s \$0-bar;
-#X msg 13 646 vis_size 800 62;
-#X text 326 402 52 bits;
-#X text 326 413 (0.000000000000022%);
-#X text 326 338 23 bits;
-#X text 326 349 (0.000012%);
-#X connect 46 0 45 0;
+#X text 256 398 52 bits;
+#X text 256 409 (0.000000000000022%);
+#X text 256 334 23 bits;
+#X text 256 345 (0.000012%);
+#X text 161 395 -(1<<2048);
+#X text 143 409 to (1<<2048);
+#X text 167 334 -(1<<128);
+#X text 149 347 to (1<<128);
+#X text 166 271 -(1<<63);
+#X text 148 284 to (1<<63)-1;
+#X text 166 205 -(1<<31);
+#X text 154 218 to (1<<31)-1;
+#X text 10 31 short;
+#X text 12 42 name;
+#X msg 13 647 vis_size 720 62;
+#X connect 55 0 40 0;
