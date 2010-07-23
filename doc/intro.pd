@@ -1,21 +1,21 @@
-#N canvas 536 96 624 370 10;
+#N canvas 536 96 624 351 10;
 #X obj 0 0 doc_demo;
-#X obj 0 337 doc_f;
-#X text 35 31 INTRODUCTION;
-#X text 63 61 The philosophy that guides PureData is a simple but powerful
+#X obj 0 320 doc_f;
+#X text 63 51 The philosophy that guides PureData is a simple but powerful
 one : the software must first provide the user with generic flexible
 tools rather than with readymade specialised components that embody
 a certain æsthetic.;
-#X text 62 121 In other words the user should have total freedom and
+#X text 62 111 In other words the user should have total freedom and
 total responsibility. The software is there to provide a mechanism
 \, and not a policy. Thus it is a more appropriate tool for the DIY
 (Do-It-Yourself) ethic than much other audiovisual software usually
 is.;
-#X text 62 196 The core of GridFlow closely follows that principle
+#X text 62 186 The core of GridFlow closely follows that principle
 : although it was made as a video tool \, it first defines a manner
 of managing information in general \, and a large set of mathematical
 operations \, and only after that \, it uses these things in order
 to implement an image-processing a video-processing tool.;
-#X text 61 281 By avoiding the use of global variables and rather closely
+#X text 61 271 By avoiding the use of global variables and rather closely
 mimicking the flow of PureData atoms \, GridFlow is closer to PureData's
 nature than GEM is.;
+#X obj 3 27 doc_section Introduction;
