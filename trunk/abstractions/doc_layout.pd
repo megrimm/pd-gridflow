@@ -27,7 +27,7 @@
 #X obj 315 371 + \$2;
 #X obj 132 380 list;
 #X obj 42 462 l2s;
-#X obj 42 481 gf.error unknown message '%s';
+#X obj 42 481 gf/error unknown message '%s';
 #X obj 132 438 s;
 #X obj 172 238 t b a;
 #X obj 172 171 route2 getbounds ping;

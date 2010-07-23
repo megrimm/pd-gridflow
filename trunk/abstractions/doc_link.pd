@@ -39,7 +39,7 @@
 #X msg 255 344 open \$2 \$1;
 #X obj 186 44 spigot 1;
 #X msg 170 304 pos 3 0;
-#X obj 384 256 gf.error file not found: '%s';
+#X obj 384 256 gf/error file not found: '%s';
 #X obj 384 237 symbol;
 #X obj 255 137 t s s;
 #X obj 581 196 s \$0-rect;
