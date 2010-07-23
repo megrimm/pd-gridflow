@@ -522,7 +522,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 }
 \end class {
 #ifdef DESIRE
-	install("gf.display",1,0);
+	install("gf/display",1,0);
 #else
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
@@ -1137,7 +1137,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	string s = o.str();
 	pd_error(canvas,"%s",s.data());
 }
-\end class {install("gf.error",1,0);}
+\end class {install("gf/error",1,0);}
 
 \class ForEach : FObject {
 	\constructor () {}
