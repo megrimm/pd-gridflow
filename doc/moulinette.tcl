@@ -9,28 +9,29 @@ proc write {list} {
 	regsub -all "\\$" $v "\\$" v
 	puts $::fh "$v;"
 }
-set oid 0
 proc obj  {args} {write [concat [list #X obj ] $args]; incr ::oid}
 proc msg  {args} {write [concat [list #X msg ] $args]; incr ::oid}
 proc text {args} {write [concat [list #X text] $args]; incr ::oid}
 
 set fh [open numop.pd w]
 write [list #N canvas 0 0 1024 768 10]
-set y 0
+write [list #X obj 0 0 doc_demo]
+set oid 1
+set y 30
 set row 0
 set msgboxes {}
 set col1 96
-set col2 512
-set col3 768
-set col4 1024
-set rowsize 32
+set col2 [expr $col1+350]
+set col3 [expr $col2+250]
+set col4 [expr $col3+250]
+set rowsize 28
 
 obj 0 $y cnv 15 $col4 30 empty empty empty 20 12 0 14 20 -66577 0
 text 10 $y op name
 text $col1 $y description
 text $col2 $y "effect on pixels"
 text $col3 $y "effect on coords"
-incr y 32
+incr y $rowsize
 
 # onpixels = meaning in pixel context (pictures, palettes)
 # oncoords = meaning in spatial context (indexmaps, polygons)
@@ -45,7 +46,7 @@ proc op {op desc {extra1 ""} {extra2 ""}} {
 	lappend ::msgboxes $::oid
 	set x 10
 	foreach op1 $op {msg $x $y op $op; incr 50}
-	text $::col1 $y $desc
+	text $::col1 [expr {$y-2}] $desc
 	if {$extra1 != ""} {text $::col2 $y $extra1}
 	if {$extra2 != ""} {text $::col3 $y $extra2}
 	incr ::row
@@ -53,9 +54,10 @@ proc op {op desc {extra1 ""} {extra2 ""}} {
 }
 
 proc draw_columns {} {
-	obj [expr $::col1-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
-	obj [expr $::col2-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
-	obj [expr $::col3-1] 0 cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
+	set y 30
+	obj [expr $::col1-1] $y cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
+	obj [expr $::col2-1] $y cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
+	obj [expr $::col3-1] $y cnv 0 0 $::y empty empty empty -1 12 0 14 0 -66577 0
 }
 
 proc numbertype {op desc {extra1 ""} {extra2 ""}} {op $op $desc $extra1 $extra2}
@@ -93,7 +95,7 @@ op {||} { if A is zero then B else A }
 op {&&} { if A is zero then zero else B}
 op {min} { the lowest value in A,B } {clipping} {clipping (of individual points)}
 op {max} { the highest value in A,B } {clipping} {clipping (of individual points)}
-op {cmp} { -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. }
+op {cmp} { -1 when A<B; 0 when A=B; 1 when A>B. }
 op {==} { is A equal to B ? 1=true, 0=false }
 op {!=} { is A not equal to B ? }
 op {>} { is A greater than B ? }
@@ -148,13 +150,13 @@ incr y 20
 
 foreach msgbox $msgboxes {write [list #X connect $msgbox 0 $outletid 0]}
 
-draw_columns
-
 foreach section $sections {
 	mset {y1 desc} $section
 	obj 0 $y1 cnv 15 $::col4 18 empty empty empty 20 12 0 14 -248881 -66577 0
 	text 10 $y1 $desc
 }
+
+draw_columns
 
 p {
 	note: a centidegree is 0.01 degree. There are 36000 centidegrees in a circle.
