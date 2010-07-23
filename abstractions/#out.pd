@@ -5,7 +5,7 @@
 #N canvas 116 23 450 300 \$0-placeholder 0;
 #X obj 0 0 r 1038-in;
 #X obj 0 40 s 1038-out;
-#X obj 0 20 gf.not_open;
+#X obj 0 20 gf/not_open;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
 #X restore 288 268 pd \$0-placeholder;
@@ -22,7 +22,7 @@
 #X msg 99 302 close;
 #X msg 150 78 bang;
 #X obj 382 87 s pd-\$0-placeholder;
-#X obj 382 68 gf.io_generate \$0 out;
+#X obj 382 68 gf/io_generate \$0 out;
 #X obj 330 346 outlet;
 #X obj 288 137 b;
 #X text 310 137 hack.;
