@@ -1,4 +1,3 @@
-
 The following are called VecOps because each operation happens between more than just two numbers.
 A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
 If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.
@@ -16,39 +15,14 @@ should make many programs simpler.
 
 Introduction [...]
 
-	 It can be said that in all those video plugins there are three layers:
-	the first, the low level, is not accessible to non-programmers (and fairly
-	difficult of access even to programmers); the second, mathematical, where
-	one needs not to be a C++ programmer, but still requires a good
-	understanding of how numbers and pixels and colours and geometry work; and
-	a third level that looks more like the software an artist would like to
-	use.
-
-	 In other video plugins there is a fairly low emphasis on the second
-	layer. In GridFlow that layer is very strong and opens many possibilities.
-	Even though the third layer in GridFlow is not as developed as it could,
-	the second layer may be used to produce third-layer object classes much
-	more quickly.
-
-	 GridFlow provides a unifying view of multimedia information. Several
+	GridFlow provides a unifying view of multimedia information. Several
 	kinds of data -- raster graphics in any number of channels, coordinate
 	transforms, matrices, vectors -- may all be represented by Grids
 	(also known as multi-dimensional arrays). Grids exist in several ways: they
 	are usually streamed from object to object, but they can also be stored in
 	memory, stored into a file, sent through the network.
 
-	 Here is an example of how things work in GridFlow. (if you want more
-	information, consult the rest of this manual)
-
-	 A picture is a three-dimensional Grid:
-	0 : rows
-	1 : columns
-	2 : channels
-
-		Pictures come in all sorts of heights and widths. The channels, however,
-	are more limited in number. Usually it's three: Red, Green, Blue.
-
-	 A coordinate transform, when specified pixel by pixel, may be a
+	A coordinate transform, when specified pixel by pixel, may be a
 	three-dimensional Grid in which the two "channels" are Y and X,
 	representing row-and-column positions in a separate picture.
 	
