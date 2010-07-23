@@ -89,8 +89,8 @@ say args             "pick up the arguments of an abstraction instance, includin
 say ascii            "write integer as decimal in ascii codes"
 say class_exists     "figure out whether a class has been loaded by pd"
 say display          "\[display\]: print message or grid inside of the patch"
-say gf.error         "emit error message from the perspective of the current abstraction instance in its parent patch"
-say gf.suffix_lookup "find the objectclass corresponding "
+say gf/error         "emit error message from the perspective of the current abstraction instance in its parent patch"
+say gf/suffix_lookup "find the objectclass corresponding "
 say range            "multiple moses in cascade"
 say receives         "multiple receives with common outlet and other outlet telling the name of intended destination"
 say route2           "route messages but keep them intact (does not remove selector)"
@@ -114,7 +114,7 @@ say #fastblur         "speedy shortcut for rectangular blur"
 say for               "make sequence of float messages for each number in a range with specified stepping"
 say fps               "measure frames per second and make statistics"
 say #gamma            "apply gamma correction"
-say gf.io_generate    "for internal use by #in and #out"
+say gf/io_generate    "for internal use by #in and #out"
 say #hueshift         "apply hue shift by rotating the color wheel"
 
 say #in               "open file or device for reading or download"
@@ -126,7 +126,7 @@ say inv+              "swapped -"
 say #moment_polar     "convert covariance matrix to the longest and shortest radius of an ellipse and a rotation angle"
 say #motion_detection "frame difference with some options"
 say #mouse            "converts mouse events to reports of clicks, drags, unclicks, motions, and separate buttons and wheel"
-say gf.oneshot        "spigot that shuts itself down after each message"
+say gf/oneshot        "spigot that shuts itself down after each message"
 say pingpong          "turns value of a counter into a zigzag between 0 and a given value"
 
 category "Polygons"
@@ -246,12 +246,8 @@ say doc_link     "GFDP hyperlink for opening another helpfile"
 
 # experimental new stuff
 
-if 0 {
-# say gf.display
-# say gf.nbxhsl
-# say gf.not_open
-# say gf.print
-}
+say gf/nbxhsl "combined \[nbx\] and \[hsl\] boxes as used by \[#camera\]"
+say gf/not_open "used by \[#in\] \[#in~\] \[#out\] to represent closed state"
 
 #io.quartz #to_array doc_add doc_also doc_below doc_bottom doc_c doc_cc doc_demo doc_editmode doc_exist doc_f doc_h doc_i doc_ii doc_layout doc_m 
 #doc_make doc_o doc_oo doc_same inv0x2a inv0x2b memstat
