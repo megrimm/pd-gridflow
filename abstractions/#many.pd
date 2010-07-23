@@ -97,7 +97,7 @@ receive \$5-recv-\$3-\$4;
 #X obj 515 58 loadbang;
 #X obj 154 82 # +;
 #X obj 362 20 gf/selector;
-#X obj 362 39 gf.error #many: no method for '%s';
+#X obj 362 39 gf/error #many: no method for '%s';
 #N canvas 0 0 431 252 to 0;
 #X obj 3 123 list split 2;
 #X obj 3 66 t a a;

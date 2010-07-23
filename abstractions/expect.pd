@@ -4,7 +4,7 @@
 #X obj 11 150 outlet;
 #X obj 150 49 t a;
 #X obj 11 90 list.==;
-#X text 8 229 TODO: should do [gf.error expected %s but got %s];
+#X text 8 229 TODO: should do [gf/error expected %s but got %s];
 #X connect 0 0 4 0;
 #X connect 1 0 3 0;
 #X connect 3 0 4 1;

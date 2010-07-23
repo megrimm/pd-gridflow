@@ -76,7 +76,7 @@ norm;
 #X obj 324 384 t a;
 #X msg 324 365 color 15;
 #X obj 406 368 r \$0-s_api_e;
-#X obj 447 272 gf.error unknown api '%s';
+#X obj 447 272 gf/error unknown api '%s';
 #X obj 447 253 symbol;
 #X obj 556 420 s \$0-device;
 #X obj 447 224 sel -1;
@@ -132,7 +132,7 @@ norm;
 #X connect 13 0 0 0;
 #X connect 14 0 0 0;
 #X restore 568 334 pd detect_default_api;
-#X obj 406 477 gf.error sorry;
+#X obj 406 477 gf/error sorry;
 #X obj 447 205 listfind v4l1 libv4l1 v4l2 libv4l2 dc1394 quicktime
 sorry;
 #X obj 22 682 listread v4l1 libv4l1 v4l2 libv4l2 dc1394 quicktime sorry
