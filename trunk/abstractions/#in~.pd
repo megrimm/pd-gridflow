@@ -6,15 +6,14 @@
 #N canvas 116 23 450 300 \$0-placeholder 0;
 #X obj 0 0 r 1069-in;
 #X obj 0 40 s 1069-out;
-#X obj 0 20 #io.quicktimehw in /home/matju/youtube/Les_Pierrafeu_2.avi
-;
+#X obj 0 20 gf/not_open;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
 #X restore 302 146 pd \$0-placeholder;
 #X obj 302 127 s \$0-in;
 #X obj 302 165 r \$0-out;
 #X text 249 78 hack.;
-#X obj 19 259 gf.io_generate \$0 in;
+#X obj 19 259 gf/io_generate \$0 in;
 #X obj 19 150 list;
 #X obj 308 207 spigot 1;
 #X obj 308 188 route bang;
