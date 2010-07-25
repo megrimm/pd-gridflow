@@ -24,25 +24,13 @@
 
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
 struct imageStruct {
-  imageStruct(); ~imageStruct();
-  unsigned char*   allocate(size_t size);  unsigned char*   allocate();
-  unsigned char* reallocate(size_t size);  unsigned char* reallocate();
-  void clear();
-  GLint xsize, ysize, csize;
-  GLenum type, format;
-  int notowned;
-  void copy2Image(imageStruct *to) const;
-  void copy2ImageStruct(imageStruct *to) const; // copy the imageStruct (but not the actual data)
-  void refreshImage(imageStruct *to);
-  void swapRedBlue ();
-  void convertTo  (imageStruct*to,   GLenum dest_format=0);
-  void convertFrom(imageStruct*from, GLenum dest_format=0);
-  unsigned char *data;
-  private:
-  unsigned char *pdata;
-  size_t    datasize;
-  public:
-  GLboolean upsidedown;
+  GLint xsize, ysize, csize; GLenum type, format; int notowned;
+  unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
+  void clear(); imageStruct(); /*virtual*/ ~imageStruct(); // late 93 has virtual
+  unsigned char *allocate(size_t size); unsigned char *allocate(); // 92 and early 93
+  // virtual unsigned char *allocate(size_t size); virtual unsigned char *allocate(); late 93
+  //void convertTo  (imageStruct*to,   GLenum dest_format=0);
+  //void convertFrom(imageStruct*from, GLenum dest_format=0);
 };
 #ifdef __WIN32__
 #define GEM_VECTORALIGNMENT 128
@@ -63,37 +51,22 @@ unsigned char *imageStruct::allocate(size_t size) {
   return data; 
 }
 #endif
-struct pixBlock {
-  pixBlock();
-  imageStruct image;
-  int newimage, newfilm;
-};
+struct pixBlock {pixBlock(); imageStruct image; int newimage, newfilm;};
 #ifdef __WIN32__
 pixBlock::pixBlock() : newimage(0), newfilm(0) {}
 #endif
-class TexCoord {
- public:
+struct TexCoord {
   TexCoord() : s(0.f), t(0.f) {}
   TexCoord(float s_, float t_) : s(s_), t(t_) {}
   float s,t;
 };
-
 #if 0 /* unused GemState fields */
-  TexCoord *texCoords;
-  int numTexCoords, multiTexUnits;
-  float tickTime;
-  GLenum drawType;
-  int stackDepth[4];
-  int VertexDirty;
-  GLfloat *VertexArray;   int VertexArraySize; int VertexArrayStride;
-  GLfloat *ColorArray;    int HaveColorArray;
-  GLfloat *NormalArray;   int HaveNormalArray;
-  GLfloat *TexCoordArray; int HaveTexCoordArray;
-  float texCoordX(int num) const {if (texture && numTexCoords > num) return texCoords[num].s; else return 0.;}
-  float texCoordY(int num) const {if (texture && numTexCoords > num) return texCoords[num].t; else return 0.;}
+  TexCoord *texCoords; int numTexCoords, multiTexUnits;
+  float tickTime; GLenum drawType; int stackDepth[4];
 #endif
 
 static int gem=0;
+static int imageStruct_has_virtual = 0;
 struct GemState92 {
   int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
   GemState92(); ~GemState92(); void reset();
@@ -127,15 +100,13 @@ struct GemVersion {static const char *versionString();};
 	void startRendering () {m_pixBlock.newimage = 1;}
 	\constructor () {
 		yflip = false;
-		imageStruct &im = m_pixBlock.image = imageStruct();
-		im.ysize = 1;
-		im.xsize = 1;
-		im.csize = 4;
-		im.format = GEM_RGBA;
-		im.type = GL_UNSIGNED_BYTE;
-		im.allocate();
-		/* this is red on Linux-386, blue on OSX-386, what color on OSX-PPC ? (blue ?) */
-		*(int*)im.data = 0x000000ff;
+		m_pixBlock.image = imageStruct();
+		long *hax0r = (long*)&m_pixBlock.image;
+		//post("%lx %lx %lx %lx",hax0r[0],hax0r[1],hax0r[2],hax0r[3]);
+		imageStruct &im = *(imageStruct *)(((long *)&m_pixBlock.image)+imageStruct_has_virtual);
+		im.ysize = 1; im.xsize = 1; im.csize = 4;
+		im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
+		m_pixBlock.image.allocate(); *(int*)im.data = 0x000000ff;
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -301,7 +272,8 @@ GRID_INLET(1) {
 //------------------------------------------------------------------------
 // [gemdead]
 
-struct GemState {GemState(); /*~GemState(); ??? */ char coccinelle[666];}; /* bizarrerie */
+struct GemState      {GemState(); char trabant[666];};
+//struct imageStruct {imageStruct(); char lada[666];};
 #ifdef __WIN32__
 GemState::GemState() {}
 #endif
@@ -367,6 +339,8 @@ void startup_gem () {
 	//post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
 	//delete dummy;
 	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
+	imageStruct_has_virtual = !!*(long *)new imageStruct();
+	post("imageStruct_has_virtual=%d",imageStruct_has_virtual);
 }
 
 /*
