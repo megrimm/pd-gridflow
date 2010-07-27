@@ -87,6 +87,7 @@ $conf={
 	:DEFINES => {:CPU => nil},
 	:CC => "g++",
 	:OBJS => [],
+	:PDLIB => ["gridflow$(PDSUF)"],
 }
 
 def launch stdin,stdout,stderr,*command # -> returncode
@@ -118,6 +119,7 @@ class Feature
 	attr2 :tag
 	attr2 :name
 	attr2 :status
+	attr2 :uses_pdlib
 	attr2 :uses_so
 	attr2 :uses_o
 	attr2 :uses_h
@@ -597,9 +599,7 @@ Feature.add {
 	tag :opengl
 	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
 	uses_feature [:puredata]
-	uses_o ["src/gem9292$(PDSUF)"]
-	uses_o ["src/gem9293$(PDSUF)"]
-	uses_o ["src/gem9393$(PDSUF)"]
+	uses_pdlib ["src/gem9292$(PDSUF)","src/gem9293$(PDSUF)","src/gem9393$(PDSUF)"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_GEM"]
@@ -742,6 +742,7 @@ def try feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
+	$conf[:PDLIB].concat(feature.uses_pdlib||[])
 	for k,v in feature.defines||{} do $conf[:DEFINES][k]=(if Proc===v then v[] else v end) end
 	true
 end
@@ -783,6 +784,7 @@ File.open("./config.make","w") {|f|
   f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
+  f.puts "PDLIB = "+$conf[:PDLIB].join(" ")
 } # end open config.make
 
 #--------------------------------#
