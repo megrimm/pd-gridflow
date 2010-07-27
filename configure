@@ -599,7 +599,7 @@ Feature.add {
 	tag :opengl
 	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
 	uses_feature [:puredata]
-	uses_pdlib ["src/gem9292$(PDSUF)","src/gem9293$(PDSUF)","src/gem9393$(PDSUF)"]
+	uses_pdlib ["gem9292$(PDSUF)","gem9293$(PDSUF)","gem9393$(PDSUF)"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_GEM"]
