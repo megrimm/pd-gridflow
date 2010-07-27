@@ -164,6 +164,7 @@ GRID_INLET(0) {
 	} else {
 		// first frame: have to do setup
 		dim = in.dim;
+		gotdim = true;
 		// this is a duplicate: see _0_size. what should I do with that?
 		quicktime_set_video(anim,1,dim[1],dim[0],m_framerate,m_codec);
 		quicktime_set_cmodel(anim,colorspace);
