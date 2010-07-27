@@ -22,27 +22,36 @@
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
 
-struct GemState    {GemState(); char trabant[666];};
-struct imageStruct {imageStruct(); char lada[666];};
-
-extern "C" unsigned char *_ZN11imageStruct8allocateEj(void *, size_t);
 
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
-struct imageStruct92 { // and early 93
+#ifdef GEMSTATE93 // except Gem93 older than jan.2010 iirc
+struct imageStruct {
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  void clear(); imageStruct92() {new(this)imageStruct();} ~imageStruct92() {}
-  unsigned char *allocate(size_t size) {return _ZN11imageStruct8allocateEj(this,size);}
-  unsigned char *allocate() {return allocate(xsize*ysize*csize);}
+  void clear(); imageStruct(); ~imageStruct();
+  unsigned char *allocate(size_t size); unsigned char *allocate();
 };
-struct imageStruct93 { // except early 93
-  void *vtable;
+#else // older
+struct imageStruct {
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  void clear(); imageStruct93() {new(this)imageStruct();} ~imageStruct93() {/* sorry */}
-  unsigned char *allocate(size_t size) {return _ZN11imageStruct8allocateEj(this,size);}
-  unsigned char *allocate() {return allocate(xsize*ysize*csize);}
+  virtual void clear(); imageStruct(); ~imageStruct();
+  unsigned char *allocate(size_t size); unsigned char *allocate();
 };
+#endif
+struct pixBlock {imageStruct image; int newimage, newfilm; pixBlock(){newimage=newfilm=0;}};
+#ifdef IMAGESTRUCT93 // except Gem93 older than 25 mai 2010
+struct GemState {
+  bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock *image;
+  GemState(); virtual ~GemState(); void reset();
+};
+#else // older
+struct GemState {
+  int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
+  GemState(); ~GemState(); void reset();
+};
+#endif
+
 #ifdef __WIN32__
 #define GEM_VECTORALIGNMENT 128
 imageStruct::imageStruct() : type(GL_UNSIGNED_BYTE), format(GL_RGBA), notowned(0),data(0),pdata(0),datasize(0), upsidedown(0) {}
@@ -62,8 +71,6 @@ unsigned char *imageStruct::allocate(size_t size) {
   return data; 
 }
 #endif
-struct pixBlock92 {imageStruct92 image; int newimage, newfilm; pixBlock92(){newimage=newfilm=0;}};
-struct pixBlock93 {imageStruct93 image; int newimage, newfilm; pixBlock93(){newimage=newfilm=0;}};
 #ifdef __WIN32__
 pixBlock::pixBlock() : newimage(0), newfilm(0) {}
 #endif
@@ -79,16 +86,6 @@ struct TexCoord {
 
 static int gem=0;
 static int imageStruct_has_virtual = 0;
-struct GemState92 {
-  int dirty, inDisplayList, lighting, smooth, texture; pixBlock92 *image;
-  GemState92(); ~GemState92(); void reset();
-};
-/* you need at least one virtual dummy function in order to enable the implicit inclusion of the vtable pointer,
- * that is, C++'s class pointer. */
-struct GemState93 {
-  bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock93 *image;
-  GemState93(); ~GemState93(); void reset(); virtual void your_mom() = 0;
-};
 struct GemVersion {static const char *versionString();};
 /* end of summary */
 
@@ -102,30 +99,16 @@ struct GemVersion {static const char *versionString();};
 //  in 1: grid
 // out 0: gem
 \class GridToPix : FObject {
-	union {
-	  pixBlock92 *pb92;
-	  pixBlock93 *pb93;
-	};
+	pixBlock *pb;
 	\attr bool yflip;
 	\decl 0 gem_state (...);
-	void render(void *state) {
-		if (gem>=93) ((GemState93 *)state)->image = pb93;
-		else         ((GemState92 *)state)->image = pb92;
-	}
-	void startRendering () {
-		if (imageStruct_has_virtual) pb93->newimage = 1;
-		else                         pb92->newimage = 1;
-	}
+	void render(void *state) {((GemState *)state)->image = pb;}
+	void startRendering () {pb->newimage = 1;}
 	\constructor () {
 		yflip = false;
 		if (imageStruct_has_virtual) {
-			pb93 = new pixBlock93();
-			imageStruct93 &im = pb93->image = imageStruct93();
-			im.ysize = 1; im.xsize = 1; im.csize = 4; im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
-			im.allocate(); *(int*)im.data = 0x000000ff;
-		} else {
-			pb92 = new pixBlock92();
-			imageStruct92 &im = pb92->image = imageStruct92();
+			pb = new pixBlock();
+			imageStruct &im = pb->image = imageStruct();
 			im.ysize = 1; im.xsize = 1; im.csize = 4; im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
 			im.allocate(); *(int*)im.data = 0x000000ff;
 		}
@@ -135,8 +118,7 @@ struct GemVersion {static const char *versionString();};
 };
 \def 0 gem_state (...) {
 	if (argc==2) {
-		if (gem>=93) render((GemState93 *)(void *)argv[1]);
-		else         render((GemState92 *)(void *)argv[1]);
+		render((GemState *)(void *)argv[1]);
 	} else startRendering();
 	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
 }
@@ -150,32 +132,19 @@ GRID_INLET(1) {
 	int c = in.dim[2];
 	if (c!=3 && c!=4)  RAISE("expecting 3 or 4 channels (got %d)",in.dim[2]);
 	in.set_chunk(1);
-	if (imageStruct_has_virtual) {
-		imageStruct93 &im = pb93->image;
-		im.clear(); im.ysize = in.dim[0]; im.xsize = in.dim[1]; im.type = GL_UNSIGNED_BYTE;
-		switch (in.dim[2]) {
-		case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
-		case 3: im.csize = 4; im.format = GEM_RGBA;     break;
-		case 4: im.csize = 4; im.format = GEM_RGBA;     break;
-		default: RAISE("you shouldn't see this error message.");
-		}
-		im.allocate();
-	} else {
-		imageStruct92 &im = pb92->image;
-		im.clear(); im.ysize = in.dim[0]; im.xsize = in.dim[1]; im.type = GL_UNSIGNED_BYTE;
-		switch (in.dim[2]) {
-		case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
-		case 3: im.csize = 4; im.format = GEM_RGBA;     break;
-		case 4: im.csize = 4; im.format = GEM_RGBA;     break;
-		default: RAISE("you shouldn't see this error message.");
-		}
-		im.allocate();
+	imageStruct &im = pb->image;
+	im.clear(); im.ysize = in.dim[0]; im.xsize = in.dim[1]; im.type = GL_UNSIGNED_BYTE;
+	switch (in.dim[2]) {
+	case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
+	case 3: im.csize = 4; im.format = GEM_RGBA;     break;
+	case 4: im.csize = 4; im.format = GEM_RGBA;     break;
+	default: RAISE("you shouldn't see this error message.");
 	}
+	im.allocate();
 } GRID_FLOW {
-	uint8 *buf = imageStruct_has_virtual ? (uint8 *)pb93->image.data : (uint8 *)pb92->image.data;
-	int csize  = imageStruct_has_virtual ?         pb93->image.csize  :         pb93->image.csize;
-	if (imageStruct_has_virtual) pb93->image.upsidedown = !yflip;
-	else                         pb93->image.upsidedown = !yflip;
+	uint8 *buf = (uint8 *)pb->image.data;
+	int csize  = pb->image.csize;
+	pb->image.upsidedown = !yflip;
 	long sxc = in.dim.prod(1);
 	long sx = in.dim[1];
 	long chans = in.dim[2];
@@ -210,8 +179,7 @@ GRID_INLET(1) {
 		}
 	}
 } GRID_FINISH {
-	if (imageStruct_has_virtual) pb93->newimage = 1;
-	else                         pb92->newimage = 1;
+	pb->newimage = 1;
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
@@ -231,7 +199,7 @@ GRID_INLET(1) {
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
 	\decl 0 colorspace (t_symbol *s);
-	template <class imageStructT> void render_really(imageStructT &im) {
+	void render_really(imageStruct &im) {
 		//im.convertTo(im,GEM_RGBA);
 		BitPacking *bp;
 		switch (im.format) {
@@ -267,12 +235,9 @@ GRID_INLET(1) {
 		//}
 	}
 	void render (void *state) {
-		void *pb = gem>=93 ?
-			(void *)(((GemState93 *)state)->image):
-			(void *)(((GemState92 *)state)->image);
+		pixBlock *pb = ((GemState *)state)->image;
 		if (!pb) {::post("gemstate has no pix"); return;}
-		if (imageStruct_has_virtual) render_really(((pixBlock93 *)pb)->image);
-		else                         render_really(((pixBlock92 *)pb)->image);
+		render_really(pb->image);
 	}
 };
 \def 0 colorspace (t_symbol *s) {// 3 2 1 0 (numéro de byte)
@@ -297,12 +262,7 @@ GRID_INLET(1) {
 	} else
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
-\def 0 gem_state (...) {
-	if (argc==2) {
-		if (gem>=93) render((GemState93 *)(void *)argv[1]);
-		else         render((GemState92 *)(void *)argv[1]);
-	}
-}
+\def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
 \end class {install("#from_pix",1,1); add_creator("#import_pix");}
 
 //------------------------------------------------------------------------
