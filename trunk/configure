@@ -583,11 +583,9 @@ Feature.add {
 Feature.add {
 	tag :opengl
 	name "OpenGL (for GEM support, etc)"
-	uses_feature [:puredata]
-	uses_o ["src/gem.o"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
-	options ["HAVE_GEM"]
+	options ["HAVE_OPENGL"]
 	test proc {
 		c_test %`
                 #include#
@@ -598,10 +596,10 @@ Feature.add {
 Feature.add {
 	tag :gem
 	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
-	uses_feature [:puredata]
-	uses_pdlib ["gridflow-gem9292$(PDSUF)",
-		    "gridflow-gem9293$(PDSUF)",
-		    "gridflow-gem9393$(PDSUF)"]
+	uses_feature [:puredata,:opengl]
+	uses_pdlib ["gridflow_gem9292$(PDSUF)",
+		    "gridflow_gem9293$(PDSUF)",
+		    "gridflow_gem9393$(PDSUF)"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_GEM"]

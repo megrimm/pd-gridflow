@@ -1,7 +1,7 @@
 #!/usr/bin/make
 
 include config.make
-#COMMON_DEPS = config.make Makefile src/source_filter.rb
+COMMON_DEPS = config.make Makefile src/source_filter.rb
 COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
 
@@ -87,11 +87,11 @@ PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
 
-gridflow-gem9292$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
+gridflow_gem9292$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -xc++ src/gem.cxx.fcs -o $@
-gridflow-gem9293$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
+gridflow_gem9293$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -xc++ src/gem.cxx.fcs -o $@
-gridflow-gem9393$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
+gridflow_gem9393$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -xc++ src/gem.cxx.fcs -o $@
 
 beep::
