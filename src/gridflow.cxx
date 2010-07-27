@@ -1022,6 +1022,11 @@ void allow_big_stack () {
 #endif
 }
 
+#ifdef HAVE_GEM
+	struct GemState    {GemState(); char trabant[666];};
+	struct imageStruct {imageStruct(); char lada[666];};
+#endif
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -1064,8 +1069,6 @@ BUILTIN_SYMBOLS(FOO)
 	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
 	//int major,minor; sscanf(GemVersion::versionString(),"%d.%d",&major,&minor); gem = major*1000+minor;
 	int gem = -1;
-	struct GemState   {GemState(); char trabant[666];};
-	struct imageStruct {imageStruct(); char lada[666];};
  	GemState *dummy = new GemState();
 	float *stupide = (float *)dummy;
 	int i;
@@ -1083,6 +1086,10 @@ BUILTIN_SYMBOLS(FOO)
 	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
 	bool imageStruct_has_virtual = !!*(long *)new imageStruct();
 	post("imageStruct_has_virtual=%d",imageStruct_has_virtual);
+	void sys_load_lib(t_canvas *,const char *);
+	if (gem==92)                       sys_load_lib(0,"gridflow-gem9292");
+	else if (!imageStruct_has_virtual) sys_load_lib(0,"gridflow-gem9293");
+	else                               sys_load_lib(0,"gridflow-gem9393");
 #endif
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
