@@ -22,22 +22,30 @@
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
 
+struct GemState    {GemState(); char trabant[666];};
+struct imageStruct {imageStruct(); char lada[666];};
+
+extern "C" unsigned char *_ZN11imageStruct8allocateEj(void *, size_t);
+
 /* summarising GEM's headers: GemState.h and GemPixUtil.h */
 struct imageStruct92 { // and early 93
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  void clear(); imageStruct92(); ~imageStruct92();
-  unsigned char *allocate(size_t size); unsigned char *allocate();
+  void clear(); imageStruct92() {new(this)imageStruct();} ~imageStruct92() {}
+  unsigned char *allocate(size_t size) {return _ZN11imageStruct8allocateEj(this,size);}
+  unsigned char *allocate() {return allocate(xsize*ysize*csize);}
 };
 struct imageStruct93 { // except early 93
+  void *vtable;
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  void clear(); imageStruct93(); virtual ~imageStruct93();
-  virtual unsigned char *allocate(size_t size); virtual unsigned char *allocate();
+  void clear(); imageStruct93() {new(this)imageStruct();} ~imageStruct93() {/* sorry */}
+  unsigned char *allocate(size_t size) {return _ZN11imageStruct8allocateEj(this,size);}
+  unsigned char *allocate() {return allocate(xsize*ysize*csize);}
 };
 #ifdef __WIN32__
 #define GEM_VECTORALIGNMENT 128
-imageStruct::imageStruct() : type(GL_UNSIGNED_BYTE), format(GL_RGBA), notowned(0),data(NULL),pdata(NULL),datasize(0), upsidedown(0) {}
+imageStruct::imageStruct() : type(GL_UNSIGNED_BYTE), format(GL_RGBA), notowned(0),data(0),pdata(0),datasize(0), upsidedown(0) {}
 imageStruct::~imageStruct() {}
 void imageStruct::clear() {if (pdata) delete[] pdata; data=pdata=0; datasize=0;}
 unsigned char *imageStruct::allocate() {return allocate(xsize*ysize*csize);}
@@ -300,8 +308,6 @@ GRID_INLET(1) {
 //------------------------------------------------------------------------
 // [gemdead]
 
-struct GemState    {GemState(); char trabant[666];};
-struct imageStruct {imageStruct(); char lada[666];};
 #ifdef __WIN32__
 GemState::GemState() {}
 #endif
