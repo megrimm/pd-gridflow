@@ -317,6 +317,10 @@ void startup_gem () {
 	\startall
 }
 
+extern "C" void gridflow_gem9292_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
+extern "C" void gridflow_gem9293_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
+extern "C" void gridflow_gem9393_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
+
 /*
 virtual void processRGBAImage(imageStruct &image) {}
 virtual void processRGBImage (imageStruct &image) {}
