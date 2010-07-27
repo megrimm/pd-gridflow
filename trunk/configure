@@ -580,9 +580,26 @@ Feature.add {
 			int main () {return 0;}`}}
 Feature.add {
 	tag :opengl
-	name "OpenGL (for GEM support)"
+	name "OpenGL (for GEM support, etc)"
 	uses_feature [:puredata]
 	uses_o ["src/gem.o"]
+        uses_so $LIBX11DIR+["-lGL"] if not WIN
+        uses_h ["GL/gl.h"]
+	options ["HAVE_GEM"]
+	test proc {
+		c_test %`
+                #include#
+                int main () {return (GLint)0;}
+                `
+        }
+}
+Feature.add {
+	tag :opengl
+	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
+	uses_feature [:puredata]
+	uses_o ["src/gem9292$(PDSUF)"]
+	uses_o ["src/gem9293$(PDSUF)"]
+	uses_o ["src/gem9393$(PDSUF)"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_GEM"]
@@ -778,6 +795,7 @@ f.puts "
 f.puts "#define STARTUP_LIST(PRE) \\"
 f.puts $conf[:OBJS].map {|o|
 	oo = File.basename(o,'.o').split(/-/)[0]
+	oo.gsub!(/\$\(PDSUF\)$/,"")
 	"PRE startup_#{oo}();"
 }.join("\\\n")
 for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
