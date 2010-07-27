@@ -1023,6 +1023,7 @@ void allow_big_stack () {
 }
 
 #ifdef HAVE_GEM
+	//struct GemVersion {static const char *versionString();};
 	struct GemState    {GemState(); char trabant[666];};
 	struct imageStruct {imageStruct(); char lada[666];};
 	extern "C" void sys_load_lib(t_canvas *,const char *);
@@ -1083,7 +1084,7 @@ BUILTIN_SYMBOLS(FOO)
 		else if (j==5 || j==6) {gem = 92;}
 		else error("GridFlow: can't detect this version of GEM: i=%d j=%d",i,j);
 	}
-	//post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
+	post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
 	//delete dummy;
 	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
 	bool imageStruct_has_virtual = !!*(long *)new imageStruct();

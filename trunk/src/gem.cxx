@@ -28,14 +28,14 @@
 struct imageStruct {
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  void clear(); imageStruct(); ~imageStruct();
+  virtual void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
 };
 #else // older
 struct imageStruct {
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  virtual void clear(); imageStruct(); ~imageStruct();
+  void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
 };
 #endif
@@ -79,14 +79,6 @@ struct TexCoord {
   TexCoord(float s_, float t_) : s(s_), t(t_) {}
   float s,t;
 };
-#if 0 /* unused GemState fields */
-  TexCoord *texCoords; int numTexCoords, multiTexUnits;
-  float tickTime; GLenum drawType; int stackDepth[4];
-#endif
-
-static int gem=0;
-static int imageStruct_has_virtual = 0;
-struct GemVersion {static const char *versionString();};
 /* end of summary */
 
 #ifdef MACOSX
@@ -106,12 +98,10 @@ struct GemVersion {static const char *versionString();};
 	void startRendering () {pb->newimage = 1;}
 	\constructor () {
 		yflip = false;
-		if (imageStruct_has_virtual) {
-			pb = new pixBlock();
-			imageStruct &im = pb->image = imageStruct();
-			im.ysize = 1; im.xsize = 1; im.csize = 4; im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
-			im.allocate(); *(int*)im.data = 0x000000ff;
-		}
+		pb = new pixBlock();
+		imageStruct &im = pb->image = imageStruct();
+		im.ysize = 1; im.xsize = 1; im.csize = 4; im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
+		im.allocate(); *(int*)im.data = 0x000000ff;
 	}
 	~GridToPix () {}
 	\grin 1 int
@@ -318,8 +308,8 @@ void startup_gem () {
 }
 
 extern "C" void gridflow_gem9292_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
-extern "C" void gridflow_gem9293_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
-extern "C" void gridflow_gem9393_setup () {post("GridFlow Gem 9292 module loaded"); startup_gem();}
+extern "C" void gridflow_gem9293_setup () {post("GridFlow Gem 9293 module loaded"); startup_gem();}
+extern "C" void gridflow_gem9393_setup () {post("GridFlow Gem 9393 module loaded"); startup_gem();}
 
 /*
 virtual void processRGBAImage(imageStruct &image) {}
