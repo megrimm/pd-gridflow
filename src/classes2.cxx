@@ -178,7 +178,9 @@ extern "C" void canvas_reflecttitle (t_glist *);
 		binbuf_add(d,max(int(binbuf_getnatom(b))-1,0),binbuf_getvec(b)+1);
 		t_canvasenvironment *pce = canvas_getenv(canvas->gl_owner);
 		if (!pce) RAISE("no canvas environment for canvas containing canvas containing [setargs]");
+		pd_pushsym((t_pd *)canvas);
 		binbuf_eval(d,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
+		pd_popsym((t_pd *)canvas);
 		binbuf_free(d);
 		glist_retext(canvas->gl_owner,(t_object *)canvas);
 	}
