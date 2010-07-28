@@ -163,6 +163,13 @@ void Args::process_args (int argc, t_atom *argv) {
 }
 \end class {install("args",1,1);}
 
+#define Z(T) case T: return #T; break;
+const char *atomtype_to_s (t_atomtype t) {
+	switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
+		default: return "unknown type";}
+}
+#undef Z
+
 extern "C" void canvas_reflecttitle (t_glist *);
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
 \class GFSetArgs : FObject {
@@ -170,9 +177,17 @@ extern "C" void canvas_reflecttitle (t_glist *);
 	\constructor () {canvas = canvas_getrootfor(mom);}
 	void mom_changed () {
 		BOF;
-		if (glist_isvisible(canvas)) {
-			post("reflect_title"); canvas_reflecttitle(canvas);
-		} else post("don't reflect_title");
+		t_canvasenvironment *ce = canvas_getenv(canvas);
+		t_atom *a = binbuf_getvec(b);
+		int n = binbuf_getnatom(b);
+		free(ce->ce_argv);
+		ce->ce_argv = (t_atom *)malloc(n*sizeof(t_atom));
+		ce->ce_argc = n;
+		for (int i=0; i<n; i++) {
+			//ce->ce_argv[i] = canvas_realizedollar(canvas,);
+			ce->ce_argv[i] = a[i];
+		}
+		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas); else post("don't reflect_title");
 		glist_retext(canvas->gl_owner,(t_object *)canvas);
 	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
