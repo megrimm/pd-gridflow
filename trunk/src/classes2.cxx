@@ -1529,7 +1529,6 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	\decl void anything (...) {outlet_symbol(outlets[0],gensym(argv[0].a_symbol->s_name+3));}
 };
 \end class {install("gf/selector",1,1);}
-extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 
 \class FindFile : FObject {
 	int n;
@@ -1592,6 +1591,26 @@ extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 	}
 };
 \end class {install("gridflow",1,1);}
+
+std::map<t_canvas *, t_gobj *> propertybang_map;
+\class PropertyBang : FObject {
+	\constructor () {propertybang_map[mom] = (t_gobj *)bself;}
+	~PropertyBang () {propertybang_map.erase(mom);}
+	void properties () {outlet_bang(outlets[0]);}
+};
+extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
+void canvas_properties2(t_gobj *z, t_glist *owner) {
+	typeof(propertybang_map.end()) it = propertybang_map.find((t_canvas *)z);
+	if (it == propertybang_map.end()) post("pas nous autres");
+	else {
+		BFObject *bf = (BFObject *)it->second;
+		((PropertyBang *)bf->self)->properties();
+	}
+}
+\end class {
+	install("gf/propertybang",1,1);
+	class_setpropertiesfn(canvas_class,canvas_properties2);
+}
 
 void startup_flow_objects2 () {
 	\startall
