@@ -85,7 +85,7 @@ struct ArgSpec {
 		noutlets_set(sargc);
 	}
 	~Args () {delete[] sargv;}
-	\decl 0 bang ();
+	\decl 0 bang () {_0_loadbang();}
 	\decl 0 loadbang ();
 	void process_args (int argc, t_atom *argv);
 };
@@ -98,10 +98,6 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
 } 
-\def 0 bang () {
-	post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);
-	//_0_loadbang();
-}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
 	else if (argv[0].a_type==A_SYMBOL)        outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
@@ -165,39 +161,42 @@ void Args::process_args (int argc, t_atom *argv) {
 
 #define Z(T) case T: return #T; break;
 const char *atomtype_to_s (t_atomtype t) {
-	switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
-		default: return "unknown type";}
-}
+  switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
+  default: return "unknown type";}}
 #undef Z
 
 extern "C" void canvas_reflecttitle (t_glist *);
+#define binbuf_addv(B,S,A...) binbuf_addv(B,const_cast<char *>(S),A)
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
 \class GFSetArgs : FObject {
 	t_canvas *canvas;
 	\constructor () {canvas = canvas_getrootfor(mom);}
 	void mom_changed () {
 		BOF;
-		t_canvasenvironment *ce = canvas_getenv(canvas);
-		t_atom *a = binbuf_getvec(b);
-		int n = binbuf_getnatom(b);
-		free(ce->ce_argv);
-		ce->ce_argv = (t_atom *)malloc(n*sizeof(t_atom));
-		ce->ce_argc = n;
-		for (int i=0; i<n; i++) {
-			//ce->ce_argv[i] = canvas_realizedollar(canvas,);
-			ce->ce_argv[i] = a[i];
-		}
-		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
+		t_binbuf *d = binbuf_new();
+		binbuf_addv(d,"s",gensym("args"));
+		binbuf_add(d,max(int(binbuf_getnatom(b))-1,0),binbuf_getvec(b)+1);
+		t_canvasenvironment *pce = canvas_getenv(canvas->gl_owner);
+		if (!pce) RAISE("no canvas environment for canvas containing canvas containing [setargs]");
+		binbuf_eval(d,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
+		binbuf_free(d);
 		glist_retext(canvas->gl_owner,(t_object *)canvas);
+	}
+	\decl 0 args (...) {
+		t_canvasenvironment *ce = canvas_getenv(canvas);
+		free(ce->ce_argv);
+		ce->ce_argv = (t_atom *)malloc(argc*sizeof(t_atom));
+		ce->ce_argc = argc;
+		for (int i=0; i<argc; i++) ce->ce_argv[i]=argv[i];
+		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
 	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
 	\decl 0 add2     (...) {BOF;                  binbuf_add(b,argc,argv);                     mom_changed();}
 	\decl 0 add      (...) {BOF;                  binbuf_add(b,argc,argv); binbuf_addsemi(b);  mom_changed();}
 	\decl 0 addsemi  (...) {BOF;                                           binbuf_addsemi(b);  mom_changed();}
 	\decl 0 addcomma (...) {BOF;                  t_atom a; SETCOMMA(&a); binbuf_add(b,1,&a);  mom_changed();}
-	/* il manque adddollar, adddollsym, et en gros, ça va être juste insuffisant pour une foule de cas,
-	 * parce qu'on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
-	 * et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut. */
+	\decl 0 adddollar(float f)      {BOF; t_atom a; SETDOLLAR(&a, max(int(f),0));              binbuf_add(b,1,&a); mom_changed();}
+	\decl 0 adddollsym(t_symbol *s) {BOF; t_atom a; SETDOLLSYM(&a,symprintf("$%s",s->s_name)); binbuf_add(b,1,&a); mom_changed();}
 };
 \end class {install("setargs",1,1);}
 
@@ -211,7 +210,6 @@ extern "C" void canvas_reflecttitle (t_glist *);
 		} else {
 			foreach(it,table) outlet_anything(outlets[0],it->first,1,&it->second);
 		}
-		
 	}
 	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
 	\decl void anything (string s, t_atom2 a) {
@@ -1281,10 +1279,11 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	int n;
 	t_canvas *last;
 	\constructor (int n) {this->n=n; last=0;}
-	void hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),bself);}
-	~GFCanvasHoHoHo () {hide();}
+	~GFCanvasHoHoHo () {_0_hide();}
+	\decl 0 hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),bself);}
 	\decl 0 list (int x1, int y1, int x2, int y2) {MOM;
-		hide();
+		_0_hide();
+		last = m;
 		sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,bself);
 	}
 };
