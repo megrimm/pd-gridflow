@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.10 (2010.06...):
+version 9.10 (2010.07...):
 
  * added examples qbert.pd, remap_video.pd
  * [#lop_space]: faster, and added method "reverse"
@@ -10,9 +10,20 @@ version 9.10 (2010.06...):
  * [#join]: no more "empty grids".
  * better error messages for not enough args, too many args, wrong args, etc.
  * [print]: make more like the builtin [print] it overrides
- * added classes [attr], ...
+ * added classes [attr], [doc_section]
+ * added index of General Topics, in GridFlow Index
+ * incompatible change in [doc_exist] (which was for internal use only anyway)
+ * incompatible change : removed numtype abbreviations that no-one ever used,
+   that is : u8 i16 i32 i64 f32 f64 (kept the shorter ones : b s i l f d)
+ * incompatible change :
+   renamed [gf.not_open] to [gf/not_open]; [gf.oneshot] to [gf/oneshot]; etc.
+ * [#many]: add method bgcolor
+ * updated GEM support to prevent crashes due to imageStruct 93 being different
+   from imageStruct 92 (or even from recent versions of imageStruct 93).
+ * added [gf/propertybang] [setargs]
+ * added [#many-prop] (properties dialogue for [#many])
 
-version 9.9 (2010.05.05):
+ ersion 9.9 (2010.05.05):
 
  * added class [gridflow] for reporting version number of gridflow
  * [print]: pointer: write "0x" and not "0x0x"
@@ -20,6 +31,7 @@ version 9.9 (2010.05.05):
  * renamed example blob.pd to shadebob.pd
  * reviewed and updated a lot of examples.
  * support GEM 91/92/93, with runtime autodetection (NOT compile-time!)
+   supports both GemState 92 and GemState 93
  * fixed bug about [#to_pix] when created after [gemwin] was last activated
  * [#to_pix] and [#from_pix]: when in colorspace rgba, preserve alpha
    instead of setting to 0

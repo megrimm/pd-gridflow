@@ -6,6 +6,9 @@ L = much later (whenever we get to know how to do it...)
 [ ] révision de patchs d'aide compliquées ou mal dites, comme [#grade] et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] est-ce que "omit odd" marche vraiment, ou devrait-il s'appeler "omit even" ?
+[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (par encore rechargées)
+[ ] répondre à re:[#spigot]
+[ ] [gf/propertybang] marche pas en souspatch ?
 
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
