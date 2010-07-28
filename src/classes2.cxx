@@ -199,6 +199,17 @@ extern "C" void canvas_reflecttitle (t_glist *);
 	\decl 0 addcomma (...) {BOF;                  t_atom a; SETCOMMA(&a); binbuf_add(b,1,&a);  mom_changed();}
 	\decl 0 adddollar(float f)      {BOF; t_atom a; SETDOLLAR(&a, max(int(f),0));              binbuf_add(b,1,&a); mom_changed();}
 	\decl 0 adddollsym(t_symbol *s) {BOF; t_atom a; SETDOLLSYM(&a,symprintf("$%s",s->s_name)); binbuf_add(b,1,&a); mom_changed();}
+	\decl 0 adddollsym2(t_symbol *s, t_symbol *t) {
+		BOF;
+		if (strlen(t->s_name)!=1) RAISE("substitution character must have a single letter");
+		char tt = *t->s_name;
+		t_atom a;
+		char *d = strdup(s->s_name);
+		for (char *e=d; *e; e++) if (*e==tt) *e='$';
+		SETDOLLSYM(&a,gensym(d));
+		free(d);
+		binbuf_add(b,1,&a); mom_changed();
+	}
 };
 \end class {install("setargs",1,1);}
 
@@ -1492,6 +1503,17 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 #endif
 }
 
+// pas vite vite
+string string_replace (string victim, string from, string to) {
+	for (size_t i=0;;) {
+	  i = victim.find(from,i);
+	  if (i==string::npos) break;
+	  victim = victim.replace(i,from.length(),to);
+	  i += to.length();
+	}
+	return victim;
+}
+
 \class GFStringReplace : FObject {
 	t_symbol *from;
 	t_symbol *to;
@@ -1502,12 +1524,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	string a = string(victim->s_name);
 	string b = string(from->s_name);
 	string c = string(to->s_name);
-	for (size_t i=0;;) {
-	  i = a.find(b,i);
-	  if (i==string::npos) break;
-	  a = a.replace(i,b.length(),c);
-	  i += c.length();
-	}
+	a = string_replace(a,b,c);
 	outlet_symbol(outlets[0],gensym(a.c_str()));
 }
 \end class {install("gf/string_replace",1,1);}
