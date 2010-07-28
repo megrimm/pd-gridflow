@@ -22,12 +22,12 @@
 #include <QuickTime/QuickTime.h>
 #include <QuickTime/Movies.h>
 #include <QuickTime/QuickTimeComponents.h>
+#include <CoreServices/CoreServices.h>
 #include "gridflow.hxx.fcs"
 #include "colorspace.hxx"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <CoreServices/CoreServices.h>
 #include <map>
 std::map<long,const char *> oserr_table;
 
@@ -41,39 +41,75 @@ const char *oserr_find(long err)
 
 \class FormatQuickTimeApple : Format {
 	Movie movie;
+	Track track;
+	Media media;
 	TimeValue time;
-	short movie_file;
+	ComponentInstance component;
+	CodecType codec;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
-	uint8 *buffer;
-	uint8 *buf2;
+	Rect r;
+	uint8 *buffer, *buf2;
 	Dim dim;
-	int nframe, nframes;
+	int nframe, nframes, quality;
+	short movie_file;
 	P<BitPacking> bit_packing3;
+	bool gotdim;
+	long err;
 	\constructor (t_symbol *mode, string filename) {
-		/*vdc=0;*/ movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0;
-		long err;
+		/*vdc=0;*/
+		movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0; quality=0;
+		gotdim=false;
 		filename = gf_find_file(filename);
 		FSSpec fss;
 		FSRef fsr;
-		err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);      if (err) ERR("FSPathMakeRef");
-		err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL); if (err) ERR("FSGetCatalogInfo");
-		err = OpenMovieFile(&fss,&movie_file,fsRdPerm);                       if (err) ERR("OpenMovieFile");
-		NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
-		Rect r;
-		GetMovieBox(movie, &r);
-		post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
-		post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
-		nframes = GetMovieDuration(movie); /* i don't think so */
-		post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
-		OffsetRect(&r, -r.left, -r.top);
-		SetMovieBox(movie, &r);
-		dim = Dim(r.bottom-r.top, r.right-r.left, 4);
-		SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
-		buffer = new uint8[dim.prod()];
-		buf2 = new uint8[dim.prod()];
-		err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
-		if (err) ERR("QTNewGWorldFromPtr");
-		_0_colorspace(gensym("rgba"));
+
+		if (mode==gensym("in")) {
+			err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);
+			if (err) ERR("FSPathMakeRef");
+			err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
+			if (err) ERR("FSGetCatalogInfo");
+			err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
+			if (err) ERR("OpenMovieFile");
+			NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
+			GetMovieBox(movie, &r);
+			post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
+			post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
+			nframes = GetMovieDuration(movie); /* i don't think so */
+			post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
+			OffsetRect(&r, -r.left, -r.top);
+			SetMovieBox(movie, &r);
+			dim = Dim(r.bottom-r.top, r.right-r.left, 4);
+			SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
+			buffer = new uint8[dim.prod()];
+			buf2 = new uint8[dim.prod()];
+			err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
+			if (err) ERR("QTNewGWorldFromPtr");
+			_0_colorspace(gensym("rgba"));
+
+		} else if (mode=gensym("out")) {
+			err = FSPathMakeRef((UInt8*)filename.data(), &fsr, NULL);
+			if (err == fnfErr) { /* if file doesn't exist, create it */ 
+				int fd = open(filename.data(), O_CREAT | O_RDWR, 0644);
+				if (fd < 0) RAISE("can't create file");
+				//else post("#io.quicktimeapple: created file %s", filename.data());
+				close(fd);
+				err = FSPathMakeRef((UInt8*)filename.data(), &fsr, NULL);
+			}
+			if (err) ERR("FSPathMakeRef");
+			err = FSGetCatalogInfo(&fsr, kFSCatInfoNodeFlags, NULL, NULL, &fss, NULL);
+			if (err) ERR("FSGetCatalogInfo");
+			err = FSMakeFSSpec(fss.vRefNum, fss.parID, (UInt8*)filename.data(), &fss);			
+			if (err && err != bdNamErr) ERR("FSMakeFSSpec");
+			err = CreateMovieFile(&fss, FOUR_CHAR_CODE('TVOD'), smSystemScript,
+				createMovieFileDeleteCurFile | createMovieFileDontCreateResFile,
+				&movie_file, &movie);
+			if (err != noErr) ERR("CreateMovieFile");
+			component = OpenDefaultComponent(StandardCompressionType, StandardCompressionSubType);
+			if (!component) RAISE("OpenDefaultComponent failed");
+
+		} else {
+			RAISE("invalid mode (%s)", mode->s_name);
+		}
 		return;
 	}
 	~FormatQuickTimeApple() {
@@ -88,6 +124,7 @@ const char *oserr_find(long err)
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 rewind ();
+	\decl 0 size (int32 height, int32 width);
 	\grin 0
 	\attr t_symbol *colorspace;
 };
@@ -184,6 +221,25 @@ GRID_INLET(0) {
 	if (in.dim.n  != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in.dim[2] != 3) RAISE("expecting 3 channels (got %d)",in.dim[2]);
 	in.set_chunk(0);
+	if (gotdim) {
+		if (dim != in.dim) RAISE("all frames should be same size");
+	} else {
+		dim = in.dim;
+		gotdim = true;
+		r.top = 0;
+		r.left = 0;
+		r.bottom = dim[0];
+		r.right = dim[1];
+	}
+////	err = QTNewGWorldFromPtr(&m_srcGWorld, k32ARGBPixelFormat, &m_srcRect, NULL, NULL, 0, m_compressImage.data, m_rowBytes);
+	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
+	if (err) ERR("QTNewGWorldFromPtr");
+	_0_colorspace(gensym("rgba"));
+	SetMovieGWorld(movie, gw, GetGWorldDevice(gw));
+
+	track = NewMovieTrack(movie, FixRatio(r.right, 1), FixRatio(r.bottom, 1), kNoVolume);	
+	media = NewTrackMedia(track, VideoMediaType, 600, NULL, 0);
+
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
@@ -214,9 +270,20 @@ void post_BitPacking(BitPacking *);
 	dim = Dim(dim[0],dim[1],c=="y"?1:c=="rgba"?4:3);
 }
 
+\def 0 size (int32 height, int32 width) {
+	if (gotdim) RAISE("video size already set!");
+	// first frame: have to do setup
+	dim = Dim(height,width,3);
+	gotdim = true;
+	r.top = 0;
+	r.left = 0;
+	r.bottom = height;
+	r.right = width;
+}
+
 \classinfo {
 	EnterMovies();
-	install_format("#io.quicktimeapple",4,"mov");
+	install_format("#io.quicktimeapple",6,"mov");
 }
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
