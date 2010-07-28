@@ -1,0 +1,40 @@
+#N canvas 64 200 513 380 10;
+#X obj 331 9 namecanvas \$1-propcanvas;
+#X obj 16 11 r \$1-propin;
+#X obj 67 307 s \$1-propout;
+#X obj 16 30 unpack s 0 0 0 0;
+#X obj 159 129 nbx 5 14 -1e+37 1e+37 0 0 empty empty element_width
+48 8 0 8 -262144 -1 -1 15 256;
+#X obj 159 113 nbx 5 14 -1e+37 1e+37 0 0 empty empty element_height
+48 8 0 8 -262144 -1 -1 15 256;
+#X obj 159 97 nbx 5 14 -1e+37 1e+37 0 0 empty empty columns 48 8 0
+8 -262144 -1 -1 7 256;
+#X obj 159 81 nbx 5 14 -1e+37 1e+37 0 0 empty empty rows 48 8 0 8 -262144
+-1 -1 13 256;
+#X symbolatom 159 63 15 0 0 1 element_class - -;
+#X obj 295 150 button OK;
+#X obj 230 150 button Apply;
+#X obj 159 150 button Cancel;
+#X obj 295 183 t b b;
+#X obj 31 224 pack 0 s 0 0 0 0;
+#X obj 33 248 list split 1;
+#X msg 73 287 cancel;
+#X connect 1 0 3 0;
+#X connect 3 0 8 0;
+#X connect 3 1 7 0;
+#X connect 3 2 6 0;
+#X connect 3 3 5 0;
+#X connect 3 4 4 0;
+#X connect 4 0 13 5;
+#X connect 5 0 13 4;
+#X connect 6 0 13 3;
+#X connect 7 0 13 2;
+#X connect 8 0 13 1;
+#X connect 9 0 12 0;
+#X connect 10 0 13 0;
+#X connect 11 0 15 0;
+#X connect 12 0 15 0;
+#X connect 12 1 13 0;
+#X connect 13 0 14 0;
+#X connect 14 1 2 0;
+#X connect 15 0 2 0;
