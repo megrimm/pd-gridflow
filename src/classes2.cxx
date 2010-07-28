@@ -187,7 +187,7 @@ extern "C" void canvas_reflecttitle (t_glist *);
 			//ce->ce_argv[i] = canvas_realizedollar(canvas,);
 			ce->ce_argv[i] = a[i];
 		}
-		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas); else post("don't reflect_title");
+		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
 		glist_retext(canvas->gl_owner,(t_object *)canvas);
 	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}

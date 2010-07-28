@@ -1,32 +1,43 @@
-#N canvas 596 190 632 397 10;
+#N canvas 596 190 632 492 10;
 #X obj 0 0 doc_h;
-#X obj 3 343 doc_also;
-#X obj 0 363 doc_f;
-#X obj 103 343 args;
-#X obj 3 34 doc_c 0;
-#X obj 3 153 doc_i 1;
-#X obj 14 183 doc_ii 0;
-#X obj 97 271 doc_m i0 set;
-#X obj 97 183 doc_m i0 add2;
-#X obj 97 249 doc_m i0 clear;
-#X obj 97 205 doc_m i0 addcomma;
-#X obj 97 227 doc_m i0 addsemi;
-#X obj 3 303 doc_o 0;
-#X text 232 227 just like messageboxes;
-#X text 232 205 just like messageboxes;
-#X text 232 183 just like messageboxes;
-#X text 232 249 just like messageboxes. don't forget to write the classname!
+#X obj 3 438 doc_also;
+#X obj 0 458 doc_f;
+#X obj 103 438 args;
+#X obj 3 164 doc_c 0;
+#X obj 3 204 doc_i 1;
+#X obj 14 234 doc_ii 0;
+#X obj 97 366 doc_m i0 set;
+#X obj 97 234 doc_m i0 add2;
+#X obj 97 344 doc_m i0 clear;
+#X obj 97 256 doc_m i0 addcomma;
+#X obj 97 322 doc_m i0 addsemi;
+#X obj 3 398 doc_o 0;
+#X text 232 322 just like messageboxes;
+#X text 232 256 just like messageboxes;
+#X text 232 234 just like messageboxes;
+#X text 232 344 just like messageboxes. don't forget to write the classname!
 ;
-#X text 232 271 just like messageboxes. don't forget to write the classname!
+#X text 232 366 just like messageboxes. don't forget to write the classname!
 ;
-#X text 152 61 set abstraction instance arguments;
-#X obj 100 62 setargs;
-#X text 99 107 for a demonstration \, please open this abstraction
+#X text 242 41 set abstraction instance arguments;
+#X obj 190 42 setargs;
+#X text 108 115 for a demonstration \, please open this abstraction
 instance;
-#X obj 100 92 setargs-demo set setargs hello world;
+#X obj 93 133 setargs-demo 262 382 21 243 700 399 712 24 466 372;
+#X obj 93 116 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1
+1;
+#X obj 93 97 loadbang;
+#X obj 97 278 doc_m i0 adddollar;
+#X obj 97 300 doc_m i0 adddollsym;
+#X text 232 278 (future use);
+#X text 232 300 (future use);
 #X connect 1 1 3 0;
 #X connect 7 1 17 0;
 #X connect 8 1 15 0;
 #X connect 9 1 16 0;
 #X connect 10 1 14 0;
 #X connect 11 1 13 0;
+#X connect 22 0 21 0;
+#X connect 23 0 22 0;
+#X connect 24 1 26 0;
+#X connect 25 1 27 0;
