@@ -1601,7 +1601,7 @@ std::map<t_canvas *, t_gobj *> propertybang_map;
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 void canvas_properties2(t_gobj *z, t_glist *owner) {
 	typeof(propertybang_map.end()) it = propertybang_map.find((t_canvas *)z);
-	if (it == propertybang_map.end()) post("pas nous autres");
+	if (it == propertybang_map.end()) canvas_properties(z,owner); // fallback
 	else {
 		BFObject *bf = (BFObject *)it->second;
 		((PropertyBang *)bf->self)->properties();
