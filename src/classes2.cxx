@@ -98,7 +98,10 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
 } 
-\def 0 bang () {post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);}
+\def 0 bang () {
+	post("%s shouldn't bang [args] anymore.",canvas_getabstop(mom)->gl_name->s_name);
+	//_0_loadbang();
+}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
 	else if (argv[0].a_type==A_SYMBOL)        outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
@@ -160,11 +163,18 @@ void Args::process_args (int argc, t_atom *argv) {
 }
 \end class {install("args",1,1);}
 
+extern "C" void canvas_reflecttitle (t_glist *);
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
 \class GFSetArgs : FObject {
 	t_canvas *canvas;
 	\constructor () {canvas = canvas_getrootfor(mom);}
-	void mom_changed () {/*glist_retext(canvas_getrootfor(mom),(t_object *)mom);*/}
+	void mom_changed () {
+		BOF;
+		if (glist_isvisible(canvas)) {
+			post("reflect_title"); canvas_reflecttitle(canvas);
+		} else post("don't reflect_title");
+		glist_retext(canvas->gl_owner,(t_object *)canvas);
+	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
 	\decl 0 add2     (...) {BOF;                  binbuf_add(b,argc,argv);                     mom_changed();}
 	\decl 0 add      (...) {BOF;                  binbuf_add(b,argc,argv); binbuf_addsemi(b);  mom_changed();}
