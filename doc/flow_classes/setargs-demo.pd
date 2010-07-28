@@ -1,24 +1,42 @@
-#N canvas 0 0 628 251 10;
-#X obj 184 201 setargs;
-#X obj 184 163 list prepend set setargs-demo;
-#X msg 194 136 bang;
-#X obj 184 182 list trim;
-#X msg 184 113 list hello world;
-#X obj 53 96 # rand;
-#X obj 53 41 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1 1
+#N canvas 0 0 655 327 10;
+#X obj 87 274 setargs;
+#X obj 87 173 list prepend set setargs-demo;
+#X msg 97 146 bang;
+#X obj 87 192 list trim;
+#X msg 87 123 list hello world;
+#X obj 23 106 # rand;
+#X obj 23 51 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0 1
 ;
-#X msg 53 77 10 # 1000;
-#X obj 53 115 #to_list;
-#X obj 53 22 inlet;
-#X text 183 91 TRY THIS;
-#X obj 53 58 metro 300;
+#X msg 23 87 10 # 1000;
+#X obj 23 125 #to_list;
+#X obj 346 13 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 346 49 display;
+#X obj 346 30 args *;
+#X obj 346 85 symbol \$1;
+#X obj 346 68 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 346 104 display;
+#X msg 97 212 adddollar 0 \, adddollar 666 \, addcomma \, addsemi;
+#X text 82 104 TURN OFF CHECKBOX AND TRY THIS;
+#X obj 23 32 loadbang;
+#X obj 23 68 metro 500;
+#X text 127 147 (reset);
+#X msg 101 232 adddollsym 0-queqchose \, adddollsym 1-stuff \, adddollar
+2 \, adddollsym 6-basouelle;
 #X connect 1 0 3 0;
 #X connect 2 0 1 0;
 #X connect 3 0 0 0;
 #X connect 4 0 1 0;
 #X connect 5 0 8 0;
-#X connect 6 0 11 0;
+#X connect 6 0 18 0;
 #X connect 7 0 5 0;
 #X connect 8 0 1 0;
-#X connect 9 0 6 0;
-#X connect 11 0 7 0;
+#X connect 9 0 11 0;
+#X connect 11 0 10 0;
+#X connect 12 0 14 0;
+#X connect 13 0 12 0;
+#X connect 15 0 0 0;
+#X connect 17 0 6 0;
+#X connect 18 0 7 0;
+#X connect 20 0 0 0;
