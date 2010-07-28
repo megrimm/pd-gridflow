@@ -85,11 +85,11 @@ all the spacing between the boxes as well as the spacing around the
 outer boxes (the inner border of [#many]). In the above example \,
 there is no spacing between the boxes \, thus the border is only the
 space around.;
-#X obj 399 46 #many tgl 13 7 15 15;
 #X obj 3 306 doc_section Special;
 #X text 82 331 Right-Click Properties : opens;
 #X obj 271 332 doc_link #many-prop;
 #X obj 157 1038 doc_link #many-prop;
+#X obj 399 46 #many tgl 13 7 15 15;
 #X connect 0 0 7 0;
 #X connect 1 0 2 1;
 #X connect 2 0 8 0;
@@ -106,7 +106,7 @@ space around.;
 #X connect 20 1 57 0;
 #X connect 31 1 51 0;
 #X connect 32 1 58 0;
-#X connect 33 0 69 0;
+#X connect 33 0 73 0;
 #X connect 35 0 47 0;
 #X connect 36 0 34 0;
 #X connect 37 1 38 0;
@@ -125,7 +125,7 @@ space around.;
 #X connect 49 1 40 0;
 #X connect 49 2 50 0;
 #X connect 55 1 67 0;
-#X connect 55 1 73 0;
+#X connect 55 1 72 0;
 #X connect 60 0 47 0;
 #X connect 60 0 34 0;
 #X connect 61 0 60 0;
