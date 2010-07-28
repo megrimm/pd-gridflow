@@ -1,0 +1,10 @@
+#N canvas 0 0 450 300 10;
+#X obj 106 152 setargs;
+#X obj 106 114 list prepend set setargs-demo;
+#X msg 116 87 bang;
+#X obj 106 133 list trim;
+#X msg 106 64 list hello world;
+#X connect 1 0 3 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 0;
+#X connect 4 0 1 0;
