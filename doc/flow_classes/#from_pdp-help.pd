@@ -1,0 +1,46 @@
+#N canvas 263 101 632 565 10;
+#X obj 0 0 doc_h;
+#X obj 3 511 doc_also;
+#X obj 0 531 doc_f;
+#X obj 103 511 #to_pix;
+#X obj 3 260 doc_i 1;
+#X obj 14 290 doc_ii 0;
+#X obj 3 449 doc_o 1;
+#X obj 14 479 doc_oo 0;
+#X obj 157 511 #from_pdp;
+#X obj 97 369 doc_m i0 scale;
+#X obj 97 312 doc_m i0 colorspace;
+#X text 232 312 FUTURE USE;
+#X obj 227 132 #from_pdp;
+#X obj 97 334 doc_m i0 pdp;
+#X obj 97 479 doc_m o0 grid;
+#X text 232 479 grid image;
+#X text 232 334 pdp packet with type pattern image/2x/2y (this means
+image/*/* where the two stars are even numbers);
+#X obj 227 151 #see;
+#X text 232 369 0: packet with type pattern image/2x/2y will be converted
+to a grid of size (2y \, 2x \, 3).;
+#X text 232 404 1: packet with type pattern image/2x/2y will be converted
+to a grid of size (y \, x \, 3).;
+#X obj 3 220 doc_c 0;
+#X obj 235 53 metro 100;
+#X obj 235 112 pdp_v4l;
+#X msg 241 73 open /dev/video0;
+#X obj 235 36 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0
+1;
+#X msg 246 93 bang;
+#X obj 97 290 doc_m i0 >>;
+#X text 232 290 sets the implied rightshift. (default: 7);
+#X connect 1 1 3 0;
+#X connect 1 1 8 0;
+#X connect 9 1 18 0;
+#X connect 9 1 19 0;
+#X connect 10 1 11 0;
+#X connect 12 0 17 0;
+#X connect 13 1 16 0;
+#X connect 14 1 15 0;
+#X connect 21 0 22 0;
+#X connect 23 0 22 0;
+#X connect 24 0 21 0;
+#X connect 25 0 22 0;
+#X connect 26 1 27 0;
