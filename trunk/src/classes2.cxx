@@ -1481,6 +1481,8 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 }
 #endif
 
+size_t properties_offset;
+
 //int propertiesfn_offset;
 \end class {
 	install("gf/lol",1,1);
@@ -1491,6 +1493,7 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	while (lol[i]!=0xDECAFFED) i++;
 	//propertiesfn_offset = i*sizeof(unsigned long);
 	*((char *)(lol+i+1) + 6) = 1;
+	properties_offset = i;
 	class_setpropertiesfn(text_class,0);
 	t_object *bogus = (t_object *)pd_new(text_class);
 	       inlet_class = pd_class((t_pd *)       inlet_new(bogus,0,0,0));
@@ -1502,6 +1505,27 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	class_setwidget(text_class,&text_widgetbehavi0r);
 #endif
 }
+
+bool canvas_contains (t_canvas *x, t_gobj *y) {for (t_gobj *g=x->gl_list; g; g=g->g_next) if (g==y) return true; return false;}
+t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((long *)x)[properties_offset-3];}
+\class GFObjectBBox : FObject {
+	\constructor () {}
+	\decl 0 symbol (t_symbol *s) {
+		if (!s->s_thing) RAISE("no such object");
+		t_class *c = pd_class(s->s_thing);
+		if (c->c_name==gensym("bindlist")) RAISE("multiple such objects");
+		t_widgetbehavior *wb = class_getwidget(c);
+		if (!wb) RAISE("not a patchable object");
+		if (!canvas_contains(mom,(t_gobj *)s->s_thing)) RAISE("object is not in this canvas");
+		int x1,y1,x2,y2; t_atom a[4];
+		wb->w_getrectfn((t_gobj *)s->s_thing,mom,&x1,&y1,&x2,&y2);
+		SETFLOAT(a+0,x1); SETFLOAT(a+1,y1);
+		SETFLOAT(a+2,x2); SETFLOAT(a+3,y2);
+		outlet_anything(outlets[0],&s_list,4,a);
+	}
+};
+
+\end class {install("gf/object_bbox",1,1);}
 
 // pas vite vite
 string string_replace (string victim, string from, string to) {
