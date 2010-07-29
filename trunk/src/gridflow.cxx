@@ -1119,14 +1119,16 @@ BUILTIN_SYMBOLS(FOO)
 		  "$menu add command -label {GridFlow Examples}   -command {gf_menu_open .}\n"
 		"}\n"
 		"proc gridflow_add_to_put {menu} {\n"
+		  "set c [regsub .m.put $menu \"\"]\n"
  		  "$menu add separator\n"
-		  "$menu add command -label {Display} -command [list pd [regsub .m.put $menu \"\"] obj %X %Y display\\;]"
+		  "$menu add command -label {Display} -command [list pd $c put display \\;]\n"
+		  "$menu add command -label {GridSee} -command [list pd $c put \\#see  \\;]\n"
 		"}\n"
 		"catch {gridflow_add_to_help .mbar.help}\n"
 		"catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
 		"catch {rename menu_addstd menu_addstd_old\n"
-		  "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help;"
-		  //" gridflow_add_to_put $mbar.put"
+		  "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help\n"
+		  "gridflow_add_to_put $mbar.put"
 		"}}\n");
 	delete[] dirresult;
 	delete[] dirname;
@@ -1137,11 +1139,14 @@ BUILTIN_SYMBOLS(FOO)
     //signal(SIGIOT,SIG_DFL);
     //signal(SIGQUIT,SIG_DFL);
     #ifndef __WIN32__
-		signal(SIGBUS, SIG_DFL);
-	#endif
+	signal(SIGBUS, SIG_DFL);
+    #endif
     atexit(gridflow_unsetup);
+    void canvas_iemguis(t_canvas *x, t_symbol *s);
     extern t_class *canvas_class;
     class_addmethod(canvas_class,(t_method)canvas_else,         gensym("else")         ,A_GIMME,0);
     class_addmethod(canvas_class,(t_method)canvas_tolast,       gensym("last")         ,A_GIMME,0);
     class_addmethod(canvas_class,(t_method)canvas_last_activate,gensym("last_activate"),A_GIMME,0);
+    class_addmethod(canvas_class,(t_method)canvas_iemguis,      gensym("put"),          A_SYMBOL,0);
+//    canvas_startmotion(glist_getcanvas(gl));
 }
