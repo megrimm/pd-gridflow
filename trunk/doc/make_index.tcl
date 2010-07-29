@@ -44,9 +44,12 @@ foreach k [lsort [array names ::say *]] {
 	if {$k=="#cluster_avg"} {set k "$k 4"}
 	if {$k=="cv/#KMeans"}   {set k "$k 4"}
 	if {$k == "#many"}      {set k "$k tgl 3 3"}
-	if {[regexp ^doc $k]}   {set k "doc_link $k"}
-	if {[regexp ^#io $k]}   {set k "doc_link $k"}
+
+	if {[regexp ^doc $k]}      {set k "doc_link $k"}
+	if {[regexp ^#io $k]}      {set k "doc_link $k"}
 	if {$k == "parallel_port"} {set k "doc_link $k"}
+	if {$k == "gf/nbxhsl"}     {set k "doc_link $k"}
+	if {$k == "#to~"}          {set k "doc_link $k"} ;# until crash gets fixed
 
 	set w [string length $k]
 	regsub "\\$" $k "\\$" k
