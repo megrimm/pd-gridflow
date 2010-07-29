@@ -238,7 +238,7 @@
 #X text 180 3924 convert grid to pix (GEM);
 #X obj 96 3956 #to_symbol;
 #X text 180 3956 convert grid of ASCII codes to symbol;
-#X obj 132 3988 #to~;
+#X obj 114 3988 doc_link #to~;
 #X text 180 3988 convert grid to signal;
 #X obj 96 4020 #transpose;
 #X text 180 4020 swap two dimensions out of any \,  in a grid;
