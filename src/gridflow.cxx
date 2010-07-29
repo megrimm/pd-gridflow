@@ -1084,14 +1084,14 @@ BUILTIN_SYMBOLS(FOO)
 		else if (j==5 || j==6) {gem = 92;}
 		else error("GridFlow: can't detect this version of GEM: i=%d j=%d",i,j);
 	}
-	post("GridFlow/GEM bridge : GEM version is detected to be %d",gem);
 	//delete dummy;
 	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
 	bool imageStruct_has_virtual = !!*(long *)new imageStruct();
-	post("imageStruct_has_virtual=%d",imageStruct_has_virtual);
-	if (gem==92)                       sys_load_lib(0,"gridflow_gem9292");
-	else if (!imageStruct_has_virtual) sys_load_lib(0,"gridflow_gem9293");
-	else                               sys_load_lib(0,"gridflow_gem9393");
+	post("gem=%d imageStruct_has_virtual=%d",imageStruct_has_virtual);
+	post("GridFlow/GEM bridge : GemState version %d, imageStruct version %d",gem,92+imageStruct_has_virtual);
+	if (gem==92)                       sys_load_lib(0,"gridflow/gridflow_gem9292");
+	else if (!imageStruct_has_virtual) sys_load_lib(0,"gridflow/gridflow_gem9293");
+	else                               sys_load_lib(0,"gridflow/gridflow_gem9393");
 #endif
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
