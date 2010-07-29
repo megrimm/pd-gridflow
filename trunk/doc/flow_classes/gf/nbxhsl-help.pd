@@ -1,0 +1,25 @@
+#N canvas 0 0 632 402 10;
+#X obj 0 0 doc_h;
+#X obj 3 348 doc_also;
+#X obj 0 368 doc_f;
+#X obj 3 268 doc_i 0;
+#X obj 3 308 doc_o 0;
+#X obj 243 71 gf/nbxhsl;
+#X text 142 68 [nbx] + [hsl] =;
+#X obj 103 348 #camera;
+#X obj 3 140 doc_c 2;
+#X obj 14 170 doc_cc 0;
+#X obj 14 192 doc_cc 1;
+#X obj 97 170 doc_m c0 float;
+#X obj 97 192 doc_m c1 symbol;
+#X text 232 170 the \$1 of this object should be the \$0 of its parent.
+;
+#X text 232 192 the \$2 of this object should be the "name". this means
+:;
+#X text 232 214 receive-symbol is \$1-\$2 for both objects;
+#X text 232 236 send-symbol is \$1-s_\$2 for both objects;
+#X connect 1 1 7 0;
+#X connect 11 1 13 0;
+#X connect 12 1 14 0;
+#X connect 12 1 15 0;
+#X connect 12 1 16 0;
