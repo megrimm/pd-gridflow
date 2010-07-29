@@ -1,136 +1,141 @@
-#N canvas 474 0 632 642 10;
-#X obj 67 49 loadbang;
-#X obj 67 87 #in;
-#X obj 15 104 #store;
-#X msg 15 68 list \$1;
+#N canvas 458 0 632 642 10;
+#X obj 58 33 loadbang;
+#X obj 58 71 #in;
+#X obj 6 88 #store;
+#X msg 6 52 list \$1;
 #X obj 0 0 doc_h;
-#X obj 0 1058 doc_f;
-#X floatatom 15 50 5 0 0 0 - - -;
-#X msg 67 68 load lucida-typewriter-12.grid;
-#X obj 15 123 #fold +;
-#X obj 3 358 doc_c 5;
-#X obj 14 388 doc_cc 0;
-#X obj 14 410 doc_cc 1;
-#X obj 14 432 doc_cc 2;
-#X obj 14 454 doc_cc 3;
-#X obj 14 498 doc_cc 4;
-#X obj 97 388 doc_m c0 symbol;
-#X text 232 388 class name (normally tgl);
-#X obj 97 410 doc_m c1 float;
-#X obj 97 432 doc_m c2 float;
-#X obj 97 454 doc_m c3 float;
-#X obj 97 498 doc_m c4 float;
-#X text 232 410 number of rows;
-#X text 232 432 number of columns;
-#X text 232 454 size of a row (height of widget + bottom padding);
-#X text 232 498 size of a column (width of widget + right padding)
+#X obj 0 1138 doc_f;
+#X floatatom 6 34 5 0 0 0 - - -;
+#X msg 58 52 load lucida-typewriter-12.grid;
+#X obj 6 107 #fold +;
+#X obj 3 438 doc_c 5;
+#X obj 14 468 doc_cc 0;
+#X obj 14 490 doc_cc 1;
+#X obj 14 512 doc_cc 2;
+#X obj 14 534 doc_cc 3;
+#X obj 14 578 doc_cc 4;
+#X obj 97 468 doc_m c0 symbol;
+#X text 232 468 class name (normally tgl);
+#X obj 97 490 doc_m c1 float;
+#X obj 97 512 doc_m c2 float;
+#X obj 97 534 doc_m c3 float;
+#X obj 97 578 doc_m c4 float;
+#X text 232 490 number of rows;
+#X text 232 512 number of columns;
+#X text 232 534 size of a row (height of widget + bottom padding);
+#X text 232 578 size of a column (width of widget + right padding)
 ;
-#X obj 3 552 doc_i 2;
-#X obj 3 845 doc_o 2;
-#X obj 14 582 doc_ii 0;
-#X obj 14 813 doc_ii 1;
-#X obj 14 875 doc_oo 0;
-#X obj 14 910 doc_oo 1;
-#X obj 97 813 doc_m i1 <none>;
-#X obj 97 582 doc_m i0 grid;
-#X obj 399 27 r \$0-a;
-#X obj 269 283 s \$0-a;
-#X obj 15 142 #cast i;
-#X obj 269 264 # ^ 1;
-#X obj 97 875 doc_m o0 grid;
-#X text 232 875 the complete grid is output every time any element
+#X obj 3 632 doc_i 2;
+#X obj 3 925 doc_o 2;
+#X obj 14 662 doc_ii 0;
+#X obj 14 893 doc_ii 1;
+#X obj 14 955 doc_oo 0;
+#X obj 14 990 doc_oo 1;
+#X obj 97 893 doc_m i1 <none>;
+#X obj 97 662 doc_m i0 grid;
+#X obj 6 126 #cast i;
+#X obj 254 277 # ^ 1;
+#X obj 97 955 doc_m o0 grid;
+#X text 232 955 the complete grid is output every time any element
 in it gets changed;
-#X floatatom 377 275 5 0 0 0 - - -;
-#X floatatom 411 275 5 0 0 0 - - -;
-#X msg 33 263 to \$1 \$2 color 15 22 0;
-#X obj 97 910 doc_m o1 list;
-#X obj 97 730 doc_m i0 delegate;
-#X obj 97 765 doc_m i0 to;
-#X text 232 730 sends \$1 \, \$2 \, \$3 \, ... as a message to each
+#X floatatom 391 305 5 0 0 0 - - -;
+#X floatatom 425 305 5 0 0 0 - - -;
+#X msg 360 334 to \$1 \$2 color 15 22 0;
+#X obj 97 990 doc_m o1 list;
+#X obj 97 810 doc_m i0 delegate;
+#X obj 97 845 doc_m i0 to;
+#X text 232 810 sends \$1 \, \$2 \, \$3 \, ... as a message to each
 contained gui-object. \$1 becomes selector \, while \$2 becomes \$1
 \, etc.;
-#X text 232 765 sends \$3 \, \$4 \, \$5 \, ... as a message to one
+#X text 232 845 sends \$3 \, \$4 \, \$5 \, ... as a message to one
 contained gui-object \, whose position is specified by \$1 (row) and
 \$2 (column). \$3 becomes selector \, while \$4 becomes \$1 \, etc.
 ;
-#X obj 271 42 #many tgl 13 7 15 15;
-#X text 232 910 \$1=row \, \$2=column \, \$3=new_state of element being
+#X obj 254 52 #many tgl 13 7 15 15;
+#X text 232 990 \$1=row \, \$2=column \, \$3=new_state of element being
 modified;
-#X obj 377 256 unpack 0 0 0;
-#X floatatom 446 275 5 0 0 0 - - -;
-#X text 232 813 (for future use);
-#X obj 333 274 print;
-#X text 17 280 will colour only toggles clicked;
-#X text 232 967 this outlet's whole behaviour might change anytime
+#X obj 391 286 unpack 0 0 0;
+#X floatatom 460 305 5 0 0 0 - - -;
+#X text 232 893 (for future use);
+#X text 402 353 will colour only toggles clicked;
+#X text 232 1047 this outlet's whole behaviour might change anytime
 in the future until further notice. please help matju and pboivin define
 the protocol for customisation extensions to this object-class.;
-#X obj 3 1038 doc_also;
-#X text 232 476 default: 15 pixels;
-#X text 232 520 default: 15 pixels;
-#X text 232 582 stuff to put in (all widgets at once). This has to
+#X obj 3 1118 doc_also;
+#X text 232 556 default: 15 pixels;
+#X text 232 600 default: 15 pixels;
+#X text 232 662 stuff to put in (all widgets at once). This has to
 be a two-dimensional grid. Any smaller or bigger grid will cause problems
 (and ought to be rejected... one day).;
-#X text 232 932 currently output after the outlet 0 message has been
+#X text 232 1012 currently output after the outlet 0 message has been
 sent \, but won't stay like that in the future.;
-#X msg 108 233 bgcolor \$1;
-#X obj 108 214 #to_iem;
-#X obj 108 157 #color;
-#X obj 108 119 loadbang;
-#X msg 108 138 0 144 192;
-#X obj 97 630 doc_m i0 bgcolor;
-#X obj 232 704 doc_link #to_iem;
-#X obj 103 1038 #to_iem;
-#X text 232 630 background colour in IEM24 format. the background is
+#X msg 92 228 bgcolor \$1;
+#X obj 92 209 #to_iem;
+#X obj 92 152 #color;
+#X obj 30 153 loadbang;
+#X msg 30 172 0 144 192;
+#X obj 97 710 doc_m i0 bgcolor;
+#X obj 232 784 doc_link #to_iem;
+#X obj 103 1118 #to_iem;
+#X text 232 710 background colour in IEM24 format. the background is
 all the spacing between the boxes as well as the spacing around the
 outer boxes (the inner border of [#many]). In the above example \,
 there is no spacing between the boxes \, thus the border is only the
 space around.;
-#X obj 3 306 doc_section Special;
-#X text 82 331 Right-Click Properties : opens;
-#X obj 271 332 doc_link #many-prop;
-#X obj 157 1038 doc_link #many-prop;
-#X obj 399 46 #many tgl 13 7 15 15;
+#X obj 3 386 doc_section Special;
+#X text 82 411 Right-Click Properties : opens;
+#X obj 271 412 doc_link #many-prop;
+#X obj 157 1118 doc_link #many-prop;
+#X obj 379 52 #many tgl 13 7 15 15;
+#X obj 254 296 s \$0-b;
+#X obj 379 33 r \$0-b;
+#X obj 256 33 r \$0-a;
+#X obj 212 296 s \$0-a;
+#X obj 360 353 s \$0-a;
+#X obj 391 263 print R;
+#X obj 260 258 print L;
 #X connect 0 0 7 0;
 #X connect 1 0 2 1;
 #X connect 2 0 8 0;
 #X connect 3 0 2 0;
 #X connect 6 0 3 0;
 #X connect 7 0 1 0;
-#X connect 8 0 35 0;
+#X connect 8 0 33 0;
 #X connect 15 1 16 0;
 #X connect 17 1 21 0;
 #X connect 18 1 22 0;
 #X connect 19 1 23 0;
-#X connect 19 1 56 0;
+#X connect 19 1 53 0;
 #X connect 20 1 24 0;
-#X connect 20 1 57 0;
-#X connect 31 1 51 0;
-#X connect 32 1 58 0;
-#X connect 33 0 73 0;
-#X connect 35 0 47 0;
-#X connect 36 0 34 0;
-#X connect 37 1 38 0;
-#X connect 41 0 47 0;
-#X connect 42 1 48 0;
-#X connect 42 1 59 0;
-#X connect 42 1 54 0;
-#X connect 43 1 45 0;
-#X connect 44 1 46 0;
-#X connect 47 0 36 0;
-#X connect 47 0 52 0;
-#X connect 47 1 41 0;
-#X connect 47 1 49 0;
-#X connect 47 1 52 0;
-#X connect 49 0 39 0;
-#X connect 49 1 40 0;
-#X connect 49 2 50 0;
-#X connect 55 1 67 0;
-#X connect 55 1 72 0;
-#X connect 60 0 47 0;
-#X connect 60 0 34 0;
-#X connect 61 0 60 0;
-#X connect 62 0 61 0;
-#X connect 63 0 64 0;
-#X connect 64 0 62 0;
-#X connect 65 1 68 0;
-#X connect 65 1 66 0;
+#X connect 20 1 54 0;
+#X connect 31 1 49 0;
+#X connect 32 1 55 0;
+#X connect 33 0 45 0;
+#X connect 34 0 71 0;
+#X connect 35 1 36 0;
+#X connect 39 0 75 0;
+#X connect 40 1 46 0;
+#X connect 40 1 56 0;
+#X connect 40 1 51 0;
+#X connect 41 1 43 0;
+#X connect 42 1 44 0;
+#X connect 45 0 34 0;
+#X connect 45 0 77 0;
+#X connect 45 1 39 0;
+#X connect 45 1 47 0;
+#X connect 45 1 76 0;
+#X connect 47 0 37 0;
+#X connect 47 1 38 0;
+#X connect 47 2 48 0;
+#X connect 52 1 64 0;
+#X connect 52 1 69 0;
+#X connect 57 0 71 0;
+#X connect 57 0 74 0;
+#X connect 58 0 57 0;
+#X connect 59 0 58 0;
+#X connect 60 0 61 0;
+#X connect 61 0 59 0;
+#X connect 62 1 65 0;
+#X connect 62 1 63 0;
+#X connect 72 0 70 0;
+#X connect 73 0 45 0;
