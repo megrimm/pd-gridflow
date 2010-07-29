@@ -1113,15 +1113,21 @@ BUILTIN_SYMBOLS(FOO)
 		"if {[catch {menu_open}]} {menu_open $parent};"
 		"set ::pd_opendir $z}\n");
 	sys_gui("proc gridflow_add_to_help {menu} {\n"
-		   "$menu add separator\n"
-		   "$menu add command -label {GridFlow About}      -command {pd pd open about.pd $::gfdir/doc \\;}\n"
-		   "$menu add command -label {GridFlow Help Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
-		   "$menu add command -label {GridFlow Examples}   -command {gf_menu_open .}\n"
-		 "}\n"
-		 "catch {gridflow_add_to_help .mbar.help}\n"
-		 "catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
-		 "catch {rename menu_addstd menu_addstd_old\n"
-		   "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help}}\n");
+		  "$menu add separator\n"
+		  "$menu add command -label {GridFlow About}      -command {pd pd open about.pd $::gfdir/doc \\;}\n"
+		  "$menu add command -label {GridFlow Help Index} -command {pd pd open index.pd $::gfdir/doc \\;}\n"
+		  "$menu add command -label {GridFlow Examples}   -command {gf_menu_open .}\n"
+		"}\n"
+		"proc gridflow_add_to_put {menu} {\n"
+ 		  "$menu add separator\n"
+		  "$menu add command -label {Display} -command [list pd [regsub .m.put $menu \"\"] obj %X %Y display\\;]"
+		"}\n"
+		"catch {gridflow_add_to_help .mbar.help}\n"
+		"catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
+		"catch {rename menu_addstd menu_addstd_old\n"
+		  "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help;"
+		  //" gridflow_add_to_put $mbar.put"
+		"}}\n");
 	delete[] dirresult;
 	delete[] dirname;
     } catch (Barf &oozy) {oozy.error(0,-1,(char *)0);}
