@@ -35,8 +35,8 @@ ab=a+b
 d=[]
 File.open("index.pd") {|f|
   f.each {|line|
-    m= /obj -?\d+ -?\d+ ([^ ;]+)/      .match(line); d<<m[1] if m
-    m=/text -?\d+ -?\d+ \[([^ \];]+)\]/.match(line); d<<m[1] if m
+    m= /obj -?\d+ -?\d+ doc_link ([^ ;]+)/ .match(line); if m then d<<m[1] else
+    m= /obj -?\d+ -?\d+ ([^ ;]+)/          .match(line); if m then d<<m[1] end end
   }
 }
 
