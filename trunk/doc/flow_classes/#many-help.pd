@@ -4,11 +4,10 @@
 #X obj 6 88 #store;
 #X msg 6 52 list \$1;
 #X obj 0 0 doc_h;
-#X obj 0 1138 doc_f;
+#X obj 0 1182 doc_f;
 #X floatatom 6 34 5 0 0 0 - - -;
 #X msg 58 52 load lucida-typewriter-12.grid;
 #X obj 6 107 #fold +;
-#X obj 3 438 doc_c 5;
 #X obj 14 468 doc_cc 0;
 #X obj 14 490 doc_cc 1;
 #X obj 14 512 doc_cc 2;
@@ -25,59 +24,59 @@
 #X text 232 534 size of a row (height of widget + bottom padding);
 #X text 232 578 size of a column (width of widget + right padding)
 ;
-#X obj 3 632 doc_i 2;
-#X obj 3 925 doc_o 2;
-#X obj 14 662 doc_ii 0;
-#X obj 14 893 doc_ii 1;
-#X obj 14 955 doc_oo 0;
-#X obj 14 990 doc_oo 1;
-#X obj 97 893 doc_m i1 <none>;
-#X obj 97 662 doc_m i0 grid;
+#X obj 3 676 doc_i 2;
+#X obj 3 969 doc_o 2;
+#X obj 14 706 doc_ii 0;
+#X obj 14 937 doc_ii 1;
+#X obj 14 999 doc_oo 0;
+#X obj 14 1034 doc_oo 1;
+#X obj 97 937 doc_m i1 <none>;
+#X obj 97 706 doc_m i0 grid;
 #X obj 6 126 #cast i;
 #X obj 254 277 # ^ 1;
-#X obj 97 955 doc_m o0 grid;
-#X text 232 955 the complete grid is output every time any element
+#X obj 97 999 doc_m o0 grid;
+#X text 232 999 the complete grid is output every time any element
 in it gets changed;
 #X floatatom 391 305 5 0 0 0 - - -;
 #X floatatom 425 305 5 0 0 0 - - -;
 #X msg 360 334 to \$1 \$2 color 15 22 0;
-#X obj 97 990 doc_m o1 list;
-#X obj 97 810 doc_m i0 delegate;
-#X obj 97 845 doc_m i0 to;
-#X text 232 810 sends \$1 \, \$2 \, \$3 \, ... as a message to each
+#X obj 97 1034 doc_m o1 list;
+#X obj 97 854 doc_m i0 delegate;
+#X obj 97 889 doc_m i0 to;
+#X text 232 854 sends \$1 \, \$2 \, \$3 \, ... as a message to each
 contained gui-object. \$1 becomes selector \, while \$2 becomes \$1
 \, etc.;
-#X text 232 845 sends \$3 \, \$4 \, \$5 \, ... as a message to one
+#X text 232 889 sends \$3 \, \$4 \, \$5 \, ... as a message to one
 contained gui-object \, whose position is specified by \$1 (row) and
 \$2 (column). \$3 becomes selector \, while \$4 becomes \$1 \, etc.
 ;
-#X obj 254 52 #many tgl 13 7 15 15;
-#X text 232 990 \$1=row \, \$2=column \, \$3=new_state of element being
-modified;
+#X obj 254 52 #many tgl 13 7;
+#X text 232 1034 \$1=row \, \$2=column \, \$3=new_state of element
+being modified;
 #X obj 391 286 unpack 0 0 0;
 #X floatatom 460 305 5 0 0 0 - - -;
-#X text 232 893 (for future use);
+#X text 232 937 (for future use);
 #X text 402 353 will colour only toggles clicked;
-#X text 232 1047 this outlet's whole behaviour might change anytime
+#X text 232 1091 this outlet's whole behaviour might change anytime
 in the future until further notice. please help matju and pboivin define
 the protocol for customisation extensions to this object-class.;
-#X obj 3 1118 doc_also;
+#X obj 3 1162 doc_also;
 #X text 232 556 default: 15 pixels;
 #X text 232 600 default: 15 pixels;
-#X text 232 662 stuff to put in (all widgets at once). This has to
+#X text 232 706 stuff to put in (all widgets at once). This has to
 be a two-dimensional grid. Any smaller or bigger grid will cause problems
 (and ought to be rejected... one day).;
-#X text 232 1012 currently output after the outlet 0 message has been
+#X text 232 1056 currently output after the outlet 0 message has been
 sent \, but won't stay like that in the future.;
-#X msg 92 228 bgcolor \$1;
-#X obj 92 209 #to_iem;
-#X obj 92 152 #color;
-#X obj 30 153 loadbang;
-#X msg 30 172 0 144 192;
-#X obj 97 710 doc_m i0 bgcolor;
-#X obj 232 784 doc_link #to_iem;
-#X obj 103 1118 #to_iem;
-#X text 232 710 background colour in IEM24 format. the background is
+#X msg 92 234 bgcolor \$1;
+#X obj 92 215 #to_iem;
+#X obj 92 158 #color;
+#X obj 92 120 loadbang;
+#X msg 92 139 0 144 192;
+#X obj 97 754 doc_m i0 bgcolor;
+#X obj 232 828 doc_link #to_iem;
+#X obj 103 1162 #to_iem;
+#X text 232 754 background colour in IEM24 format. the background is
 all the spacing between the boxes as well as the spacing around the
 outer boxes (the inner border of [#many]). In the above example \,
 there is no spacing between the boxes \, thus the border is only the
@@ -85,57 +84,68 @@ space around.;
 #X obj 3 386 doc_section Special;
 #X text 82 411 Right-Click Properties : opens;
 #X obj 271 412 doc_link #many-prop;
-#X obj 157 1118 doc_link #many-prop;
-#X obj 379 52 #many tgl 13 7 15 15;
+#X obj 157 1162 doc_link #many-prop;
 #X obj 254 296 s \$0-b;
 #X obj 379 33 r \$0-b;
-#X obj 256 33 r \$0-a;
+#X obj 254 33 r \$0-a;
 #X obj 212 296 s \$0-a;
 #X obj 360 353 s \$0-a;
 #X obj 391 263 print R;
 #X obj 260 258 print L;
+#X obj 46 352 namecanvas foo;
+#X msg 46 313 \; foo startmotion;
+#X obj 3 438 doc_c 7;
+#X obj 14 622 doc_cc 5;
+#X obj 14 644 doc_cc 6;
+#X obj 97 622 doc_m c5 float;
+#X obj 97 644 doc_m c6 float;
+#X text 232 622 FOR FUTURE USE;
+#X text 232 644 FOR FUTURE USE;
+#X obj 379 52 #many tgl 13 7;
 #X connect 0 0 7 0;
 #X connect 1 0 2 1;
 #X connect 2 0 8 0;
 #X connect 3 0 2 0;
 #X connect 6 0 3 0;
 #X connect 7 0 1 0;
-#X connect 8 0 33 0;
-#X connect 15 1 16 0;
+#X connect 8 0 32 0;
+#X connect 14 1 15 0;
+#X connect 16 1 20 0;
 #X connect 17 1 21 0;
 #X connect 18 1 22 0;
+#X connect 18 1 52 0;
 #X connect 19 1 23 0;
 #X connect 19 1 53 0;
-#X connect 20 1 24 0;
-#X connect 20 1 54 0;
-#X connect 31 1 49 0;
-#X connect 32 1 55 0;
-#X connect 33 0 45 0;
-#X connect 34 0 71 0;
-#X connect 35 1 36 0;
-#X connect 39 0 75 0;
-#X connect 40 1 46 0;
-#X connect 40 1 56 0;
-#X connect 40 1 51 0;
+#X connect 30 1 48 0;
+#X connect 31 1 54 0;
+#X connect 32 0 44 0;
+#X connect 33 0 69 0;
+#X connect 34 1 35 0;
+#X connect 38 0 73 0;
+#X connect 39 1 45 0;
+#X connect 39 1 55 0;
+#X connect 39 1 50 0;
+#X connect 40 1 42 0;
 #X connect 41 1 43 0;
-#X connect 42 1 44 0;
-#X connect 45 0 34 0;
-#X connect 45 0 77 0;
-#X connect 45 1 39 0;
-#X connect 45 1 47 0;
-#X connect 45 1 76 0;
-#X connect 47 0 37 0;
-#X connect 47 1 38 0;
-#X connect 47 2 48 0;
-#X connect 52 1 64 0;
-#X connect 52 1 69 0;
-#X connect 57 0 71 0;
-#X connect 57 0 74 0;
+#X connect 44 0 33 0;
+#X connect 44 0 75 0;
+#X connect 44 1 38 0;
+#X connect 44 1 46 0;
+#X connect 44 1 74 0;
+#X connect 46 0 36 0;
+#X connect 46 1 37 0;
+#X connect 46 2 47 0;
+#X connect 51 1 63 0;
+#X connect 51 1 68 0;
+#X connect 56 0 69 0;
+#X connect 56 0 72 0;
+#X connect 57 0 56 0;
 #X connect 58 0 57 0;
-#X connect 59 0 58 0;
-#X connect 60 0 61 0;
-#X connect 61 0 59 0;
-#X connect 62 1 65 0;
-#X connect 62 1 63 0;
-#X connect 72 0 70 0;
-#X connect 73 0 45 0;
+#X connect 59 0 60 0;
+#X connect 60 0 58 0;
+#X connect 61 1 64 0;
+#X connect 61 1 62 0;
+#X connect 70 0 85 0;
+#X connect 71 0 44 0;
+#X connect 81 1 83 0;
+#X connect 82 1 84 0;
