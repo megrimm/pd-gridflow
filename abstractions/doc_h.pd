@@ -1,5 +1,5 @@
 #N canvas 197 81 694 522 10;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect ♯in~ 2 9 1 13 -1 -262144
+#X obj 3 3 cnv 15 608 18 empty \$0-rect ♯many 2 9 1 13 -1 -262144
 0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -168,21 +168,21 @@
 #X obj 37 274 delay 1000;
 #X msg 128 374 1;
 #X msg 98 374 0;
-#X obj 107 418 shunt;
-#X obj 143 418 t a a;
-#X obj 179 418 #dim;
-#X obj 179 437 #unpack 3;
-#X obj 179 456 *;
-#X obj 195 494 #pack;
-#X obj 153 494 #slice;
-#X obj 179 475 #pack;
+#X obj 107 408 shunt;
+#X obj 143 408 t a a;
+#X obj 179 408 #dim;
+#X obj 179 427 #unpack 3;
+#X obj 179 446 *;
+#X obj 195 484 #pack;
+#X obj 179 465 #pack;
 #X obj 27 28 t b;
 #X obj 128 142 t b l;
 #X obj 32 47 delay 2000;
+#X obj 127 505 #slice (0 0) (0 0);
 #X connect 0 0 5 0;
 #X connect 1 0 0 0;
 #X connect 2 0 10 0;
-#X connect 3 0 62 0;
+#X connect 3 0 61 0;
 #X connect 4 0 12 0;
 #X connect 4 1 19 0;
 #X connect 5 1 54 0;
@@ -191,10 +191,10 @@
 #X connect 7 0 4 0;
 #X connect 8 0 7 0;
 #X connect 8 1 7 1;
-#X connect 9 0 62 0;
+#X connect 9 0 61 0;
 #X connect 11 0 2 0;
 #X connect 12 0 33 0;
-#X connect 14 0 63 0;
+#X connect 14 0 62 0;
 #X connect 15 0 17 0;
 #X connect 17 0 16 0;
 #X connect 18 2 15 0;
@@ -247,22 +247,22 @@
 #X connect 53 0 54 1;
 #X connect 54 0 44 0;
 #X connect 54 1 55 0;
-#X connect 55 0 60 0;
+#X connect 55 0 64 0;
 #X connect 55 1 56 0;
 #X connect 56 0 57 0;
 #X connect 57 0 58 0;
 #X connect 57 0 59 0;
 #X connect 57 1 59 1;
-#X connect 58 0 61 0;
-#X connect 59 0 60 2;
-#X connect 60 0 44 0;
-#X connect 61 0 60 1;
-#X connect 62 0 39 1;
-#X connect 62 0 64 0;
-#X connect 62 0 29 0;
-#X connect 63 0 28 0;
-#X connect 63 1 20 0;
-#X connect 64 0 18 0;
+#X connect 58 0 60 0;
+#X connect 59 0 64 2;
+#X connect 60 0 64 1;
+#X connect 61 0 39 1;
+#X connect 61 0 63 0;
+#X connect 61 0 29 0;
+#X connect 62 0 28 0;
+#X connect 62 1 20 0;
+#X connect 63 0 18 0;
+#X connect 64 0 44 0;
 #X restore 6 257 pd screenshots;
 #X obj 332 28 bng 12 250 50 0 justscreenshot empty scrineshotte 17
 7 0 8 -159808 -1 -191407;
