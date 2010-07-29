@@ -27,6 +27,8 @@ say #to_float        "convert grid to sequence of floats"
 say #to_list         "convert grid to list"
 say #to_pix          "convert grid to pix (GEM)"
 say #to_symbol       "convert grid of ASCII codes to symbol"
+say #to~             "convert grid to signal"
+say gemdead          "fake \[gemhead\] for use with \[#to_pix\] without having to use \[gemwin\]"
 
 category "Stuff"
 say #fft             "compute forward or inverse one-or-two-dimensional complex FFT of a grid"
@@ -86,6 +88,8 @@ say listreverse      "mirror image of a list"
 
 category "Stuff"
 say args             "pick up the arguments of an abstraction instance, including nested lists and init-messages"
+say attr             "dictionary to be used for storing attributes of abstractions, among other things"
+say gf/propertybang  "bang when right-click properties"
 say ascii            "write integer as decimal in ascii codes"
 say class_exists     "figure out whether a class has been loaded by pd"
 say display          "\[display\]: print message or grid inside of the patch"
@@ -108,9 +112,12 @@ say #checkers         "make image of chequered background in two tones of grey"
 say #clip             "min and max"
 say #color            "GUI for selecting a colour"
 say #contrast         "adjust contrast in two different ways"
+
 say #fade_lin         "fade in piecewise-linear fashion"
 say #fade             "fade in exponential-decay fashion (linear recurrence)"
+say #lop_space        "fade in spatially (up, down, left, right, etc) by IIR filtering"
 say #fastblur         "speedy shortcut for rectangular blur"
+
 say for               "make sequence of float messages for each number in a range with specified stepping"
 say fps               "measure frames per second and make statistics"
 say #gamma            "apply gamma correction"
@@ -118,6 +125,7 @@ say gf/io_generate    "for internal use by #in and #out"
 say #hueshift         "apply hue shift by rotating the color wheel"
 
 say #in               "open file or device for reading or download"
+say #in~              "open file or device for reading or download, with sound (experimental)"
 say #out              "open file or device for writing or upload"
 
 say inv*              "swapped /"
@@ -207,6 +215,7 @@ say interval_overlap    "test whether two intervals of floats overlap"
 say norecurse           "simple spigot for preventing control-recursion"
 say #make_arrow         "make an arrow \"polygon\" from 2 points (for use with line mode of \[#draw_polygon\])"
 say #many               "\[#many\]: create and organise many identical GUI objects"
+say #many-prop          "properties dialogue for \[#many\]"
 say #see                "\[#see\]: view video output within patch and collect mouse/key info"
 say #to_iem             "convert grid(3) to IEMGUI colour code"
 say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\]"
@@ -249,16 +258,15 @@ say doc_link     "GFDP hyperlink for opening another helpfile"
 say gf/nbxhsl "combined \[nbx\] and \[hsl\] boxes as used by \[#camera\]"
 say gf/not_open "used by \[#in\] \[#in~\] \[#out\] to represent closed state"
 
-#io.quartz #to_array doc_add doc_also doc_below doc_bottom doc_c doc_cc doc_demo doc_editmode doc_exist doc_f doc_h doc_i doc_ii doc_layout doc_m 
-#doc_make doc_o doc_oo doc_same inv0x2a inv0x2b memstat
+# #io.quartz #to_array doc_make inv0x2a inv0x2b memstat
 
 say gf/canvas_count      "tell total number of objects in a canvas"
 say gf/canvas_dollarzero "tell the \$0 of an uplevel canvas"
 say gf/canvas_edit_mode  "tell the edit mode of a canvas"
 say gf/canvas_filename   "tell the filename of a canvas"
 say gf/canvas_getpos     "tell the position of a canvas in its parent canvas"
-# say gf/canvas_hehehe      
-# say gf/canvas_hohoho
+say gf/canvas_hehehe     "resize window automatically"
+say gf/canvas_hohoho     "draw dashed box"
 say gf/canvas_index      "tell the index of a canvas in its parent canvas"
 say gf/canvas_isselected "tell whether a canvas is selected in its parent canvas"
 say gf/canvas_loadbang   "send loadbang to the most recently created objects of a canvas"
@@ -268,7 +276,7 @@ say gf/canvas_xid        "tell the x11 id of a canvas, its window, and tell the 
 say gf/find_file         "find a file the same way that \[#in\] does"
 say gf/getcwd            "tell the current working directory (as set by the \"cd\" shell command)"
 say gf/getpid            "tell the process id of the pd server"
-# say gf/lol
+say gf/lol               "make wires dashed or invisible, reposition and measure height of comments, etc."
 say gf/selector          "report the true selector of the incoming message"
 say gf/string_<          "compare two strings"
 say gf/string_replace    "search and replace substrings in a symbol"
