@@ -3,6 +3,48 @@ L = much later (whenever we get to know how to do it...)
 
 9.10, unassigned:
 
+[ ] reduce [doc_h] clock again before release !
+[ ] look for potential crashes caused by overflow of fastclip in colorspace.hxx
+[ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
+[ ] document methods added to canvas_class
+[ ] gem bridge has a path problem and no error message.
+[ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
+    et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
+
+==9541== Invalid write of size 4
+==9541==    at 0x4CAF12F: GemState::GemState() (in /usr/lib/pd/extra/Gem/Gem.pd_linux)
+==9541==    by 0x62DCC73: GemDead::constructor(_symbol*) (gem.cxx.fcs:287)
+==9541==    by 0x62DCBFB: GemDead::GemDead(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:284)
+==9541==    by 0x62DACF0: GemDead_allocator(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:302)
+==9541==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
+==9541==    by 0x80C4658: pd_typedmess (m_class.c:715)
+==9541==    by 0x807A0B4: canvas_objtext (g_text.c:94)
+==9541==  Address 0x5abe0e0 is 0 bytes after a block of size 24 alloc'd
+==9541==    at 0x4025390: operator new(unsigned int) (vg_replace_malloc.c:214)
+==9541==    by 0x62DCC63: GemDead::constructor(_symbol*) (gem.cxx.fcs:287)
+==9541==    by 0x62DCBFB: GemDead::GemDead(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:284)
+==9541==    by 0x62DACF0: GemDead_allocator(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:302)
+==9541==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
+==9541==    by 0x80C4658: pd_typedmess (m_class.c:715)
+==9541==    by 0x807A0B4: canvas_objtext (g_text.c:94)
+
+==9429== Invalid write of size 4
+==9429==    at 0x612277B: GridToTilde::constructor(_symbol*, int) (classes3.cxx.fcs:40)
+==9429==    by 0x61226DC: GridToTilde::GridToTilde(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:38)
+==9429==    by 0x6102A22: GridToTilde_allocator(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:86)
+==9429==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
+==9429==    by 0x80C4658: pd_typedmess (m_class.c:715)
+==9429==    by 0x807A0B4: canvas_objtext (g_text.c:94)
+==9429==  Address 0x42d70d8 is 0 bytes after a block of size 0 alloc'd
+==9429==    at 0x4025024: operator new[](unsigned int) (vg_replace_malloc.c:258)
+==9429==    by 0x6122740: GridToTilde::constructor(_symbol*, int) (classes3.cxx.fcs:39)
+==9429==    by 0x61226DC: GridToTilde::GridToTilde(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:38)
+==9429==    by 0x6102A22: GridToTilde_allocator(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:86)
+==9429==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
+==9429==    by 0x80C4658: pd_typedmess (m_class.c:715)
+==9429==    by 0x807A0B4: canvas_objtext (g_text.c:94)
+==9429== 
+
 [ ] révision de patchs d'aide compliquées ou mal dites, comme [#grade] et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] est-ce que "omit odd" marche vraiment, ou devrait-il s'appeler "omit even" ?
@@ -36,7 +78,7 @@ L = much later (whenever we get to know how to do it...)
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
     because if you assume an operation works, you're not really _using_ throw/catch.
 [ ] win32 color_correction.pd crash
-[ ] continue [#many]...
+[ ] [#many] spacing $1 $2, margin $1 $2 $3 $4, ...
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
@@ -100,7 +142,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] [display] visible outside redrectangle in [doc_h]
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
-[ ] [#io.videodev] takes a lot of CPU doing nothing at all
+[ ] [#io.videodev] takes a lot of CPU doing nothing at all (?)
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 [ ] add default values in docs
 [!] use sand.pd as basis for introducing those features :
@@ -142,7 +184,6 @@ OpenCV
 [ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
 Common Video Framework
-[ ] a common library for all video IO (cameras, files, web), which is the project of Thomas H and Johannes.
 [ ] PDP<->GridFlow converter
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
 [ ] threads for video?
