@@ -11,7 +11,11 @@ RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
+OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o \
+src/number.1.o src/number.2.o src/number.3.o src/number.4.o \
+src/formats.o
+PDLIB += gridflow_pdp$(PDSUF)
+
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),Darwin)
@@ -93,6 +97,8 @@ gridflow_gem9293$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -xc++ src/gem.cxx.fcs -o $@
 gridflow_gem9393$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -xc++ src/gem.cxx.fcs -o $@
+gridflow_pdp$(PDSUF):     src/pdp.cxx.fcs $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -xc++ src/pdp.cxx.fcs -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
