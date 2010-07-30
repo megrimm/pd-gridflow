@@ -15,22 +15,6 @@ should make many programs simpler.
 
 Introduction [...]
 
-	GridFlow provides a unifying view of multimedia information. Several
-	kinds of data -- raster graphics in any number of channels, coordinate
-	transforms, matrices, vectors -- may all be represented by Grids
-	(also known as multi-dimensional arrays). Grids exist in several ways: they
-	are usually streamed from object to object, but they can also be stored in
-	memory, stored into a file, sent through the network.
-
-	A coordinate transform, when specified pixel by pixel, may be a
-	three-dimensional Grid in which the two "channels" are Y and X,
-	representing row-and-column positions in a separate picture.
-	
-	Other shapes of grids could be designed to represent various things;
-	for example, configuration for blur effects (#convolve). Grids could be useful for
-	things not directly related to raster pictures (e.g. sound recordings).
-
-
 GridFlow Release
 
 dir=gridflow-9.9; tag=gridflow_9_9
