@@ -1,4 +1,4 @@
-#N canvas 602 0 632 642 10;
+#N canvas 596 0 632 642 10;
 #X floatatom 132 89 5 0 0 0 - - -;
 #X floatatom 177 89 5 0 0 0 - - -;
 #X floatatom 20 160 5 0 0 0 - - -;
@@ -78,11 +78,13 @@ you'd put in Grids \, in any numbers of dimensions. because \, as usual
 \, [#store] wouldn't know the difference.;
 #X text 232 912 grids as stored \, as indexed \, or as assembled from
 multiple indexings.;
-#X obj 0 957 doc_f;
+#X obj 0 977 doc_f;
 #X text 232 309 initial value to be stored;
 #X obj 97 628 doc_m i1 op;
 #X text 232 628 recombination operator used by put_at \, just like
 arg 0 of [#draw_image];
+#X obj 3 957 doc_also;
+#X obj 103 957 doc_link indexmap 1;
 #X connect 0 0 12 0;
 #X connect 1 0 12 1;
 #X connect 12 0 15 0;
@@ -109,3 +111,4 @@ arg 0 of [#draw_image];
 #X connect 40 1 45 0;
 #X connect 41 1 47 0;
 #X connect 50 1 51 0;
+#X connect 52 1 53 0;
