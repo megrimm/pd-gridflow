@@ -1,34 +1,36 @@
-#N canvas 0 0 632 487 10;
+#N canvas 475 142 632 531 10;
 #X obj 0 0 doc_h;
-#X obj 3 433 doc_also;
-#X obj 0 453 doc_f;
-#X obj 103 433 #to_pix;
-#X obj 3 169 doc_i 1;
-#X obj 14 199 doc_ii 0;
-#X obj 3 371 doc_o 1;
-#X obj 14 401 doc_oo 0;
-#X obj 97 199 doc_m i0 grid;
-#X obj 97 401 doc_m o0 pdp;
-#X obj 157 433 #from_pdp;
-#X obj 97 243 doc_m i0 scale;
-#X obj 97 221 doc_m i0 colorspace;
-#X text 232 221 FUTURE USE;
-#X text 232 401 pdp packet to be fed into a [pdp_...] box;
-#X text 232 291 0: grid of size (2y \, 2x \, 3) will be converted to
+#X obj 3 477 doc_also;
+#X obj 0 497 doc_f;
+#X obj 103 477 #to_pix;
+#X obj 3 213 doc_i 1;
+#X obj 14 243 doc_ii 0;
+#X obj 3 415 doc_o 1;
+#X obj 14 445 doc_oo 0;
+#X obj 97 243 doc_m i0 grid;
+#X obj 97 445 doc_m o0 pdp;
+#X obj 157 477 #from_pdp;
+#X obj 97 287 doc_m i0 scale;
+#X obj 97 265 doc_m i0 colorspace;
+#X text 232 265 FUTURE USE;
+#X text 232 445 pdp packet to be fed into a [pdp_...] box;
+#X text 232 335 0: grid of size (2y \, 2x \, 3) will be converted to
 a pdp image that has a Y channel of size (2y \, 2x) and UV channels
 of size (y \, x). the pdp type will be of the form image/2x/2y;
-#X text 232 243 1: grid of size (y \, x \, 3) will be converted to
+#X text 232 287 1: grid of size (y \, x \, 3) will be converted to
 a pdp image that has a Y channel of size (2y \, 2x) and UV channels
 of size (y \, x). the pdp type will be of the form image/2x/2y;
-#X text 232 199 grid image;
+#X text 232 243 grid image;
 #X obj 222 77 #to_pdp;
-#X obj 222 96 pdp_xv;
-#X text 232 339 sets the implied leftshift. (default: 7);
-#X obj 3 129 doc_c 0;
+#X obj 222 136 pdp_xv;
+#X text 232 383 sets the implied leftshift. (default: 7);
+#X obj 3 173 doc_c 0;
 #X obj 222 58 #in pure-data.jpg;
-#X obj 222 41 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 222 41 bng 15 250 50 0 empty empty empty 17 7 0 10 -204786 -1
 -1;
-#X obj 97 339 doc_m i0 shift;
+#X obj 97 383 doc_m i0 shift;
+#X msg 228 116 create;
+#X obj 228 97 loadbang;
 #X connect 1 1 3 0;
 #X connect 1 1 10 0;
 #X connect 8 1 17 0;
@@ -40,3 +42,5 @@ of size (y \, x). the pdp type will be of the form image/2x/2y;
 #X connect 22 0 18 0;
 #X connect 23 0 22 0;
 #X connect 24 1 20 0;
+#X connect 25 0 19 0;
+#X connect 26 0 25 0;
