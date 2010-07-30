@@ -30,6 +30,7 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   virtual void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
+  char trabant[666];
 };
 #else // older
 struct imageStruct {
@@ -37,18 +38,19 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
+  char trabant[666];
 };
 #endif
 struct pixBlock {imageStruct image; int newimage, newfilm; pixBlock(){newimage=newfilm=0;}};
 #ifdef IMAGESTRUCT93 // except Gem93 older than 25 mai 2010
 struct GemState {
   bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock *image;
-  GemState(); virtual ~GemState(); void reset();
+  GemState(); virtual ~GemState(); void reset(); char trabant[666];
 };
 #else // older
 struct GemState {
   int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
-  GemState(); ~GemState(); void reset();
+  GemState(); ~GemState(); void reset(); char trabant[666];
 };
 #endif
 
