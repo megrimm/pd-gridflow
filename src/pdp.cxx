@@ -19,15 +19,46 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+extern "C" {
 #include "bundled/pdp_imagebase.h"
+};
 #include "gridflow.hxx.fcs"
 
-static t_class *pdpproxy_class;
+//------------------------------------------------------------------------
+\class GridToPdp : FObject {
+	\attr bool scale;
+	\attr bool shift;
+	\attr t_symbol *colorspace;
+	\constructor () {colorspace=gensym("rgb");}
+	\grin 0
+};
+GRID_INLET(0) {
+	if (in.dim.n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
+	//if (in.dim[2]!=3 && in.dim[2]!=4) RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
+	if (in.dim[2]!=3) RAISE("expecting 3 4 channels: red,green,blue (got %d)",in.dim[2]);
+	int sy=in.dim[0];
+	int sx=in.dim[1];
+	int packet = pdp_packet_new_image(PDP_IMAGE_YV12,in.dim[1],in.dim[0]);
+	t_pdp *header = pdp_packet_header(packet);
+	//t_image *image = pdp_packet_image_info(packet);
+	if (!header) RAISE("can't allocate packet");
+	short *data = (short *)pdp_packet_data(packet);
+	for (int y=0; y<sy; y++) {
+		for (int x=0; x<sx; x++) {
+			*data++ = 32000;
+		}
+	}
+	pdp_packet_pass_if_valid(outlets[0],&packet);
+} GRID_FLOW {
+} GRID_FINISH {
+} GRID_END
+\end class {install("#to_pdp",1,1);}
 
+//------------------------------------------------------------------------
+static t_class *pdpproxy_class;
 struct pdpproxy : t_pdp_imagebase {};
 static void pdpproxy_process(pdpproxy *x) {
-    int p0 = pdp_base_get_packet(x,0);
-    /* int mask = pdp_imagebase_get_chanmask(x); */
+    //int p0 = pdp_base_get_packet(x,0);
 }
 static void pdpproxy_free(pdpproxy *x) {pdp_imagebase_free(x);}
 static void *pdpproxy_new () {
@@ -38,23 +69,15 @@ static void *pdpproxy_new () {
     return x;
 }
 
-\class GridToPdp : FObject {
-	\constructor () {
-	}
-	\grin 0
-};
-GRID_INLET(0) {
-	
-} GRID_FLOW {
-	
-} GRID_FINISH {
-	
-} GRID_END
-\end class {install("#to_pdp",1,1);}
-
 \class GridFromPdp : FObject {
+	\attr bool scale;
+	\attr bool shift;
+	pdpproxy *bitch;
+	\attr t_symbol *colorspace;
 	\constructor () {
-		
+		colorspace=gensym("rgb");
+		bitch = (pdpproxy *)pd_new(pdpproxy_class);
+		inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
 	}
 	\decl 0 pdp (t_symbol *s, t_float f) {
 		if (s==gensym("register_ro")) {
@@ -65,8 +88,9 @@ GRID_INLET(0) {
 	}
 };
 \end class {install("#from_pdp",1,1);}
+//------------------------------------------------------------------------
 
-void pdp_setup() {
+extern "C" void gridflow_pdp_setup() {
 	\startall
 	pdpproxy_class =
 	  class_new(gensym("#to_pdp_proxy"), (t_newmethod)pdpproxy_new, (t_method)pdpproxy_free, sizeof(pdpproxy),0,A_NULL);
