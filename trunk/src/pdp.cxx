@@ -23,33 +23,37 @@ extern "C" {
 #include "bundled/pdp_imagebase.h"
 };
 #include "gridflow.hxx.fcs"
-
+#include "colorspace.hxx"
+int shortclip (int x) {return clip(x,-32768,+32767);}
+#define fastclip shortclip
 //------------------------------------------------------------------------
 \class GridToPdp : FObject {
 	\attr bool scale;
 	\attr bool shift;
 	\attr t_symbol *colorspace;
-	\constructor () {colorspace=gensym("rgb");}
-	\grin 0
+	\constructor () {scale=0; shift=7; colorspace=gensym("rgb");}
+	\grin 0 int
 };
 GRID_INLET(0) {
 	if (in.dim.n!=3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	//if (in.dim[2]!=3 && in.dim[2]!=4) RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
 	if (in.dim[2]!=3) RAISE("expecting 3 4 channels: red,green,blue (got %d)",in.dim[2]);
+	if (in.dim[0]&1) RAISE("can't have odd number of rows");
+	if (in.dim[1]&1) RAISE("can't have odd number of columns");
+	in.set_chunk(0);
+} GRID_FLOW {
 	int sy=in.dim[0];
 	int sx=in.dim[1];
 	int packet = pdp_packet_new_image(PDP_IMAGE_YV12,in.dim[1],in.dim[0]);
 	t_pdp *header = pdp_packet_header(packet);
-	//t_image *image = pdp_packet_image_info(packet);
 	if (!header) RAISE("can't allocate packet");
-	short *data = (short *)pdp_packet_data(packet);
-	for (int y=0; y<sy; y++) {
-		for (int x=0; x<sx; x++) {
-			*data++ = 32000;
-		}
-	}
+	short *tada = (short *)pdp_packet_data(packet);
+	T *d;
+	d=data;	for (int y=0; y<sy; y++          ) for (int x=0; x<sx; x++ ,d+=3) *tada++ =  RGB2Y_(d[0],d[1],d[2]     )<<7;
+	d=data; for (int y=0; y<sy; y+=2, d+=3*sx) for (int x=0; x<sx; x+=2,d+=6) *tada++ = (RGB2V_(d[0],d[1],d[2])-128)<<8;
+	d=data; for (int y=0; y<sy; y+=2, d+=3*sx) for (int x=0; x<sx; x+=2,d+=6) *tada++ = (RGB2U_(d[0],d[1],d[2])-128)<<8;
+
 	pdp_packet_pass_if_valid(outlets[0],&packet);
-} GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
 \end class {install("#to_pdp",1,1);}
@@ -75,7 +79,7 @@ static void *pdpproxy_new () {
 	pdpproxy *bitch;
 	\attr t_symbol *colorspace;
 	\constructor () {
-		colorspace=gensym("rgb");
+		scale=0; shift=7; colorspace=gensym("rgb");
 		bitch = (pdpproxy *)pd_new(pdpproxy_class);
 		inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
 	}
