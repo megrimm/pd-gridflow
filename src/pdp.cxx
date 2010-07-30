@@ -23,6 +23,7 @@ extern "C" {
 #include "bundled/pdp_imagebase.h"
 };
 #include "gridflow.hxx.fcs"
+#include "bundled/m_imp.h"
 #include "colorspace.hxx"
 int shortclip (int x) {return clip(x,-32768,+32767);}
 #define fastclip shortclip
@@ -82,11 +83,11 @@ static void pdpproxy_process(pdpproxy *self) {
 }
 static void pdpproxy_free(pdpproxy *x) {pdp_imagebase_free(x);}
 static void *pdpproxy_new () {
-	pdpproxy *x = (pdpproxy *)pd_new(pdpproxy_class);
-	pdp_imagebase_init(x);
-	pdp_base_set_process_method(x, (t_pdp_method)pdpproxy_process);
-	post("????????????????");
-	return x;
+	pdpproxy *self = (pdpproxy *)pd_new(pdpproxy_class);
+	post("!!!!!!!!!!!!!!!!!!!! bitch=%p class=%s",self,pd_class((t_pd *)self)->c_name->s_name);
+	pdp_imagebase_init(self);
+	pdp_base_set_process_method(self, (t_pdp_method)pdpproxy_process);
+	return self;
 }
 \class GridFromPDP : FObject {
 	\attr bool scale;
@@ -95,8 +96,9 @@ static void *pdpproxy_new () {
 	\attr t_symbol *colorspace;
 	\constructor () {
 		scale=0; shift=7; colorspace=gensym("rgb");
-		bitch = (pdpproxy *)pd_new(pdpproxy_class);
-		post("!!!!!!!!!!!!!!!!!!!!");
+		pd_typedmess(&pd_objectmaker,gensym("#to_pdp_proxy"),0,0);
+		bitch = (pdpproxy *)pd_newest();
+		if (!bitch) RAISE("bitchless");
 		bitch->daddy = this;
 		//inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
 	}
