@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.10 (2010.07...):
+version 9.10 (2010.08...):
 
  * added examples qbert.pd, remap_video.pd
  * [#lop_space]: faster, and added method "reverse"
@@ -10,7 +10,6 @@ version 9.10 (2010.07...):
  * [#join]: no more "empty grids".
  * better error messages for not enough args, too many args, wrong args, etc.
  * [print]: make more like the builtin [print] it overrides
- * added classes [attr], [doc_section]
  * added index of General Topics, in GridFlow Index
  * incompatible change in [doc_exist] (which was for internal use only anyway)
  * incompatible change : removed numtype abbreviations that no-one ever used,
@@ -20,10 +19,15 @@ version 9.10 (2010.07...):
  * [#many]: add method bgcolor
  * updated GEM support to prevent crashes due to imageStruct 93 being different
    from imageStruct 92 (or even from recent versions of imageStruct 93).
- * added [gf/propertybang] [setargs]
+ * added classes [attr] [doc_section] [gf/propertybang] [setargs]
+   [gf/object_bbox] [#to_pdp] [#from_pdp]
  * added [#many-prop] (properties dialogue for [#many])
+ * [args]: fix bang bug (bang was ignored since loadbang support was added)
+ * added [display] and [#see] to the Put menu
+ * incompatible change in [#many]: removed $4 and $5 arguments for specifying
+   the size of the cells (now it is autodetected)
 
- ersion 9.9 (2010.05.05):
+version 9.9 (2010.05.05):
 
  * added class [gridflow] for reporting version number of gridflow
  * [print]: pointer: write "0x" and not "0x0x"
