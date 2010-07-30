@@ -1,11 +1,11 @@
 #N canvas 335 0 632 700 10;
 #X obj 0 0 doc_h;
-#X obj 0 1031 doc_f;
+#X obj 0 1164 doc_f;
 #X obj 3 347 doc_c 2;
-#X obj 3 911 doc_i 0;
-#X obj 3 951 doc_o 2;
-#X obj 14 981 doc_oo 0;
-#X obj 14 1001 doc_oo 1;
+#X obj 3 1020 doc_i 0;
+#X obj 3 1060 doc_o 2;
+#X obj 14 1090 doc_oo 0;
+#X obj 14 1112 doc_oo 1;
 #X obj 14 377 doc_cc 0;
 #X obj 14 425 doc_cc 1;
 #X obj 97 377 doc_m c0 symbol;
@@ -19,28 +19,28 @@ a selector or a meta-selector.;
 is alphabetical except for those five at the beginning: bang \, float
 \, grid \, symbol \, pointer \, list. and this one at the very end:
 <any>.;
-#X text 232 617 a list of meta-selectors:;
-#X text 232 639 <any>: represents the anything-method;
-#X text 232 661 <none>: is for writing anything of interest (?) about
+#X text 232 665 a list of meta-selectors:;
+#X text 232 687 <any>: represents the anything-method;
+#X text 232 709 <none>: is for writing anything of interest (?) about
 nothing at all. when present \, this is usually the only entry in the
 given subsection \, and it usually just says that the inlet or outlet
 is meant to be useless. typically \, no messages are accepted in the
 inlet \, or else \, all messages are accepted without doing anything
 with them \, or in the case of outlet \, nothing ever comes out of
 it.;
-#X text 232 796 <evil>: is like <none> \, except that the outlet that
+#X text 232 844 <evil>: is like <none> \, except that the outlet that
 bears it will do weird things to the object it gets connected to. things
 that are very different from sending mere messages.;
-#X text 232 866 <hpgl>: this stands for a pd message version of the
+#X text 232 914 <hpgl>: this stands for a pd message version of the
 HPGL protocol.;
 #X text 232 460 in the case of [doc_c] \, we're just faking that this
 is a selector \, but you better only use atom types here: float \,
 grid \, symbol \, pointer \, <atom>.;
-#X text 232 844 <atom>: this stands for float \, grid \, symbol \,
+#X text 232 892 <atom>: this stands for float \, grid \, symbol \,
 or pointer.;
-#X obj 97 981 doc_m o0 <none>;
-#X obj 97 1001 doc_m o1 <evil>;
-#X text 232 761 <gone>: is like none \, except the inlet or outlet
+#X obj 97 1090 doc_m o0 <none>;
+#X obj 97 1112 doc_m o1 <evil>;
+#X text 232 809 <gone>: is like none \, except the inlet or outlet
 is completely missing.;
 #X text 190 37 style guide for comments:;
 #X text 190 59 do not say "accepts a grid that will do blah blah" \,
@@ -64,6 +64,14 @@ is channels \, and that the other dimensions are rows and columns.
 however \, to ease the reading \, things like "(rows columns 3)" and
 "rgb image" will be said even though much of GridFlow itself doesn't
 care about it.;
+#X obj 3 1144 doc_also;
+#X text 232 949 <signal>: this inlet or outlet supports signals. if
+it is an outlet \, it supports only signals and nothing else. if it
+is an inlet \, it supports at least float (as an implicit [sig~]) and
+may support other methods.;
+#X text 232 617 when 'grid' is registered \, it also registers a default
+'float' and 'list' method \, which are normally not documented separately.
+;
 #X connect 9 1 11 0;
 #X connect 10 1 12 0;
 #X connect 10 1 26 0;
@@ -76,3 +84,5 @@ care about it.;
 #X connect 10 1 19 0;
 #X connect 10 1 20 0;
 #X connect 10 1 23 0;
+#X connect 10 1 30 0;
+#X connect 10 1 31 0;
