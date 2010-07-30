@@ -1092,6 +1092,7 @@ BUILTIN_SYMBOLS(FOO)
 	if (gem==92)                       sys_load_lib(0,"gridflow/gridflow_gem9292");
 	else if (!imageStruct_has_virtual) sys_load_lib(0,"gridflow/gridflow_gem9293");
 	else                               sys_load_lib(0,"gridflow/gridflow_gem9393");
+	sys_load_lib(0,"gridflow/gridflow_pdp");
 #endif
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
