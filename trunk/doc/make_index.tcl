@@ -11,6 +11,7 @@ foreach {k v} {
   intro {the main goal of this library (but not the only one)}
   grid  {what is a grid ?}
   image {an image of pixels is just one way to use a grid}
+  indexmap {goes with \[#store\]}
   numtype {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
   numop {numops represent ways of combining two numbers (usually)}
 } {
