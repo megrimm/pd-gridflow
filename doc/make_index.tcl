@@ -50,6 +50,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$k == "parallel_port"} {set k "doc_link $k"}
 	if {$k == "gf/nbxhsl"}     {set k "doc_link $k"}
 	if {$k == "#to~"}          {set k "doc_link $k"} ;# until crash gets fixed
+	if {$k == "#in~"}          {set k "doc_link $k"} ;# until crash in [#to~] gets fixed
 
 	set w [string length $k]
 	regsub "\\$" $k "\\$" k
