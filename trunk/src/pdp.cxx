@@ -25,8 +25,8 @@ extern "C" {
 #include "gridflow.hxx.fcs"
 #include "bundled/m_imp.h"
 #include "colorspace.hxx"
-int shortclip (int x) {return clip(x,-32768,+32767);}
-#define fastclip shortclip
+int slowclip (int x) {return clip(x,0,255);}
+#define fastclip slowclip
 //------------------------------------------------------------------------
 \class GridToPdp : FObject {
 	\attr bool scale;
@@ -69,13 +69,19 @@ static void pdpproxy_process(pdpproxy *self) {
 	unsigned sy = head->info.image.height;
 	unsigned sx = head->info.image.width;
 	short *datay = (short *)pdp_packet_data(p0);
-	post("got frame");
+	short *datav = datay + sy*sx;
+	short *datau = datav + (sy/2)*(sx/2);
 	int32 tada2[sy*sx*3]; int32 *tada = tada2;
-	for (unsigned y=0; y<sy; y++) {
-		for (unsigned x=0; x<sx; x++) {
-			*tada++ = YUV2R(datay[0],0,0);
-			*tada++ = YUV2G(datay[0],0,0);
-			*tada++ = YUV2B(datay[0],0,0);
+	for (unsigned y=0; y<sy; y++, datau-=sx/2*(y&1), datav-=sx/2*(y&1)) {
+		for (unsigned x=0; x<sx; x+=2, datay+=2, datau++, datav++) {
+			int u = 128 + (datau[0]>>8);
+			int v = 128 + (datav[0]>>8);
+			*tada++ = YUV2R(datay[0]>>7,u,v);
+			*tada++ = YUV2G(datay[0]>>7,u,v);
+			*tada++ = YUV2B(datay[0]>>7,u,v);
+			*tada++ = YUV2R(datay[1]>>7,u,v);
+			*tada++ = YUV2G(datay[1]>>7,u,v);
+			*tada++ = YUV2B(datay[1]>>7,u,v);
 		}
 	}
 	GridOutlet o((FObject *)self->daddy,0,Dim(sy,sx,3),int32_e); // why (FObject *) cast ???
@@ -84,7 +90,6 @@ static void pdpproxy_process(pdpproxy *self) {
 static void pdpproxy_free(pdpproxy *x) {pdp_imagebase_free(x);}
 static void *pdpproxy_new () {
 	pdpproxy *self = (pdpproxy *)pd_new(pdpproxy_class);
-	post("!!!!!!!!!!!!!!!!!!!! bitch=%p class=%s",self,pd_class((t_pd *)self)->c_name->s_name);
 	pdp_imagebase_init(self);
 	pdp_base_set_process_method(self, (t_pdp_method)pdpproxy_process);
 	return self;
