@@ -19,7 +19,7 @@ a-=%[
 #  cv/#Add cv/#Sub cv/#Mul cv/#Div
 #  cv/#And cv/#Or cv/#Xor
 
-b=Dir["../abstractions/**/*.pd"].map{|x|
+b=(Dir["../abstractions/*.pd"]+Dir["../abstractions/gf/*.pd"]).map{|x|
   x.gsub(/^\.\.\/abstractions\//,"").gsub(/\.pd$/,"")
 }
 b-=%[
