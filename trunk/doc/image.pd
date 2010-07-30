@@ -60,4 +60,6 @@ they get to the display. In the final conversion \, high bits are just
 ignored. This means: black is 0 \, maximum is 255 \, and values wrap
 like with [# % 256] or [# & 255]. If you want to clip them \, you may
 use [# max 0] and [# min 255] objects.;
+#X obj 157 797 doc_link indexmap 1;
 #X connect 10 1 30 0;
+#X connect 10 1 34 0;
