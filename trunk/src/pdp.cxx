@@ -60,20 +60,35 @@ GRID_INLET(0) {
 
 //------------------------------------------------------------------------
 static t_class *pdpproxy_class;
-struct pdpproxy : t_pdp_imagebase {};
-static void pdpproxy_process(pdpproxy *x) {
-    //int p0 = pdp_base_get_packet(x,0);
+struct GridFromPDP;
+struct pdpproxy : t_pdp_imagebase {GridFromPDP *daddy;};
+static void pdpproxy_process(pdpproxy *self) {
+	int p0 = pdp_base_get_packet(self,0);
+	t_pdp *head = pdp_packet_header(p0);
+	unsigned sy = head->info.image.height;
+	unsigned sx = head->info.image.width;
+	short *datay = (short *)pdp_packet_data(p0);
+	post("got frame");
+	int32 tada2[sy*sx*3]; int32 *tada = tada2;
+	for (unsigned y=0; y<sy; y++) {
+		for (unsigned x=0; x<sx; x++) {
+			*tada++ = YUV2R(datay[0],0,0);
+			*tada++ = YUV2G(datay[0],0,0);
+			*tada++ = YUV2B(datay[0],0,0);
+		}
+	}
+	GridOutlet o((FObject *)self->daddy,0,Dim(sy,sx,3),int32_e); // why (FObject *) cast ???
+	o.send(sy*sx*3,tada2);
 }
 static void pdpproxy_free(pdpproxy *x) {pdp_imagebase_free(x);}
 static void *pdpproxy_new () {
-    pdpproxy *x = (pdpproxy *)pd_new(pdpproxy_class);
-    pdp_imagebase_init(x);
-    pdp_base_set_process_method(x, (t_pdp_method)pdpproxy_process);
-    pdp_base_add_pdp_outlet(x);
-    return x;
+	pdpproxy *x = (pdpproxy *)pd_new(pdpproxy_class);
+	pdp_imagebase_init(x);
+	pdp_base_set_process_method(x, (t_pdp_method)pdpproxy_process);
+	post("????????????????");
+	return x;
 }
-
-\class GridFromPdp : FObject {
+\class GridFromPDP : FObject {
 	\attr bool scale;
 	\attr bool shift;
 	pdpproxy *bitch;
@@ -81,15 +96,14 @@ static void *pdpproxy_new () {
 	\constructor () {
 		scale=0; shift=7; colorspace=gensym("rgb");
 		bitch = (pdpproxy *)pd_new(pdpproxy_class);
-		inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
+		post("!!!!!!!!!!!!!!!!!!!!");
+		bitch->daddy = this;
+		//inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
 	}
-	\decl 0 pdp (t_symbol *s, t_float f) {
-		if (s==gensym("register_ro")) {
-		} else if (s==gensym("register_rw")) {
-		} else if (s==gensym("process")) {
-			
-		} else RAISE("unknown pdp command");
+	~GridFromPDP () {
+		//pd_free((t_pd *)bitch); // crashes
 	}
+	\decl 0 pdp (...) {typedmess((t_pd *)bitch,gensym("pdp"),argc,argv);}
 };
 \end class {install("#from_pdp",1,1);}
 //------------------------------------------------------------------------
