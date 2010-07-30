@@ -39,7 +39,6 @@ inline uint8 fastclip(int x) {return cliptab[x+384];} // be careful with this !
 #define GETYUYV(x) do {Y1=bufy[(x)+0]; U=bufy[(x)+1]; Y2=bufy[(x)+2]; V=bufy[(x)+3];} while (0)
 
 // these convert from full-range RGB to full-range YUV
-// macros for reduced-range YUV would be needed in order to really support the 'magic' colorspace everywhere.
 #define RGB2Y(R,G,B)  fastclip(    ((  76*R + 150*G +  29*B +128)>>8))
 #define RGB2U(R,G,B)  fastclip(128+((- 44*R -  85*G + 108*B +128)>>8))
 #define RGB2V(R,G,B)  fastclip(128+(( 128*R - 108*G -  21*B +128)>>8))
