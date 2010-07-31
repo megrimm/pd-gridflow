@@ -1659,10 +1659,10 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gridflow",1,1);}
 
-std::map<t_canvas *, t_gobj *> propertybang_map;
+std::map<t_canvas *, std::map<t_gobj *, int> > propertybang_map;
 \class PropertyBang : FObject {
-	\constructor () {propertybang_map[mom] = (t_gobj *)bself;}
-	~PropertyBang () {propertybang_map.erase(mom);}
+	\constructor () {propertybang_map[mom][(t_gobj *)bself]=1;}
+	~PropertyBang () {propertybang_map[mom].erase((t_gobj *)bself);}
 	void properties () {outlet_bang(outlets[0]);}
 };
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
@@ -1670,8 +1670,10 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 	typeof(propertybang_map.end()) it = propertybang_map.find((t_canvas *)z);
 	if (it == propertybang_map.end()) canvas_properties(z,owner); // fallback
 	else {
-		BFObject *bf = (BFObject *)it->second;
-		((PropertyBang *)bf->self)->properties();
+		foreach(it2,it->second) {
+			BFObject *bf = (BFObject *)it2->first;
+			((PropertyBang *)bf->self)->properties();
+		}
 	}
 }
 \end class {
