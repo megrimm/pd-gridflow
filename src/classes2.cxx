@@ -1661,8 +1661,8 @@ string string_replace (string victim, string from, string to) {
 
 std::map<t_canvas *, std::map<t_gobj *, int> > propertybang_map;
 \class PropertyBang : FObject {
-	\constructor () {propertybang_map[mom][(t_gobj *)bself]=1;}
-	~PropertyBang () {propertybang_map[mom].erase((t_gobj *)bself);}
+	\constructor () {propertybang_map[canvas_getabstop(mom)][(t_gobj *)bself]=1;}
+	~PropertyBang () {propertybang_map[canvas_getabstop(mom)].erase((t_gobj *)bself);}
 	void properties () {outlet_bang(outlets[0]);}
 };
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
