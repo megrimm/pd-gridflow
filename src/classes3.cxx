@@ -27,6 +27,7 @@ static void expect_max_one_dim (const Dim &d) {if (d.n>1) RAISE("expecting Dim[]
 #endif
 template <long n> struct SCopy {template <class T> static inline void __attribute__((always_inline)) f(T *a, T *b) {*a=*b; SCopy<n-1>::f(a+1,b+1);}};
 template <>    struct SCopy<0> {template <class T> static inline void __attribute__((always_inline)) f(T *a, T *b) {}};
+template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memcpy(r,m,sizeof(T)*n); return r;}
 
 //****************************************************************
 \class GridToTilde : FObject {
@@ -35,6 +36,7 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 	int chans; /* number of channels */
 	int start;
 	int size;
+	t_sample **sam;
 	\constructor (int chans=1) {
 		sigout = new t_outlet *[chans];
 		for (int i=0; i<chans; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
@@ -42,31 +44,35 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 		blah=new Grid(Dim(16384,chans),float32_e);
 		start=0;
 		size=0;
+		sam=0;
 	}
-	~GridToTilde () {delete[] sigout;}
-	void perform (int n, t_sample *v) {
+	~GridToTilde () {delete[] sigout; if (sam) delete[] sam;}
+	void perform (int n, t_signal **sig) {
 		float32 *data = (float32 *)*blah;
 		for (int i=0; i<n; i++) {
 			if (size) {
-				v[i]=data[start*chans];
+				for (int j=0; j<chans; j++) sam[j][i]=data[start*chans+j];
 				start=(start+1)&16383;
 				size--;
 			} else {
-				v[i]=0;
+				for (int j=0; j<chans; j++) sam[j][i]=0;
 			}
 		}
 	}
 	static t_int *perform_ (t_int *w) {
-		GridToTilde *self = (GridToTilde *)w[1];
-		int n = int(w[2]);
-		t_sample *v = (t_sample *)w[3];
+		GridToTilde *self = (GridToTilde *)w[1]; int n = int(w[2]); t_signal **v = (t_signal **)w[3];
 		self->perform(n,v);
-		return w+4;
+		return w+3;
 	}
-	static void dsp (BFObject *bself, t_signal **sp) {
+	void dsp (t_signal **sp) {
+		if (sam) delete[] sam;
+		sam = new t_sample *[chans];
+		for (int i=0; i<chans; i++) sam[i] = sp[i]->s_vec;
+		dsp_add(GridToTilde::perform_,2,this,sp[0]->s_n);
+	}
+	static void dsp_ (BFObject *bself, t_signal **sp) {
 		post("dsp bself=%p signal**=%p",bself,sp);
-		GridToTilde *self = (GridToTilde *)bself->self;
-		dsp_add(GridToTilde::perform_,3,self,sp[0]->s_n,sp[0]->s_vec);
+		((GridToTilde *)bself->self)->dsp(sp);
 	}
 	\grin 0 float32
 };
@@ -87,7 +93,7 @@ GRID_INLET(0) {
 } GRID_END
 \end class {
 	install("#to~",1,0); // actually it has outlets that are not registered with GF
-	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp,gensym("dsp"),A_CANT,0);
+	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp_,gensym("dsp"),A_CANT,0);
 }
 
 //****************************************************************
