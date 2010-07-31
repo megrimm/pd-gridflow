@@ -7,17 +7,17 @@ TODO: fill the last two columns of this table.
 Synchronisation
 
 In GridFlow you cannot send two grids in different inlets at the 
-same time. You have to use [#finished] together with (possibly) [fork] and [#store], 
+same time. You have to use [#finished] together with (possibly) [t a a] and [#store], 
 which can be cumbersome. If you don't do this, the result is undefined 
 behaviour (or crash!).
-There are two exceptions: [#store] and # allow right-inlet grids to be buffered if an operation is occuring on left inlet. This 
-should make many programs simpler.
+There are two exceptions: [#store] and # allow right-inlet grids to be buffered if an operation is occuring on left inlet.
+This should make many programs simpler.
 
 Introduction [...]
 
 GridFlow Release
 
-dir=gridflow-9.9; tag=gridflow_9_9
+dir=gridflow-9.10; tag=gridflow_9_10
 svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
 svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
 chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
@@ -26,16 +26,4 @@ mv $dir.tar.gz /home/matju/GridFlow
 cd doc/homepage; geany index.html; make install
 make binaries
 pd-announce mlist : post release
-
-Committed revision 4239.
-Warning: 'post-commit' hook failed with error output:
-/home/svn/gridflow/hooks/post-commit: line 49: /home/svn/gridflow/hooks/svn-mailer.log: Permission denied
-
-svn copy svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ https://pure-data.svn.sourceforge.net/svnroot/pure-data/trunk/externals/gridflow/
-
-cd ~/src/svn-pd/externals
-svn remove gridflow
-svn commit gridflow
-cd /tmp
-svn checkout svn+ssh://gridflow.ca/home/svn/gridflow/tags/gridflow_0_9_6
-svn import gridflow_0_9_6 https://pure-data.svn.sourceforge.net/svnroot/pure-data/trunk/externals/gridflow/
+freshmeat if anyone cares (just restored my account but didn't use it)
