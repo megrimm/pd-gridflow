@@ -14,6 +14,7 @@ foreach {k v} {
   indexmap {goes with \[#store\]}
   numtype {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
   numop {numops represent ways of combining two numbers (usually)}
+  canvas {methods added by GridFlow to pd's canvas class accessible through \[namecanvas\])}
 } {
   set k "doc_link $k 1"
   set w [string length $k]
