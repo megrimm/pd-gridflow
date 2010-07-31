@@ -106,7 +106,8 @@ op {sin*} { B * sin(A) in centidegrees } {--} {waves, rotations}
 op {cos*} { B * cos(A) in centidegrees } {--} {waves, rotations}
 op {atan} { arctan(A/B) in centidegrees } {--} {find angle to origin; (part of polar transform)} 28
 op {tanh*} { B * tanh(A) in centidegrees } {smooth clipping} {smooth clipping (of individual points); neural sigmoid, fuzzy logic} 28
-op {log*} { B * log(A) (in base e) }
+op {log*} { B * log(A) in base e }
+op {/exp} { exp(A / B) in base e }
 op {gamma} { floor(pow(a/256.0,256.0/b)*256.0) } {gamma correction}
 op {**} { A**B, that is, A raised to power B } {gamma correction}
 op {abs-} { absolute value of (A-B) }
