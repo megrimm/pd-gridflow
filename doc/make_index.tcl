@@ -27,6 +27,7 @@ foreach {k v} {
   incr y 32
 }
 
+incr y 20
 puts "#X obj 3 $y doc_section Object Classes;"; incr y 32
 set n 0
 
