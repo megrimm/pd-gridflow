@@ -54,11 +54,11 @@ const char *oserr_find(long err)
 	short movie_file;
 	P<BitPacking> bit_packing3;
 	bool gotdim;
-	long err;
+	OSErr err;
 	\constructor (t_symbol *mode, string filename) {
 		/*vdc=0;*/
 		movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0; quality=0;
-		gotdim=false;
+		gotdim=false; err=noErr;
 		filename = gf_find_file(filename);
 		FSSpec fss;
 		FSRef fsr;
@@ -70,12 +70,21 @@ const char *oserr_find(long err)
 			if (err) ERR("FSGetCatalogInfo");
 			err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
 			if (err) ERR("OpenMovieFile");
+			else post("\n#io.quicktimeapple: opened movie file %s", filename.data());
 			NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
+
+			track = GetMovieIndTrackType(movie,1,VideoMediaType,movieTrackMediaType);
+			media = GetTrackMedia(track);
+			nframes = GetMediaSampleCount(media);			
+			post("total frames: %d", nframes);
+
 			GetMovieBox(movie, &r);
-			post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
-			post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
-			nframes = GetMovieDuration(movie); /* i don't think so */
-			post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
+			post("height: %d  width: %d", r.bottom, r.right);
+
+			//post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
+			//post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
+			//post("rect=((%d..%d),(%d..%d))", r.top, r.bottom, r.left, r.right);
+
 			OffsetRect(&r, -r.left, -r.top);
 			SetMovieBox(movie, &r);
 			dim = Dim(r.bottom-r.top, r.right-r.left, 4);
@@ -144,8 +153,7 @@ const char *oserr_find(long err)
 	if (nframe==0) flags |= nextTimeEdgeOK;
 	TimeValue duration;
 	OSType mediaType = VisualMediaCharacteristic;
-	GetMovieNextInterestingTime(movie,
-		flags,1,&mediaType,time,0,&time,&duration);
+	GetMovieNextInterestingTime(movie,flags,1,&mediaType,time,0,&time,&duration);
 	if (time<0) {
 		time=0;
 		outlet_bang(bself->te_outlet);
@@ -264,7 +272,7 @@ void post_BitPacking(BitPacking *);
 		uint32 masks[4]={0x00ff0000,0x0000ff00,0x000000ff,0x00000000};
 		bit_packing3 = new BitPacking(is_le(),4,3,masks);
 	}
-	post_BitPacking(bit_packing3);
+	//post_BitPacking(bit_packing3);
 	//bit_packing4 = new BitPacking(is_le(),bytes,4,masks);
 	this->colorspace=gensym(c.data());
 	dim = Dim(dim[0],dim[1],c=="y"?1:c=="rgba"?4:3);
