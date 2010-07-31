@@ -166,7 +166,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) outlet_float(outlets[0],data[i]);
 } GRID_END
-\end class {install("#to_float",1,1); add_creator("#export"); add_creator("@export");}
+\end class {install("#to_float",1,1); add_creator("#to_f"); add_creator("#export"); add_creator("@export");}
 
 \class GridToSymbol : FObject {
 	\constructor () {}
@@ -180,7 +180,7 @@ GRID_INLET(0) {
 	c[n]=0;
 	outlet_symbol(outlets[0],gensym(c));
 } GRID_END
-\end class {install("#to_symbol",1,1); add_creator("#export_symbol"); add_creator("@export_symbol");}
+\end class {install("#to_symbol",1,1); add_creator("#to_s"); add_creator("#export_symbol"); add_creator("@export_symbol");}
 
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
@@ -201,7 +201,7 @@ GRID_INLET(0) {
 	if (in.dim.prod()==0) send_out(0,0,data);
 } GRID_END
 
-\end class {install("#to_list",1,1); add_creator("#export_list"); add_creator("@export_list");}
+\end class {install("#to_list",1,1); add_creator("#to_l"); add_creator("#export_list"); add_creator("@export_list");}
 
 /* **************************************************************** */
 \class GridPrint : FObject {
@@ -235,7 +235,29 @@ GRID_INLET(0) {
 	}
 	void puts (std::string s) {puts(s.data());}
 	void puts (std::ostringstream &s) {puts(s.str());}
-	template <class T> void make_columns (int n, T *data);
+	template <class T> void make_columns (int n, T *data) {
+		if (NumberTypeE_type_of(data)==float32_e) {columns=10; return;}
+		if (NumberTypeE_type_of(data)==float64_e) {columns=20; return;}
+		long maxv=0;
+		long minv=0;
+		for (int i=0; i<n; i++) {
+			if (maxv<data[i]) maxv=long(data[i]);
+			if (minv>data[i]) minv=long(data[i]);
+		}
+		int maxd = 1 + (maxv<0) + int(log(max(1.,fabs(maxv)))/log(base));
+		int mind = 1 + (minv<0) + int(log(max(1.,fabs(minv)))/log(base));
+		columns = max(maxd,mind);
+	}
+	std::string format (NumberTypeE nt) {
+		if (nt==float32_e) return "%6f";
+		if (nt==float64_e) return "%14f";
+		std::ostringstream r;
+		r << "%";
+		r << columns;
+		//if (nt==int64_e) r << "l";
+		r << "d"; // integer bases 2,8,16 are no longer handled here
+		return r.str();
+	}
 	template <class T> void dump(std::ostream &s, int n, T *data, char sep=' ', int trunc=-1) {
 		if (trunc<0) trunc=this->trunc;
 		std::string f = format(NumberTypeE_type_of(data));
@@ -248,7 +270,11 @@ GRID_INLET(0) {
 				for (int j=columns-ndigits-(data[i]!=x); j>=0; j--) s<<' ';
 				if (data[i]!=x) s<<'-';
 				for (int j=ndigits-1; j>=0; j--) s<<digits[((uint64)x>>(j*chunk))&(base-1)];
-			} else oprintf(s,f.data(),data[i]);
+			} else {
+				int count = snprintf(0,0,f.data(),data[i]);
+				if (columns>count) oprintf(s,"%*s",int(columns-count),"");
+				oprintf(s,f.data(),data[i]);
+			}
 			if (i<n-1) s << sep;
 			if (s.tellp()>trunc) return;
 		}
@@ -264,36 +290,11 @@ GRID_INLET(0) {
 		if (in.nt!=int32_e) s << "(" << number_type_table[in.nt].name << ")";
 		s << ": ";
 	}
-	std::string format (NumberTypeE nt) {
-		if (nt==float32_e) return "%6.6f";
-		if (nt==float64_e) return "%14.14f";
-		std::ostringstream r;
-		r << "%";
-		r << columns;
-		//if (nt==int64_e) r << "l";
-		if (base==2)  r << "b"; else
-		if (base==8)  r << "o"; else
-		if (base==10) r << "d"; else
-		if (base==16) r << "x";
-		return r.str();
-	}
 };
 \def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
 \def 0 trunc (int x) {
 	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
 	trunc = x;
-}
-template <class T> void GridPrint::make_columns (int n, T *data) {
-	long maxv=0;
-	long minv=0;
-	for (int i=0; i<n; i++) {
-		if (maxv<data[i]) maxv=long(data[i]);
-		if (minv>data[i]) minv=long(data[i]);
-	}
-	int maxd = 1 + (maxv<0) + int(log(max(1.,fabs(maxv)))/log(base));
-	int mind = 1 + (minv<0) + int(log(max(1.,fabs(minv)))/log(base));
-	//fprintf(stderr,"v=(%d,%d) d=(%d,%d)\n",minv,maxv,mind,maxd);
-	columns = max(maxd,mind);
 }
 GRID_INLET(0) {
 	in.set_chunk(0);
@@ -338,6 +339,7 @@ GRID_INLET(0) {
 			if (row>maxrows) {puts("..."); break;}
 		}
 	}
+	post("columns=%d",columns);
 	end_hook();
 } GRID_FINISH {
 	std::ostringstream head;
