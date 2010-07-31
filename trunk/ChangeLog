@@ -20,12 +20,17 @@ version 9.10 (2010.08...):
  * updated GEM support to prevent crashes due to imageStruct 93 being different
    from imageStruct 92 (or even from recent versions of imageStruct 93).
  * added classes [attr] [doc_section] [gf/propertybang] [setargs]
-   [gf/object_bbox] [#to_pdp] [#from_pdp]
+   [gf/object_bbox]
+ * added classes [#to_pdp] [#from_pdp]
+   (but unlike for GEM, gridflow as a whole doesn't require PDP)
  * added [#many-prop] (properties dialogue for [#many])
  * [args]: fix bang bug (bang was ignored since loadbang support was added)
  * added [display] and [#see] to the Put menu
  * incompatible change in [#many]: removed $4 and $5 arguments for specifying
    the size of the cells (now it is autodetected)
+ * added more missing documentation
+ * [#to~]: added multichannel support
+ * [#to~]: $1 (number of channels) now defaults to 1
 
 version 9.9 (2010.05.05):
 

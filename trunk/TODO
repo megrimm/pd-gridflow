@@ -3,52 +3,11 @@ L = much later (whenever we get to know how to do it...)
 
 9.10, unassigned:
 
-[ ] reduce [doc_h] clock again before release !
-[ ] look for potential crashes caused by overflow of fastclip in colorspace.hxx
-[ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
-[ ] document methods added to canvas_class
-[ ] gem bridge has a path problem and no error message.
-[ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
-    et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
-
-==9541== Invalid write of size 4
-==9541==    at 0x4CAF12F: GemState::GemState() (in /usr/lib/pd/extra/Gem/Gem.pd_linux)
-==9541==    by 0x62DCC73: GemDead::constructor(_symbol*) (gem.cxx.fcs:287)
-==9541==    by 0x62DCBFB: GemDead::GemDead(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:284)
-==9541==    by 0x62DACF0: GemDead_allocator(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:302)
-==9541==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
-==9541==    by 0x80C4658: pd_typedmess (m_class.c:715)
-==9541==    by 0x807A0B4: canvas_objtext (g_text.c:94)
-==9541==  Address 0x5abe0e0 is 0 bytes after a block of size 24 alloc'd
-==9541==    at 0x4025390: operator new(unsigned int) (vg_replace_malloc.c:214)
-==9541==    by 0x62DCC63: GemDead::constructor(_symbol*) (gem.cxx.fcs:287)
-==9541==    by 0x62DCBFB: GemDead::GemDead(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:284)
-==9541==    by 0x62DACF0: GemDead_allocator(BFObject*, _symbol*, int, t_atom2*) (gem.cxx.fcs:302)
-==9541==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
-==9541==    by 0x80C4658: pd_typedmess (m_class.c:715)
-==9541==    by 0x807A0B4: canvas_objtext (g_text.c:94)
-
-==9429== Invalid write of size 4
-==9429==    at 0x612277B: GridToTilde::constructor(_symbol*, int) (classes3.cxx.fcs:40)
-==9429==    by 0x61226DC: GridToTilde::GridToTilde(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:38)
-==9429==    by 0x6102A22: GridToTilde_allocator(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:86)
-==9429==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
-==9429==    by 0x80C4658: pd_typedmess (m_class.c:715)
-==9429==    by 0x807A0B4: canvas_objtext (g_text.c:94)
-==9429==  Address 0x42d70d8 is 0 bytes after a block of size 0 alloc'd
-==9429==    at 0x4025024: operator new[](unsigned int) (vg_replace_malloc.c:258)
-==9429==    by 0x6122740: GridToTilde::constructor(_symbol*, int) (classes3.cxx.fcs:39)
-==9429==    by 0x61226DC: GridToTilde::GridToTilde(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:38)
-==9429==    by 0x6102A22: GridToTilde_allocator(BFObject*, _symbol*, int, t_atom2*) (classes3.cxx.fcs:86)
-==9429==    by 0x608D66B: BFObject_new(_symbol*, int, _atom*) (gridflow.cxx.fcs:647)
-==9429==    by 0x80C4658: pd_typedmess (m_class.c:715)
-==9429==    by 0x807A0B4: canvas_objtext (g_text.c:94)
-==9429== 
-
-[ ] révision de patchs d'aide compliquées ou mal dites, comme [#grade] et autres.
+--------------------------------------------------vous-êtes-ici----------------------------------------------------------
+[ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] est-ce que "omit odd" marche vraiment, ou devrait-il s'appeler "omit even" ?
-[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (par encore rechargées)
+[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
 [ ] répondre à re:[#spigot]
 [ ] [gf/propertybang] marche pas en souspatch ?
 
@@ -150,8 +109,22 @@ L = much later (whenever we get to know how to do it...)
     [!] seedless #inner
     [!] automatic type conversion
 [!] [route] - 1[shunt] sends a message (bug)
+[ ] [args, noloadbang]
+[ ] [args, noparens]
+[ ] reduce [doc_h] clock again before release !
+[ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
+    et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
+---------------------------------------------------------CIBLE--------------------------------------------------
+later
 
-9.11 or later
+while running #to~-help.pd :
+==4308== Invalid read of size 4
+==4308==    at 0x80F1931: upsampling_perform_linear (d_resample.c:92)
+==4308==  Address 0x51fa2f0 is 0 bytes after a block of size 128 alloc'd
+==4308==    at 0x4023F5B: calloc (vg_replace_malloc.c:418)
+==4308==    by 0x80C7E6C: getbytes (m_memory.c:24)
+
+[ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
 [L] threaded v4l1, v4l2, dc1394.
 [L] regular dc1394 options
 [L] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
