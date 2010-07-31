@@ -226,6 +226,7 @@ DEF_OP(tanhmul, (float64)b * tanh((float64)a * (M_PI / 18000)), 0, false, x==0)
 DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
 DEF_OPF(pow, ipow(a,b), pow(a,b), 0, false, false) // "RN=1"
 DEF_OP(logmul, a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a))), 0, false, false) // "RA=0"
+DEF_OP(divexp, (T)exp((float64)a/(float64)b),0,false,false)
 // 0.8
 DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
 DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
@@ -362,6 +363,7 @@ Numop op_table3[] = {
 	DECL_OP_NOFOLD(gamma,  "gamma", 0),
 	DECL_OP_NOFOLD(pow,    "**", 0),
 	DECL_OP_NOFOLD(logmul, "log*", 0),
+	DECL_OP_NOFOLD(divexp, "/exp", 0),
 // 0.8
 	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
 	DECL_OP(clipsub,"clip-", 0),
