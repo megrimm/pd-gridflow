@@ -35,11 +35,11 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 	int chans; /* number of channels */
 	int start;
 	int size;
-	\constructor (int n) {
+	\constructor (int chans=1) {
 		sigout = new t_outlet *[chans];
-		for (int i=0; i<n; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
-		chans = n;
-		blah=new Grid(Dim(16384,n),float32_e);
+		for (int i=0; i<chans; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
+		this->chans = chans;
+		blah=new Grid(Dim(16384,chans),float32_e);
 		start=0;
 		size=0;
 	}
@@ -64,6 +64,7 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 		return w+4;
 	}
 	static void dsp (BFObject *bself, t_signal **sp) {
+		post("dsp bself=%p signal**=%p",bself,sp);
 		GridToTilde *self = (GridToTilde *)bself->self;
 		dsp_add(GridToTilde::perform_,3,self,sp[0]->s_n,sp[0]->s_vec);
 	}
@@ -72,19 +73,20 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
 	if (in.dim[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in.dim[1],chans);
+	post("GRID_INLET 0: *blah=%p",(T *)*blah);
 } GRID_FLOW {
 	if (size==16384) return;
-	while (n) {
+	while (n && size<16384) {
 		int i = ((start+size)&16383) * chans;
 		COPY((T *)*blah+i,data,chans);
 		data+=chans; n-=chans; size++;
-		if (size==16384) {post("[#to~] buffer full"); break;}
 	}
+	if (n>0) post("[#to~] buffer full: dropped %d samples",n/chans);
 } GRID_FINISH {
 	post("[#to~] buffer size : %d out of 16384",size);
 } GRID_END
 \end class {
-	install("#to~",1,0); // actually 1 outlet unregistered with GF
+	install("#to~",1,0); // actually it has outlets that are not registered with GF
 	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp,gensym("dsp"),A_CANT,0);
 }
 
