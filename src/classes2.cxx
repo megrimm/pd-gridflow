@@ -214,20 +214,24 @@ extern "C" void canvas_reflecttitle (t_glist *);
 \end class {install("setargs",1,1);}
 
 \class GFAttr : FObject {
-	std::map<t_symbol *,t_atom2> table;
+	std::map<t_symbol *,std::vector<t_atom2> > table;
 	\constructor () {}
+	void outlet_entry(const typeof(table.begin()) &f) {
+		outlet_anything(outlets[0],f->first,f->second.size(),f->second.data());
+	}
 	\decl 0 get (t_symbol *s=0) {
 		if (s) {
 			typeof(table.begin()) f = table.find(s);
-			if (f!=table.end()) outlet_anything(outlets[0],s,1,&f->second);
+			if (f!=table.end()) outlet_entry(f);
 		} else {
-			foreach(it,table) outlet_anything(outlets[0],it->first,1,&it->second);
+			foreach(it,table) outlet_entry(it);
 		}
 	}
 	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
-	\decl void anything (string s, t_atom2 a) {
-		t_symbol *sel = gensym(s.data()+3);
-		table[sel]=a;
+	\decl void anything (...) {
+		t_symbol *sel = (t_symbol *)argv[0]; sel = gensym(sel->s_name+3);
+		table[sel].clear();
+		for (int i=1; i<argc; i++) table[sel].push_back(argv[i]);
 	}
 };
 \end class {install("attr",1,1);}
