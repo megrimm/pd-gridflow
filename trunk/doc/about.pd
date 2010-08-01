@@ -1,5 +1,5 @@
-#N canvas 426 42 634 448 10;
-#X obj 0 415 doc_f;
+#N canvas 426 42 634 496 10;
+#X obj 0 476 doc_f;
 #X text 96 244 Development of GridFlow 0.3.0 - 0.5.0 was made possible
 in part by a grant from the HRDC (DRHC) to Artengine.;
 #X text 96 275 Development of... much of GridFlow 0.8.x and 0.9.0 was
@@ -26,3 +26,6 @@ de Diagrammologie Algorithmique.;
 #X text 96 211 http://gridflow.ca is hosted by Artengine. this also
 includes the mailing lists and the SVN.;
 #X obj 0 0 doc_demo;
+#X obj 3 415 doc_section Links;
+#X text 96 436 http://gridflow.ca/;
+#X text 96 454 irc.freenode.net /join #dataflow;
