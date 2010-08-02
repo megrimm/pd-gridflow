@@ -1,14 +1,11 @@
-#N canvas 335 118 632 538 10;
+#N canvas 335 118 632 563 10;
 #X obj 0 0 doc_h;
-#X obj 0 509 doc_f;
+#X obj 0 529 doc_f;
 #X obj 122 57 #draw_rect;
 #X obj 14 126 doc_cc 0;
 #X obj 14 148 doc_cc 1;
 #X obj 14 170 doc_cc 2;
 #X obj 3 96 doc_c 2..3;
-#X text 232 126 op;
-#X text 232 148 color;
-#X text 232 170 polygon;
 #X obj 97 126 doc_m c0 symbol;
 #X obj 97 148 doc_m c1 grid;
 #X obj 97 170 doc_m c2 grid;
@@ -31,22 +28,31 @@
 #X obj 232 415 doc_same 2;
 #X obj 97 254 doc_m i0 op;
 #X obj 232 254 doc_same 0;
-#X text 291 37 note: also supports other methods of #draw_polygon...
+#X text 205 56 note: also supports other methods of #draw_polygon...
 ;
 #X obj 97 371 doc_m i0 <any>;
-#X text 232 371 same as with [#draw_polygon];
 #X text 232 279 "outline" was designed before [#draw_polygon]'s "draw
 line" option became available. it makes a 10-gon with repeated vertices
 \, to simulate a hollow square.;
-#X connect 10 1 7 0;
-#X connect 11 1 8 0;
-#X connect 12 1 9 0;
-#X connect 19 1 23 0;
-#X connect 20 1 25 0;
-#X connect 20 1 24 0;
-#X connect 20 1 35 0;
-#X connect 21 1 28 0;
-#X connect 22 1 29 0;
-#X connect 27 1 26 0;
-#X connect 30 1 31 0;
-#X connect 33 1 34 0;
+#X obj 3 509 doc_also;
+#X obj 103 509 #draw_polygon;
+#X obj 193 509 #line_to_polygon;
+#X text 232 371 same as with [#draw_polygon];
+#X obj 310 372 doc_link #draw_polygon;
+#X text 232 126 op (default: put);
+#X text 232 170 polygon (default: 0 2 #);
+#X text 232 148 color (default: 1 #);
+#X connect 7 1 37 0;
+#X connect 8 1 39 0;
+#X connect 9 1 38 0;
+#X connect 16 1 20 0;
+#X connect 17 1 22 0;
+#X connect 17 1 21 0;
+#X connect 17 1 31 0;
+#X connect 18 1 25 0;
+#X connect 19 1 26 0;
+#X connect 24 1 23 0;
+#X connect 27 1 28 0;
+#X connect 30 1 35 0;
+#X connect 32 1 33 0;
+#X connect 32 1 34 0;
