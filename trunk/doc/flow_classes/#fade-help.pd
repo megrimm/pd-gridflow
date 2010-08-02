@@ -1,57 +1,81 @@
-#N canvas 676 0 632 596 10;
-#X obj 253 236 #out window;
-#X obj 131 111 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#N canvas 648 0 632 679 10;
+#X obj 195 217 #out window;
+#X obj 195 78 bng 15 250 50 0 empty empty empty 0 -6 0 8 -204786 -1
 -1;
-#X obj 131 150 #in;
-#X floatatom 295 218 5 0 0 0 - - -;
-#X obj 131 89 metro 500;
-#X obj 131 70 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+#X obj 228 160 #in;
+#X floatatom 243 199 5 0 0 0 - - -;
+#X obj 195 59 metro 500;
+#X obj 195 42 tgl 15 0 empty empty empty 0 -6 0 8 -204786 -1 -1 0 1
 ;
-#X obj 253 113 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 253 152 #in;
-#X obj 253 91 metro 500;
-#X obj 253 72 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
-;
-#X obj 253 217 #fade;
 #X obj 0 0 doc_h;
-#X obj 3 390 doc_i 2;
-#X obj 3 487 doc_o 1;
-#X obj 14 517 doc_oo 0;
-#X obj 14 420 doc_ii 0;
-#X obj 14 455 doc_ii 1;
+#X obj 3 707 doc_i 2;
+#X obj 3 791 doc_o 1;
+#X obj 14 821 doc_oo 0;
+#X obj 14 737 doc_ii 0;
+#X obj 14 759 doc_ii 1;
 #X obj 3 275 doc_c 1;
-#X obj 97 420 doc_m i0 grid;
-#X obj 97 455 doc_m i1 grid;
-#X text 232 332 indicates the amount of one image being blended with
-the other. (ex: Integer 5 will take 20% (one fifth) of the first image
-and blend it with 80% of the next image.;
-#X obj 3 547 doc_also;
-#X obj 103 547 lop~;
-#X obj 139 547 rzero~;
-#X obj 14 332 doc_cc 0;
-#X obj 97 332 doc_m c0 grid;
-#X obj 232 455 doc_same 0;
-#X obj 97 517 doc_m o0 grid;
-#X obj 0 567 doc_f;
-#X text 232 420 grids that are blended into each other over time.;
-#X msg 131 131 load b001.jpg;
-#X msg 253 133 load r001.jpg;
+#X obj 97 737 doc_m i0 grid;
+#X obj 97 759 doc_m i1 grid;
+#X obj 3 853 doc_also;
+#X obj 103 853 lop~;
+#X obj 14 305 doc_cc 0;
+#X obj 97 305 doc_m c0 grid;
+#X obj 232 759 doc_same 0;
+#X obj 97 821 doc_m o0 grid;
+#X obj 0 873 doc_f;
+#X text 232 737 grids that are blended into each other over time.;
+#X msg 228 97 load b001.jpg;
+#X msg 234 116 load r001.jpg;
 #X text 11 29 temporal low-pass filter;
+#X text 232 305 indicates the amount of one image being blended with
+the other. this is one divided by the fraction of the input that will
+be blended with the previous output.;
+#X text 232 353 for example \, an argument of 5 will output the sum
+of 1/5th of the input and 4/5ths of the previous output.;
+#X text 232 388 for values that are not powers of two \, the computation
+may be less precise.;
+#X text 232 423 because this uses feedback \, you can compute the influence
+of a certain input on a certain later output using a recursive reasoning
+: for example \, for a [#fade 4] \, 3/4 of the previous output was
+made from 3/4 of its own previous output \, which was in turn made
+from 1/4 of the input of that time : thus the next-to-next-to-last
+input counts for (1/4)*(3/4)*(3/4) = 9/64 of the current output.;
+#X obj 195 179 #store;
+#X obj 195 198 #fade 4;
+#X obj 228 78 loadbang;
+#X text 337 114 change picture here;
+#X msg 240 135 load g001.jpg;
+#X obj 329 91 doc_accolade;
+#X obj 139 853 rpole~;
+#X text 232 523 [#fade 4] is similar to [*~ 0.25]-[rpole~ 0.75] : that
+is \, you do one divided by the #fade argument to make the *~ argument
+\, and then 1 minus the *~ argument to make the rpole~ argument. This
+in turn is equivalent to a certain [lop~] but that's depending on the
+sampling rate.;
+#X text 232 597 you can increase precision of [#fade] by using a certain
+[# <<] and the opposite [# >>] \, around [#fade] \, to momentarily
+widen the range of possible values used by [#fade]. This will lower
+the amount of residue that may stay in the output for too long or not
+long enough (compared to the theory of the fractions because the fractions
+assume no rounding).;
 #X connect 1 0 30 0;
-#X connect 2 0 10 0;
-#X connect 3 0 10 1;
+#X connect 2 0 30 1;
+#X connect 3 0 31 1;
 #X connect 4 0 1 0;
 #X connect 5 0 4 0;
-#X connect 6 0 31 0;
-#X connect 7 0 10 0;
-#X connect 8 0 6 0;
-#X connect 9 0 8 0;
-#X connect 10 0 0 0;
+#X connect 13 1 22 0;
+#X connect 14 1 19 0;
+#X connect 15 1 16 0;
+#X connect 15 1 36 0;
+#X connect 18 1 26 0;
+#X connect 18 1 27 0;
+#X connect 18 1 28 0;
 #X connect 18 1 29 0;
-#X connect 19 1 26 0;
-#X connect 21 1 22 0;
-#X connect 21 1 23 0;
-#X connect 25 1 20 0;
-#X connect 30 0 2 0;
-#X connect 31 0 7 0;
+#X connect 18 1 37 0;
+#X connect 18 1 38 0;
+#X connect 23 0 2 0;
+#X connect 24 0 2 0;
+#X connect 30 0 31 0;
+#X connect 31 0 0 0;
+#X connect 32 0 23 0;
+#X connect 34 0 2 0;
