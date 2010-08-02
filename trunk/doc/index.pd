@@ -75,7 +75,7 @@
 #X obj 102 1275 #finished;
 #X text 180 1275 bang when grid transmission has ended;
 #X obj 114 1307 #fold +;
-#X text 180 1307 compute the sum of each row \,  product of each row, and other similar operations;
+#X text 180 1307 compute the sum of each row \,  product of each row \,  and other similar operations;
 #X obj 96 1339 #for 0 4 1;
 #X text 180 1339 make a grid from all numbers or coordinates in a certain range;
 #X obj 102 1371 #from_pdp;
@@ -93,11 +93,11 @@
 #X obj 102 1563 #hueshift;
 #X text 180 1563 apply hue shift by rotating the color wheel;
 #X obj 114 1595 #import;
-#X text 180 1595 convert float \,  list, or symbol ASCII codes, to a grid;
+#X text 180 1595 convert float \,  list \,  or symbol ASCII codes \,  to a grid;
 #X obj 138 1627 #in;
 #X text 180 1627 open file or device for reading or download;
 #X obj 120 1659 #inner;
-#X text 180 1659 scalar ("dot") product \,  matrix product, tensor contraction, image channel remapping, etc.;
+#X text 180 1659 scalar ("dot") product \,  matrix product \,  tensor contraction \,  image channel remapping \,  etc.;
 #X obj 114 1691 doc_link #in~;
 #X text 180 1691 open file or device for reading or download \,  with sound (experimental);
 #X obj 84 1723 doc_link #io.aalib;
@@ -123,7 +123,7 @@
 #X obj 48 2043 doc_link #io.quicktimehw;
 #X text 180 2043 read a .mov or .avi video file (Linux);
 #X obj 96 2075 doc_link #io.sdl;
-#X text 180 2075 open a SDL window (Windows \, Linux,OSX);
+#X text 180 2075 open a SDL window (Windows \, Linux \, OSX);
 #X obj 66 2107 doc_link #io.videodev;
 #X text 180 2107 open a V4L1 device (Linux-only interface for video cameras and video digitisers);
 #X obj 96 2139 doc_link #io.x11;
@@ -137,7 +137,7 @@
 #X obj 60 2267 #line_to_polygon;
 #X text 180 2267 convert line (as point pair) to polygon (rotated rectangle);
 #X obj 96 2299 #lop_space;
-#X text 180 2299 fade in spatially (up \,  down, left, right, etc) by IIR filtering;
+#X text 180 2299 fade in spatially (up \,  down \,  left \,  right \,  etc) by IIR filtering;
 #X obj 90 2331 #make_arrow;
 #X text 180 2331 make an arrow "polygon" from 2 points (for use with line mode of [#draw_polygon]);
 #X obj 90 2363 #make_cross;
@@ -153,7 +153,7 @@
 #X obj 54 2560 #motion_detection;
 #X text 180 2560 frame difference with some options;
 #X obj 120 2592 #mouse;
-#X text 180 2592 converts mouse events to reports of clicks \,  drags, unclicks, motions, and separate buttons and wheel;
+#X text 180 2592 converts mouse events to reports of clicks \,  drags \,  unclicks \,  motions \,  and separate buttons and wheel;
 #X obj 60 2624 #noise_gate_yuvs;
 #X text 180 2624 replaces dark pixels by black pixels in signed YUV images;
 #X obj 132 2656 #out;
@@ -225,7 +225,7 @@
 #X obj 114 3752 #spread;
 #X text 180 3752 add noise to each vector (point or pixel);
 #X obj 120 3784 #store;
-#X text 180 3784 store image in RAM \,  in-place picture-in-picture, and make lookups in various ways;
+#X text 180 3784 store image in RAM \,  in-place picture-in-picture \,  and make lookups in various ways;
 #X obj 126 3816 #swap;
 #X text 180 3816 like [swap] for grids;
 #X obj 138 3848 #t;
@@ -377,7 +377,7 @@
 #X obj 60 6241 gf/canvas_setpos;
 #X text 180 6241 set the position of a canvas in its parent canvas;
 #X obj 78 6273 gf/canvas_xid;
-#X text 180 6273 tell the x11 id of a canvas \,  its window, and tell the tk id of a canvas;
+#X text 180 6273 tell the x11 id of a canvas \,  its window \,  and tell the tk id of a canvas;
 #X obj 108 6305 gf/error;
 #X text 180 6305 emit error message from the perspective of the current abstraction instance in its parent patch;
 #X obj 84 6337 gf/find_file;
@@ -389,7 +389,7 @@
 #X obj 72 6433 gf/io_generate;
 #X text 180 6433 for internal use by #in and #out;
 #X obj 120 6465 gf/lol;
-#X text 180 6465 make wires dashed or invisible \,  reposition and measure height of comments, etc.;
+#X text 180 6465 make wires dashed or invisible \,  reposition and measure height of comments \,  etc.;
 #X obj 84 6497 gf/mouse_spy;
 #X text 180 6497 tell mouse/key events of a single patch window in [#out window] format;
 #X obj 84 6529 doc_link gf/nbxhsl;
