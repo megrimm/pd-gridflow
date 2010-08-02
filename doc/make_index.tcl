@@ -68,9 +68,9 @@ foreach k [lsort [array names ::say *]] {
 	if {[regexp ^doc_link $k]} {incr w -36}
 
 	puts "#X $sel [expr 160-$w] $y $k;"
-	regsub "," $v " \\, " v
-	regsub ";" $v " \\; " v
-	regsub "\\$" $v "\\$" v
+	regsub -all "," $v " \\, " v
+	regsub -all ";" $v " \\; " v
+	regsub -all "\\$" $v "\\$" v
 	puts "#X text 180 $y $v;"
 	incr h 16 ;# interligne
 	if {$h > 32} {incr y $h} {incr y 32}
