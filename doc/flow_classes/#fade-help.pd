@@ -1,4 +1,4 @@
-#N canvas 648 0 632 679 10;
+#N canvas 596 0 632 679 10;
 #X obj 195 217 #out window;
 #X obj 195 78 bng 15 250 50 0 empty empty empty 0 -6 0 8 -204786 -1
 -1;
@@ -8,33 +8,30 @@
 #X obj 195 42 tgl 15 0 empty empty empty 0 -6 0 8 -204786 -1 -1 0 1
 ;
 #X obj 0 0 doc_h;
-#X obj 3 707 doc_i 2;
-#X obj 3 791 doc_o 1;
-#X obj 14 821 doc_oo 0;
-#X obj 14 737 doc_ii 0;
-#X obj 14 759 doc_ii 1;
+#X obj 3 781 doc_i 2;
+#X obj 3 865 doc_o 1;
+#X obj 14 895 doc_oo 0;
+#X obj 14 811 doc_ii 0;
+#X obj 14 833 doc_ii 1;
 #X obj 3 275 doc_c 1;
-#X obj 97 737 doc_m i0 grid;
-#X obj 97 759 doc_m i1 grid;
-#X obj 3 853 doc_also;
-#X obj 103 853 lop~;
+#X obj 97 811 doc_m i0 grid;
+#X obj 97 833 doc_m i1 grid;
+#X obj 3 927 doc_also;
+#X obj 103 927 lop~;
 #X obj 14 305 doc_cc 0;
 #X obj 97 305 doc_m c0 grid;
-#X obj 232 759 doc_same 0;
-#X obj 97 821 doc_m o0 grid;
-#X obj 0 873 doc_f;
-#X text 232 737 grids that are blended into each other over time.;
+#X obj 232 833 doc_same 0;
+#X obj 97 895 doc_m o0 grid;
+#X obj 0 947 doc_f;
 #X msg 228 97 load b001.jpg;
 #X msg 234 116 load r001.jpg;
 #X text 11 29 temporal low-pass filter;
 #X text 232 305 indicates the amount of one image being blended with
 the other. this is one divided by the fraction of the input that will
 be blended with the previous output.;
-#X text 232 353 for example \, an argument of 5 will output the sum
-of 1/5th of the input and 4/5ths of the previous output.;
-#X text 232 388 for values that are not powers of two \, the computation
+#X text 232 414 for values that are not powers of two \, the computation
 may be less precise.;
-#X text 232 423 because this uses feedback \, you can compute the influence
+#X text 232 449 because this uses feedback \, you can compute the influence
 of a certain input on a certain later output using a recursive reasoning
 : for example \, for a [#fade 4] \, 3/4 of the previous output was
 made from 3/4 of its own previous output \, which was in turn made
@@ -46,36 +43,72 @@ input counts for (1/4)*(3/4)*(3/4) = 9/64 of the current output.;
 #X text 337 114 change picture here;
 #X msg 240 135 load g001.jpg;
 #X obj 329 91 doc_accolade;
-#X obj 139 853 rpole~;
-#X text 232 523 [#fade 4] is similar to [*~ 0.25]-[rpole~ 0.75] : that
+#X obj 139 927 rpole~;
+#X text 232 549 [#fade 4] is similar to [*~ 0.25]-[rpole~ 0.75] : that
 is \, you do one divided by the #fade argument to make the *~ argument
 \, and then 1 minus the *~ argument to make the rpole~ argument. This
 in turn is equivalent to a certain [lop~] but that's depending on the
 sampling rate.;
-#X text 232 597 you can increase precision of [#fade] by using a certain
+#X text 232 623 you can increase precision of [#fade] by using a certain
 [# <<] and the opposite [# >>] \, around [#fade] \, to momentarily
 widen the range of possible values used by [#fade]. This will lower
 the amount of residue that may stay in the output for too long or not
 long enough (compared to the theory of the fractions because the fractions
 assume no rounding).;
-#X connect 1 0 30 0;
-#X connect 2 0 30 1;
-#X connect 3 0 31 1;
+#X obj 16 417 f;
+#X obj 40 417 + 1;
+#X obj 16 381 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X floatatom 16 455 5 0 0 0 - - -;
+#X floatatom 180 408 5 0 0 0 - - -;
+#X obj 16 398 metro 50;
+#X obj 16 492 # sq-;
+#X obj 16 549 display;
+#X obj 16 436 expr cos($f1*2*3.141593/$f2)*1000;
+#X obj 16 530 # sqrt;
+#X obj 16 511 #fade 64;
+#X obj 16 473 #fade 8;
+#X text 232 723 argument \$1 has a cutoff period of pi*\$1 frames \,
+for values of \$1 that are neither too big nor too small (guess what
+those are...).;
+#X text 232 811 grid that gradually change the output.;
+#X text 232 895 output being gradually changed by the input.;
+#X text 232 353 for example \, an argument of 5 will output the sum
+of 1/5th of the input and 4/5ths of the previous output. thus \, the
+rate of change of the output is 1/5th of the difference between the
+(previous) output and the input.;
+#X connect 1 0 28 0;
+#X connect 2 0 28 1;
+#X connect 3 0 29 1;
 #X connect 4 0 1 0;
 #X connect 5 0 4 0;
-#X connect 13 1 22 0;
+#X connect 13 1 50 0;
 #X connect 14 1 19 0;
 #X connect 15 1 16 0;
-#X connect 15 1 36 0;
+#X connect 15 1 34 0;
+#X connect 18 1 25 0;
+#X connect 18 1 52 0;
 #X connect 18 1 26 0;
 #X connect 18 1 27 0;
-#X connect 18 1 28 0;
-#X connect 18 1 29 0;
-#X connect 18 1 37 0;
-#X connect 18 1 38 0;
+#X connect 18 1 35 0;
+#X connect 18 1 36 0;
+#X connect 18 1 49 0;
+#X connect 20 1 51 0;
+#X connect 22 0 2 0;
 #X connect 23 0 2 0;
-#X connect 24 0 2 0;
-#X connect 30 0 31 0;
-#X connect 31 0 0 0;
-#X connect 32 0 23 0;
-#X connect 34 0 2 0;
+#X connect 28 0 29 0;
+#X connect 29 0 0 0;
+#X connect 30 0 22 0;
+#X connect 32 0 2 0;
+#X connect 37 0 38 0;
+#X connect 37 0 45 0;
+#X connect 38 0 37 1;
+#X connect 39 0 42 0;
+#X connect 40 0 48 0;
+#X connect 41 0 45 1;
+#X connect 42 0 37 0;
+#X connect 43 0 47 0;
+#X connect 45 0 40 0;
+#X connect 46 0 44 0;
+#X connect 47 0 46 0;
+#X connect 48 0 43 0;
