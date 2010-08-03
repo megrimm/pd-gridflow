@@ -18,7 +18,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "gridflow.hxx.fcs"
-static void expect_max_one_dim (const Dim &d) {if (d.n>1) RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
+static void expect_max_one_dim (const Dim &d) {if (d.n>1)  RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
+static void     expect_one_dim (const Dim &d) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
@@ -903,7 +904,7 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
 		draw=DRAW_FILL;
 		omit=OMIT_NONE;
-		this->color.constrain(expect_max_one_dim);
+		this->color.constrain(expect_one_dim);
 		this->polygon.constrain(expect_polygon);
 		this->op = op;
 		this->color   = color   ? color   : new Grid(Dim(1)  ,int32_e,true);
@@ -981,14 +982,14 @@ GRID_INLET(0) {
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
 				l.ox = l.x;
-				l.x = l.x1 + (((y-l.y1)*l.m)>>16);
+				l.x = l.x1 + (((y-l.y1)*l.m + 0x8000)>>16);
 			}
 			if (draw!=DRAW_POINT) qsort(ld+lines_start,lines_stop-lines_start,sizeof(Line),order_by_column);
 			if (draw==DRAW_FILL) {
 				for (int i=lines_start; i<lines_stop-1; i+=2) {
 					int xs = max(ld[i].x,(int32)0);
 					int xe = min(ld[i+1].x,xl);
-					if (xs>=xe) continue; /* !@#$ WHAT? */
+					if (xs>=xe) continue;
 					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
 					op->zip((xe-xs)*cn,data2+cn*xs,cd);
 				}
@@ -1353,7 +1354,7 @@ static Numop *op_os8;
 	\grin 0
 	\grin 1
 	PtrGrid r2;
-	\constructor (int which_dim, Grid *r) {this->which_dim = which_dim; this->r=r; reverse=false;}
+	\constructor (int which_dim=0, Grid *r=0) {this->which_dim = which_dim; this->r=r; reverse=false;}
 };
 template <class T> inline T       shr8r (T       a) {return (a+128)>>8;}
 template <>        inline float32 shr8r (float32 a) {return a/256.0;}
@@ -1362,6 +1363,7 @@ GRID_INLET(0) {
 	if (in.dim.n<2) RAISE("at least 2 dimensions");
 	int w = which_dim; if (w<0) w+=in.dim.n;
 	if (w<0 || w>=in.dim.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in.dim.n);
+	if (!r) {t_atom a[1]; SETFLOAT(a,256); r=new Grid(1,a);}
 	SAME_TYPE(in,r);
 	out = new GridOutlet(this,0,in.dim,in.nt);
 	in.set_chunk(w);
