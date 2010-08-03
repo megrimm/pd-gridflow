@@ -1,4 +1,4 @@
-#N canvas 680 22 632 504 10;
+#N canvas 648 22 632 527 10;
 #X text 29 34 Like [spigot] \, but turns itself off after each message
 \, so you have to turn it on again to making it pass another message.
 ;
@@ -13,7 +13,6 @@
 #X text 232 441 Outputs incoming message.;
 #X text 232 366 Resets the object so that the next mesage will be passed
 through.;
-#X obj 127 159 gf.oneshot;
 #X obj 3 301 doc_i 2;
 #X obj 0 0 doc_h;
 #X obj 14 366 doc_ii 1;
@@ -25,18 +24,20 @@ through.;
 #X text 232 269 Whether to start open (default: 1);
 #X text 232 331 Incoming messages can be Grids \, Symbols \, Integers
 \, Lists \, etc.;
-#X obj 0 473 doc_f;
+#X obj 0 493 doc_f;
 #X obj 97 269 doc_m c0 bool;
 #X obj 97 366 doc_m i1 bang;
 #X obj 97 441 doc_m o0 <any>;
 #X obj 97 331 doc_m i0 <any>;
-#X connect 1 0 10 1;
-#X connect 2 0 10 1;
-#X connect 3 0 10 0;
-#X connect 5 0 10 0;
-#X connect 10 0 4 0;
-#X connect 10 0 6 0;
-#X connect 22 1 19 0;
-#X connect 23 1 9 0;
-#X connect 24 1 8 0;
-#X connect 25 1 20 0;
+#X obj 3 473 doc_also;
+#X obj 127 159 gf/oneshot;
+#X connect 1 0 26 1;
+#X connect 2 0 26 1;
+#X connect 3 0 26 0;
+#X connect 5 0 26 0;
+#X connect 21 1 18 0;
+#X connect 22 1 9 0;
+#X connect 23 1 8 0;
+#X connect 24 1 19 0;
+#X connect 26 0 4 0;
+#X connect 26 0 6 0;
