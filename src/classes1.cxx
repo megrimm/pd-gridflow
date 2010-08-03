@@ -339,7 +339,6 @@ GRID_INLET(0) {
 			if (row>maxrows) {puts("..."); break;}
 		}
 	}
-	post("columns=%d",columns);
 	end_hook();
 } GRID_FINISH {
 	std::ostringstream head;
