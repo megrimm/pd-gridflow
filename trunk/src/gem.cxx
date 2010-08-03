@@ -43,15 +43,11 @@ struct imageStruct {
 #endif
 struct pixBlock {imageStruct image; int newimage, newfilm; pixBlock(){newimage=newfilm=0;}};
 #ifdef IMAGESTRUCT93 // except Gem93 older than 25 mai 2010
-struct GemState {
-  bool dirty, inDisplayList, lighting, smooth; int texture; pixBlock *image;
-  GemState(); virtual ~GemState(); void reset(); char trabant[666];
-};
+struct GemState {bool dirty,inDisplayList,lighting,smooth; int texture; pixBlock *image;
+                 GemState(); virtual ~GemState(); void reset(); char trabant[666];};
 #else // older
-struct GemState {
-  int dirty, inDisplayList, lighting, smooth, texture; pixBlock *image;
-  GemState(); ~GemState(); void reset(); char trabant[666];
-};
+struct GemState {int  dirty,inDisplayList,lighting,smooth; int texture; pixBlock *image;
+                 GemState();         ~GemState(); void reset(); char trabant[666];};
 #endif
 
 #ifdef __WIN32__
@@ -89,31 +85,52 @@ struct TexCoord {
 #define GEM_RGBA GL_RGBA
 #endif
 
+class gemhead;
+#define GEMCACHE_MAGIC 0x1234567
+struct GemCache {
+    	GemCache(gemhead *parent);
+        ~GemCache();
+	void reset(gemhead *parent);
+    	int dirty, resendImage, vertexDirty;
+    	gemhead *m_parent;
+	int m_magic;
+};
+#ifdef __WIN32__
+    GemCache :: GemCache(gemhead *parent)
+        : dirty(1), resendImage(0), vertexDirty(0),
+        m_parent(parent), m_magic(GEMCACHE_MAGIC)
+       {}
+#endif
+
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
 \class GridToPix : FObject {
 	pixBlock *pb;
 	\attr bool yflip;
-	\decl 0 gem_state (...);
-	void render(void *state) {((GemState *)state)->image = pb;}
+	void render(GemCache *cache, GemState *state) {
+		post("pb.newimage=%d cache=%p cache.resendImage=%d",pb->newimage,cache,cache->resendImage);
+		state->image = pb;
+		pb->newimage = 1;
+		//pb->newfilm = 1;
+		//cache->resendImage...?
+	}
 	void startRendering () {pb->newimage = 1;}
 	\constructor () {
 		yflip = false;
 		pb = new pixBlock();
-		imageStruct &im = pb->image = imageStruct();
+		imageStruct &im = pb->image;
 		im.ysize = 1; im.xsize = 1; im.csize = 4; im.format = GEM_RGBA; im.type = GL_UNSIGNED_BYTE;
 		im.allocate(); *(int*)im.data = 0x000000ff;
 	}
 	~GridToPix () {}
 	\grin 1 int
+	\decl 0 gem_state (...) {
+		//post("gem_state $1=%p $2=%p",(void *)argv[0],(void *)argv[1]);
+		if (argc==2) render((GemCache *)(void *)argv[0],(GemState *)(void *)argv[1]); else startRendering();
+		outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
+	}
 };
-\def 0 gem_state (...) {
-	if (argc==2) {
-		render((GemState *)(void *)argv[1]);
-	} else startRendering();
-	outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
-}
 
 template <class T, class S>
 static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) out[i]=(T)in[i];}
@@ -171,7 +188,6 @@ GRID_INLET(1) {
 		}
 	}
 } GRID_FINISH {
-	pb->newimage = 1;
 } GRID_END
 \end class {install("#to_pix",2,1); add_creator("#export_pix");}
 
@@ -262,22 +278,6 @@ GRID_INLET(1) {
 
 #ifdef __WIN32__
 GemState::GemState() {}
-#endif
-class gemhead;
-#define GEMCACHE_MAGIC 0x1234567
-struct GemCache {
-    	GemCache(gemhead *parent);
-        ~GemCache();
-	void reset(gemhead *parent);
-    	int dirty, resendImage, vertexDirty;
-    	gemhead *m_parent;
-	int m_magic;
-};
-#ifdef __WIN32__
-    GemCache :: GemCache(gemhead *parent)
-        : dirty(1), resendImage(0), vertexDirty(0),
-        m_parent(parent), m_magic(GEMCACHE_MAGIC)
-       {}
 #endif
 
 \class GemDead : FObject {
