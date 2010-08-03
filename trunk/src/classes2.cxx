@@ -214,9 +214,11 @@ extern "C" void canvas_reflecttitle (t_glist *);
 \end class {install("setargs",1,1);}
 
 \class GFAttr : FObject {
-	std::map<t_symbol *,std::vector<t_atom2> > table;
+	typedef std::map<t_symbol *,std::vector<t_atom2> > table_t;
+	table_t table;
 	\constructor () {}
-	void outlet_entry(const typeof(table.begin()) &f) {
+	//void outlet_entry(const typeof(table.begin()) &f) // can't use this in gcc<4.4
+	void outlet_entry(const table_t::iterator &f) {
 		outlet_anything(outlets[0],f->first,f->second.size(),f->second.data());
 	}
 	\decl 0 get (t_symbol *s=0) {
@@ -800,6 +802,7 @@ static t_pd *seesend;
 GRID_INLET(0) {
 	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in.dim[2]<1 || in.dim[2]>4) RAISE("expecting 1 to 4 channels: y, ya, rgb, rgba (got %d)",in.dim[2]);
+	if (!in.dim.prod()) RAISE("zero-sized image not supported");
 	in.set_chunk(0);
 	buf=new Grid(in.dim,NumberTypeE_type_of(data));
 } GRID_FLOW {
