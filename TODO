@@ -3,21 +3,19 @@ L = much later (whenever we get to know how to do it...)
 
 9.10, unassigned:
 
---------------------------------------------------vous-êtes-ici----------------------------------------------------------
+[ ] FIX THE TEXT OF #FADE-HELP.PD NOW !
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
-[ ] est-ce que "omit odd" marche vraiment, ou devrait-il s'appeler "omit even" ?
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
 [ ] répondre à re:[#spigot]
-[ ] [gf/propertybang] marche pas en souspatch ?
-
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
 [ ] heat.pd still sucks (?)
 [!] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
 [ ] accelerate [#outer ignore (0)]
-[ ] [#print] float32 can use up crazy number of digits
+[ ] [#print] maxrows doesn't work
 [ ] [lb]
+[ ] invalid command name ".x8f03820.c" with hidden [display]
 [ ] <errordeveloper>
 	/usr/include/opencv/cxtypes.h:161: error: conflicting declaration ‘typedef int64_t int64’
 	src/gridflow.hxx.fcs:87: error: ‘int64’ has a previous declaration as ‘typedef long long int int64’
@@ -28,7 +26,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] win32 x11
 [ ] alias numops so that it's more pd-like
 [ ] [#pack, cast] ?
-[ ] [# /exp] as inverse of [# log*]
 [ ] make a rounding [# *>>8] ?
 [ ] [#fft] sign crash
 [ ] [#import] bug (see atelier)
@@ -37,7 +34,7 @@ L = much later (whenever we get to know how to do it...)
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
     because if you assume an operation works, you're not really _using_ throw/catch.
 [ ] win32 color_correction.pd crash
-[ ] [#many] spacing $1 $2, margin $1 $2 $3 $4, ...
+[ ] [#many] margins $1 $2 $3 $4, ...
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] [#import (...) f] converts floats to int to float (wtf)
@@ -46,21 +43,19 @@ L = much later (whenever we get to know how to do it...)
 [ ] merge threshold.pd, simple_mask.pd, color_detect.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
-[ ] [doc_cc] [doc_ii] [doc_oo]'s $1 doesn't really accept symbol now.
-[ ] about.pd: add link to website, mention irc, etc.
-[ ] go back in all help files and fill in whatever is missing
+[ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
+[ ] go back in all help files and fill in whatever is still missing
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
-[ ] bug in line rendering causes one pixel to be off by one pixel at the end of many linesegments. ([#draw_polygon] with hpgl)
+[ ] [#draw_polygon]: ignore 'omit' when it shouldn't apply ?
+[ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
-[ ] quicktime PNG encoding: does it work?
+--------------------------------------------------vous-êtes-ici----------------------------------------------------------
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] get rid of doc/stuff.txt ?
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] what to do with [#motion_detection] ?
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
-[ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
-[ ] bugs/bugfixes from roman, claude, federico, etc
 [ ] videodev,quicktime,etc: height,width vs size
 [ ] even after all the latest bugfixes, i still get invalid command name ".x8685500.c" with [display]
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
@@ -78,9 +73,8 @@ L = much later (whenever we get to know how to do it...)
 		but wouldn't have [doc_m] as a subnode.
 [ ] [print], [gf.print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
-[ ] support "get" in abstractions... automatically, through [args] ?
+[ ] support "get" in abstractions... automatically, through [args] ? or [attr] ?
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
-[ ] reimplement negative indices in [listelement] and [listsublist]
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
 [ ] [#fold] is slowwww
@@ -114,6 +108,9 @@ L = much later (whenever we get to know how to do it...)
 [ ] reduce [doc_h] clock again before release !
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
     et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
+[ ] movie api : merge "height" & "width" attributes
+[ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
+[ ] multi-valued attributes in source_filter
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -134,6 +131,7 @@ while running #to~-help.pd :
 [L] [#camera] [#cast] setting ? or not ?
 [L] fix SDL modifiers
 [ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
+[ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 
 // was for 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
@@ -146,14 +144,11 @@ OpenCV
 [ ] cvApproxPoly pour un seul poly à la fois
 [ ] cvMeanShift, cvCamShift (?)
        cvCamShift s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
-       Celui-ci peut être représenté comme une grid de 5 éléments pour faire plus facile
-       (contrairement à cvHistogram, qui contient une grid ND mais a besoin de quelques fields de plus que ça).
+       Celui-ci peut être représenté comme une grille de 5 éléments pour faire plus facile
+       (contrairement à cvHistogram, qui contient une grille ND mais a besoin de quelques champs de plus que ça).
 [ ] cvCalcBackProject (?)
 [ ] cvCalcHist, cvCreateHist.
-[ ] SnakeImage (what is the concept of 'energy', squared luminosity?)
-        J'aurais supposé que oui, mais c'est juste trois mesures reliées à trois forces qui "shapent" la courbe:
-	espacement égal des points, réduction des angles, et correspondance avec l'image même (qui doit normalement
-	être un edge-detect d'une image plus vieille).
+[ ] SnakeImage
 [ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
 Common Video Framework
@@ -353,3 +348,16 @@ game_of_life.pd 397             507
 sand.pd         27              30
 cellular_1d.pd  475             730
 wave_1d.pd      107             173
+
+How to release GridFlow :
+
+dir=gridflow-9.10; tag=gridflow_9_10
+svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
+svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
+chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
+scp $dir.tar.gz gridflow@artengine.ca:public_html/download
+mv $dir.tar.gz /home/matju/GridFlow
+cd doc/homepage; geany index.html; make install
+make binaries
+pd-announce mlist : post release
+freshmeat if anyone cares (just restored my account but didn't use it)
