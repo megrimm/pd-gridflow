@@ -209,7 +209,7 @@ typedef nodeid_t NID;
 };
 
 \def 0 get (t_symbol *s=0) {
-	FObject::_0_get(argc,argv,s);
+	FObject::_0_get(s);
 	t_atom a[2];
 	if (!s) {
 		SETFLOAT(a+0,camera.frame_height);
