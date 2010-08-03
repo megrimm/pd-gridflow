@@ -1,12 +1,9 @@
-#N canvas 577 136 632 451 10;
+#N canvas 577 136 632 476 10;
 #X obj 0 0 doc_h;
-#X obj 0 422 doc_f;
-#X obj 31 105 gf.error my name is %s;
+#X obj 0 442 doc_f;
 #X msg 42 43 symbol mud;
 #X msg 51 63 symbol slim_shady;
 #X msg 55 84 symbol who;
-#X obj 199 105 gf.error got %d channels expecting 3 (rgb) or 4 (rgba)
-;
 #X text 200 87 %d not supported yet;
 #X obj 3 141 doc_c any;
 #X obj 14 171 doc_cc any;
@@ -26,8 +23,12 @@ after substitution is done \, an error message will be generated with
 that text. the apparent source of the error will be the abstraction
 instance containing [gf.error] \, if applicable. this is what Find
 Last Error will find and highlight.;
-#X connect 3 0 2 0;
-#X connect 4 0 2 0;
-#X connect 5 0 2 0;
-#X connect 10 1 15 0;
-#X connect 14 1 18 0;
+#X obj 3 422 doc_also;
+#X obj 31 105 gf/error my name is %s;
+#X obj 199 105 gf/error got %d channels expecting 3 (rgb) or 4 (rgba)
+;
+#X connect 2 0 18 0;
+#X connect 3 0 18 0;
+#X connect 4 0 18 0;
+#X connect 8 1 13 0;
+#X connect 12 1 16 0;
