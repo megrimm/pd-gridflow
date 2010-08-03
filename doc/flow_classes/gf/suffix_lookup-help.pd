@@ -1,0 +1,50 @@
+#N canvas 617 0 632 502 10;
+#X obj 0 0 doc_h;
+#X obj 3 448 doc_also;
+#X obj 0 468 doc_f;
+#X obj 112 84 gf/suffix_lookup;
+#X obj 112 139 display;
+#X obj 205 103 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 158 120 display;
+#X msg 118 64 symbol pure-data.jpg;
+#X msg 112 44 symbol violoncelle.mov;
+#X obj 3 175 doc_c 0;
+#X obj 3 215 doc_i 1;
+#X obj 14 245 doc_ii 0;
+#X obj 14 359 doc_oo 0;
+#X obj 14 394 doc_oo 1;
+#X obj 97 245 doc_m i0 symbol;
+#X obj 97 359 doc_m o0 symbol;
+#X obj 97 394 doc_m o1 symbol;
+#X obj 3 329 doc_o 3;
+#X obj 14 416 doc_oo 2;
+#X obj 97 416 doc_m o2 bang;
+#X obj 103 448 gf/find_file;
+#X text 232 394 if the suffix was recognised \, this is it.;
+#X text 232 416 bang if suffix is unknown;
+#X text 232 359 name of the format handler ([#io...]) that registered
+the file suffix association for this suffix.;
+#X text 232 245 a filename to look at. only the suffix matters \, not
+the rest of the filename nor the contents of the actual file. the file
+needs not exist. the folders don't matter. this does not even access
+any disks. the answer will either come out of outlet 2 \, or of outlet
+1 then 0;
+#X obj 187 448 #in;
+#X obj 217 448 #in~;
+#X obj 253 448 #out;
+#X obj 289 448 #window;
+#X connect 1 1 20 0;
+#X connect 1 1 25 0;
+#X connect 1 1 26 0;
+#X connect 1 1 27 0;
+#X connect 1 1 28 0;
+#X connect 3 0 4 0;
+#X connect 3 1 6 0;
+#X connect 3 2 5 0;
+#X connect 7 0 3 0;
+#X connect 8 0 3 0;
+#X connect 14 1 24 0;
+#X connect 15 1 23 0;
+#X connect 16 1 21 0;
+#X connect 19 1 22 0;
