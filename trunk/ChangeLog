@@ -3,11 +3,12 @@
 version 9.10 (2010.08...):
 
  * added examples qbert.pd, remap_video.pd
+ * removed example play_video.pd
  * [#lop_space]: faster; added method "reverse"; added default args
  * fix division by zero in [# C./] and [# C./conj]
  * added [# C.inv*] [# /exp]
  * [#pack]: support multi-element list in left inlet
- * [#join]: no more "empty grids".
+ * [#join]: no more "empty grids" (default value is 0)
  * better error messages for not enough args, too many args, wrong args, etc.
  * [print]: make more like the builtin [print] it overrides
  * added index of General Topics, in GridFlow Index
@@ -36,6 +37,7 @@ version 9.10 (2010.08...):
  * [#io.quicktimeapple]: report total number of frames correctly
  * [#draw_polygon]: fixed some inaccuracies in rendering
  * [#draw_polygon]: fixed bug in check of number of dimensions of color grid
+ * [doc_accolade]: add method 'color'
 
 version 9.9 (2010.05.05):
 
