@@ -3,7 +3,8 @@ L = much later (whenever we get to know how to do it...)
 
 9.10, unassigned:
 
-[ ] FIX THE TEXT OF #FADE-HELP.PD NOW !
+[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
+[ ] [gf/error] doesn't report the source of the error like RAISE() does.
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
@@ -15,7 +16,9 @@ L = much later (whenever we get to know how to do it...)
 [ ] accelerate [#outer ignore (0)]
 [ ] [#print] maxrows doesn't work
 [ ] [lb]
-[ ] invalid command name ".x8f03820.c" with hidden [display]
+[ ] invalid command name ".x8f03820.c" with hidden [display],
+    and also, appears in wrong canvas or position in case of GOP sometimes
+[ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] <errordeveloper>
 	/usr/include/opencv/cxtypes.h:161: error: conflicting declaration ‘typedef int64_t int64’
 	src/gridflow.hxx.fcs:87: error: ‘int64’ has a previous declaration as ‘typedef long long int int64’
@@ -37,6 +40,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#many] margins $1 $2 $3 $4, ...
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
+[ ] [#remap_image, cache]
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm
 [ ] bug: see #fft*-test.pd
@@ -50,30 +54,25 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
---------------------------------------------------vous-êtes-ici----------------------------------------------------------
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
-[ ] get rid of doc/stuff.txt ?
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] what to do with [#motion_detection] ?
-[ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
-[ ] videodev,quicktime,etc: height,width vs size
-[ ] even after all the latest bugfixes, i still get invalid command name ".x8685500.c" with [display]
+[x] gem=0 imageStruct_has_virtual=-1077942776
+[ ] videodev,quicktime,etc: height,width vs size : standardise
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
 [ ] cellular_1d.pd: should get a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
 [ ] error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
-[ ] kill [listappend], [listprepend], [listlength], ... ?
 [ ] doc attributes: [doc_a] [doc_aa] ?
-[ ] [doc_ii] links to [doc_cc]
 [ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
 [ ] distinguish messages vs atoms in this manual
-    e.g. [doc_aa] would contain something like [doc_m]
-		but wouldn't have [doc_m] as a subnode.
-[ ] [print], [gf.print] bugs : "(", ")", what else...?
+    e.g. [doc_aa] would contain something like [doc_m] but wouldn't have [doc_m] as a subnode.
+[ ] [print], [gf/print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] support "get" in abstractions... automatically, through [args] ? or [attr] ?
+--------------------------------------------------vous-êtes-ici----------------------------------------------------------
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
@@ -111,6 +110,9 @@ L = much later (whenever we get to know how to do it...)
 [ ] movie api : merge "height" & "width" attributes
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
 [ ] multi-valued attributes in source_filter
+[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
+[ ] GEM [#to_pix] pix ignored.
+[ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -152,7 +154,6 @@ OpenCV
 [ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
 Common Video Framework
-[ ] PDP<->GridFlow converter
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that.
 [ ] threads for video?
 [ ] GEM geos vs 3DP: how do they compare?
@@ -167,13 +168,10 @@ interpolates using 4-point interpolation, eg, right inlet -> (3 3 f # 0 0 0 1 1 
 outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
 
 [ ] OpenCL
-[ ] look at the endian stuff that is most probably wrong... if I can run anything on a G4 or G5.
-[ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
 [ ] make example on separable convkernels
-[ ] add concepts of hot inlet and conf inlet at the code level
-[ ] deprecation warnings
+[ ] add concepts of hot inlet and conf inlet at the code level (?)
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
@@ -188,9 +186,9 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] internal grid protocol redesigned
 [ ] look into -ftree-vectorize
 [ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
-[ ] some proper equivalent of [rubysprintf]... see also: [gf.error]
+[ ] some proper equivalent of [rubysprintf]... see also: [gf/error]
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
-[ ] is [@convolve] actually cross-convolution? that is, convolves with a mirror image of the convolution matrix.
+[ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
 [ ] osx: [#store] crash instead of raising
 [ ] MMX computations may be done misaligned, which may be bad.
@@ -250,15 +248,15 @@ Computation Objects
 [ ] #conv (simpler #convolve) should allow n-D convolution
 [ ] #convolve rewritten as combination of #conv+#border ?
 [ ] #store: option zero (?)
-[ ] #from~, #to~ alias #to_~
+[ ] #from~
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
 [ ] #matrix_solve (CV), #replace_if, #random_select, #markov_chain, #splice, full-featured #slice (in c++)
 [ ] #draw_polygon smoothly
 [ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
-[ ] see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
-[ ] #mosaic, #dither, #draw_points, #fire, #queue (#delay ?)
+[ ] implement the whole APL feature set
+[ ] #mosaic, #dither, #fire, #queue (#delay ?)
 [ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it #chroma_key though)
@@ -270,7 +268,6 @@ Computation Objects
 [ ] #scale_by/#downscale_by fractional values
 [ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
-[ ] #daltonism
 [ ] #perlin
 [ ] #moment could support more than 2 dimensions
 [ ] note in the helpfiles what is meant by YUV in gridflow (what colorspace that is)
@@ -279,7 +276,7 @@ Input/Output
 [ ] a #store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six numtypes and perhaps also bpv 1,2,4.
 [ ] Grid: text version of the format (?)
-[ ] Gimp, XSane, ffmpeg, xine, mplayer, PDP, OSC
+[ ] ffmpeg, xine, mplayer
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: double buffering using a Pixmap remote-object
@@ -298,7 +295,6 @@ Format
 
 User Interface
 [ ] better [#color]
-[ ] #edit, grid edition dialog, etc.
 [ ] generic vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
@@ -327,27 +323,11 @@ input format/codec. since i'm not planning to waste time on integrating more inp
 to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
 
 very old bookmarks: http://pdl.perl.org/ http://www.opendragon.com/Pages/MaxObjects.shtml
-	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm http://freej.dyne.org/
+	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
 
 there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
 
 svn propset svn:mime-type text/pure-data *.pd
-
-Benchmarks on a Pentium M 1733 (with #out x11):
-(fps)           0.9.0   0.9.3   0.9.4   0.9.6   9.9
-waves.pd rain    41.1    49.5   50.5
-game_of_life.pd 162     183     188
-sand.pd          18.7    20.5   20.1
-cellular_1d.pd  115     130.1   130     75.0 (really?)
-wave_1d.pd       63.0    81.7   81.7    64.3 (really?)
-
-Benchmarks on a Pentium M 1733 (without window):
-(fps)           0.9.0   0.9.3   0.9.4
-waves.pd rain   50.1            63.0
-game_of_life.pd 397             507
-sand.pd         27              30
-cellular_1d.pd  475             730
-wave_1d.pd      107             173
 
 How to release GridFlow :
 
