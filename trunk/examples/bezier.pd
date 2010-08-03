@@ -1,7 +1,7 @@
 #N canvas 577 0 623 548 10;
-#X obj 8 33 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1 1
+#X obj 8 33 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0 1
 ;
-#X obj 501 155 #many nbx 4 2 14 54;
+#X obj 501 155 #many nbx 4 2;
 #X obj 308 143 t a a;
 #X obj 308 200 # *;
 #X obj 8 69 t b b;
@@ -23,8 +23,8 @@
 #X obj 501 221 #cast f;
 #X obj 308 238 #inner \, seed (f #);
 #X msg 64 202 draw \$1;
-#X obj 64 136 vradio 15 1 1 3 empty empty empty 0 -8 0 10 -262144 -1
--1 1;
+#X obj 64 136 vradio 15 1 1 3 empty empty empty 0 -8 0 10 -204800 -1
+-1 2;
 #X obj 64 183 listread fill line point;
 #X obj 308 86 #for 0 65 1;
 #X obj 308 124 # / (f # 64);
@@ -32,6 +32,8 @@
 #X obj 8 107 #draw_polygon put (224 0 0) \, draw line \, omit last
 ;
 #X msg 408 70 4 2 # 20 250 400 90 20 200 50 50;
+#X msg 139 135 omit none;
+#X msg 139 155 omit last;
 #X connect 0 0 6 0;
 #X connect 1 0 20 0;
 #X connect 2 0 17 0;
@@ -58,3 +60,5 @@
 #X connect 27 0 5 0;
 #X connect 28 0 27 0;
 #X connect 29 0 1 0;
+#X connect 30 0 28 0;
+#X connect 31 0 28 0;
