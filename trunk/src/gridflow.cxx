@@ -1091,7 +1091,9 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects2();
 	startup_format();
 	STARTUP_LIST()
+#ifdef HAVE_GEM
 	try_loading_gem();
+#endif
 	sys_load_lib(0,"gridflow/gridflow_pdp"); // avoid linking directly to [gridflow/gridflow_pdp]
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
