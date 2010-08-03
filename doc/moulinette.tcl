@@ -46,9 +46,9 @@ proc op {op desc {extra1 ""} {extra2 ""} {size 19}} {
 	lappend ::msgboxes $::oid
 	set x 10
 	foreach op1 $op {msg $x $y op $op; incr 50}
-	text                     $::col1 [expr {$y-4}] $desc
-	if {$extra1 != ""} {text $::col2 [expr {$y-4}] $extra1}
-	if {$extra2 != ""} {text $::col3 [expr {$y-4}] $extra2}
+	text                     $::col1 $y $desc
+	if {$extra1 != ""} {text $::col2 $y $extra1}
+	if {$extra2 != ""} {text $::col3 $y $extra2}
 	incr ::row
 	incr ::y $size
 }
@@ -162,9 +162,14 @@ foreach section $sections {
 p {
 	note: a centidegree is 0.01 degree. There are 36000 centidegrees in a circle.
         Some angle operators use centidegrees, while some others use radians. To
-        convert degrees into centidegrees, multiply by 100.
+        convert degrees into centidegrees, multiply by 100 .
         To convert degrees into radians, divide by 57.2957 .
         Thus, to convert centidegrees into radians, divide by 5729.57 .
+        All the complex number operators are only for floats.
+	VecOps are called VecOps because each operation happens between more than just two numbers.
+	Complex VecOps are those that arise when a pair of numbers (A0 A1) is considered as a single number A0+A1*sqrt(-1).
+	If you need complex numbers but don't know yet how they work,
+	learn them using a math tutorial and then those VecOps will begin to look familiar.
 }
 
 close $fh
