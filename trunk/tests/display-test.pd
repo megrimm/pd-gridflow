@@ -1,4 +1,4 @@
-#N canvas 121 142 887 546 10;
+#N canvas 316 137 887 546 10;
 #X obj 41 190 display;
 #X obj 17 19 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0 10
 -262144 -1 -1 50.1416 256;
@@ -18,8 +18,8 @@
 #X obj 263 107 # + 0;
 #X text 304 108 cast to grid;
 #X msg 263 85 4 4 # 1 0 0 0 0;
-#X obj 602 425 display;
-#X obj 603 402 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 678 408 display;
+#X obj 678 391 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 595 355 display;
 #X msg 594 327 whatever \$1;
@@ -66,11 +66,33 @@
 #X obj 734 317 display;
 #X obj 733 297 makefilename %c;
 #X msg 733 278 10;
-#X msg 16 445 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+#X msg 16 475 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ;
-#X obj 17 491 display;
+#X obj 17 521 display;
 #X obj 22 391 display;
 #X msg 21 371 1 (2 3 (4 5) (6 7 (8 (9 ()))));
+#X obj 733 455 display;
+#X msg 733 435 (;
+#X obj 773 455 display;
+#X msg 773 435 symbol (;
+#X obj 733 495 display;
+#X obj 773 495 display;
+#X msg 733 475 );
+#X msg 773 475 symbol );
+#X obj 475 460 display;
+#X msg 439 431 42;
+#X obj 439 460 print;
+#X text 768 415 don't work;
+#X msg 499 431 list 42;
+#X text 436 476 «42» vs «float 42»;
+#X text 413 488 and «42» vs «list 42»;
+#X obj 535 460 display;
+#X obj 499 460 print;
+#X obj 302 214 makefilename %03d;
+#X obj 302 233 display;
+#X floatatom 303 195 5 0 0 0 - - -;
+#X obj 291 260 gf.print;
+#X obj 279 285 print;
 #X connect 1 0 6 0;
 #X connect 2 0 6 0;
 #X connect 3 0 4 0;
@@ -104,3 +126,15 @@
 #X connect 52 0 51 0;
 #X connect 53 0 54 0;
 #X connect 56 0 55 0;
+#X connect 58 0 57 0;
+#X connect 60 0 59 0;
+#X connect 63 0 61 0;
+#X connect 64 0 62 0;
+#X connect 66 0 67 0;
+#X connect 66 0 65 0;
+#X connect 69 0 73 0;
+#X connect 69 0 72 0;
+#X connect 74 0 75 0;
+#X connect 74 0 77 0;
+#X connect 74 0 78 0;
+#X connect 76 0 74 0;

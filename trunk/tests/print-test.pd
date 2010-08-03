@@ -1,0 +1,28 @@
+#N canvas 770 0 450 300 10;
+#X obj 72 239 print a;
+#X obj 72 171 t a a;
+#X obj 99 127 # +;
+#X msg 99 108 3 3 # 2 3 5 7;
+#X obj 108 171 t f f;
+#X msg 108 152 1 \, 2 \, 3;
+#X obj 99 220 pd/print b;
+#X obj 183 236 display;
+#X obj 272 157 #pack;
+#X msg 272 138 1;
+#X msg 299 138 2;
+#X msg 206 146 zut;
+#X msg 72 28 1 \, 2 \, 3 \, foo \, symbol foo \, bang \, list foo \,
+list 42 \, list 42 b c \, list 42 53 67;
+#X connect 1 0 0 0;
+#X connect 1 1 6 0;
+#X connect 2 0 1 0;
+#X connect 3 0 2 0;
+#X connect 4 0 0 0;
+#X connect 4 1 6 0;
+#X connect 4 1 7 0;
+#X connect 5 0 4 0;
+#X connect 8 0 7 0;
+#X connect 9 0 8 0;
+#X connect 10 0 8 1;
+#X connect 11 0 7 0;
+#X connect 12 0 1 0;
