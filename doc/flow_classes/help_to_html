@@ -8,7 +8,7 @@ foreach fname [glob *-help.pd cv/*-help.pd gf/*-help.pd] {
   puts $g "<html><head><title>$fname</title></head>"
   puts $g "<style type=\"text/css\">.hidden\{font-size: 8px\; color: white\}</style>"
   puts $g "<body>"
-  puts $g "<img src=\"[regsub {pd$} $fname png]\"><br clear=\"left\">"
+  puts $g "<img src=\"[regsub # [regsub {pd$} $fname png] %23]\"><br clear=\"left\">"
   puts $g "<p class=\"hidden\">"
   foreach line [pd_mess_split [read $f]] {
     if {[lindex $line 1] == "text"} {puts $g [lrange $line 4 end]}
