@@ -666,7 +666,7 @@ static t_symbol *s_empty;
 		t_symbol *key;
 		if (ascii.a_type==A_SYMBOL) key = ascii.a_symbol;
 		else {
-			int i = ascii.a_float;
+			int i = int(ascii.a_float);
 			key = (i<0 || i>=128 || !keyboard[i]) ? symprintf("%c",i) : keyboard[i];
 			if (!key) key = symprintf("whoah_%d",i);
 		}
@@ -1286,7 +1286,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	int osx = int(m->gl_screenx2-m->gl_screenx1); // old size x
 	int osy = int(m->gl_screeny2-m->gl_screeny1); // old size y
 	m->gl_screenx2 = m->gl_screenx1 + 632;
-	if (m->gl_screeny2-m->gl_screeny1 < y) m->gl_screeny2 = m->gl_screeny1+y;
+	if (m->gl_screeny2-m->gl_screeny1 < int(y)) m->gl_screeny2 = m->gl_screeny1+int(y);
 	int  sx = int(m->gl_screenx2-m->gl_screenx1); // new size x
 	int  sy = int(m->gl_screeny2-m->gl_screeny1); // new size y
 	if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%lx %dx%d\n",long(m),sx,sy);
