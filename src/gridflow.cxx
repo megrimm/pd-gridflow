@@ -1023,11 +1023,35 @@ void allow_big_stack () {
 }
 
 #ifdef HAVE_GEM
-	//struct GemVersion {static const char *versionString();};
-	struct GemState    {GemState(); char trabant[666];};
-	struct imageStruct {imageStruct(); char lada[666];};
-	extern "C" void sys_load_lib(t_canvas *,const char *);
-	//#define sys_load_lib(A,B) do {post("pre sys_load_lib(%s)",B); sys_load_lib(A,B); post("post sys_load_lib(%s)",B);} while(0)
+//struct GemVersion {static const char *versionString();};
+struct GemState    {GemState(); char trabant[666];};
+struct imageStruct {imageStruct(); char lada[666];};
+extern "C" void sys_load_lib(t_canvas *,const char *);
+//#define sys_load_lib(A,B) do {post("pre sys_load_lib(%s)",B); sys_load_lib(A,B); post("post sys_load_lib(%s)",B);} while(0)
+
+static void try_loading_gem () {
+	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
+	//int major,minor; sscanf(GemVersion::versionString(),"%d.%d",&major,&minor); gem = major*1000+minor;
+	int GemState_version = -1;
+ 	GemState *dummy = new GemState();
+	float *stupide = (float *)dummy;
+	int i;
+	for (i=0; i<16; i++) if (stupide[i]==50.f) break;
+	if (i==16) {error("GridFlow: can't find GemState::tickTime"); return;}
+	int j = i-2-2*sizeof(void*)/sizeof(float);
+	//post("GemState::tickTime found at [%d], so pixBlock is probably at [%d]",i,j);	
+	if      (j==3        ) {GemState_version = 93;}
+	else if (j==5 || j==6) {GemState_version = 92;}
+	else {error("GridFlow: can't detect this version of GEM: i=%d j=%d",i,j); return;}
+	//delete dummy;
+	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
+	// imageStruct 92 starts with int xsize=ysize=0; imageStruct 93 starts with a C++ class pointer != 0 */
+	int imageStruct_version = *(long *)new imageStruct() ? 93 : 92;
+	post("GridFlow/GEM bridge : GemState version %d, imageStruct version %d",GemState_version,imageStruct_version);
+	if (GemState_version==92)          sys_load_lib(0,"gridflow/gridflow_gem9292");
+	else if (imageStruct_version==92)  sys_load_lib(0,"gridflow/gridflow_gem9293");
+	else                               sys_load_lib(0,"gridflow/gridflow_gem9393");
+}
 #endif
 
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
@@ -1067,33 +1091,8 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects2();
 	startup_format();
 	STARTUP_LIST()
-
-#ifdef HAVE_GEM
-	//post("GF sizeof(imageStruct)=%d sizeof(pixBlock)=%d sizeof(GemState)=%d",sizeof(imageStruct),sizeof(pixBlock),sizeof(GemState));
-	//int major,minor; sscanf(GemVersion::versionString(),"%d.%d",&major,&minor); gem = major*1000+minor;
-	int gem = -1;
- 	GemState *dummy = new GemState();
-	float *stupide = (float *)dummy;
-	int i;
-	for (i=0; i<16; i++) if (stupide[i]==50.f) break;
-	if (i==16) error("GridFlow: can't find GemState::tickTime");
-	else {
-		int j = i-2-2*sizeof(void*)/sizeof(float);
-		//post("GemState::tickTime found at [%d], so pixBlock is probably at [%d]",i,j);	
-		if      (j==3        ) {gem = 93;}
-		else if (j==5 || j==6) {gem = 92;}
-		else error("GridFlow: can't detect this version of GEM: i=%d j=%d",i,j);
-	}
-	//delete dummy;
-	/* note that j==6 is because in 64-bit mode you have one int of padding in GemState92 just before the pixBlock* */
-	bool imageStruct_has_virtual = !!*(long *)new imageStruct();
-	post("gem=%d imageStruct_has_virtual=%d",imageStruct_has_virtual);
-	post("GridFlow/GEM bridge : GemState version %d, imageStruct version %d",gem,92+imageStruct_has_virtual);
-	if (gem==92)                       sys_load_lib(0,"gridflow/gridflow_gem9292");
-	else if (!imageStruct_has_virtual) sys_load_lib(0,"gridflow/gridflow_gem9293");
-	else                               sys_load_lib(0,"gridflow/gridflow_gem9393");
-	sys_load_lib(0,"gridflow/gridflow_pdp");
-#endif
+	try_loading_gem();
+	sys_load_lib(0,"gridflow/gridflow_pdp"); // avoid linking directly to [gridflow/gridflow_pdp]
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
 	sys_gui("catch {rename pdtk_canvas_sendkey pdtk_canvas_sendqui\n"
