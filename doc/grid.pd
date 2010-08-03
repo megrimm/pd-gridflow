@@ -1,4 +1,4 @@
-#N canvas 627 0 622 645 10;
+#N canvas 606 0 622 691 10;
 #X obj 0 0 doc_demo;
 #X text 141 46 In every grid-accepting inlet \, a list may be sent
 instead. If it consists only of numbers \, it will be converted to
@@ -31,9 +31,20 @@ distinguishes rows from columns and channels \, for example. Most objects
 care about the distinction. A grid with only 1 element in a given dimension
 is different from one lacking that dimension \; it won't have the same
 meaning. You can use this property to your advantage sometimes.;
-#X obj 0 611 doc_f;
+#X obj 0 791 doc_f;
 #X obj 3 27 doc_section Grid Literals;
 #X obj 3 171 doc_section Grid Protocol;
-#X obj 3 591 doc_also;
-#X obj 103 591 doc_link image 1;
+#X obj 3 771 doc_also;
+#X obj 103 771 doc_link image 1;
+#X obj 3 591 doc_section Synchronisation;
+#X text 141 703 There are two exceptions: [#store] and [#] allow right-inlet
+grids to be buffered if an operation is occuring on left inlet. This
+should make many programs simpler.;
+#X text 141 614 In GridFlow you cannot send two grids in different
+inlets at the same time. You have to use [#finished] together with
+(possibly) [t a a] and [#store] \, which can be cumbersome. If you
+don't do this \, the result is undefined behaviour (usually \, the
+object will use garbage instead of the actual data);
+#X obj 163 771 doc_link indexmap 1;
 #X connect 8 1 9 0;
+#X connect 8 1 13 0;
