@@ -219,7 +219,7 @@ extern "C" void canvas_reflecttitle (t_glist *);
 	\constructor () {}
 	//void outlet_entry(const typeof(table.begin()) &f) // can't use this in gcc<4.4
 	void outlet_entry(const table_t::iterator &f) {
-		outlet_anything(outlets[0],f->first,f->second.size(),f->second.data());
+		outlet_anything(outlets[0],f->first,f->second.size(),&*f->second.begin());
 	}
 	\decl 0 get (t_symbol *s=0) {
 		if (s) {
