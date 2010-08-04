@@ -40,7 +40,6 @@ foreach k [lsort [array names ::say *]] {
 	if {$k == "#fold"}      {set k "$k +"}
 	if {$k == "#scan"}      {set k "$k +"}
 	if {$k == "#outer"}     {set k "$k +"}
-	if {$k == "#cast"}      {set k "$k i"}
 	if {$k == "#for"}       {set k "$k 0 4 1"}
 	if {$k == "#redim"}     {set k "$k ()"}
 	if {$k == "receives"}   {set k "$k \$0-"}

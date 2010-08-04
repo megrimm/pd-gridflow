@@ -28,7 +28,7 @@
 #X text 180 468 add padding on sides of a grid;
 #X obj 114 500 #camera;
 #X text 180 500 control panel for opening cameras;
-#X obj 114 532 #cast i;
+#X obj 126 532 #cast;
 #X text 180 532 convert grid from one number type to another;
 #X obj 102 564 #centroid;
 #X text 180 564 find centroid (weighted average) of the coordinates of a grid;

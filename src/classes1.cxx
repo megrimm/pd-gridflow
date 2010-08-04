@@ -70,7 +70,7 @@ static void   expect_max_one_dim     (const Dim &d) {if (d.n>1 ) RAISE("expectin
 //****************************************************************
 \class GridCast : FObject {
 	\attr NumberTypeE cast;
-	\constructor (NumberTypeE nt) {this->cast = nt;}
+	\constructor (NumberTypeE nt=int32_e) {this->cast = nt;}
 	\grin 0
 };
 GRID_INLET(0) {
