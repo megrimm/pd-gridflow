@@ -30,7 +30,6 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   virtual void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
-  char trabant[666];
 };
 #else // older
 struct imageStruct {
@@ -38,7 +37,6 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
-  char trabant[666];
 };
 #endif
 struct pixBlock {imageStruct image; int newimage, newfilm; pixBlock(){newimage=newfilm=0;}};
@@ -109,11 +107,12 @@ struct GemCache {
 	pixBlock *pb;
 	\attr bool yflip;
 	void render(GemCache *cache, GemState *state) {
-		post("pb.newimage=%d cache=%p cache.resendImage=%d",pb->newimage,cache,cache->resendImage);
+		//post("pb.newimage=%d cache=%p cache.resendImage=%d cache.dirty=%d",pb->newimage,cache,cache->resendImage,cache->dirty);
 		state->image = pb;
 		pb->newimage = 1;
+		//cache->dirty = 1;
 		//pb->newfilm = 1;
-		//cache->resendImage...?
+		cache->resendImage = 1;
 	}
 	void startRendering () {pb->newimage = 1;}
 	\constructor () {
