@@ -72,7 +72,7 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 		dsp_add(GridToTilde::perform_,2,this,sp[0]->s_n);
 	}
 	static void dsp_ (BFObject *bself, t_signal **sp) {
-		post("dsp bself=%p signal**=%p",bself,sp);
+		//post("dsp bself=%p signal**=%p",bself,sp);
 		((GridToTilde *)bself->self)->dsp(sp);
 	}
 	\grin 0 float32
