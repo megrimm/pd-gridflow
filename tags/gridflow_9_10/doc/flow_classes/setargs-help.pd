@@ -1,0 +1,81 @@
+#N canvas 596 24 632 642 10;
+#X obj 0 0 doc_h;
+#X obj 3 852 doc_also;
+#X obj 0 872 doc_f;
+#X obj 103 852 args;
+#X obj 3 281 doc_c 0;
+#X obj 3 321 doc_i 1;
+#X obj 14 351 doc_ii 0;
+#X obj 97 719 doc_m i0 set;
+#X obj 97 373 doc_m i0 add2;
+#X obj 97 395 doc_m i0 addcomma;
+#X obj 97 597 doc_m i0 addsemi;
+#X obj 3 812 doc_o 0;
+#X text 232 597 just like messageboxes;
+#X text 232 395 just like messageboxes;
+#X text 232 373 just like messageboxes;
+#X obj 30 52 setargs;
+#X text 90 234 for a demonstration \, please open this abstraction
+instance;
+#X obj 97 417 doc_m i0 adddollar;
+#X obj 97 439 doc_m i0 adddollsym;
+#X text 90 43 set abstraction instance arguments using a messagebox-like
+interface. this updates the binbuf \, the objectbox's appearance \,
+the canvas-environment \, and the titlebar of the patch window \, whenever
+one of its five methods are called.;
+#X obj 97 351 doc_m i0 add;
+#X obj 139 852 gf/propertybang;
+#X text 232 417 just like messageboxes;
+#X text 232 351 just like messageboxes;
+#X text 232 719 just like messageboxes;
+#X text 232 741 don't forget to write the classname! If you use it
+without arguments \, make sure that the classname is the next thing
+that you add. But the classname will only be applied at the next reload
+\, delete/undo \, copy/paste \, or duplicate.;
+#X text 232 439 just like messageboxes;
+#X obj 97 619 doc_m i0 args;
+#X obj 437 262 setargs-demo2 a 37 b 42 c 53;
+#X text 232 619 INTERNAL USE ONLY : this sets the \$1 \, \$2 \, \$3
+\, ... variables of the instance and the titlebar of the instance.
+this is called automatically by any of the other methods here. This
+part is what happens AFTER the $-substitution \, so \, it does not
+set the contents of the objectbox \, which is BEFORE the \$0-substitution
+and is done directly by every other method here.;
+#X obj 97 461 doc_m i0 adddollsym2;
+#X text 232 483 \$2 is a symbol containing a single character;
+#X text 232 461 \$1 is a symbol representing a mangled dollsym;
+#X text 232 505 \$1 is demangled by replacing every occurrence of the
+\$2 character by a dollar sign. no leading dollarsign is implied.;
+#X text 232 553 thus adddollsym2 foo-%1-bar % gives foo-\$1-bar;
+#X text 232 575 and adddollsym2 @0-zut-@3 @ gives \$0-zut-\$3;
+#X obj 93 217 setargs-demo 574 457 223 573 591 363 276 967 206 315
+;
+#X obj 93 179 # rand;
+#X obj 93 124 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0
+1;
+#X msg 93 160 10 # 1000;
+#X obj 93 198 #to_list;
+#X obj 93 105 loadbang;
+#X obj 93 141 metro 500;
+#X connect 1 1 3 0;
+#X connect 1 1 21 0;
+#X connect 7 1 24 0;
+#X connect 7 1 25 0;
+#X connect 8 1 14 0;
+#X connect 9 1 13 0;
+#X connect 10 1 12 0;
+#X connect 17 1 22 0;
+#X connect 18 1 26 0;
+#X connect 20 1 23 0;
+#X connect 27 1 29 0;
+#X connect 30 1 32 0;
+#X connect 30 1 31 0;
+#X connect 30 1 33 0;
+#X connect 30 1 34 0;
+#X connect 30 1 35 0;
+#X connect 37 0 40 0;
+#X connect 38 0 42 0;
+#X connect 39 0 37 0;
+#X connect 40 0 36 0;
+#X connect 41 0 38 0;
+#X connect 42 0 39 0;

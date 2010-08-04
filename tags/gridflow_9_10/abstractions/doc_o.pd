@@ -1,0 +1,26 @@
+#N canvas 110 0 614 243 10;
+#X obj 0 20 cnv 15 606 17 empty \$0-rect Outlets (8) 240 8 1 9 -88239
+-262144 0;
+#X obj 0 39 loadbang;
+#X obj 0 96 s \$0-rect;
+#X msg 324 39 3 \$2;
+#X obj 0 58 list append \$1;
+#X msg 288 77 \$2;
+#X msg 0 77 label Outlets (\$1);
+#X obj 324 58 doc_below i 1 10;
+#X obj 177 39 doc_layout o 574 30;
+#X obj 177 58 doc_editmode 598 1;
+#X obj 213 115 doc_make o \$1;
+#X obj 213 77 loadbang;
+#X obj 213 96 delay;
+#X connect 1 0 4 0;
+#X connect 3 0 7 0;
+#X connect 4 0 6 0;
+#X connect 5 0 10 1;
+#X connect 6 0 2 0;
+#X connect 7 0 8 1;
+#X connect 8 2 3 0;
+#X connect 8 2 5 0;
+#X connect 11 0 12 0;
+#X connect 12 0 10 0;
+#X coords 0 -1 1 1 606 17 1 0 0;

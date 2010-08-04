@@ -1,0 +1,23 @@
+#N canvas 80 63 624 371 10;
+#X obj 0 0 doc_demo;
+#X obj 3 27 doc_section About Indexmaps;
+#X obj 380 55 #store;
+#X text 65 56 an indexmap is a grid as given to the left inlet of (_____).
+;
+#X text 65 90 an indexmap makes one kind of grid from another kind
+of grid (which may be the same kind).;
+#X text 65 125 an image-to-image indexmap is itself an image \, with
+two channels \, except that its pixels do not represent colours: instead
+they represent positions in another image (because indexmaps always
+ever represent positions in another grid).;
+#X text 270 184 should indexmaps be called something else instead ?
+I've used that name for very long \, but "map" might not be the most
+precise word.;
+#X text 66 232 for a normal image made of rows first (rows \, columns
+\, channels) \, the two channels are:;
+#X text 97 256 0: row number;
+#X text 97 268 1: column number;
+#X obj 3 317 doc_also;
+#X obj 0 337 doc_f;
+#X obj 103 317 doc_link image 1;
+#X connect 10 1 12 0;

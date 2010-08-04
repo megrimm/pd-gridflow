@@ -1,0 +1,28 @@
+#N canvas 93 302 632 322 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 228 doc_o;
+#X obj 3 268 doc_also;
+#X obj 0 288 doc_f;
+#N canvas 97 105 632 300 open_this_example 0;
+#X obj 56 88 gf/canvas_hehehe 0;
+#X obj 56 50 metro 200;
+#X obj 56 31 loadbang;
+#X msg 56 69 300;
+#X text 243 58 now try to make this window smaller than 300px + the
+size of the menu and border (or just the border \, on OSX).;
+#X connect 1 0 3 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 0;
+#X restore 70 53 pd open_this_example;
+#X text 270 54 ensure that the window has at least a certain height.
+;
+#X obj 3 104 doc_c 1;
+#X obj 14 134 doc_cc 0;
+#X obj 97 134 doc_m c0 float;
+#X obj 3 166 doc_i 1;
+#X obj 14 196 doc_ii 0;
+#X text 232 196 minimum height to enforce.;
+#X obj 97 196 doc_m i0 float;
+#X text 232 134 uplevel;
+#X connect 8 1 13 0;
+#X connect 12 1 11 0;

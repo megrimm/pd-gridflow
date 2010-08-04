@@ -1,0 +1,26 @@
+#N canvas 0 0 632 387 10;
+#X obj 0 0 doc_h;
+#X obj 0 358 doc_f;
+#X obj 29 95 doremi;
+#X obj 3 181 doc_c 0;
+#X obj 3 221 doc_i 2;
+#X obj 3 318 doc_o 0;
+#X obj 14 251 doc_ii 0;
+#X obj 14 286 doc_ii 1;
+#X obj 97 251 doc_m i0 float;
+#X text 232 286 velocity: zero is noteoff \, nonzero is noteon;
+#X text 271 61 midi note visualiser;
+#X text 272 75 with a [noteout]-like interface;
+#X obj 97 286 doc_m i1 float;
+#X text 232 251 midi note number. this is treated mod 12 (remainder
+of division by 12).;
+#X obj 111 35 notein;
+#X obj 141 95 doremi;
+#X obj 29 62 range 0 12 24;
+#X connect 8 1 13 0;
+#X connect 12 1 9 0;
+#X connect 14 0 16 0;
+#X connect 14 1 2 1;
+#X connect 14 1 15 1;
+#X connect 16 1 2 0;
+#X connect 16 2 15 0;

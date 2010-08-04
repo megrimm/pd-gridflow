@@ -1,0 +1,95 @@
+#N canvas 596 0 632 642 10;
+#X obj 0 0 doc_h;
+#X obj 3 413 doc_c 1;
+#X obj 3 477 doc_i 2;
+#X obj 3 823 doc_o 1;
+#X obj 14 445 doc_cc 0;
+#X obj 14 509 doc_ii 0;
+#X obj 14 791 doc_ii 1;
+#X obj 14 853 doc_oo 0;
+#X text 232 509 Splits the Dim(anyA... \, lastA) left-hand grid into
+Dim(anyA...) pieces of Dim(lastA) size.;
+#X text 232 544 Splits the Dim(firstB \, anyB...) right-hand grid into
+Dim(anyB...) pieces of Dim(firstB) size.;
+#X text 232 579 On every piece pair \, does [#] using the specified
+op_para operation \, followed by a [#fold] using the specified op_fold
+operator and base value.;
+#X text 232 627 creates a Dim(anyA... \, anyB...) grid by assembling
+all the results together.;
+#X text 232 662 (note: lastA must be equal to firstB.);
+#X obj 232 791 doc_same 0;
+#X text 232 732 the operation that combines the values from the two
+grids together. this defaults to "*" (as in the matrix product);
+#X text 232 684 the operation that combines the result of the "op"
+operations together. this defaults to "+" (as in the matrix product)
+;
+#X text 232 767 the base value for the fold;
+#X obj 0 905 doc_f;
+#X obj 97 509 doc_m i0 grid;
+#X obj 97 445 doc_m c0 grid;
+#X obj 97 732 doc_m i0 op;
+#X obj 97 767 doc_m i0 seed;
+#X obj 97 791 doc_m i1 grid;
+#X obj 97 853 doc_m o0 grid;
+#X obj 97 684 doc_m i0 fold;
+#X obj 3 885 doc_also;
+#X obj 103 885 #outer *;
+#X obj 163 885 #fold +;
+#X obj 62 89 #inner;
+#X text 178 36 think of this one as a special combination of [#outer]
+\, [#] and [#fold]. this is one of the most complex operations. It
+is very useful for performing linear transforms like rotations \, scalings
+\, shearings \, and some kinds of color remappings. A linear transform
+is done by something called matrix multiplication \, which happens
+to be [#inner]. [#inner] also does dot product and other funny operations.
+;
+#X obj 14 445 doc_cc 0;
+#X obj 14 509 doc_ii 0;
+#X obj 14 791 doc_ii 1;
+#X obj 14 853 doc_oo 0;
+#X obj 54 274 #inner;
+#X obj 277 263 #many nbx 3 3 14 54;
+#X obj 97 323 #many nbx 3 3 14 54;
+#X obj 277 323 #many nbx 3 3 14 54;
+#X text 116 378 11*11 + 4*6 + 9*10 = 121+24+90 = 235;
+#X text 117 392 1*8 + 5*3 + 0*10 = 8+15+0 = 23;
+#X obj 97 208 loadbang;
+#X text 97 225;
+#X obj 97 227 t b b;
+#X msg 97 246 3 3 # 11 4 9 0 0 0 1 5 0;
+#X msg 277 244 3 3 # 11 8 0 6 3 0 10 10 0;
+#X obj 291 163 for 0 3 1;
+#X msg 291 220 to \$1 0 color 15 \, to \$1 1 color 16;
+#X msg 300 189 to 0 \$1 color 15 \, to 2 \$1 color 16;
+#X obj 289 138 loadbang;
+#X msg 365 155 to 0 0 color 15 \, to 2 1 color 16;
+#X obj 103 381 cnv 12 12 12 empty empty empty 20 12 0 14 -241291 -262144
+0;
+#X obj 103 396 cnv 12 12 12 empty a empty 20 12 0 14 -24198 -262144
+0;
+#X connect 18 1 8 0;
+#X connect 18 1 9 0;
+#X connect 18 1 10 0;
+#X connect 18 1 11 0;
+#X connect 18 1 12 0;
+#X connect 20 1 14 0;
+#X connect 21 1 16 0;
+#X connect 22 1 13 0;
+#X connect 24 1 15 0;
+#X connect 25 1 26 0;
+#X connect 25 1 27 0;
+#X connect 34 0 37 0;
+#X connect 35 0 34 1;
+#X connect 36 0 34 0;
+#X connect 40 0 42 0;
+#X connect 42 0 43 0;
+#X connect 42 1 44 0;
+#X connect 43 0 36 0;
+#X connect 44 0 35 0;
+#X connect 45 0 46 0;
+#X connect 45 0 47 0;
+#X connect 46 0 35 0;
+#X connect 47 0 36 0;
+#X connect 48 0 45 0;
+#X connect 48 0 49 0;
+#X connect 49 0 37 0;
