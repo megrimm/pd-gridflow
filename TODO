@@ -57,7 +57,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
 [ ] what to do with [#motion_detection] ?
-[x] gem=0 imageStruct_has_virtual=-1077942776
 [ ] videodev,quicktime,etc: height,width vs size : standardise
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
 [ ] cellular_1d.pd: should get a variable width
@@ -72,7 +71,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] [print], [gf/print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] support "get" in abstractions... automatically, through [args] ? or [attr] ?
---------------------------------------------------vous-êtes-ici----------------------------------------------------------
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
@@ -82,19 +80,17 @@ L = much later (whenever we get to know how to do it...)
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 [ ] make [#draw_points] or equivalent (with several dot colours)
-[ ] distinguish between C++ types Grid* and GridFlow*
-[ ] see vsync-test.pd: probably something nasty in grid.cxx
+[ ] distinguish between C++ types Grid* and GridFlow* (GridOutlet*) ?
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
 [ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
 [ ] make single abstraction that replaces all picture converters and more.
 [ ] various_effects.pd doesn't completely support greyscale. other patches don't necessarily, either.
     make more efforts to make colorspaces switchable.
-[ ] run ./find_missing.rb and see...
 [ ] [display] visible outside redrectangle in [doc_h]
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
-[ ] [#io.videodev] takes a lot of CPU doing nothing at all (?)
+[ ] [#io.videodev] takes a lot of CPU doing nothing at all (or what ?)
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 [ ] add default values in docs
 [!] use sand.pd as basis for introducing those features :
@@ -104,15 +100,18 @@ L = much later (whenever we get to know how to do it...)
 [!] [route] - 1[shunt] sends a message (bug)
 [ ] [args, noloadbang]
 [ ] [args, noparens]
-[ ] reduce [doc_h] clock again before release !
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
     et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
 [ ] movie api : merge "height" & "width" attributes
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
 [ ] multi-valued attributes in source_filter
-[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
-[ ] GEM [#to_pix] pix ignored.
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
+[ ] png_check_sig est désuet
+[ ] #include <libpng12/png.h> utilise pas l'autodétection
+
+--------------------------------------------------vous-êtes-ici----------------------------------------------------------
+[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
+[ ] reduce [doc_h] clock again before release !
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -175,8 +174,7 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
-[ ] configure chokes if GCC3 doesn't have the C++ plugin
-[ ] [#from~] [#to~]
+[ ] [#from~]
 [ ] [#expr]
 [ ] [#line]? [#pipe]? [#delay]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
@@ -224,27 +222,25 @@ Architecture
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (#global:classes, #global:methods, ...)
-[ ] transmitting grids by diffs?
 [ ] dispatch on _#{i}_-named methods (any selector one inlet)
 [ ] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
 [ ] lazy grids: Grid#operator T* makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
-[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] accounting: grids packets numbers bytes copybytes
 [ ] memory profiling
 [ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] interpret nested lists as n-dimensional.
-[ ] MMX memcpy() ?
-[ ] MMX _runtime_ autodetection
+[ ] SSE
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
 
 Computation Objects
 [ ] #counter (similar to #for)
-[ ] zero option in #convolve (?)
+[ ] zero option in #convolve (as an alternative to wraparound)
 [ ] #conv (simpler #convolve) should allow n-D convolution
 [ ] #convolve rewritten as combination of #conv+#border ?
 [ ] #store: option zero (?)
@@ -295,7 +291,6 @@ Format
 
 User Interface
 [ ] better [#color]
-[ ] generic vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
 
