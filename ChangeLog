@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.10 (2010.08...):
+version 9.10 (2010.08.04):
 
  * added examples qbert.pd, remap_video.pd
  * removed example play_video.pd

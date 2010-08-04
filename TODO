@@ -1,7 +1,7 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
-9.10, unassigned:
+--------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
 
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] [gf/error] doesn't report the source of the error like RAISE() does.
@@ -108,10 +108,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 [ ] png_check_sig est désuet
 [ ] #include <libpng12/png.h> utilise pas l'autodétection
-
---------------------------------------------------vous-êtes-ici----------------------------------------------------------
-[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
 [ ] reduce [doc_h] clock again before release !
+[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
