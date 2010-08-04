@@ -1,6 +1,6 @@
-#N canvas 334 80 632 368 10;
+#N canvas 334 80 632 393 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 339 doc_f;
+#X obj 0 359 doc_f;
 #X obj 100 119 display;
 #N canvas 544 314 471 233 move_this_object_please 0;
 #X obj 20 43 gf/canvas_getpos 0;
@@ -38,6 +38,9 @@
 #X text 232 245 get position;
 #X obj 97 307 doc_m o0 list;
 #X text 232 307 \$1=x \$2=y;
+#X obj 3 339 doc_also;
+#X obj 103 339 gf/canvas_setpos;
+#X obj 211 339 gf/canvas_setgop;
 #X connect 3 0 2 0;
 #X connect 4 0 3 0;
 #X connect 5 0 4 0;
@@ -45,3 +48,5 @@
 #X connect 13 1 16 0;
 #X connect 14 1 15 0;
 #X connect 17 1 18 0;
+#X connect 19 1 20 0;
+#X connect 19 1 21 0;

@@ -12,7 +12,6 @@
 #X obj 14 172 doc_ii 0;
 #X obj 3 336 doc_o 1;
 #X obj 14 366 doc_oo 0;
-#X obj 97 366 doc_m o0;
 #X obj 97 110 doc_m c0 float;
 #X obj 97 282 doc_m i0 wire_dotted;
 #X obj 97 260 doc_m i0 wire_bracket;
@@ -25,12 +24,13 @@
 #X text 232 172 \$1 = direction ("x" or "y");
 #X text 232 194 \$2 \, \$3 = start position xy;
 #X text 232 216 \$4 = increment;
+#X obj 97 366 doc_m o0 float;
 #X connect 1 1 4 0;
 #X connect 1 1 3 0;
-#X connect 14 1 8 0;
-#X connect 15 1 21 0;
-#X connect 16 1 20 0;
+#X connect 13 1 8 0;
+#X connect 14 1 20 0;
+#X connect 15 1 19 0;
+#X connect 17 1 21 0;
 #X connect 18 1 22 0;
-#X connect 19 1 23 0;
-#X connect 19 1 24 0;
-#X connect 19 1 25 0;
+#X connect 18 1 23 0;
+#X connect 18 1 24 0;

@@ -1,6 +1,6 @@
-#N canvas 642 39 632 426 10;
+#N canvas 642 39 632 451 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 397 doc_f;
+#X obj 0 417 doc_f;
 #X obj 3 207 doc_c 1;
 #X obj 3 269 doc_i 1;
 #X obj 3 357 doc_o 0;
@@ -22,5 +22,8 @@ a loadbang.;
 are [loadbang] \, [args] \, some other externals \, subpatches that
 contain anything that needs to be loadbanged \, and abstractions that
 contain anything that needs to be loadbanged.;
+#X obj 3 397 doc_also;
+#X obj 101 397 loadbang;
+#X obj 159 397 namecanvas;
 #X connect 8 1 10 0;
 #X connect 9 1 7 0;
