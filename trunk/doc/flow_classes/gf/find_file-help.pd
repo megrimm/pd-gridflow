@@ -1,4 +1,4 @@
-#N canvas 0 0 632 612 10;
+#N canvas 0 0 632 617 10;
 #X obj 53 92 gf/find_file 0;
 #X symbolatom 53 133 64 0 0 0 - - -;
 #X obj 53 33 loadbang;
@@ -42,6 +42,7 @@ this up using [gf/getcwd].;
 #X obj 3 563 doc_also;
 #X obj 103 563 #in;
 #X obj 133 563 gf/getcwd;
+#X obj 199 563 #in~;
 #X connect 0 0 1 0;
 #X connect 0 0 6 0;
 #X connect 0 1 3 0;
@@ -58,3 +59,4 @@ this up using [gf/getcwd].;
 #X connect 24 1 12 0;
 #X connect 31 1 32 0;
 #X connect 31 1 33 0;
+#X connect 31 1 34 0;

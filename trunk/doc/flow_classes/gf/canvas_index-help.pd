@@ -1,6 +1,6 @@
-#N canvas 0 0 632 373 10;
+#N canvas 0 0 632 398 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 344 doc_f;
+#X obj 0 364 doc_f;
 #X floatatom 41 76 5 0 0 0 - - -;
 #X obj 41 40 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
@@ -26,8 +26,11 @@ used to make "connect" messages in dynamic patching.;
 #X text 232 136 canvas level;
 #X obj 97 198 doc_m i0 bang;
 #X obj 97 136 doc_m c0 float;
+#X obj 3 344 doc_also;
+#X obj 103 344 gf/canvas_count;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;
 #X connect 9 1 10 0;
 #X connect 15 1 13 0;
 #X connect 16 1 14 0;
+#X connect 17 1 18 0;

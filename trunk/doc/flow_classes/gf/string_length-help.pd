@@ -1,6 +1,6 @@
-#N canvas 0 0 632 514 10;
+#N canvas 0 0 632 539 10;
 #X obj 0 0 doc_h;
-#X obj 0 485 doc_f;
+#X obj 0 505 doc_f;
 #X obj 3 301 doc_o 1;
 #X obj 3 239 doc_i 1;
 #X obj 3 199 doc_c 0;
@@ -36,6 +36,10 @@ as UTF-8) in which 1 codepoint = 2 bytes (or sometimes 3 or 4). also
 ;
 #X text 259 56 6 characters : a open-guillemet \, an acute e \, a grave
 a \, a close-guillemet.;
+#X obj 3 485 doc_also;
+#X obj 103 485 #import;
+#X obj 157 485 #dim;
+#X obj 193 485 list length;
 #X connect 7 1 8 0;
 #X connect 7 1 20 0;
 #X connect 7 1 23 0;
@@ -48,3 +52,6 @@ a \, a close-guillemet.;
 #X connect 17 0 16 0;
 #X connect 19 0 21 0;
 #X connect 21 0 16 0;
+#X connect 25 1 26 0;
+#X connect 25 1 27 0;
+#X connect 25 1 28 0;
