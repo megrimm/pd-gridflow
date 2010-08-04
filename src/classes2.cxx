@@ -963,23 +963,39 @@ void ParallelPort::call() {
 	t_symbol **sels;
 	~Route2() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
-	\decl void anything(...);
-	\decl 1 list(...);
+	\decl void anything(...) {
+		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+		outlet_anything(outlets[i],sel,argc-1,argv+1);
+	}
+	\decl 1 list(...) {
+		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+		if (sels) delete[] sels;
+		nsels = argc; sels = new t_symbol*[argc];
+		for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
+	}
 };
-\def void anything(...) {
-	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	int i=0;
-	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-	outlet_anything(outlets[i],sel,argc-1,argv+1);
-}
-\def 1 list(...) {
-	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-	if (sels) delete[] sels;
-	nsels = argc;
-	sels = new t_symbol*[argc];
-	for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
-}
 \end class {install("route2",1,1);}
+
+\class Route3 : FObject {
+	int nsels;
+	t_symbol **sels;
+	~Route3() {if (sels) delete[] sels;}
+	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
+	\decl void anything(...) {
+		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list;
+		outlet_anything(outlets[i],sel,argc-1,argv+1);
+	}
+	\decl 1 list(...) {
+		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+		if (sels) delete[] sels;
+		nsels = argc; sels = new t_symbol*[argc];
+		for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
+	}
+};
+\end class {install("route3",1,1);}
 
 template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 
