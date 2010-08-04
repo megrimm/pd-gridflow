@@ -106,14 +106,7 @@ struct GemCache {
 \class GridToPix : FObject {
 	pixBlock *pb;
 	\attr bool yflip;
-	void render(GemCache *cache, GemState *state) {
-		//post("pb.newimage=%d cache=%p cache.resendImage=%d cache.dirty=%d",pb->newimage,cache,cache->resendImage,cache->dirty);
-		state->image = pb;
-		pb->newimage = 1;
-		//cache->dirty = 1;
-		//pb->newfilm = 1;
-		cache->resendImage = 1;
-	}
+	void render(GemState *state) {state->image = pb; pb->newimage = 1;}
 	void startRendering () {pb->newimage = 1;}
 	\constructor () {
 		yflip = false;
@@ -125,8 +118,7 @@ struct GemCache {
 	~GridToPix () {}
 	\grin 1 int
 	\decl 0 gem_state (...) {
-		//post("gem_state $1=%p $2=%p",(void *)argv[0],(void *)argv[1]);
-		if (argc==2) render((GemCache *)(void *)argv[0],(GemState *)(void *)argv[1]); else startRendering();
+		if (argc==2) render((GemState *)(void *)argv[1]); else startRendering();
 		outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
 	}
 };
