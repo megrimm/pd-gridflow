@@ -324,9 +324,10 @@ svn propset svn:mime-type text/pure-data *.pd
 
 How to release GridFlow :
 
-dir=gridflow-9.10; tag=gridflow_9_10
+dir=gridflow-9.11; tag=gridflow_9_11
 svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
 svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
+	svn export -r 5948 svn+ssh://gridflow.ca/home/svn/gridflow/trunk/ $dir
 chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
 scp $dir.tar.gz gridflow@artengine.ca:public_html/download
 mv $dir.tar.gz /home/matju/GridFlow
