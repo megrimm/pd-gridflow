@@ -47,6 +47,9 @@ foreach k [lsort [array names ::say *]] {
 	if {$k=="#cluster_avg"} {set k "$k 4"}
 	if {$k=="cv/#KMeans"}   {set k "$k 4"}
 	if {$k == "#many"}      {set k "$k tgl 3 3"}
+	if {$k == "gf/lol"}     {set k "$k 0"}
+	if {$k == "gf/canvas_hehehe"} {set k "$k 0"}
+	if {$k == "gf/canvas_hohoho"} {set k "$k 0"}
 
 	if {[regexp ^doc $k]}      {set k "doc_link $k"}
 	if {[regexp ^#io $k]}      {set k "doc_link $k"}

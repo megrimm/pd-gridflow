@@ -362,9 +362,9 @@
 #X text 180 5985 tell the filename of a canvas;
 #X obj 60 6017 gf/canvas_getpos;
 #X text 180 6017 tell the position of a canvas in its parent canvas;
-#X obj 60 6049 gf/canvas_hehehe;
+#X obj 48 6049 gf/canvas_hehehe 0;
 #X text 180 6049 resize window automatically;
-#X obj 60 6081 gf/canvas_hohoho;
+#X obj 48 6081 gf/canvas_hohoho 0;
 #X text 180 6081 draw dashed box;
 #X obj 66 6113 gf/canvas_index;
 #X text 180 6113 tell the index of a canvas in its parent canvas;
@@ -388,7 +388,7 @@
 #X text 180 6401 tell the process id of the pd server;
 #X obj 72 6433 gf/io_generate;
 #X text 180 6433 for internal use by #in and #out;
-#X obj 120 6465 gf/lol;
+#X obj 108 6465 gf/lol 0;
 #X text 180 6465 make wires dashed or invisible \,  reposition and measure height of comments \,  etc.;
 #X obj 84 6497 gf/mouse_spy;
 #X text 180 6497 tell mouse/key events of a single patch window in [#out window] format;
