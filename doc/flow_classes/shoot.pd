@@ -63,9 +63,10 @@
 #X text 36 96 do next;
 #X obj 82 207 s2l /;
 #X obj 82 226 list split 2;
-#X msg 82 357 \; pd open \$2 \$1 \; justscreenshot 2500;
 #X msg 151 245 list . \$1;
 #X obj 82 331 t l l;
+#X msg 82 245 list \$1 \$2;
+#X msg 82 350 \; pd open \$1 \$2 \; justscreenshot 2500;
 #X msg 211 348 symbol \$1;
 #X connect 0 0 28 1;
 #X connect 1 0 0 0;
@@ -103,8 +104,9 @@
 #X connect 33 0 27 0;
 #X connect 36 0 37 0;
 #X connect 37 0 40 0;
-#X connect 37 2 39 0;
-#X connect 39 0 40 0;
-#X connect 40 0 38 0;
-#X connect 40 1 41 0;
-#X connect 41 0 9 1;
+#X connect 37 2 38 0;
+#X connect 38 0 39 0;
+#X connect 39 0 41 0;
+#X connect 39 1 42 0;
+#X connect 40 0 39 0;
+#X connect 42 0 9 1;
