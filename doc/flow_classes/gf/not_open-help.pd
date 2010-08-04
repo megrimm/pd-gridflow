@@ -1,7 +1,6 @@
-#N canvas 478 158 632 300 10;
-#X obj 50 57 gf.not_open;
+#N canvas 478 158 632 324 10;
 #X obj 0 0 doc_h;
-#X obj 0 270 doc_f;
+#X obj 0 290 doc_f;
 #X text 162 49 used in place of a [#io.\$1] by [#in] and [#out] when
 it is closed.;
 #X obj 3 93 doc_c 0;
@@ -13,4 +12,6 @@ it is closed.;
 message.;
 #X obj 14 238 doc_oo 0;
 #X obj 97 238 doc_m o0 not_open;
-#X connect 8 1 9 0;
+#X obj 3 270 doc_also;
+#X obj 50 57 gf/not_open;
+#X connect 7 1 8 0;
