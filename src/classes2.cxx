@@ -165,7 +165,35 @@ const char *atomtype_to_s (t_atomtype t) {
   default: return "unknown type";}}
 #undef Z
 
+#if 1 /* included from Pd 41, sorry */
+static void canvas_reflecttitle(t_canvas *x)
+{
+    char namebuf[MAXPDSTRING];
+    t_canvasenvironment *env = canvas_getenv(x);
+    if (env->ce_argc)
+    {
+        int i;
+        strcpy(namebuf, " (");
+        for (i = 0; i < env->ce_argc; i++)
+        {
+            if (strlen(namebuf) > MAXPDSTRING/2 - 5)
+                break;
+            if (i != 0)
+                strcat(namebuf, " ");
+            atom_string(&env->ce_argv[i], namebuf + strlen(namebuf),
+                MAXPDSTRING/2);
+        }
+        strcat(namebuf, ")");
+    }
+    else namebuf[0] = 0;
+    sys_vgui("wm title .x%lx {%s%c%s - %s}\n",
+        x, x->gl_name->s_name, (x->gl_dirty? '*' : ' '), namebuf,
+            canvas_getdir(x)->s_name);
+}
+#else
 extern "C" void canvas_reflecttitle (t_glist *);
+#endif
+
 #define binbuf_addv(B,S,A...) binbuf_addv(B,const_cast<char *>(S),A)
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
 \class GFSetArgs : FObject {
