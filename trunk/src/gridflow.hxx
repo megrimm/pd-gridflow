@@ -829,8 +829,8 @@ static void SAME_DIM(int n, const Dim &a, int ai, const Dim &b, int bi) {
 			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d", ai+i, a[ai+i], bi+i, b[bi+i]);}
 
 void suffixes_are (const char *name, const char *suffixes);
-#define install(name,inlets,outlets) install2(fclass,name,inlets,outlets)
-void install2(FClass *fclass, const char *name, int inlets, int outlets);
+#define install(A,B,C...) install2(fclass,A,B,C)
+void install2(FClass *fclass, const char *name, int inlets, int outlets, int flags=CLASS_DEFAULT);
 #define add_creator(name) add_creator2(fclass,name)
 void add_creator2(FClass *fclass, const char *name);
 void add_creator3(FClass *fclass, const char *name);
