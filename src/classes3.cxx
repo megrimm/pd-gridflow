@@ -919,8 +919,8 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 };
 void DrawPolygon::init_lines () {
 	if (!polygon) return;
-	int tnl = polygon->dim[0];
-	int nl = omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl;
+	int tnl = polygon->dim[0]; // total number of vertices
+	int nl = draw==DRAW_FILL ? tnl : omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl; // number of lines to draw
 	lines=new Grid(Dim(nl,8), int32_e);
 	Line *ld = (Line *)(int32 *)*lines;
 	int32 *pd = *polygon;
@@ -1022,11 +1022,8 @@ GRID_INLET(0) {
 		y++;
 	}
 } GRID_END
-
-
 GRID_INPUT(1,color) {} GRID_END
 GRID_INPUT(2,polygon) {init_lines();} GRID_END
-
 \end class {install("#draw_polygon",3,1); add_creator("@draw_polygon");}
 
 //****************************************************************
