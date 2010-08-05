@@ -920,7 +920,7 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 void DrawPolygon::init_lines () {
 	if (!polygon) return;
 	int tnl = polygon->dim[0]; // total number of vertices
-	int nl = draw==DRAW_FILL ? tnl : omit==OMIT_LAST ? tnl-1 : omit==OMIT_ODD ? (tnl+1)/2 : tnl; // number of lines to draw
+	int nl = draw==DRAW_FILL ? tnl : omit==OMIT_LAST ? max(0,tnl-1) : omit==OMIT_ODD ? (tnl+1)/2 : tnl; // number of lines to draw
 	lines=new Grid(Dim(nl,8), int32_e);
 	Line *ld = (Line *)(int32 *)*lines;
 	int32 *pd = *polygon;
@@ -964,7 +964,7 @@ GRID_INLET(0) {
 	while (n) {
 		while (lines_stop != nl && ld[lines_stop].y1<=y) {
 			Line &l = ld[lines_stop];
-			l.x = l.x1 + (((y-l.y1)*l.m)>>16);
+			l.x = l.x1 + (((y-l.y1)*l.m + 0x8000)>>16);
 			lines_stop++;
 		}
 		if (draw!=DRAW_POINT) {
