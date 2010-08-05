@@ -22,10 +22,8 @@
 /* !@#$ not handling abort on compress */
 /* !@#$ not handling abort on decompress */
 
+#define PNG_INCLUDE_HERE
 #include "gridflow.hxx.fcs"
-extern "C" {
-#include <libpng12/png.h>
-};
 
 \class FormatPNG : Format {
 	P<BitPacking> bit_packing;
