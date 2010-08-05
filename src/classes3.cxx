@@ -1396,6 +1396,42 @@ GRID_INPUT(1,r) {} GRID_END
 \end class {install("#lop_space",2,1);}
 
 //****************************************************************
+
+\class GridTabread : FObject {
+	t_symbol *t;
+	\constructor (t_symbol *table=&s_) {
+		t = table;
+	}
+	\decl 0 set (t_symbol *s) { t = s; }
+	\grin 0
+};
+
+GRID_INLET(0) {	
+	out = new GridOutlet(this,0,in.dim,float32_e);
+} GRID_FLOW {
+	t_garray *a;
+	int npoints;
+	t_word *vec;
+	float32 tada[n];
+	
+	for (int i=0; i<n; i++) {
+		if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
+			RAISE("%s: no such array", t->s_name);
+		else if (!garray_getfloatwords(a, &npoints, &vec))
+			RAISE("%s: bad template for tabread", t->s_name);
+		else {
+			int index = data[i];
+			if (index < 0) index = 0;
+			else if (index >= npoints) index = npoints - 1;
+			tada[i] = (npoints ? vec[index].w_float : 0);
+		}
+	}
+	out->send(n,tada);
+} GRID_END
+
+\end class {install("#tabread",1,1);}
+
+//****************************************************************
 void startup_flow_objects3 () {
 	op_os8 = OP(*>>8);
 	\startall
