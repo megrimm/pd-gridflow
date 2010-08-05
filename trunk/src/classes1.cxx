@@ -105,8 +105,20 @@ GridHandler *stromgol; // remove this asap
 	}
 	~GridImport() {}
 	\decl 0 reset() {int32 foo[1]={0}; if (out) while (out->sender) out->send(1,foo);}
-	\decl 0 symbol(t_symbol *x);
-	\decl 0 to_ascii(...);
+	\decl 0 symbol(t_symbol *x) {
+		const char *name = x->s_name;
+		long n = strlen(name);
+		if (per_message) out=new GridOutlet(this,0,Dim(n));
+		process(n,(uint8 *)name);
+	}
+	\decl 0 to_ascii(...) {
+		std::ostringstream os;
+		pd_oprint(os,argc,argv);
+		string s = os.str();
+		long n = s.length();
+		if (per_message) out=new GridOutlet(this,0,Dim(n),cast);
+		process(n,(uint8 *)s.data());
+	}
 	\decl 0 bang() {_0_list(0,0);}
 	//\decl 0 list(...);
 	\decl 1 per_message() {per_message=true; dim_grid=0;}
@@ -132,20 +144,6 @@ GRID_INPUT(1,dim_grid) {
 	per_message=false;
 } GRID_END
 
-\def 0 symbol(t_symbol *x) {
-	const char *name = x->s_name;
-	long n = strlen(name);
-	if (per_message) out=new GridOutlet(this,0,Dim(n));
-	process(n,(uint8 *)name);
-}
-\def 0 to_ascii(...) {
-	std::ostringstream os;
-	pd_oprint(os,argc,argv);
-	string s = os.str();
-	long n = s.length();
-	if (per_message) out=new GridOutlet(this,0,Dim(n),cast);
-	process(n,(uint8 *)s.data());
-}
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
@@ -219,8 +217,8 @@ GRID_INLET(0) {
 	t_pd *dest;
 	\decl 0 dest (void *p) {dest = (t_pd *)p;}
 	\decl void end_hook () {}
-	\decl 0 base (int x);
-	\decl 0 trunc (int x);
+	\decl 0 base (int x) {if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x);}
+	\decl 0 trunc (int x) {if (x<0 || x>240) RAISE("out of range (not in 0..240 range)"); trunc = x;}
 	\decl 0 maxrows (int y) {maxrows = y;}
 	void puts (const char *s) {
 		if (!dest) post("%s",s);
@@ -291,11 +289,6 @@ GRID_INLET(0) {
 		s << ": ";
 	}
 };
-\def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
-\def 0 trunc (int x) {
-	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
-	trunc = x;
-}
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
@@ -378,9 +371,21 @@ GRID_INLET(0) {
 		DELBUF(fromb);
 		DELBUF(to2);
 	}
-	\decl 0 bang ();
+	\decl 0 bang () {
+		t_atom a[2];
+		SETFLOAT(a+0,0);
+		SETSYMBOL(a+1,gensym("#"));
+		pd_list((t_pd *)bself,&s_list,2,a);
+	}
 	\decl 1 reassign () {put_at=0;}
-	\decl 1 put_at (...);
+	\decl 1 put_at (...) {
+		if (argv[0].a_type==A_LIST) put_at=TO(Grid *,argv[0]);
+		else {
+			put_at=new Grid(Dim(argc),int32_e);
+			int32 *v = (int32 *)*put_at;
+			for (int i=0; i<argc; i++) v[i]=TO(int32,argv[i]);
+		}
+	}
 	\grin 0 int
 	\grin 1
 	template <class T> void compute_indices(T *v, long nc, long nd);
@@ -530,20 +535,6 @@ GRID_INLET(1) {
 		d++;
 	}
 } GRID_END
-\def 0 bang () {
-	t_atom a[2];
-	SETFLOAT(a+0,0);
-	SETSYMBOL(a+1,gensym("#"));
-	pd_list((t_pd *)bself,&s_list,2,a);
-}
-\def 1 put_at (...) {
-	if (argv[0].a_type==A_LIST) put_at=TO(Grid *,argv[0]);
-	else {
-		put_at=new Grid(Dim(argc),int32_e);
-		int32 *v = (int32 *)*put_at;
-		for (int i=0; i<argc; i++) v[i]=TO(int32,argv[i]);
-	}
-}
 \end class {install("#store",2,1); add_creator("@store");}
 
 //****************************************************************
@@ -877,7 +868,15 @@ GRID_INPUT(1,r) {} GRID_END
 	}
 	//\decl 0 set (Grid *l=0) {from=new Grid(argv[0]);}
 	\decl 0 set (Grid *l=0) {from=l;}
-	\decl 0 bang ();
+	\decl 0 bang () {
+		SAME_TYPE(*from,to);
+		SAME_TYPE(*from,step);
+		if (from->dim!=to->dim || to->dim!=step->dim)
+			RAISE("dimension mismatch: from:%s to:%s step:%s",from->dim.to_s(),to->dim.to_s(),step->dim.to_s());
+		#define FOO(T) trigger((T)0);
+		TYPESWITCH(from->nt,FOO,);
+		#undef FOO
+	}
 	\grin 0
 	\grin 1
 	\grin 2
@@ -924,17 +923,6 @@ void GridFor::trigger (T bogus) {
 	}
 	end: if (k) out->send(k,x);
 }
-
-\def 0 bang () {
-	SAME_TYPE(*from,to);
-	SAME_TYPE(*from,step);
-	if (from->dim!=to->dim || to->dim!=step->dim)
-		RAISE("dimension mismatch: from:%s to:%s step:%s",from->dim.to_s(),to->dim.to_s(),step->dim.to_s());
-#define FOO(T) trigger((T)0);
-	TYPESWITCH(from->nt,FOO,);
-#undef FOO
-}
-
 GRID_INPUT(2,step) {} GRID_END
 GRID_INPUT(1,to) {} GRID_END
 GRID_INPUT(0,from) {_0_bang();} GRID_END
