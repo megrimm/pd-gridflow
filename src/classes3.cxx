@@ -39,48 +39,37 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 	int size;
 	t_sample **sam;
 	\constructor (int chans=1) {
+		if (chans<0) RAISE("need nonnegative number of channels");
 		sigout = new t_outlet *[chans];
 		for (int i=0; i<chans; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
 		this->chans = chans;
 		blah=new Grid(Dim(16384,chans),float32_e);
-		start=0;
-		size=0;
-		sam=0;
+		start=0; size=0; sam=0;
 	}
 	~GridToTilde () {delete[] sigout; if (sam) delete[] sam;}
-	void perform (int n, t_signal **sig) {
+	void perform (int n) {
 		float32 *data = (float32 *)*blah;
 		for (int i=0; i<n; i++) {
 			if (size) {
 				for (int j=0; j<chans; j++) sam[j][i]=data[start*chans+j];
 				start=(start+1)&16383;
 				size--;
-			} else {
-				for (int j=0; j<chans; j++) sam[j][i]=0;
-			}
+			} else for (int j=0; j<chans; j++) sam[j][i]=0;
 		}
 	}
-	static t_int *perform_ (t_int *w) {
-		GridToTilde *self = (GridToTilde *)w[1]; int n = int(w[2]); t_signal **v = (t_signal **)w[3];
-		self->perform(n,v);
-		return w+3;
-	}
+	static t_int *perform_ (t_int *w) {((GridToTilde *)w[1])->perform(int(w[2])); return w+3;}
 	void dsp (t_signal **sp) {
 		if (sam) delete[] sam;
 		sam = new t_sample *[chans];
 		for (int i=0; i<chans; i++) sam[i] = sp[i]->s_vec;
-		dsp_add(GridToTilde::perform_,2,this,sp[0]->s_n);
+		dsp_add(perform_,2,this,sp[0]->s_n);
 	}
-	static void dsp_ (BFObject *bself, t_signal **sp) {
-		//post("dsp bself=%p signal**=%p",bself,sp);
-		((GridToTilde *)bself->self)->dsp(sp);
-	}
+	static void dsp_ (BFObject *bself, t_signal **sp) {((GridToTilde *)bself->self)->dsp(sp);}
 	\grin 0 float32
 };
 GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
 	if (in.dim[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in.dim[1],chans);
-	post("GRID_INLET 0: *blah=%p",(T *)*blah);
 } GRID_FLOW {
 	if (size==16384) return;
 	while (n && size<16384) {
@@ -90,11 +79,51 @@ GRID_INLET(0) {
 	}
 	if (n>0) post("[#to~] buffer full: dropped %d samples",n/chans);
 } GRID_FINISH {
-	post("[#to~] buffer size : %d out of 16384",size);
+	//post("[#to~] buffer size : %d out of 16384",size);
 } GRID_END
 \end class {
 	install("#to~",1,0); // actually it has outlets that are not registered with GF
 	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp_,gensym("dsp"),A_CANT,0);
+}
+//****************************************************************
+\class GridFromTilde : FObject {
+	PtrGrid blah;
+	t_inlet **sigin;
+	int chans; /* number of channels */
+	t_sample **sam;
+	t_clock *clock;
+	\constructor (int chans=1) {
+		sigin = new t_inlet *[chans];
+		for (int i=0; i<chans; i++) sigin[i] = inlet_new((t_object *)bself,(t_pd *)bself,&s_signal,&s_signal);
+		this->chans = chans;
+		sam=0;
+		clock = clock_new(bself,(void(*)())clock_bang_);
+	}
+	void clock_bang () {
+		GridOutlet out(this,0,blah->dim,blah->nt);
+		out.send(blah->dim.prod(),(float32 *)*blah);
+	}
+	static void clock_bang_ (BFObject *bself) {((GridFromTilde *)bself->self)->clock_bang();}
+	~GridFromTilde () {delete[] sigin; if (sam) delete[] sam;}
+	void perform (int n) {
+		float32 *data = (float32 *)*blah;
+		for (int i=0; i<n; i++) for (int j=0; j<chans; j++) data[i*chans+j]=sam[j][i];
+		clock_delay(clock,0);
+	}
+	static t_int *perform_ (t_int *w) {((GridFromTilde *)w[1])->perform(int(w[2])); return w+3;}
+	void dsp (t_signal **sp) {
+		if (sam) delete[] sam;
+		sam = new t_sample *[chans];
+		for (int i=0; i<chans; i++) sam[i] = sp[i]->s_vec;
+		dsp_add(perform_,2,this,sp[0]->s_n);
+		blah=new Grid(Dim(sp[0]->s_n,chans),float32_e);
+	}
+	static void dsp_ (BFObject *bself, t_signal **sp) {((GridFromTilde *)bself->self)->dsp(sp);}
+};
+\end class {
+	// note that the real inlet 0 is hidden, and the other inlets are not registered with GF
+	install("#from~",1,1,CLASS_NOINLET);
+	class_addmethod(fclass->bfclass,(t_method)GridFromTilde::dsp_,gensym("dsp"),A_CANT,0);
 }
 
 //****************************************************************

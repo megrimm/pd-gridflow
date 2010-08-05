@@ -1,0 +1,44 @@
+#N canvas 596 0 632 554 10;
+#X obj 0 0 doc_h;
+#X obj 3 500 doc_also;
+#X obj 0 520 doc_f;
+#X obj 3 275 doc_c 1;
+#X obj 14 305 doc_cc 0;
+#X obj 97 305 doc_m c0 float;
+#X text 232 305 number of channels (default: 1);
+#X obj 3 337 doc_i 1..;
+#X obj 14 367 doc_ii any;
+#X obj 97 367 doc_m iany <signal>;
+#X text 232 367 signal in inlet number N will be column number N in
+the output grid.;
+#X obj 3 412 doc_o 1;
+#X obj 14 442 doc_oo 0;
+#X obj 97 442 doc_m o0 grid;
+#X text 232 442 a grid of size (blocksize \, channels) where blocksize
+is the current blocksize as defined by the [block~] currently active
+in this context. (default blocksize is 64);
+#X obj 152 94 #from~ 4;
+#X obj 103 500 #to~;
+#X obj 206 94 osc~ 0.01;
+#X obj 152 145 #to~ 4;
+#X obj 173 220 dac~;
+#X obj 330 105 *~ 44100;
+#X msg 441 87 44100;
+#X obj 443 144 nbx 8 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10
+-262144 -1 -1 689.062 256;
+#X obj 442 110 / 64;
+#X obj 182 45 osc~ 689.062;
+#X obj 173 193 *~ 0.25;
+#X obj 139 500 #tabread;
+#X connect 1 1 16 0;
+#X connect 1 1 26 0;
+#X connect 5 1 6 0;
+#X connect 9 1 10 0;
+#X connect 13 1 14 0;
+#X connect 15 0 18 0;
+#X connect 17 0 15 3;
+#X connect 18 2 25 0;
+#X connect 21 0 23 0;
+#X connect 23 0 22 0;
+#X connect 24 0 15 2;
+#X connect 25 0 19 0;
