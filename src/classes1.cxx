@@ -957,11 +957,13 @@ GRID_INLET(0) {
 } GRID_END
 \end class {install("#dim",1,1); add_creator("@dim");}
 \class GridType : FObject {
+	\attr bool abbr;
 	\constructor () {}
 	\grin 0
 };
 GRID_INLET(0) {
-	outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in.nt].name)));
+	if (abbr) outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in.nt].alias)));
+	else      outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in.nt].name)));
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
 
