@@ -808,12 +808,12 @@ void fclass_install(FClass *fclass, FClass *super) {
 	if (fclass->startup) fclass->startup(fclass);
 }
 
-void install2(FClass *fclass, const char *name, int inlets, int outlets) {
+void install2(FClass *fclass, const char *name, int inlets, int outlets, int flags) {
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(name);
 	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
-		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
+		sizeof(BFObject), flags, A_GIMME,0);
 	fclasses[string(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
 	t_class *b = fclass->bfclass;
@@ -1123,15 +1123,21 @@ BUILTIN_SYMBOLS(FOO)
 		"proc gridflow_add_to_put {menu} {\n"
 		  "set c [regsub .m.put $menu \"\"]\n"
  		  "$menu add separator\n"
-		  "$menu add command -label {Display} -command [list pd $c put display \\;]\n"
+		  "$menu add command -label {Display} -command [list pd $c put display \\;]\n" //  -accelerator [accel_munge Shift+Ctrl+p]
 		  "$menu add command -label {GridSee} -command [list pd $c put \\#see  \\;]\n"
 		"}\n"
 		"catch {gridflow_add_to_help .mbar.help}\n"
 		"catch {gridflow_add_to_help $::pd_menus::menubar.help; proc pd {args} {pdsend [join $args " "]}}\n"
 		"catch {rename menu_addstd menu_addstd_old\n"
 		  "proc menu_addstd {mbar} {menu_addstd_old $mbar; gridflow_add_to_help $mbar.help\n"
-		  "gridflow_add_to_put $mbar.put"
-		"}}\n");
+		    "gridflow_add_to_put $mbar.put"
+		"}}\n"
+		/*"catch {rename pdtk_canvas_ctrlkey pdtk_canvas_ctrlkey_old\n"
+		  "proc pdtk_canvas_ctrlkey {name key shift} {"
+		    "if {$shift && ($key==\"p\"||$key==\"P\"} {}"
+		    "pdtk_canvas_ctrlkey_old $name $key $shift"
+		"}\n"*/
+		);
 	delete[] dirresult;
 	delete[] dirname;
     } catch (Barf &oozy) {oozy.error(0,-1,(char *)0);}
