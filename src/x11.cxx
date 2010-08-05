@@ -210,15 +210,38 @@ typedef struct {
 
 	\decl 0 bang ();
 	void call ();
-	\decl 0 out_size (int sy, int sx);
-	\decl 0 setcursor (int shape);
-	\decl 0 hidecursor ();
-	\decl 0 set_geometry (int y, int x, int sy, int sx);
-	\decl 0 move (int y, int x);
-	\decl 0 shared_memory (bool toggle=1);
-	\decl 0 xvideo        (bool toggle=1);
-	\decl 0 title (string title="");
-	\decl 0 warp (int y, int x);
+	\decl 0 out_size (int sy, int sx) {resize_window(sx,sy);}
+	\decl 0 setcursor (int shape) {
+		if (shape<0 || shape>=77) RAISE("unknown shape number (should be at least 0 but less than 77)");
+		Cursor c = XCreateFontCursor(display,2*shape);
+		XDefineCursor(display,window,c);
+		XFlush(display);
+	}
+	\decl 0 hidecursor () {
+		Font font = XLoadFont(display,"fixed");
+		XColor color; /* bogus */
+		Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
+		XDefineCursor(display,window,c);
+		XFlush(display);
+	}
+	\decl 0 set_geometry (int y, int x, int sy, int sx) {
+		pos[0]=y; pos[1]=x;
+		XMoveWindow(display,window,x,y);
+		resize_window(sx,sy);
+		XFlush(display);
+	}
+	\decl 0 move (int y, int x) {
+		pos[0]=y; pos[1]=x;
+		XMoveWindow(display,window,x,y);
+		XFlush(display);
+	}
+	\decl 0 shared_memory (bool toggle=1) {shared_memory = toggle;}
+	\decl 0 xvideo        (bool toggle=1) {xvideo        = toggle;}
+	\decl 0 title (string title="") {this->title = title; set_wm_hints();}
+	\decl 0 warp (int y, int x) {
+		XWarpPointer(display,None,None,0,0,0,0,x,y);
+		XFlush(display);
+	}
 	\decl 0 fullscreen (bool toggle=1); // not working
 	\decl 0 border     (bool toggle=1);
 	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
@@ -617,24 +640,6 @@ GRID_INLET(0) {
 	show_section(0,0,in.dim[1],in.dim[0]);
 } GRID_END
 
-\def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
-
-\def 0 setcursor (int shape) {
-	if (shape<0 || shape>=77) RAISE("unknown shape number (should be at least 0 but less than 77)");
-	shape = 2*shape;
-	Cursor c = XCreateFontCursor(display,shape);
-	XDefineCursor(display,window,c);
-	XFlush(display);
-}
-
-\def 0 hidecursor () {
-	Font font = XLoadFont(display,"fixed");
-	XColor color; /* bogus */
-	Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
-	XDefineCursor(display,window,c);
-	XFlush(display);
-}
-
 void FormatX11::prepare_colormap() {
 	Colormap colormap = XCreateColormap(display,window,visual,AllocAll);
 	XColor colors[256];
@@ -716,29 +721,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	if (children) XFree(children);
 	return target;
 }
-
-\def 0 move (int y, int x) {
-	pos[0]=y; pos[1]=x;
-	XMoveWindow(display,window,x,y);
-	XFlush(display);
-}
-
-\def 0 set_geometry (int y, int x, int sy, int sx) {
-	pos[0]=y; pos[1]=x;
-	XMoveWindow(display,window,x,y);
-	resize_window(sx,sy);
-	XFlush(display);
-}
-
-\def 0 shared_memory (bool toggle) {shared_memory = toggle;}
-\def 0 xvideo        (bool toggle) {xvideo        = toggle;}
-
-\def 0 warp (int y, int x) {
-	XWarpPointer(display,None,None,0,0,0,0,x,y);
-	XFlush(display);
-}
-
-\def 0 title (string title="") {this->title = title; set_wm_hints();}
 
 \end class FormatX11 {install_format("#io.x11",6,"");}
 void startup_x11 () {
