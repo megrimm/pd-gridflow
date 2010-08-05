@@ -456,7 +456,8 @@ public:
 	}
 	static void visfn(BLAH, int flag) {INIT LL(",%d",flag);
 		self->vis = !!flag;
-		self->changed(); // is this ok?
+		if (flag) self->changed();
+		else deletefn(x,glist);
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
 		*x1 = text_xpix(bself,glist); *x2 = *x1+self->sx;
@@ -473,8 +474,9 @@ public:
 			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
 	}
 	static void deletefn(BLAH) {INIT L
-		if (self->vis) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
+		/* if (self->vis) */ sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
 		canvas_deletelinesfor(glist, (t_text *)x);
+		sys_unqueuegui(x);
 	}
 	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
 		//post("click1 %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit);
@@ -537,7 +539,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 	\decl 0 set_size(int sy, int sx);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
- 	void show() {
+ 	void show() { /* or hide */
 		std::ostringstream quoted;
 		std::string ss = text.str();
 		const char *s = ss.data();
@@ -551,9 +553,13 @@ extern "C" int sys_hostfontsize(int fontsize);
 			else quoted << (char)s[i];
 		}
 		// used to have {Courier -12} but this changed to use pdtk_canvas_new
-		sys_vgui("display_update %s %d %d #000000 #ffffc8 %s %d .x%x.c \"%s\"\n",
+		if (vis) sys_vgui("display_update %s %d %d #000000 #ffffc8 %s %d .x%x.c \"%s\"\n",
 			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#aaaaaa",
 			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
+		else {
+			t_canvas *c = glist_getcanvas(mom);
+			sys_vgui(".x%x.c delete %s\n",c,rsym->s_name,rsym->s_name);
+		}
 	}
 	NEWWB
 	static void redraw(BLAH) {INIT1 self->show();}
