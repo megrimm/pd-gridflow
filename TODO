@@ -2,8 +2,8 @@ x = done
 L = much later (whenever we get to know how to do it...)
 
 --------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
-
-[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
+[ ] remove [inv+] and [inv*] aliases
+[ ] [#] with 0-sized right value gives total crap
 [ ] [gf/error] doesn't report the source of the error like RAISE() does.
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
@@ -12,22 +12,16 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
 [ ] heat.pd still sucks (?)
-[!] in cyclepix4.pd, [#redim (512 512 1)] doesn't always work...
 [ ] accelerate [#outer ignore (0)]
 [ ] [#print] maxrows doesn't work
 [ ] [lb]
 [ ] invalid command name ".x8f03820.c" with hidden [display],
     and also, appears in wrong canvas or position in case of GOP sometimes
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
-[ ] <errordeveloper>
-	/usr/include/opencv/cxtypes.h:161: error: conflicting declaration ‘typedef int64_t int64’
-	src/gridflow.hxx.fcs:87: error: ‘int64’ has a previous declaration as ‘typedef long long int int64’
-	/usr/include/opencv/cxtypes.h:162: error: conflicting declaration ‘typedef uint64_t uint64’
-	src/gridflow.hxx.fcs:87: error: ‘uint64’ has a previous declaration as ‘typedef long long unsigned int uint64’
-[ ] <errordeveloper> 10101/devel/proj/diamond/misc/src/gridflow-9.8/gridflow.pd_linux: undefined symbol: png_write_destroy
+[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
-[ ] alias numops so that it's more pd-like
+[ ] alias numops so that they are more pd-like
 [ ] [#pack, cast] ?
 [ ] make a rounding [# *>>8] ?
 [ ] [#fft] sign crash
@@ -75,7 +69,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
 [ ] [#fold] is slowwww
-[ ] [route3] will be like [route] but won't trim.
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
@@ -110,6 +103,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] #include <libpng12/png.h> utilise pas l'autodétection
 [ ] reduce [doc_h] clock again before release !
 [ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
+[ ] revoir le système de paquetage pour linux.
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -172,9 +166,8 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
-[ ] [#from~]
 [ ] [#expr]
-[ ] [#line]? [#pipe]? [#delay]?
+[ ] [#line]? [#pipe]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
 [ ] #: option swap
 [ ] re-enable int64,float64
@@ -215,7 +208,6 @@ Documentation
 Architecture
 [ ] reentrancy of objects (to allow true recursion)
 [ ] expand the [doc_same] concept
-[ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
@@ -231,7 +223,6 @@ Architecture
 [ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
-[ ] interpret nested lists as n-dimensional.
 [ ] SSE
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
@@ -242,7 +233,6 @@ Computation Objects
 [ ] #conv (simpler #convolve) should allow n-D convolution
 [ ] #convolve rewritten as combination of #conv+#border ?
 [ ] #store: option zero (?)
-[ ] #from~
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
 [ ] #matrix_solve (CV), #replace_if, #random_select, #markov_chain, #splice, full-featured #slice (in c++)
