@@ -65,7 +65,7 @@ static int to_primtype (const t_atom2 &a) {
 	// CallLists // GLAPI void GLAPIENTRY glCallLists( GLsizei n, GLenum type, const GLvoid *lists ); // not in GEM
 	\decl 0 clear_accum (float r, float g, float b, float a) {glClearAccum(r,g,b,a);}
 	\decl 0 clear_color (float r, float g, float b, float a) {glClearColor(r,g,b,a);} // clamp
-	// ClearDepth
+	// ClearDepth // GLAPI void GLAPIENTRY glClearDepth( GLclampd depth );
 	// Clear // GLAPI void GLAPIENTRY glClear( GLbitfield mask );
 	// ClearIndex // GLAPI void GLAPIENTRY glClearIndex( GLfloat c );
 	// ClearStencil // GLAPI void GLAPIENTRY glClearStencil( GLint s );
@@ -84,19 +84,19 @@ static int to_primtype (const t_atom2 &a) {
 	// CopyTexSubImage[12]D
 	// CullFace // GLAPI void GLAPIENTRY glCullFace( GLenum mode );
 	// GLAPI void GLAPIENTRY glDeleteLists( GLuint list, GLsizei range ); // not in GEM
-	// DeleteTextures
-	// DepthFunc
-	// DepthMask
-	// DepthRange
-	// DisableClientState
-	// Disable
-	// DrawArrays
-	// DrawBuffer
-	// DrawElements
+	// DeleteTextures // GLAPI void GLAPIENTRY glDeleteTextures( GLsizei n, const GLuint *textures);
+	// DepthFunc // GLAPI void GLAPIENTRY glDepthFunc( GLenum func );
+	// DepthMask // GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
+	// DepthRange // GLAPI void GLAPIENTRY glDepthRange( GLclampd near_val, GLclampd far_val );
+	// DisableClientState // GLAPI void GLAPIENTRY glDisableClientState( GLenum cap );  /* 1.1 */
+	// Disable // GLAPI void GLAPIENTRY glDisable( GLenum cap );
+	// DrawArrays // GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
+	// DrawBuffer // GLAPI void GLAPIENTRY glDrawBuffer( GLenum mode );
+	// DrawElements // GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 	// GLAPI void GLAPIENTRY glDrawPixels( GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels ); // not in GEM
-	// EdgeFlag
-	// EnableClientState
-	// Enable
+	// EdgeFlag // GLAPI void GLAPIENTRY glEdgeFlagv( const GLboolean *flag );
+	// EnableClientState // GLAPI void GLAPIENTRY glEnableClientState( GLenum cap );  /* 1.1 */
+	// Enable // GLAPI void GLAPIENTRY glEnable( GLenum cap );
 	\decl 0 end () {glEnd();}
 	\decl 0 end_list () {glEndList();}
 	// EvalCoord[12][df]v?
@@ -138,13 +138,13 @@ static int to_primtype (const t_atom2 &a) {
 	// LoadMatrix[df]
 	\decl 0 load_name (uint32 name) {glLoadName(name);}
 	// LoadTransposeMatrix[df]
-	// LogicOp
+	// LogicOp // GLAPI void GLAPIENTRY glLogicOp( GLenum opcode );
 	// Map[12][df]
 	// MapGrid[12][df]
 	// Materialfv? // GLAPI void GLAPIENTRY glMaterialfv( GLenum face, GLenum pname, const GLfloat *params );
-	// MatrixMode
+	// MatrixMode // GLAPI void GLAPIENTRY glMatrixMode( GLenum mode );
 	// MultiTexCoord2fARB
-	// MultMatrix[df]
+	// MultMatrix[df] // GLAPI void GLAPIENTRY glMultMatrixf( const GLfloat *m );
 	// MultTransposeMatrix[df]
 	// NewList // GLAPI void GLAPIENTRY glNewList( GLuint list, GLenum mode );
 	// Normal3[bdfis]v?
@@ -167,30 +167,31 @@ static int to_primtype (const t_atom2 &a) {
 	// ProgramEnvParameter4fvARB
 	// ProgramLocalParameter4fvARB
 	// ProgramStringARB
-	// PushAttrib
-	// PushClientAttrib
+	// PushAttrib // GLAPI void GLAPIENTRY glPushAttrib( GLbitfield mask );
+	// PushClientAttrib // GLAPI void GLAPIENTRY glPushClientAttrib( GLbitfield mask );  /* 1.1 */
 	\decl 0 push_matrix () {glPushMatrix();}
 	\decl 0 push_name (uint32 name) {glPushName(name);}
 	// RasterPos2[dfis]v?
 	// RasterPos3[dfis]fv?
 	// RasterPos4[dfis]v?
 	\decl 0 rect (float x1, float y1, float x2, float y2) {glRectf(x1,y1,x2,y2);}
+	// GLAPI void GLAPIENTRY glReadBuffer( GLenum mode ); // not in GEM
 	// RenderMode
 	// ReportError
 	\decl 0 rotate (float a, float x, float y, float z) {glRotatef(a,x,y,z);}
 	\decl 0 scale           (float x, float y, float z) {glScalef(x,y,z);}
-	// Scissor
-	// SelectBuffer
+	\decl 0 scissor(int x, int y, int width, int height) {glScissor(x,y,width,height);}
+	// SelectBuffer // GLAPI void GLAPIENTRY glSelectBuffer( GLsizei size, GLuint *buffer );
 	// ShadeModel // GLAPI void GLAPIENTRY glShadeModel( GLenum mode );
 	// StencilFunc // GLAPI void GLAPIENTRY glStencilFunc( GLenum func, GLint ref, GLuint mask );
 	// StencilMask // GLAPI void GLAPIENTRY glStencilMask( GLuint mask );
 	// StencilOp // GLAPI void GLAPIENTRY glStencilOp( GLenum fail, GLenum zfail, GLenum zpass );
 	// TexCoord[1234][dfis]v?
-	// TexEnv[fi]
-	// TexGen[dfi]
-	// TexGenfv
-	// TexImage2D
-	// TexParameter[fi]
+	// TexEnv[fi] // GLAPI void GLAPIENTRY glTexEnvfv( GLenum target, GLenum pname, const GLfloat *params );
+	// TexGenfv // GLAPI void GLAPIENTRY glTexGenfv( GLenum coord, GLenum pname, const GLfloat *params );
+	// TexImage2D // GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level, GLint internalFormat,
+		// GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels );
+	// TexParameter[fi] // GLAPI void GLAPIENTRY glTexParameterfv( GLenum target, GLenum pname, const GLfloat *params );
 	// TexSubImage[12]D
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
 	// Uniform1fARB
