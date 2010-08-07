@@ -28,10 +28,12 @@ struct EnumType {
 	typedef std::map<t_symbol *,int>  forward_t;  forward_t  forward;
 	typedef std::map<int,t_symbol *> backward_t; backward_t backward;
 	EnumType (const char *name) {this->name = name;}
+	GLenum to_enum (const t_atom &a) {return to_enum(*(const t_atom2 *)&a);}
 	GLenum to_enum (const t_atom2 &a) {
 		if (a.a_type==A_FLOAT) {
 			float f = (float)a;
-			if (f<0 || f>9 || f!=int(f)) RAISE("%s must be an integer from 0 to 9");
+			backward_t::iterator it = backward.find((int)a);
+			if (it==backward.end()) RAISE("%d must be an integer from 0 to 9",(int)a);
 			return f;
 		} else if (a.a_type==A_SYMBOL) {
 			forward_t::iterator it = forward.find((t_symbol *)a);
@@ -41,13 +43,107 @@ struct EnumType {
 	}
 	void add (t_symbol *s, GLenum i) {forward[s]=i; backward[i]=s;}
 };
-struct EnumType primtype("primitive type");
-
-static t_symbol *gl_gensym (const char *s) {
-	char t[64];
-	strcpy(t,s+3);
+static t_symbol *tolower_gensym (const char *s) {
+	char t[64]; strcpy(t,s);
 	for (int i=0; t[i]; i++) t[i]=tolower(t[i]);
 	return gensym(t);
+}
+struct EnumType primtype("primitive type");
+struct EnumType capability("capability");
+static void init_enums () {
+	#define define(NAME) primtype.add(tolower_gensym(#NAME+3),NAME);
+	define(GL_POINTS)
+	define(GL_LINES)
+	define(GL_LINE_LOOP)
+	define(GL_LINE_STRIP)
+	define(GL_TRIANGLES)
+	define(GL_TRIANGLE_STRIP)
+	define(GL_TRIANGLE_FAN)
+	define(GL_QUADS)
+	define(GL_QUAD_STRIP)
+	define(GL_POLYGON)
+	#undef define
+	#define define(NAME) capability.add(tolower_gensym(#NAME+3),NAME);
+	define(GL_ALPHA_TEST)
+	define(GL_AUTO_NORMAL)
+	define(GL_BLEND)
+	define(GL_CLIP_PLANE0)
+	define(GL_CLIP_PLANE1)
+	define(GL_CLIP_PLANE2)
+	define(GL_CLIP_PLANE3)
+	define(GL_CLIP_PLANE4)
+	define(GL_CLIP_PLANE5)
+	define(GL_COLOR_LOGIC_OP)
+	define(GL_COLOR_MATERIAL)
+	define(GL_COLOR_SUM)
+	define(GL_COLOR_TABLE)
+	define(GL_CONVOLUTION_1D)
+	define(GL_CONVOLUTION_2D)
+	define(GL_CULL_FACE)
+	define(GL_DEPTH_TEST)
+	define(GL_DITHER)
+	define(GL_FOG)
+	define(GL_HISTOGRAM)
+	define(GL_INDEX_LOGIC_OP)
+	define(GL_LIGHT0)
+	define(GL_LIGHT1)
+	define(GL_LIGHT2)
+	define(GL_LIGHT3)
+	define(GL_LIGHT4)
+	define(GL_LIGHT5)
+	define(GL_LIGHT6)
+	define(GL_LIGHT7)
+	define(GL_LIGHTING)
+	define(GL_LINE_SMOOTH)
+	define(GL_LINE_STIPPLE)
+	define(GL_MAP1_COLOR_4)
+	define(GL_MAP1_INDEX)
+	define(GL_MAP1_NORMAL)
+	define(GL_MAP1_TEXTURE_COORD_1)
+	define(GL_MAP1_TEXTURE_COORD_2)
+	define(GL_MAP1_TEXTURE_COORD_3)
+	define(GL_MAP1_TEXTURE_COORD_4)
+	define(GL_MAP1_VERTEX_3)
+	define(GL_MAP1_VERTEX_4)
+	define(GL_MAP2_COLOR_4)
+	define(GL_MAP2_INDEX)
+	define(GL_MAP2_NORMAL)
+	define(GL_MAP2_TEXTURE_COORD_1)
+	define(GL_MAP2_TEXTURE_COORD_2)
+	define(GL_MAP2_TEXTURE_COORD_3)
+	define(GL_MAP2_TEXTURE_COORD_4)
+	define(GL_MAP2_VERTEX_3)
+	define(GL_MAP2_VERTEX_4)
+	define(GL_MINMAX)
+	define(GL_MULTISAMPLE)
+	define(GL_NORMALIZE)
+	define(GL_POINT_SMOOTH)
+	define(GL_POINT_SPRITE)
+	define(GL_POLYGON_OFFSET_FILL)
+	define(GL_POLYGON_OFFSET_LINE)
+	define(GL_POLYGON_OFFSET_POINT)
+	define(GL_POLYGON_SMOOTH)
+	define(GL_POLYGON_STIPPLE)
+	define(GL_POST_COLOR_MATRIX_COLOR_TABLE)
+	define(GL_POST_CONVOLUTION_COLOR_TABLE)
+	define(GL_RESCALE_NORMAL)
+	define(GL_SAMPLE_ALPHA_TO_COVERAGE)
+	define(GL_SAMPLE_ALPHA_TO_ONE)
+	define(GL_SAMPLE_COVERAGE)
+	define(GL_SEPARABLE_2D)
+	define(GL_SCISSOR_TEST)
+	define(GL_STENCIL_TEST)
+	define(GL_TEXTURE_1D)
+	define(GL_TEXTURE_2D)
+	define(GL_TEXTURE_3D)
+	define(GL_TEXTURE_CUBE_MAP)
+	define(GL_TEXTURE_GEN_Q)
+	define(GL_TEXTURE_GEN_R)
+	define(GL_TEXTURE_GEN_S)
+	define(GL_TEXTURE_GEN_T)
+	define(GL_VERTEX_PROGRAM_POINT_SIZE)
+	define(GL_VERTEX_PROGRAM_TWO_SIDE)
+	#undef define
 }
 
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
@@ -93,14 +189,14 @@ static t_symbol *gl_gensym (const char *s) {
 	// DepthMask // GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
 	// DepthRange // GLAPI void GLAPIENTRY glDepthRange( GLclampd near_val, GLclampd far_val );
 	// DisableClientState // GLAPI void GLAPIENTRY glDisableClientState( GLenum cap );  /* 1.1 */
-	// Disable // GLAPI void GLAPIENTRY glDisable( GLenum cap );
+	\decl 0 disable (t_atom cap) {glDisable(capability.to_enum(cap));}
 	// DrawArrays // GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
 	// DrawBuffer // GLAPI void GLAPIENTRY glDrawBuffer( GLenum mode );
 	// DrawElements // GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 	// GLAPI void GLAPIENTRY glDrawPixels( GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels ); // not in GEM
 	// EdgeFlag // GLAPI void GLAPIENTRY glEdgeFlagv( const GLboolean *flag );
 	// EnableClientState // GLAPI void GLAPIENTRY glEnableClientState( GLenum cap );  /* 1.1 */
-	// Enable // GLAPI void GLAPIENTRY glEnable( GLenum cap );
+	\decl 0 enable (t_atom cap) {glEnable(capability.to_enum(cap));}
 	\decl 0 end () {glEnd();}
 	\decl 0 end_list () {glEndList();}
 	\decl 0 eval_coord (...) {switch (argc) {
@@ -260,17 +356,6 @@ static t_symbol *gl_gensym (const char *s) {
 \end class {install("gf/gl",1,1);}
 
 void startup_opengl () {
-	#define define(I,NAME) primtype.add(gl_gensym(#NAME),I);
-	define(0,GL_POINTS)
-	define(1,GL_LINES)
-	define(2,GL_LINE_LOOP)
-	define(3,GL_LINE_STRIP)
-	define(4,GL_TRIANGLES)
-	define(5,GL_TRIANGLE_STRIP)
-	define(6,GL_TRIANGLE_FAN)
-	define(7,GL_QUADS)
-	define(8,GL_QUAD_STRIP)
-	define(9,GL_POLYGON)
-	#undef define
+	init_enums();
 	\startall
 }
