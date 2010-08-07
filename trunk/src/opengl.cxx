@@ -21,6 +21,7 @@
 
 #include "gridflow.hxx.fcs"
 #include <GL/gl.h>
+#include <ctype.h>
 
 /* supported by GEM in openGL dir :
 Accum
@@ -162,11 +163,39 @@ Vertex[234][dfis]v?
 Viewport
 GLdefine
 */
+typedef std::map<t_symbol *,int> primtype_map_t; primtype_map_t primtype_map;
+
+static t_symbol *gl_gensym (const char *s) {
+	char t[64];
+	strcpy(t,s+3);
+	for (int i=0; t[i]; i++) t[i]=tolower(t[i]);
+	return gensym(t);
+}
+
+static int to_primtype (const t_atom2 &a) {
+	if (a.a_type==A_FLOAT) {
+		float f = (float)a;
+		if (f<0 || f>9 || f!=int(f)) RAISE("primitive_type must be an integer from 0 to 9");
+		return f;
+	} else if (a.a_type==A_SYMBOL) {
+		primtype_map_t::iterator it = primtype_map.find((t_symbol *)a);
+		if (it==primtype_map.end()) RAISE("unknown primitive type");
+		return it->second;
+	} else RAISE("to primtype: expected float or symbol");
+}
+
 \class GFGL : FObject {
 	\constructor () {}
 	~GFGL() {}
-	\decl 0 begin () {}
-	\decl 0 end () {}
+	\decl 0 begin (t_atom2 primtype) {glBegin(to_primtype(primtype));}
+	\decl 0 color (...) {
+		switch (argc) {
+			case 3: glColor3f(argv[0],argv[1],argv[2]); break;
+			case 4: glColor4f(argv[0],argv[1],argv[2],argv[3]); break;
+			default: RAISE("need 3 or 4 args");
+		}
+	}
+	\decl 0 end () {glEnd();}
 	\decl 0 vertex (...) {
 		switch (argc) {
 			case 2: glVertex2f(argv[0],argv[1]); break;
@@ -179,5 +208,17 @@ GLdefine
 \end class {install("gf/gl",1,1);}
 
 void startup_opengl () {
+	#define define(I,NAME) primtype_map[gl_gensym(#NAME)]=I;
+	define(0,GL_POINTS)
+	define(1,GL_LINES)
+	define(2,GL_LINE_LOOP)
+	define(3,GL_LINE_STRIP)
+	define(4,GL_TRIANGLES)
+	define(5,GL_TRIANGLE_STRIP)
+	define(6,GL_TRIANGLE_FAN)
+	define(7,GL_QUADS)
+	define(8,GL_QUAD_STRIP)
+	define(9,GL_POLYGON)
+	#undef define
 	\startall
 }
