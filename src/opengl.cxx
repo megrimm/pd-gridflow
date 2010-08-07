@@ -68,14 +68,23 @@ MAKETYPE(stencil_op)
 MAKETYPE(render_mode)
 MAKETYPE(buffer_mode)
 MAKETYPE(material_mode)
+MAKETYPE(tex_target)
 MAKETYPE(copy_tex_target)
-MAKETYPE(copy_tex_format)
+MAKETYPE(tex_iformat)
+MAKETYPE(tex_format)
+MAKETYPE(tex_type)
 MAKETYPE(polygon_mode)
 MAKETYPE(hint_target)
 MAKETYPE(hint_mode)
 MAKETYPE(accum_op)
 MAKETYPE(fog_param)
 MAKETYPE(list_mode)
+MAKETYPE(texture_parameter)
+MAKETYPE(texture_min_filter)
+MAKETYPE(texture_mag_filter)
+MAKETYPE(texture_wrap)
+MAKETYPE(tex_env_target)
+MAKETYPE(tex_env_parameter)
 static void init_enums () {
 	#define D(NAME) add(tolower_gensym(#NAME+3),NAME)
 	primitive_type
@@ -357,6 +366,17 @@ static void init_enums () {
 	.D(GL_SPECULAR)
 	.D(GL_AMBIENT_AND_DIFFUSE)
 	;
+	tex_target
+	.D(GL_TEXTURE_2D)
+	.D(GL_PROXY_TEXTURE_2D)
+	.D(GL_TEXTURE_CUBE_MAP_POSITIVE_X)
+	.D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)
+	.D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)
+	.D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)
+	.D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)
+	.D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
+	.D(GL_PROXY_TEXTURE_CUBE_MAP)
+	;
 	copy_tex_target
 	.D(GL_TEXTURE_2D)
 	.D(GL_TEXTURE_CUBE_MAP_POSITIVE_X)
@@ -366,7 +386,7 @@ static void init_enums () {
 	.D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)
 	.D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
 	;
-	copy_tex_format
+	tex_iformat
 	.D(GL_ALPHA)
 	.D(GL_ALPHA4)
 	.D(GL_ALPHA8)
@@ -424,6 +444,41 @@ static void init_enums () {
 	.D(GL_SRGB_ALPHA)
 	.D(GL_SRGB8_ALPHA8)
 	;
+	tex_format
+	.D(GL_COLOR_INDEX)
+	.D(GL_RED)
+	.D(GL_GREEN)
+	.D(GL_BLUE)
+	.D(GL_ALPHA)
+	.D(GL_RGB)
+	.D(GL_BGR)
+	.D(GL_RGBA)
+	.D(GL_BGRA)
+	.D(GL_LUMINANCE)
+	.D(GL_LUMINANCE_ALPHA)
+	;
+	tex_type
+	.D(GL_UNSIGNED_BYTE)
+	.D(GL_BYTE)
+	.D(GL_BITMAP)
+	.D(GL_UNSIGNED_SHORT)
+	.D(GL_SHORT)
+	.D(GL_UNSIGNED_INT)
+	.D(GL_INT)
+	.D(GL_FLOAT)
+	.D(GL_UNSIGNED_BYTE_3_3_2)
+	.D(GL_UNSIGNED_BYTE_2_3_3_REV)
+	.D(GL_UNSIGNED_SHORT_5_6_5)
+	.D(GL_UNSIGNED_SHORT_5_6_5_REV)
+	.D(GL_UNSIGNED_SHORT_4_4_4_4)
+	.D(GL_UNSIGNED_SHORT_4_4_4_4_REV)
+	.D(GL_UNSIGNED_SHORT_5_5_5_1)
+	.D(GL_UNSIGNED_SHORT_1_5_5_5_REV)
+	.D(GL_UNSIGNED_INT_8_8_8_8)
+	.D(GL_UNSIGNED_INT_8_8_8_8_REV)
+	.D(GL_UNSIGNED_INT_10_10_10_2)
+	.D(GL_UNSIGNED_INT_2_10_10_10_REV)
+	;
 	polygon_mode
 	.D(GL_POINT)
 	.D(GL_LINE)
@@ -462,6 +517,67 @@ static void init_enums () {
 	list_mode
 	.D(GL_COMPILE)
 	.D(GL_COMPILE_AND_EXECUTE)
+	;
+	texture_parameter
+	.D(GL_TEXTURE_MIN_FILTER)
+	.D(GL_TEXTURE_MAG_FILTER)
+	.D(GL_TEXTURE_MIN_LOD)
+	.D(GL_TEXTURE_MAX_LOD)
+	.D(GL_TEXTURE_BASE_LEVEL)
+	.D(GL_TEXTURE_MAX_LEVEL)
+	.D(GL_TEXTURE_WRAP_S)
+	.D(GL_TEXTURE_WRAP_T)
+	.D(GL_TEXTURE_WRAP_R)
+	.D(GL_TEXTURE_PRIORITY)
+	.D(GL_TEXTURE_COMPARE_MODE)
+	.D(GL_TEXTURE_COMPARE_FUNC)
+	.D(GL_DEPTH_TEXTURE_MODE)
+	.D(GL_GENERATE_MIPMAP)
+	;
+	texture_min_filter
+	.D(GL_NEAREST)
+	.D(GL_LINEAR)
+	.D(GL_NEAREST_MIPMAP_NEAREST)
+	.D(GL_LINEAR_MIPMAP_NEAREST)
+	.D(GL_NEAREST_MIPMAP_LINEAR)
+	.D(GL_LINEAR_MIPMAP_LINEAR)
+	;
+	texture_mag_filter
+	.D(GL_NEAREST)
+	.D(GL_LINEAR)
+	;
+	texture_wrap
+	.D(GL_CLAMP)
+	.D(GL_CLAMP_TO_BORDER)
+	.D(GL_CLAMP_TO_EDGE)
+	.D(GL_MIRRORED_REPEAT)
+	.D(GL_REPEAT)
+	;
+	tex_env_target
+	.D(GL_TEXTURE_ENV)
+	.D(GL_TEXTURE_FILTER_CONTROL)
+	.D(GL_POINT_SPRITE)
+	;
+	tex_env_parameter
+	.D(GL_TEXTURE_ENV_MODE)
+	.D(GL_TEXTURE_LOD_BIAS)
+	.D(GL_COMBINE_RGB)
+	.D(GL_COMBINE_ALPHA)
+	.D(GL_SRC0_RGB)
+	.D(GL_SRC1_RGB)
+	.D(GL_SRC2_RGB)
+	.D(GL_SRC0_ALPHA)
+	.D(GL_SRC1_ALPHA)
+	.D(GL_SRC2_ALPHA)
+	.D(GL_OPERAND0_RGB)
+	.D(GL_OPERAND1_RGB)
+	.D(GL_OPERAND2_RGB)
+	.D(GL_OPERAND0_ALPHA)
+	.D(GL_OPERAND1_ALPHA)
+	.D(GL_OPERAND2_ALPHA)
+	.D(GL_RGB_SCALE)
+	.D(GL_ALPHA_SCALE)
+	.D(GL_COORD_REPLACE)
 	;
 }
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
@@ -505,9 +621,9 @@ static void init_enums () {
 
 	// please review and check that format and internalFormat (iformat) are not confused
 	\decl 0 copy_tex_image_1D (t_atom target, int level, t_atom iformat, int x, int y, int width, int border ) {
-		glCopyTexImage1D(copy_tex_target(target),level,copy_tex_format(iformat),x,y,width,border);}
+		glCopyTexImage1D(copy_tex_target(target),level,tex_iformat(iformat),x,y,width,border);}
 	\decl 0 copy_tex_image_2D (t_atom target, int level, t_atom iformat, int x, int y, int width, int height, int border) {
-		glCopyTexImage2D(copy_tex_target(target),level,copy_tex_format(iformat),x,y,width,height,border);}		
+		glCopyTexImage2D(copy_tex_target(target),level,tex_iformat(iformat),x,y,width,height,border);}		
 	\decl 0 copy_tex_sub_image_1D (t_atom target, int level, int xoffset, int x, int y, int width) {
 		if (copy_tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
 		glCopyTexSubImage1D(copy_tex_target(target),level,xoffset,x,y,width);}
@@ -665,7 +781,9 @@ static void init_enums () {
 	\decl 0 rotate (float a, float x, float y, float z) {glRotatef(a,x,y,z);}
 	\decl 0 scale           (float x, float y, float z) {glScalef(x,y,z);}
 	\decl 0 scissor(int x, int y, int width, int height) {glScissor(x,y,width,height);}
-	// SelectBuffer // GLAPI void GLAPIENTRY glSelectBuffer(int size, GLuint *buffer);
+
+	\decl 0 select_buffer (int size, void *buffer) {glSelectBuffer(size,(uint32 *)buffer);}
+
 	\decl 0 shade_model (t_atom mode) {shade_model(mode);}
 	\decl 0 stencil_func (t_atom func, int ref, uint32 mask) {
 		glStencilFunc(stencil_func(func),ref,mask);}
@@ -679,21 +797,70 @@ static void init_enums () {
 		case 4: glTexCoord4f(argv[0],argv[1],argv[2],argv[3]); break;
 		default: RAISE("need 1, 2, 3 or 4 args");
 	}}
+
 	// glTexEnvfv(t_atom target, t_atom pname, const float *params);
+	\decl 0 tex_env (...) {
+		if (argc<3) RAISE("minimum 3 args");
+		GLenum target = tex_env_target(argv[0]);
+		GLenum pname = tex_env_parameter(argv[1]);
+		switch (pname) {
+		  
+		  default: RAISE("...");
+		}
+		//glTexEnvfv(target,pname,params);
+		//glTexEnviv(target,pname,params);
+	}
 	// glTexGenfv(t_atom coord,  t_atom pname, const float *params);
-	// glTexImage1D(t_atom target, int level, t_atom iformat, int width, int border,
-		// t_atom format, t_atom type, const GLvoid *pixels);
-	// glTexImage2D(t_atom target, int level, t_atom iformat, int width, int height, int border,
-		// t_atom format, t_atom type, const GLvoid *pixels);
-	// glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border,
-		// t_atom format, t_atom type, const GLvoid *pixels ); // not in GEM
-	// glTexParameterfv(t_atom target, t_atom pname, const float *params);
-	// glTexSubImage1D(t_atom target, int level, int xoffset, int width,
-		// t_atom format, t_atom type, const GLvoid *pixels);
-	// glTexSubImage2D(t_atom target, int level, int xoffset, int yoffset, int width, int height,
-		// t_atom format, t_atom type, const GLvoid *pixels);
-	// glTexSubImage3D(t_atom target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth,
-		// t_atom format, t_atom type, const GLvoid *pixels); // not in GEM
+	\decl 0 tex_gen (...) {
+		if (argc<3) RAISE("minimum 3 args");
+		GLenum target = texture_target(argv[0]);
+		GLenum pname = texture_parameter(argv[1]);
+		switch (pname) {
+		  default: RAISE("...");
+		}
+		//glTexGenfv(target,pname,params);
+	}
+
+	\decl 0 tex_image_1D(t_atom target, int level, t_atom iformat, int width,                        int border, t_atom format, t_atom type, const GLvoid *pixels) {
+		if (tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+		glTexImage1D(tex_target(target),level,tex_iformat(iformat),width,             border,tex_format(format),tex_type(type),pixels);}
+	\decl 0 tex_image_2D(t_atom target, int level, t_atom iformat, int width, int height,            int border, t_atom format, t_atom type, const GLvoid *pixels) {
+		glTexImage2D(tex_target(target),level,tex_iformat(iformat),width,height,      border,tex_format(format),tex_type(type),pixels);}
+	\decl 0 glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border, t_atom format, t_atom type, const GLvoid *pixels) {
+		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+		glTexImage3D(tex_target(target),level,tex_iformat(iformat),width,height,depth,border,tex_format(format),tex_type(type),pixels);} // not in GEM
+
+	\decl 0 tex_parameter (...) {
+		if (argc<3) RAISE("minimum 3 args");
+		GLenum target = texture_target(argv[0]);
+		GLenum pname = texture_parameter(argv[1]);
+		switch (pname) {
+		  case GL_TEXTURE_MIN_FILTER: break;
+		  case GL_TEXTURE_MAG_FILTER: break;
+		  case GL_TEXTURE_MIN_LOD: break;
+		  case GL_TEXTURE_MAX_LOD: break;
+		  case GL_TEXTURE_BASE_LEVEL: break;
+		  case GL_TEXTURE_MAX_LEVEL: break;
+		  case GL_TEXTURE_WRAP_S: case GL_TEXTURE_WRAP_T: case GL_TEXTURE_WRAP_R: break;
+		  case GL_TEXTURE_PRIORITY: break;
+		  case GL_TEXTURE_COMPARE_MODE: break;
+		  case GL_TEXTURE_COMPARE_FUNC: break;
+		  case GL_DEPTH_TEXTURE_MODE: break;
+		  case GL_GENERATE_MIPMAP: break;
+		  default: RAISE("...");
+		}
+		//glTexParameteriv(target,pname,params);
+		//glTexParameterfv(target,pname,params);
+	}
+
+	\decl 0 tex_sub_image_1D(t_atom target, int level, int xoffset,                           int width,                        t_atom format, t_atom type, const GLvoid *pixels) {
+		if (tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+		glTexSubImage1D(tex_target(target),level,xoffset,                width,             tex_format(format),tex_type(type),pixels);}
+	\decl 0 tex_sub_image_2D(t_atom target, int level, int xoffset, int yoffset,              int width, int height,            t_atom format, t_atom type, const GLvoid *pixels) {
+		glTexSubImage2D(tex_target(target),level,xoffset,yoffset,        width,height,      tex_format(format),tex_type(type),pixels);}
+	\decl 0 tex_sub_image_3D(t_atom target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, t_atom format, t_atom type, const GLvoid *pixels) {
+		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+		glTexSubImage3D(tex_target(target),level,xoffset,yoffset,zoffset,width,height,depth,tex_format(format),tex_type(type),pixels);} // not in GEM
 
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
 	// Uniform1fARB
