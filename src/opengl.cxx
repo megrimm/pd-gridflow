@@ -50,8 +50,19 @@ static t_symbol *tolower_gensym (const char *s) {
 }
 struct EnumType primtype("primitive type");
 struct EnumType capability("capability");
+struct EnumType client_state_capability("client state capability");
+struct EnumType cull_mode("cull mode");
+struct EnumType texture_target("texture target");
+struct EnumType blend_equation("blend equation");
+struct EnumType blend_func("blend func");
+struct EnumType copy_pixels_type("copy pixels type");
+struct EnumType depth_func("depth func");
+struct EnumType front_face_mode("front face mode");
+struct EnumType logic_op("logic_op");
+struct EnumType stencil_func("stencil_func");
 static void init_enums () {
 	#define define(NAME) primtype.add(tolower_gensym(#NAME+3),NAME);
+	#define THAT primtype
 	define(GL_POINTS)
 	define(GL_LINES)
 	define(GL_LINE_LOOP)
@@ -62,8 +73,8 @@ static void init_enums () {
 	define(GL_QUADS)
 	define(GL_QUAD_STRIP)
 	define(GL_POLYGON)
-	#undef define
-	#define define(NAME) capability.add(tolower_gensym(#NAME+3),NAME);
+	#undef THAT
+	#define THAT capability
 	define(GL_ALPHA_TEST)
 	define(GL_AUTO_NORMAL)
 	define(GL_BLEND)
@@ -143,16 +154,106 @@ static void init_enums () {
 	define(GL_TEXTURE_GEN_T)
 	define(GL_VERTEX_PROGRAM_POINT_SIZE)
 	define(GL_VERTEX_PROGRAM_TWO_SIDE)
-	#undef define
+	#undef THAT
+	#define THAT client_state_capability
+	define(GL_COLOR_ARRAY)
+	define(GL_EDGE_FLAG_ARRAY)
+	define(GL_FOG_COORD_ARRAY)
+	define(GL_INDEX_ARRAY)
+	define(GL_NORMAL_ARRAY)
+	define(GL_SECONDARY_COLOR_ARRAY)
+	define(GL_TEXTURE_COORD_ARRAY)
+	define(GL_VERTEX_ARRAY)
+	#undef THAT
+	#define THAT cull_mode
+	define(GL_FRONT)
+	define(GL_BACK)
+	define(GL_FRONT_AND_BACK)
+	#undef THAT
+	#define THAT texture_target
+	define(GL_TEXTURE_1D)
+	define(GL_TEXTURE_2D)
+	define(GL_TEXTURE_3D)
+	define(GL_TEXTURE_CUBE_MAP)
+	#undef THAT
+	#define THAT blend_equation
+	define(GL_FUNC_ADD)
+	define(GL_FUNC_SUBTRACT)
+	define(GL_FUNC_REVERSE_SUBTRACT)
+	define(GL_MIN)
+	define(GL_MAX)
+	#undef THAT
+	#define THAT blend_func
+	define(GL_ZERO)
+	define(GL_ONE)
+	define(GL_SRC_COLOR)
+	define(GL_ONE_MINUS_SRC_COLOR)
+	define(GL_DST_COLOR)
+	define(GL_ONE_MINUS_DST_COLOR)
+	define(GL_SRC_ALPHA)
+	define(GL_ONE_MINUS_SRC_ALPHA)
+	define(GL_DST_ALPHA)
+	define(GL_ONE_MINUS_DST_ALPHA)
+	define(GL_CONSTANT_COLOR)
+	define(GL_ONE_MINUS_CONSTANT_COLOR)
+	define(GL_CONSTANT_ALPHA)
+	define(GL_ONE_MINUS_CONSTANT_ALPHA)
+	define(GL_SRC_ALPHA_SATURATE) // not supposed to be available as dfactor
+	#undef THAT
+	#define THAT copy_pixels_type
+	define(GL_COLOR)
+	define(GL_DEPTH)
+	define(GL_STENCIL)
+	#undef THAT
+	#define THAT depth_func
+	define(GL_NEVER)
+	define(GL_LESS)
+	define(GL_EQUAL)
+	define(GL_LEQUAL)
+	define(GL_GREATER)
+	define(GL_NOTEQUAL)
+	define(GL_GEQUAL)
+	define(GL_ALWAYS)
+	#undef THAT
+	#define THAT front_face_mode
+	define(GL_CW)
+	define(GL_CCW)
+	#undef THAT
+	#define THAT logic_op
+	define(GL_CLEAR)
+	define(GL_SET)
+	define(GL_COPY)
+	define(GL_COPY_INVERTED)
+	define(GL_NOOP)
+	define(GL_INVERT)
+	define(GL_AND)
+	define(GL_NAND)
+	define(GL_OR)
+	define(GL_NOR)
+	define(GL_XOR)
+	define(GL_EQUIV)
+	define(GL_AND_REVERSE)
+	define(GL_AND_INVERTED)
+	define(GL_OR_REVERSE)
+	define(GL_OR_INVERTED)
+	#undef THAT
+	#define THAT stencil_func
+	define(GL_NEVER)
+	define(GL_LESS)
+	define(GL_LEQUAL)
+	define(GL_GREATER)
+	define(GL_GEQUAL)
+	define(GL_EQUAL)
+	define(GL_NOTEQUAL)
+	define(GL_ALWAYS)
+	#undef THAT
 }
-
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
 \class GFGL : FObject {
 	\constructor () {}
 	~GFGL() {}
 	\decl 0 accum (float op, float value) {glAccum(op,value);} // op should be enum
 	// ActiveTextureARB
-	// AlphaFunc
 	\decl 0 alpha_func (float func, float ref) {glAlphaFunc(func,ref);} // enum
 	// AreTexturesResident
 	\decl 0 array_element (int i) {glArrayElement(i);}
@@ -160,17 +261,18 @@ static void init_enums () {
 	\decl 0 begin (t_atom2 a) {glBegin(primtype.to_enum(a));}
 	// BindProgramARB
 	// BindTexture //GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
+	\decl 0 bind_texture (t_atom target, uint32 texture) {glBindTexture(texture_target.to_enum(target),texture);}
 	// Bitmap //glBitmap( GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap );
-	// BlendEquation // GLAPI void GLAPIENTRY glBlendEquation( GLenum mode );
-	// BlendFunc // GLAPI void GLAPIENTRY glBlendFunc( GLenum sfactor, GLenum dfactor );
-	// CallList // GLAPI void GLAPIENTRY glCallList( GLuint list );
+	\decl 0 blend_equation (t_atom mode) {glBlendEquation(blend_equation.to_enum(mode));}
+	\decl 0 blend_func (t_atom sfactor, t_atom dfactor) {glBlendFunc(blend_func.to_enum(sfactor),blend_func.to_enum(dfactor));}
+	\decl 0 call_list (uint32 list) {glCallList(list);}
 	// CallLists // GLAPI void GLAPIENTRY glCallLists( GLsizei n, GLenum type, const GLvoid *lists ); // not in GEM
 	\decl 0 clear_accum (float r, float g, float b, float a) {glClearAccum(r,g,b,a);}
 	\decl 0 clear_color (float r, float g, float b, float a) {glClearColor(r,g,b,a);} // clamp
-	// ClearDepth // GLAPI void GLAPIENTRY glClearDepth( GLclampd depth );
-	// Clear // GLAPI void GLAPIENTRY glClear( GLbitfield mask );
-	// ClearIndex // GLAPI void GLAPIENTRY glClearIndex( GLfloat c );
-	// ClearStencil // GLAPI void GLAPIENTRY glClearStencil( GLint s );
+	\decl 0 clear_depth (float depth) {glClearDepth(depth);} // clamp
+	\decl 0 clear (int mask) {glClear(mask);} // bitfield
+	\decl 0 clear_index (float c) {glClearIndex(c);}
+	\decl 0 clear_stencil (int s) {glClearStencil(s);}
 	// ClipPlane // GLAPI void GLAPIENTRY glClipPlane( GLenum plane, const GLdouble *equation );
 	\decl 0 color (...) {switch (argc) {
 		case 3: glColor3f(argv[0],argv[1],argv[2]); break;
@@ -179,23 +281,28 @@ static void init_enums () {
 	}}
 	\decl 0 color_mask (bool r, bool g, bool b, bool a) {glColorMask(r,g,b,a);}
 	// ColorMaterial // GLAPI void GLAPIENTRY glColorMaterial( GLenum face, GLenum mode );
-	// CopyPixels // GLAPI void GLAPIENTRY glCopyPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum type );
-	// CopyTexImage[12]D
-	// CopyTexSubImage[12]D
-	// CullFace // GLAPI void GLAPIENTRY glCullFace( GLenum mode );
-	// GLAPI void GLAPIENTRY glDeleteLists( GLuint list, GLsizei range ); // not in GEM
+	\decl 0 copy_pixels (int x, int y, int width, int height, t_atom type) {
+		glCopyPixels(x,y,width,height,copy_pixels_type.to_enum(type));}
+	// CopyTexImage1D
+	\decl 0 copy_tex_image_2D (GLenum target, int level, GLenum format, int x, int y, int width, int height, int border) {
+		glCopyTexImage2D(target,level,format,x,y,width,height,border);} // enum
+	// CopyTexSubImage1D
+	\decl 0 copy_tex_sub_image_2D (GLenum target, int level, int xoffset, int yoffset, int x, int y, int width, int height) {
+		glCopyTexSubImage2D(target,level,xoffset,yoffset,x,y,width,height);} // enum
+	\decl 0 cull_face (t_atom mode) {glCullFace(cull_mode.to_enum(mode));}
+	\decl 0 delete_lists (uint32 list, int range) {glDeleteLists(list,range);}  // not in GEM
 	// DeleteTextures // GLAPI void GLAPIENTRY glDeleteTextures( GLsizei n, const GLuint *textures);
-	// DepthFunc // GLAPI void GLAPIENTRY glDepthFunc( GLenum func );
-	// DepthMask // GLAPI void GLAPIENTRY glDepthMask( GLboolean flag );
-	// DepthRange // GLAPI void GLAPIENTRY glDepthRange( GLclampd near_val, GLclampd far_val );
-	// DisableClientState // GLAPI void GLAPIENTRY glDisableClientState( GLenum cap );  /* 1.1 */
+	\decl 0 depth_func (t_atom func) {glDepthFunc(depth_func.to_enum(func));}
+	\decl 0 depth_mask (bool flag) {glDepthMask(flag);}
+	\decl 0 depth_range (float near_val, float far_val) {glDepthRange(near_val,far_val);} // clamp
+	\decl 0 disable_client_state (t_atom cap) {glDisable(client_state_capability.to_enum(cap));}
 	\decl 0 disable (t_atom cap) {glDisable(capability.to_enum(cap));}
-	// DrawArrays // GLAPI void GLAPIENTRY glDrawArrays( GLenum mode, GLint first, GLsizei count );
-	// DrawBuffer // GLAPI void GLAPIENTRY glDrawBuffer( GLenum mode );
+	\decl 0 draw_arrays (GLenum mode, int first, int count) {glDrawArrays(mode,first,count);} // enum
+	\decl 0 draw_buffer (GLenum mode) {glDrawBuffer(mode);} // enum
 	// DrawElements // GLAPI void GLAPIENTRY glDrawElements( GLenum mode, GLsizei count, GLenum type, const GLvoid *indices );
 	// GLAPI void GLAPIENTRY glDrawPixels( GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels ); // not in GEM
 	// EdgeFlag // GLAPI void GLAPIENTRY glEdgeFlagv( const GLboolean *flag );
-	// EnableClientState // GLAPI void GLAPIENTRY glEnableClientState( GLenum cap );  /* 1.1 */
+	\decl 0 enable_client_state (t_atom cap) {glEnable(client_state_capability.to_enum(cap));}
 	\decl 0 enable (t_atom cap) {glEnable(capability.to_enum(cap));}
 	\decl 0 end () {glEnd();}
 	\decl 0 end_list () {glEndList();}
@@ -209,13 +316,12 @@ static void init_enums () {
 		case 5: glEvalMesh2(argv[0],argv[1],argv[2],argv[3],argv[4]); break; // enum...
 		default: RAISE("need 3 or 5 args");
 	}}
-	// EvalPoint[12]
 	\decl 0 eval_point (...) {switch (argc) {
 		case 1: glEvalPoint1(argv[0]); break;
 		case 2: glEvalPoint2(argv[0],argv[1]); break;
 		default: RAISE("need 1 or 2 args");
 	}}
-	// FeedbackBuffer
+	// FeedbackBuffer // void glFeedbackBuffer(GLsizei size, GLenum type, GLfloat *buffer);
 	\decl 0 finish () {glFinish();}
 	\decl 0 flush  () {glFlush();}
 	\decl 0 fog (...) { // enum
@@ -231,7 +337,7 @@ static void init_enums () {
 			glFogf(pname,argv[1]);
 		} else RAISE("unknown fog command");
 	}
-	// FrontFace // GLAPI void GLAPIENTRY glFrontFace( GLenum mode );
+	\decl 0 front_face (t_atom mode) {glFrontFace(front_face_mode.to_enum(mode));}
 	\decl 0 frustum(float left, float right, float bottom, float top, float near_val, float far_val) {
 		glFrustum(left,right,bottom,top,near_val,far_val);
 	}
@@ -271,7 +377,7 @@ static void init_enums () {
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
 		glLoadTransposeMatrixf(fv);
 	}
-	// LogicOp // GLAPI void GLAPIENTRY glLogicOp( GLenum opcode );
+	\decl 0 logic_op (t_atom opcode) {glLogicOp(logic_op.to_enum(opcode));}
 	// Map[12][df]
 	\decl 0 map_grid (...) {switch (argc) {
 		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break; // enum...
@@ -324,8 +430,9 @@ static void init_enums () {
 	\decl 0 scissor(int x, int y, int width, int height) {glScissor(x,y,width,height);}
 	// SelectBuffer // GLAPI void GLAPIENTRY glSelectBuffer( GLsizei size, GLuint *buffer );
 	// ShadeModel // GLAPI void GLAPIENTRY glShadeModel( GLenum mode );
-	// StencilFunc // GLAPI void GLAPIENTRY glStencilFunc( GLenum func, GLint ref, GLuint mask );
-	// StencilMask // GLAPI void GLAPIENTRY glStencilMask( GLuint mask );
+	\decl 0 stencil_func (t_atom func, int ref, uint32 mask) {
+		glStencilFunc(stencil_func.to_enum(func),ref,mask);}
+	\decl 0 stencil_mask (uint32 mask) {glStencilMask(mask);}
 	// StencilOp // GLAPI void GLAPIENTRY glStencilOp( GLenum fail, GLenum zfail, GLenum zpass );
 	\decl 0 tex_coord (...) {switch (argc) {
 		case 1: glTexCoord1f(argv[0]); break;
