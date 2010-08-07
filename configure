@@ -121,7 +121,7 @@ class Feature
 	attr2 :status
 	attr2 :uses_pdlib
 	attr2 :uses_so
-	attr2 :uses_o
+	attr2 :produces_o
 	attr2 :uses_h
 	attr2 :uses_feature
 	attr2 :test
@@ -308,7 +308,7 @@ Feature.add {
 Feature.add {
 	tag :mmx
 	uses_feature [:pentium]
-	uses_o ["src/mmx.o","src/mmx_loader.o"]
+	produces_o ["src/mmx.o","src/mmx_loader.o"]
 	name "MMX-compatible CPU (using NASM)"
 	options ["HAVE_MMX"]
 	test proc { #!@#$ isn't 64-bit-compatible
@@ -338,7 +338,7 @@ Feature.add {
 	name "X11 Display Protocol"
 	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
-	uses_o ["src/x11.o"]
+	produces_o ["src/x11.o"]
 	test proc {
 		c_test "
 		#include#
@@ -369,7 +369,7 @@ Feature.add {
 	}
 	uses_h ["SDL/SDL.h"]
 	#uses_h ["$$(sdl-config --cflags)"]
-	uses_o ["src/sdl.o"]
+	produces_o ["src/sdl.o"]
 	test proc {
 		c_test "
 		#include#
@@ -391,7 +391,7 @@ Feature.add {
 	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_feature [:objcpp]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
-	uses_o ["src/quartz.o"]
+	produces_o ["src/quartz.o"]
 	test proc {
 		c_test "
 		#include#
@@ -402,7 +402,7 @@ Feature.add {
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
-	uses_o ["src/aalib.o"]
+	produces_o ["src/aalib.o"]
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
@@ -415,7 +415,7 @@ Feature.add {
 	name "JPEG Library"
 	uses_so ["-ljpeg"]
 	uses_h ["jpeglib.h"]
-	uses_o ["src/jpeg.o"]
+	produces_o ["src/jpeg.o"]
 	test proc {
 		c_test "
 		extern \"C\" {
@@ -429,7 +429,7 @@ Feature.add {
 	name "PNG Library"
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["libpng/png.h"],["libpng14/png.h"],["libpng12/png.h"],["png.h"]]
-	uses_o ["src/png.o"]
+	produces_o ["src/png.o"]
 	test proc {|f|
 		f.c_test %`
 		extern "C" {
@@ -445,7 +445,7 @@ Feature.add {
 	tag :videodev
 	name "Video4linux Driver Interface Version 1 (kernel)"
 	uses_h ["linux/videodev.h"]
-	uses_o ["src/videodev.o"]
+	produces_o ["src/videodev.o"]
 	test proc {
 		c_test "
 		#include <stdlib.h>
@@ -469,7 +469,7 @@ Feature.add {
 	name "Video4linux II Driver Interface Library"
 	uses_h ["libv4l2.h"]
 	uses_so ["-lv4l2"]
-	uses_o ["src/v4l2.o"]
+	produces_o ["src/v4l2.o"]
 	test proc {
 		c_test "
 		#include <libv4l2.h>
@@ -479,7 +479,7 @@ Feature.add {
 	name "DC1394 for Linux"
 	uses_so ["-ldc1394_control"]
 	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
-	uses_o ["src/dc1394.o"]
+	produces_o ["src/dc1394.o"]
 	options ["HAVE_DC1394"]
 	test proc {|f|
 		f.c_test "
@@ -490,7 +490,7 @@ Feature.add {
 	name "HeroineWarrior LibMPEG3"
 	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
-	uses_o ["src/mpeg3.o"]
+	produces_o ["src/mpeg3.o"]
 	test proc {|f|
 		f.c_test "
 		#include#
@@ -500,7 +500,7 @@ Feature.add {
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
-	uses_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
+	produces_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
 	test proc {
 		c_test "
 		#include#
@@ -517,7 +517,7 @@ Feature.add {
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
 		f.map{|x| "quicktime/"+x }]
-	uses_o ["src/quicktimehw.o"]
+	produces_o ["src/quicktimehw.o"]
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -561,7 +561,7 @@ Feature.add {
 Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
-	uses_o ["src/opencv.o"]
+	produces_o ["src/opencv.o"]
 	uses_so ["-lcv"]
 	options ["HAVE_OPENCV"]
 	defines {{:OPENCV_SHARE_PATH => File.dirname($C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
@@ -572,7 +572,7 @@ Feature.add {
 Feature.add {
 	tag :fftw
 	name "FFTW (Fastest Fourier Transform in the West)"
-	uses_o ["src/fftw.o"]
+	produces_o ["src/fftw.o"]
 	uses_so ["-lfftw3f"  ,"-lfftw3"  ]
 	uses_so ["-lfftw3f-3","-lfftw3-3"] if WIN
 	options ["HAVE_FFTW"]
@@ -583,6 +583,7 @@ Feature.add {
 Feature.add {
 	tag :opengl
 	name "OpenGL (for GEM support, etc)"
+	produces_o ["src/opengl.o"]
         uses_so $LIBX11DIR+["-lGL"] if not WIN
         uses_h ["GL/gl.h"]
 	options ["HAVE_OPENGL"]
@@ -740,7 +741,7 @@ def try feature
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
-	$conf[:OBJS].concat(feature.uses_o||[])
+	$conf[:OBJS].concat(feature.produces_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
 	$conf[:PDLIB].concat(feature.uses_pdlib||[])
 	for k,v in feature.defines||{} do $conf[:DEFINES][k]=(if Proc===v then v[] else v end) end
