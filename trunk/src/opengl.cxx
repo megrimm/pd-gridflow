@@ -23,25 +23,31 @@
 #include <GL/gl.h>
 #include <ctype.h>
 
-typedef std::map<t_symbol *,int> primtype_map_t; primtype_map_t primtype_map;
+struct EnumType {
+	const char *name;
+	typedef std::map<t_symbol *,int>  forward_t;  forward_t  forward;
+	typedef std::map<int,t_symbol *> backward_t; backward_t backward;
+	EnumType (const char *name) {this->name = name;}
+	GLenum to_enum (const t_atom2 &a) {
+		if (a.a_type==A_FLOAT) {
+			float f = (float)a;
+			if (f<0 || f>9 || f!=int(f)) RAISE("%s must be an integer from 0 to 9");
+			return f;
+		} else if (a.a_type==A_SYMBOL) {
+			forward_t::iterator it = forward.find((t_symbol *)a);
+			if (it==forward.end()) RAISE("unknown %s '%s'",name,((t_symbol *)a)->s_name);
+			return it->second;
+		} else RAISE("to %s: expected float or symbol",name);
+	}
+	void add (t_symbol *s, GLenum i) {forward[s]=i; backward[i]=s;}
+};
+struct EnumType primtype("primitive type");
 
 static t_symbol *gl_gensym (const char *s) {
 	char t[64];
 	strcpy(t,s+3);
 	for (int i=0; t[i]; i++) t[i]=tolower(t[i]);
 	return gensym(t);
-}
-
-static int to_primtype (const t_atom2 &a) {
-	if (a.a_type==A_FLOAT) {
-		float f = (float)a;
-		if (f<0 || f>9 || f!=int(f)) RAISE("primitive_type must be an integer from 0 to 9");
-		return f;
-	} else if (a.a_type==A_SYMBOL) {
-		primtype_map_t::iterator it = primtype_map.find((t_symbol *)a);
-		if (it==primtype_map.end()) RAISE("unknown primitive type");
-		return it->second;
-	} else RAISE("to primtype: expected float or symbol");
 }
 
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
@@ -55,7 +61,7 @@ static int to_primtype (const t_atom2 &a) {
 	// AreTexturesResident
 	\decl 0 array_element (int i) {glArrayElement(i);}
 	// Base
-	\decl 0 begin (t_atom2 primtype) {glBegin(to_primtype(primtype));}
+	\decl 0 begin (t_atom2 a) {glBegin(primtype.to_enum(a));}
 	// BindProgramARB
 	// BindTexture //GLAPI void GLAPIENTRY glBindTexture( GLenum target, GLuint texture );
 	// Bitmap //glBitmap( GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap );
@@ -100,17 +106,18 @@ static int to_primtype (const t_atom2 &a) {
 	\decl 0 eval_coord (...) {switch (argc) {
 		case 1: glEvalCoord1f(argv[0]); break;
 		case 2: glEvalCoord2f(argv[0],argv[1]); break;
-		default: RAISE("need 2, 3 or 4 args");
+		default: RAISE("need 1 or 2 args");
 	}}
 	\decl 0 eval_mesh (...) {switch (argc) {
 		case 3: glEvalMesh1(argv[0],argv[1],argv[2]); break; // enum...
 		case 5: glEvalMesh2(argv[0],argv[1],argv[2],argv[3],argv[4]); break; // enum...
-		default: RAISE("need 2, 3 or 4 args");
+		default: RAISE("need 3 or 5 args");
 	}}
 	// EvalPoint[12]
 	\decl 0 eval_point (...) {switch (argc) {
 		case 1: glEvalPoint1(argv[0]); break;
 		case 2: glEvalPoint2(argv[0],argv[1]); break;
+		default: RAISE("need 1 or 2 args");
 	}}
 	// FeedbackBuffer
 	\decl 0 finish () {glFinish();}
@@ -173,7 +180,7 @@ static int to_primtype (const t_atom2 &a) {
 	\decl 0 map_grid (...) {switch (argc) {
 		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break; // enum...
 		case 6: glMapGrid2f(argv[0],argv[1],argv[2],argv[3],argv[4],argv[5]); break; // enum...
-		default: RAISE("need 2, 3 or 4 args");
+		default: RAISE("need 3 or 6 args");
 	}}
 	// Materialfv? // GLAPI void GLAPIENTRY glMaterialfv( GLenum face, GLenum pname, const GLfloat *params );
 	// MatrixMode // GLAPI void GLAPIENTRY glMatrixMode( GLenum mode );
@@ -206,9 +213,12 @@ static int to_primtype (const t_atom2 &a) {
 	// PushClientAttrib // GLAPI void GLAPIENTRY glPushClientAttrib( GLbitfield mask );  /* 1.1 */
 	\decl 0 push_matrix () {glPushMatrix();}
 	\decl 0 push_name (uint32 name) {glPushName(name);}
-	// RasterPos2[dfis]v?
-	// RasterPos3[dfis]fv?
-	// RasterPos4[dfis]v?
+	\decl 0 raster_pos (...) {switch (argc) {
+		case 2: glRasterPos2f(argv[0],argv[1]); break;
+		case 3: glRasterPos3f(argv[0],argv[1],argv[2]); break;
+		case 4: glRasterPos4f(argv[0],argv[1],argv[2],argv[3]); break;
+		default: RAISE("need 2, 3 or 4 args");
+	}}
 	\decl 0 rect (float x1, float y1, float x2, float y2) {glRectf(x1,y1,x2,y2);}
 	// GLAPI void GLAPIENTRY glReadBuffer( GLenum mode ); // not in GEM
 	// RenderMode
@@ -226,6 +236,7 @@ static int to_primtype (const t_atom2 &a) {
 		case 2: glTexCoord2f(argv[0],argv[1]); break;
 		case 3: glTexCoord3f(argv[0],argv[1],argv[2]); break;
 		case 4: glTexCoord4f(argv[0],argv[1],argv[2],argv[3]); break;
+		default: RAISE("need 1, 2, 3 or 4 args");
 	}}
 	// TexEnv[fi] // GLAPI void GLAPIENTRY glTexEnvfv( GLenum target, GLenum pname, const GLfloat *params );
 	// TexGenfv // GLAPI void GLAPIENTRY glTexGenfv( GLenum coord, GLenum pname, const GLfloat *params );
@@ -249,7 +260,7 @@ static int to_primtype (const t_atom2 &a) {
 \end class {install("gf/gl",1,1);}
 
 void startup_opengl () {
-	#define define(I,NAME) primtype_map[gl_gensym(#NAME)]=I;
+	#define define(I,NAME) primtype.add(gl_gensym(#NAME),I);
 	define(0,GL_POINTS)
 	define(1,GL_LINES)
 	define(2,GL_LINE_LOOP)
