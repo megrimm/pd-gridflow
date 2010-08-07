@@ -70,13 +70,11 @@ static int to_primtype (const t_atom2 &a) {
 	// ClearIndex // GLAPI void GLAPIENTRY glClearIndex( GLfloat c );
 	// ClearStencil // GLAPI void GLAPIENTRY glClearStencil( GLint s );
 	// ClipPlane // GLAPI void GLAPIENTRY glClipPlane( GLenum plane, const GLdouble *equation );
-	\decl 0 color (...) {
-		switch (argc) {
-			case 3: glColor3f(argv[0],argv[1],argv[2]); break;
-			case 4: glColor4f(argv[0],argv[1],argv[2],argv[3]); break;
-			default: RAISE("need 3 or 4 args");
-		}
-	}
+	\decl 0 color (...) {switch (argc) {
+		case 3: glColor3f(argv[0],argv[1],argv[2]); break;
+		case 4: glColor4f(argv[0],argv[1],argv[2],argv[3]); break;
+		default: RAISE("need 3 or 4 args");
+	}}
 	\decl 0 color_mask (bool r, bool g, bool b, bool a) {glColorMask(r,g,b,a);}
 	// ColorMaterial // GLAPI void GLAPIENTRY glColorMaterial( GLenum face, GLenum mode );
 	// CopyPixels // GLAPI void GLAPIENTRY glCopyPixels( GLint x, GLint y, GLsizei width, GLsizei height, GLenum type );
@@ -99,13 +97,37 @@ static int to_primtype (const t_atom2 &a) {
 	// Enable // GLAPI void GLAPIENTRY glEnable( GLenum cap );
 	\decl 0 end () {glEnd();}
 	\decl 0 end_list () {glEndList();}
-	// EvalCoord[12][df]v?
-	// EvalMesh[12]
+	\decl 0 eval_coord (...) {switch (argc) {
+		case 1: glEvalCoord1f(argv[0]); break;
+		case 2: glEvalCoord2f(argv[0],argv[1]); break;
+		default: RAISE("need 2, 3 or 4 args");
+	}}
+	\decl 0 eval_mesh (...) {switch (argc) {
+		case 3: glEvalMesh1(argv[0],argv[1],argv[2]); break; // enum...
+		case 5: glEvalMesh2(argv[0],argv[1],argv[2],argv[3],argv[4]); break; // enum...
+		default: RAISE("need 2, 3 or 4 args");
+	}}
 	// EvalPoint[12]
+	\decl 0 eval_point (...) {switch (argc) {
+		case 1: glEvalPoint1(argv[0]); break;
+		case 2: glEvalPoint2(argv[0],argv[1]); break;
+	}}
 	// FeedbackBuffer
 	\decl 0 finish () {glFinish();}
 	\decl 0 flush  () {glFlush();}
-	// Fog[fi]v? // GLAPI void GLAPIENTRY glFogfv( GLenum pname, const GLfloat *params );
+	\decl 0 fog (...) { // enum
+		if (argc<2) RAISE("at least 2 args");
+		int pname = argv[0];
+		if (pname==GL_FOG_COLOR) {
+			if (argc!=5) RAISE("fog color: need 4 floats after this $1");
+			float fv[4]; fv[0]=argv[1]; fv[1]=argv[2]; fv[2]=argv[3]; fv[3]=argv[4];
+			glFogfv(pname,fv);
+		} else if (pname==GL_FOG_MODE || pname==GL_FOG_DENSITY || pname==GL_FOG_START || pname==GL_FOG_END ||
+		pname==GL_FOG_INDEX || pname==GL_FOG_COORD_SRC) {
+			if (argc!=2) RAISE("fog 0x%x: need 1 float after this $1",pname);
+			glFogf(pname,argv[1]);
+		} else RAISE("unknown fog command");
+	}
 	// FrontFace // GLAPI void GLAPIENTRY glFrontFace( GLenum mode );
 	\decl 0 frustum(float left, float right, float bottom, float top, float near_val, float far_val) {
 		glFrustum(left,right,bottom,top,near_val,far_val);
@@ -120,7 +142,7 @@ static int to_primtype (const t_atom2 &a) {
 	// GetMap[dfi]v
 	// GetPointerv
 	// GetString
-	// Hint
+	\decl 0 hint (float target, float mode) {glHint(target,mode);} // enum
 	// Index(dfi)v?
 	// IndexMask
 	// Indexsv?
@@ -135,12 +157,24 @@ static int to_primtype (const t_atom2 &a) {
 	\decl 0 line_width (float width) {glLineWidth(width);}
 	// ListBase // GLAPI void GLAPIENTRY glListBase( GLuint base ); // not in GEM
 	\decl 0 load_identity () {glLoadIdentity();}
-	// LoadMatrix[df]
+	\decl 0 load_matrix (...) {
+		if (argc!=16) RAISE("need 16 args");
+		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
+		glLoadMatrixf(fv);
+	}
 	\decl 0 load_name (uint32 name) {glLoadName(name);}
-	// LoadTransposeMatrix[df]
+	\decl 0 load_transpose_matrix (...) {
+		if (argc!=16) RAISE("need 16 args");
+		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
+		glLoadTransposeMatrixf(fv);
+	}
 	// LogicOp // GLAPI void GLAPIENTRY glLogicOp( GLenum opcode );
 	// Map[12][df]
-	// MapGrid[12][df]
+	\decl 0 map_grid (...) {switch (argc) {
+		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break; // enum...
+		case 6: glMapGrid2f(argv[0],argv[1],argv[2],argv[3],argv[4],argv[5]); break; // enum...
+		default: RAISE("need 2, 3 or 4 args");
+	}}
 	// Materialfv? // GLAPI void GLAPIENTRY glMaterialfv( GLenum face, GLenum pname, const GLfloat *params );
 	// MatrixMode // GLAPI void GLAPIENTRY glMatrixMode( GLenum mode );
 	// MultiTexCoord2fARB
@@ -148,6 +182,7 @@ static int to_primtype (const t_atom2 &a) {
 	// MultTransposeMatrix[df]
 	// NewList // GLAPI void GLAPIENTRY glNewList( GLuint list, GLenum mode );
 	// Normal3[bdfis]v?
+	\decl 0 normal (float x, float y, float z) {glNormal3f(x,y,z);}
 	\decl 0 ortho(float left, float right, float bottom, float top, float near_val, float far_val) {
 		glOrtho(left,right,bottom,top,near_val,far_val);
 	}
@@ -186,7 +221,12 @@ static int to_primtype (const t_atom2 &a) {
 	// StencilFunc // GLAPI void GLAPIENTRY glStencilFunc( GLenum func, GLint ref, GLuint mask );
 	// StencilMask // GLAPI void GLAPIENTRY glStencilMask( GLuint mask );
 	// StencilOp // GLAPI void GLAPIENTRY glStencilOp( GLenum fail, GLenum zfail, GLenum zpass );
-	// TexCoord[1234][dfis]v?
+	\decl 0 tex_coord (...) {switch (argc) {
+		case 1: glTexCoord1f(argv[0]); break;
+		case 2: glTexCoord2f(argv[0],argv[1]); break;
+		case 3: glTexCoord3f(argv[0],argv[1],argv[2]); break;
+		case 4: glTexCoord4f(argv[0],argv[1],argv[2],argv[3]); break;
+	}}
 	// TexEnv[fi] // GLAPI void GLAPIENTRY glTexEnvfv( GLenum target, GLenum pname, const GLfloat *params );
 	// TexGenfv // GLAPI void GLAPIENTRY glTexGenfv( GLenum coord, GLenum pname, const GLfloat *params );
 	// TexImage2D // GLAPI void GLAPIENTRY glTexImage2D( GLenum target, GLint level, GLint internalFormat,
@@ -195,14 +235,12 @@ static int to_primtype (const t_atom2 &a) {
 	// TexSubImage[12]D
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
 	// Uniform1fARB
-	\decl 0 vertex (...) {
-		switch (argc) {
-			case 2: glVertex2f(argv[0],argv[1]); break;
-			case 3: glVertex3f(argv[0],argv[1],argv[2]); break;
-			case 4: glVertex4f(argv[0],argv[1],argv[2],argv[3]); break;
-			default: RAISE("need 2, 3 or 4 args");
-		}
-	}
+	\decl 0 vertex (...) {switch (argc) {
+		case 2: glVertex2f(argv[0],argv[1]); break;
+		case 3: glVertex3f(argv[0],argv[1],argv[2]); break;
+		case 4: glVertex4f(argv[0],argv[1],argv[2],argv[3]); break;
+		default: RAISE("need 2, 3 or 4 args");
+	}}
 	\decl 0 viewport (int x, int y, int width, int height) {glViewport(x,y,width,height);}
 	// gluLookAt
 	// gluPerspective
