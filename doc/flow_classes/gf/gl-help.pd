@@ -1,0 +1,59 @@
+#N canvas 0 0 632 642 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 621 doc_also;
+#X obj 0 641 doc_f;
+#X obj 125 64 gf/gl;
+#X obj 103 621 GEMglVertex3f;
+#X obj 193 621 GEMglColor3f;
+#X obj 277 621 GEMglBegin;
+#X obj 349 621 GEMglEnd;
+#X text 409 621 etc...;
+#X text 233 62 use OpenGL commands in a different way than in GEM (for
+use with GEM);
+#X obj 3 119 doc_c 0;
+#X obj 3 159 doc_i 1;
+#X obj 14 189 doc_ii 0;
+#X obj 3 581 doc_o 0;
+#X obj 97 466 doc_m i0 color;
+#X obj 97 189 doc_m i0 begin;
+#X obj 97 501 doc_m i0 end;
+#X obj 97 536 doc_m i0 vertex;
+#X text 232 246 0 or "points" does GL_POINTS;
+#X text 232 268 1 or "triangles" does GL_TRIANGLES;
+#X text 232 290 2 or "triangle_strip" does GL_TRIANGLE_STRIP;
+#X text 232 312 3 or "quads" does GL_QUADS;
+#X text 232 334 4 or "quad_strip" does GL_QUAD_STRIP;
+#X text 232 356 5 or "polygon" does GL_POLYGON;
+#X text 232 378 6 or "triangle_fan" does GL_TRIANGLE_FAN;
+#X text 232 400 7 or "lines" does GL_LINES;
+#X text 232 422 8 or "line_loop" does GL_LINE_LOOP;
+#X text 232 444 9 or "line_strip" does GL_LINE_STRIP;
+#X text 232 466 takes 3 or 4 float arguments. Sets the colour of the
+upcoming vertex.;
+#X text 232 189 begin a new GL geo.;
+#X text 232 501 finish making the current GL geo after all vertices
+have been added.;
+#X text 232 536 takes 2 \, 3 or 4 float arguments and append a new
+vertex to the geo.;
+#X text 232 211 \$1 is a float or symbol for the shape type (which
+decides how the edges will connect the vertices);
+#X connect 1 1 4 0;
+#X connect 1 1 5 0;
+#X connect 1 1 6 0;
+#X connect 1 1 7 0;
+#X connect 1 1 8 0;
+#X connect 14 1 28 0;
+#X connect 15 1 32 0;
+#X connect 15 1 18 0;
+#X connect 15 1 25 0;
+#X connect 15 1 26 0;
+#X connect 15 1 27 0;
+#X connect 15 1 19 0;
+#X connect 15 1 20 0;
+#X connect 15 1 24 0;
+#X connect 15 1 21 0;
+#X connect 15 1 22 0;
+#X connect 15 1 23 0;
+#X connect 15 1 29 0;
+#X connect 16 1 30 0;
+#X connect 17 1 31 0;
