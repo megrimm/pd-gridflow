@@ -70,7 +70,12 @@ MAKETYPE(buffer_mode)
 MAKETYPE(material_mode)
 MAKETYPE(copy_tex_target)
 MAKETYPE(copy_tex_format)
-MAKETYPE(mesh_mode)
+MAKETYPE(polygon_mode)
+MAKETYPE(hint_target)
+MAKETYPE(hint_mode)
+MAKETYPE(accum_op)
+MAKETYPE(fog_param)
+MAKETYPE(list_mode)
 static void init_enums () {
 	#define D(NAME) add(tolower_gensym(#NAME+3),NAME)
 	primitive_type
@@ -248,7 +253,7 @@ static void init_enums () {
 	.D(GL_OR_REVERSE)
 	.D(GL_OR_INVERTED)
 	;
-	stencil_func
+	stencil_func // same as depth func
 	.D(GL_NEVER)
 	.D(GL_LESS)
 	.D(GL_LEQUAL)
@@ -419,22 +424,55 @@ static void init_enums () {
 	.D(GL_SRGB_ALPHA)
 	.D(GL_SRGB8_ALPHA8)
 	;
-	mesh_mode
+	polygon_mode
 	.D(GL_POINT)
 	.D(GL_LINE)
 	.D(GL_FILL) // only for mesh2
+	;
+	hint_target
+	.D(GL_FOG_HINT)
+        .D(GL_GENERATE_MIPMAP_HINT)
+        .D(GL_LINE_SMOOTH_HINT)
+        .D(GL_PERSPECTIVE_CORRECTION_HINT)
+	.D(GL_POINT_SMOOTH_HINT)
+	.D(GL_POLYGON_SMOOTH_HINT)
+	.D(GL_TEXTURE_COMPRESSION_HINT)
+	.D(GL_FRAGMENT_SHADER_DERIVATIVE_HINT)
+	;
+	hint_mode
+	.D(GL_FASTEST)
+	.D(GL_NICEST)
+	.D(GL_DONT_CARE)
+	;
+	accum_op
+	.D(GL_ACCUM)
+	.D(GL_LOAD)
+	.D(GL_ADD)
+	.D(GL_MULT)
+	.D(GL_RETURN)
+	;
+	fog_param
+	.D(GL_FOG_MODE)
+	.D(GL_FOG_DENSITY)
+	.D(GL_FOG_START)
+	.D(GL_FOG_END)
+	.D(GL_FOG_INDEX)
+	.D(GL_FOG_COORD_SRC)
+	;
+	list_mode
+	.D(GL_COMPILE)
+	.D(GL_COMPILE_AND_EXECUTE)
 	;
 }
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
 \class GFGL : FObject {
 	\constructor () {}
 	~GFGL() {}
-	\decl 0 accum (float op, float value) {glAccum(op,value);} // op should be enum
+	\decl 0 accum (t_atom op, float value) {glAccum(accum_op(op),value);}
 	// ActiveTextureARB
-	\decl 0 alpha_func (float func, float ref) {glAlphaFunc(func,ref);} // enum
+	\decl 0 alpha_func (t_atom func, float ref) {glAlphaFunc(depth_func(func),ref);} // clamp
 	// AreTexturesResident
 	\decl 0 array_element (int i) {glArrayElement(i);}
-	// Base
 	\decl 0 begin (t_atom2 a) {glBegin(primitive_type(a));}
 	// BindProgramARB
 	// BindTexture //GLAPI void GLAPIENTRY glBindTexture(t_atom target, GLuint texture);
@@ -450,7 +488,11 @@ static void init_enums () {
 	\decl 0 clear (int mask) {glClear(mask);} // bitfield
 	\decl 0 clear_index (float c) {glClearIndex(c);}
 	\decl 0 clear_stencil (int s) {glClearStencil(s);}
-	// ClipPlane // GLAPI void GLAPIENTRY glClipPlane(t_atom plane, const GLdouble *equation);
+	\decl 0 clip_plane(int plane, float a0, float a1, float a2, float a3) {
+		if (plane<0 || plane>=6) RAISE("plane must be a number between 0 and 5 incl");
+		double dv[] = {a0,a1,a2,a3};
+		glClipPlane(GL_CLIP_PLANE0+plane,dv);
+	}
 	\decl 0 color (...) {switch (argc) {
 		case 3: glColor3f(argv[0],argv[1],argv[2]); break;
 		case 4: glColor4f(argv[0],argv[1],argv[2],argv[3]); break;
@@ -460,12 +502,21 @@ static void init_enums () {
 	\decl 0 color_material (t_atom face, t_atom mode) {glColorMaterial(which_side(face),material_mode(mode));}
 	\decl 0 copy_pixels (int x, int y, int width, int height, t_atom type) {
 		glCopyPixels(x,y,width,height,copy_pixels_type(type));}
-	// CopyTexImage1D
-	\decl 0 copy_tex_image_2D (t_atom target, int level, t_atom format, int x, int y, int width, int height, int border) {
-		glCopyTexImage2D(copy_tex_target(target),level,copy_tex_format(format),x,y,width,height,border);}
-	// CopyTexSubImage1D
+
+	// please review and check that format and internalFormat (iformat) are not confused
+	\decl 0 copy_tex_image_1D (t_atom target, int level, t_atom iformat, int x, int y, int width, int border ) {
+		glCopyTexImage1D(copy_tex_target(target),level,copy_tex_format(iformat),x,y,width,border);}
+	\decl 0 copy_tex_image_2D (t_atom target, int level, t_atom iformat, int x, int y, int width, int height, int border) {
+		glCopyTexImage2D(copy_tex_target(target),level,copy_tex_format(iformat),x,y,width,height,border);}		
+	\decl 0 copy_tex_sub_image_1D (t_atom target, int level, int xoffset, int x, int y, int width) {
+		if (copy_tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+		glCopyTexSubImage1D(copy_tex_target(target),level,xoffset,x,y,width);}
 	\decl 0 copy_tex_sub_image_2D (t_atom target, int level, int xoffset, int yoffset, int x, int y, int width, int height) {
-		glCopyTexSubImage2D(copy_tex_target(target),level,xoffset,yoffset,x,y,width,height);} // enum
+		glCopyTexSubImage2D(copy_tex_target(target),level,xoffset,yoffset,x,y,width,height);}
+	\decl 0 copy_tex_sub_image_3D (t_atom target, int level, int xoffset, int yoffset, int zoffset, int x, int y, int width, int height) {
+		if (copy_tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+		glCopyTexSubImage3D(copy_tex_target(target),level,xoffset,yoffset,zoffset,x,y,width,height);}
+
 	\decl 0 cull_face (t_atom mode) {glCullFace(which_side(mode));}
 	\decl 0 delete_lists (uint32 list, int range) {glDeleteLists(list,range);}  // not in GEM
 	// DeleteTextures // GLAPI void GLAPIENTRY glDeleteTextures(int n, const GLuint *textures);
@@ -489,8 +540,8 @@ static void init_enums () {
 		default: RAISE("need 1 or 2 args");
 	}}
 	\decl 0 eval_mesh (...) {switch (argc) {
-		case 3: glEvalMesh1(mesh_mode(argv[0]),argv[1],argv[2]); break;
-		case 5: glEvalMesh2(mesh_mode(argv[0]),argv[1],argv[2],argv[3],argv[4]); break;
+		case 3: glEvalMesh1(polygon_mode(argv[0]),argv[1],argv[2]); break;
+		case 5: glEvalMesh2(polygon_mode(argv[0]),argv[1],argv[2],argv[3],argv[4]); break;
 		default: RAISE("need 3 or 5 args");
 	}}
 	\decl 0 eval_point (...) {switch (argc) {
@@ -501,9 +552,9 @@ static void init_enums () {
 	// FeedbackBuffer // void glFeedbackBuffer(int size, t_atom type, float *buffer);
 	\decl 0 finish () {glFinish();}
 	\decl 0 flush  () {glFlush();}
-	\decl 0 fog (...) { // enum
+	\decl 0 fog (...) {
 		if (argc<2) RAISE("at least 2 args");
-		int pname = argv[0];
+		GLenum pname = fog_param(argv[0]);
 		if (pname==GL_FOG_COLOR) {
 			if (argc!=5) RAISE("fog color: need 4 floats after this $1");
 			float fv[4]; fv[0]=argv[1]; fv[1]=argv[2]; fv[2]=argv[3]; fv[3]=argv[4];
@@ -528,7 +579,7 @@ static void init_enums () {
 	// GetMap[dfi]v
 	// GetPointerv
 	// GetString
-	\decl 0 hint (float target, float mode) {glHint(target,mode);} // enum
+	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
 	// Index(dfi)v?
 	// IndexMask
 	// Indexsv?
@@ -558,8 +609,8 @@ static void init_enums () {
 	// glMap1f(t_atom target, float u1, float u2, int stride, int order, const float *points );
 	// glMap2f(t_atom target, float u1, float u2, int ustride, int uorder, float v1, float v2, int vstride, int vorder, const float *points );
 	\decl 0 map_grid (...) {switch (argc) {
-		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break; // enum...
-		case 6: glMapGrid2f(argv[0],argv[1],argv[2],argv[3],argv[4],argv[5]); break; // enum...
+		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break;
+		case 6: glMapGrid2f(argv[0],argv[1],argv[2],argv[3],argv[4],argv[5]); break;
 		default: RAISE("need 3 or 6 args");
 	}}
 	// Materialfv? // GLAPI void GLAPIENTRY glMaterialfv(t_atom face, t_atom pname, const float *params);
@@ -576,7 +627,7 @@ static void init_enums () {
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
 		glMultTransposeMatrixf(fv);
 	}
-	// NewList // GLAPI void GLAPIENTRY glNewList(uint32 list, t_atom mode);
+	\decl 0 new_list (uint32 list, t_atom mode) {glNewList(list,list_mode(mode));}
 	\decl 0 normal (float x, float y, float z) {glNormal3f(x,y,z);}
 	\decl 0 ortho(float left, float right, float bottom, float top, float near_val, float far_val) {
 		glOrtho(left,right,bottom,top,near_val,far_val);
@@ -586,13 +637,13 @@ static void init_enums () {
 	\decl 0 pixel_transfer (t_atom pname, float param) {glPixelTransferf(pixel_transfer(pname),param);}
 	\decl 0 pixel_zoom (float xfactor, float yfactor) {glPixelZoom(xfactor,yfactor);}
 	\decl 0 point_size (float size) {glPointSize(size);}
-	\decl 0 polygon_mode (float face, float mode) {glPolygonMode(face,mode);} // enum
+	\decl 0 polygon_mode (t_atom face, t_atom mode) {glPolygonMode(which_side(face),polygon_mode(mode));}
 	\decl 0 polygon_offset (float factor, float units) {glPolygonOffset(factor,units);}
 	\decl 0 pop_attrib () {glPopAttrib();}
 	\decl 0 pop_client_attrib () {glPopClientAttrib();}
 	\decl 0 pop_matrix ()  {glPopMatrix();}
 	\decl 0 pop_name () {glPopName();}
-	// PrioritizeTextures // GLAPI void GLAPIENTRY glPrioritizeTextures(int n, const GLuint *textures, const GLclampf *priorities );
+	// PrioritizeTextures // GLAPI void GLAPIENTRY glPrioritizeTextures(int n, const GLuint *textures, const float *priorities); // clamp
 	// ProgramEnvParameter4dARB
 	// ProgramEnvParameter4fvARB
 	// ProgramLocalParameter4fvARB
@@ -614,7 +665,7 @@ static void init_enums () {
 	\decl 0 rotate (float a, float x, float y, float z) {glRotatef(a,x,y,z);}
 	\decl 0 scale           (float x, float y, float z) {glScalef(x,y,z);}
 	\decl 0 scissor(int x, int y, int width, int height) {glScissor(x,y,width,height);}
-	// SelectBuffer // GLAPI void GLAPIENTRY glSelectBuffer(int size, GLuint *buffer );
+	// SelectBuffer // GLAPI void GLAPIENTRY glSelectBuffer(int size, GLuint *buffer);
 	\decl 0 shade_model (t_atom mode) {shade_model(mode);}
 	\decl 0 stencil_func (t_atom func, int ref, uint32 mask) {
 		glStencilFunc(stencil_func(func),ref,mask);}
@@ -628,12 +679,22 @@ static void init_enums () {
 		case 4: glTexCoord4f(argv[0],argv[1],argv[2],argv[3]); break;
 		default: RAISE("need 1, 2, 3 or 4 args");
 	}}
-	// TexEnv[fi] // GLAPI void GLAPIENTRY glTexEnvfv(t_atom target, t_atom pname, const float *params);
-	// TexGenfv // GLAPI void GLAPIENTRY glTexGenfv(t_atom coord, t_atom pname, const float *params);
-	// TexImage2D // GLAPI void GLAPIENTRY glTexImage2D(t_atom target, int level, int internalFormat,
-		// int width, int height, int border, t_atom format, t_atom type, const GLvoid *pixels);
-	// TexParameter[fi] // GLAPI void GLAPIENTRY glTexParameterfv(t_atom target, t_atom pname, const float *params);
-	// TexSubImage[12]D
+	// glTexEnvfv(t_atom target, t_atom pname, const float *params);
+	// glTexGenfv(t_atom coord,  t_atom pname, const float *params);
+	// glTexImage1D(t_atom target, int level, t_atom iformat, int width, int border,
+		// t_atom format, t_atom type, const GLvoid *pixels);
+	// glTexImage2D(t_atom target, int level, t_atom iformat, int width, int height, int border,
+		// t_atom format, t_atom type, const GLvoid *pixels);
+	// glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border,
+		// t_atom format, t_atom type, const GLvoid *pixels ); // not in GEM
+	// glTexParameterfv(t_atom target, t_atom pname, const float *params);
+	// glTexSubImage1D(t_atom target, int level, int xoffset, int width,
+		// t_atom format, t_atom type, const GLvoid *pixels);
+	// glTexSubImage2D(t_atom target, int level, int xoffset, int yoffset, int width, int height,
+		// t_atom format, t_atom type, const GLvoid *pixels);
+	// glTexSubImage3D(t_atom target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth,
+		// t_atom format, t_atom type, const GLvoid *pixels); // not in GEM
+
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
 	// Uniform1fARB
 	\decl 0 vertex (...) {switch (argc) {
