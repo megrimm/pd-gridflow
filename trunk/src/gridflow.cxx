@@ -1022,11 +1022,11 @@ void allow_big_stack () {
 #endif
 }
 
+extern "C" void sys_load_lib(t_canvas *,const char *);
 #ifdef HAVE_GEM
 //struct GemVersion {static const char *versionString();};
 struct GemState    {GemState(); char trabant[666];};
 struct imageStruct {imageStruct(); char lada[666];};
-extern "C" void sys_load_lib(t_canvas *,const char *);
 //#define sys_load_lib(A,B) do {post("pre sys_load_lib(%s)",B); sys_load_lib(A,B); post("post sys_load_lib(%s)",B);} while(0)
 
 static void try_loading_gem () {
