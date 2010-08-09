@@ -1461,6 +1461,56 @@ GRID_INLET(0) {
 \end class {install("#tabread",1,1);}
 
 //****************************************************************
+
+\class GridTabwrite : FObject {
+	t_symbol *t;
+	PtrGrid r;
+	\constructor (t_symbol *table=&s_) {
+		t = table;
+	}
+	\decl 0 set (t_symbol *s) { t = s; }
+	\grin 0
+	\grin 1
+};
+
+GRID_INLET(0) {	
+	if (!r) RAISE("need right-hand grid first !");
+	in.set_chunk(-1);
+} GRID_FLOW {
+	int32 *rdata = (int32 *)*r;
+	int npoints, nval=in.dim.prod(), nidx=r->dim.prod();
+	t_garray *a;
+	t_word *vec;
+
+	if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
+		RAISE("%s: no such array", t->s_name);
+	else if (!garray_getfloatwords(a, &npoints, &vec))
+		RAISE("%s: bad template for tabread", t->s_name);
+	else {
+		for (int i=0; i<nidx; i++) {
+			int n = rdata[i];
+			if (n < 0)
+				n = 0;
+			else if (n >= npoints)
+				n = npoints-1;
+			// if there are less values than there are indexes, we loop over the value list
+			vec[n].w_float = data[i%nval];
+		}
+	}
+	garray_redraw(a);
+} GRID_END
+
+// hack du GRID_INPUT original de gridflow.hxx
+#define GRID_INPUT_INT32(I,V) \
+	GRID_INLET(I) { \
+		if (in.nt!=int32_e) RAISE("right inlet: expected int32"); \
+		V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in.dex,data,n);} GRID_FINISH
+
+GRID_INPUT_INT32(1,r) {} GRID_END
+
+\end class {install("#tabwrite",2,0);}
+
+//****************************************************************
 void startup_flow_objects3 () {
 	op_os8 = OP(*>>8);
 	\startall
