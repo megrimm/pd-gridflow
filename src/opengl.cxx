@@ -90,6 +90,7 @@ MAKETYPE(texture_wrap)
 MAKETYPE(tex_env_target)
 MAKETYPE(tex_env_parameter)
 MAKETYPE(tex_env_argument)
+MAKETYPE(tex_env_function)
 MAKETYPE(tex_gen_coord)
 MAKETYPE(tex_gen_parameter)
 MAKETYPE(tex_gen_mode)
@@ -515,15 +516,15 @@ static void init_enums () {
 	.D(GL_COORD_REPLACE)
 	;
 	tex_env_argument
-	.D(GL_ADD)
+	.D(GL_ADD) //
 	.D(GL_ADD_SIGNED)
 	.D(GL_INTERPOLATE)
-	.D(GL_MODULATE)
-	.D(GL_DECAL)
-	.D(GL_BLEND)
-	.D(GL_REPLACE)
+	.D(GL_MODULATE) //
+	.D(GL_DECAL) //
+	.D(GL_BLEND) //
+	.D(GL_REPLACE) //
 	.D(GL_SUBTRACT)
-	.D(GL_COMBINE)
+	.D(GL_COMBINE) //
 	.D(GL_TEXTURE)
 	.D(GL_CONSTANT)
 	.D(GL_PRIMARY_COLOR)
@@ -531,6 +532,14 @@ static void init_enums () {
 	.D(GL_SRC_COLOR).D(GL_ONE_MINUS_SRC_COLOR)
 	.D(GL_SRC_ALPHA).D(GL_ONE_MINUS_SRC_ALPHA)
 	;
+	tex_env_function
+	.D(GL_ADD)
+	.D(GL_MODULATE)
+	.D(GL_DECAL)
+	.D(GL_BLEND)
+	.D(GL_REPLACE)
+	.D(GL_COMBINE)
+        ;
 	tex_gen_coord
 	.D(GL_S)
 	.D(GL_T)
@@ -1064,14 +1073,18 @@ static void init_enums () {
 	\decl 0 frustum(float left, float right, float bottom, float top, float near_val, float far_val) {
 		glFrustum(left,right,bottom,top,near_val,far_val);
 	}
-	// GenLists
+	\decl 0 gen_lists (int n) {
+		if (n<1) RAISE("$1 must be at least 1");
+		uint32 list = glGenLists(n);
+		//t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,list+i);
+		//outlet_anything(outlets[0],&s_list,n,a);
+		outlet_float(outlets[0],list);
+	}
 	// GenProgramsARB
 	\decl 0 gen_textures (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
-		uint32 textures[n];
-		glGenTextures(n,textures);
-		t_atom a[n];
-		for (int i=0; i<n; i++) set_atom(a+i,textures[i]);
+		uint32 textures[n]; glGenTextures(n,textures);
+		t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,textures[i]);
 		outlet_anything(outlets[0],&s_list,n,a);
 	}
 	// GetError
@@ -1089,13 +1102,11 @@ static void init_enums () {
 		outlet_anything(outlets[0],get_parameter.reverse(e),n,a);
 	}
 	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
-	// Index(dfi)v?
-	// IndexMask
-	// Indexsv?
-	// Indexubv?
+	\decl 0 index (float value) {glIndexf(value);}
+	\decl 0 index_mask (bool flag) {glIndexMask(flag);}
 	\decl 0 init_names () {glInitNames();}
 	\decl 0 is_enabled (t_atom cap) {outlet_float(outlets[0],glIsEnabled(capability(cap)));}
-	// IsList
+	\decl 0 is_list    (uint32 list   ) {outlet_float(outlets[0],glIsList(   list   ));}
 	\decl 0 is_texture (uint32 texture) {outlet_float(outlets[0],glIsTexture(texture));}
 	\decl 0 light (...) {
 		if (argc<3) RAISE("minimum 3 args");
@@ -1214,6 +1225,7 @@ static void init_enums () {
 	\decl 0 pop_matrix ()  {glPopMatrix();}
 	\decl 0 pop_name () {glPopName();}
 	// PrioritizeTextures // GLAPI void GLAPIENTRY glPrioritizeTextures(int n, const GLuint *textures, const float *priorities); // clamp
+	//\decl 0 prioritize_textures (...)
 	// ProgramEnvParameter4dARB
 	// ProgramEnvParameter4fvARB
 	// ProgramLocalParameter4fvARB
@@ -1257,9 +1269,15 @@ static void init_enums () {
 		if (argc<3) RAISE("minimum 3 args");
 		GLenum target = tex_env_target(argv[0]);
 		GLenum pname = tex_env_parameter(argv[1]);
-		switch (pname) {
-		  case GL_TEXTURE_ENV_MODE: 
+		if (target==GL_TEXTURE_FILTER_CONTROL) {
+		 switch (pname) {
 		  case GL_TEXTURE_LOD_BIAS:
+		    break;
+		  default: RAISE("...");
+		 }
+		} else if (target==GL_TEXTURE_ENV) {
+		 switch (pname) {
+		  case GL_TEXTURE_ENV_MODE: 
 		  case GL_COMBINE_RGB:
 		  case GL_COMBINE_ALPHA:
 		  case GL_SRC0_RGB  : case GL_SRC1_RGB  : case GL_SRC2_RGB  :
@@ -1268,8 +1286,13 @@ static void init_enums () {
 		  case GL_OPERAND0_ALPHA: case GL_OPERAND1_ALPHA: case GL_OPERAND2_ALPHA:
 		  case GL_RGB_SCALE:
 		  case GL_ALPHA_SCALE:
+		  default: RAISE("...");
+		 }
+		} else if (target==GL_POINT_SPRITE) {
+		 switch (pname) {
 		  case GL_COORD_REPLACE:
 		  default: RAISE("...");
+		 }
 		}
 		//glTexEnvfv(target,pname,params);
 		//glTexEnviv(target,pname,params);
@@ -1335,8 +1358,10 @@ static void init_enums () {
 		default: RAISE("need 2, 3 or 4 args");
 	}}
 	\decl 0 viewport (int x, int y, int width, int height) {glViewport(x,y,width,height);}
-	// gluLookAt
-	// gluPerspective
+	\decl 0 look_at (float eyex, float eyey, float eyez, float cx, float cy, float cz, float upx, float upy, float upz) {
+		gluLookAt(     eyex,       eyey,       eyez,       cx,       cy,       cz,       upx,       upy,       upz);}
+	\decl 0 perspective (float fovy, float aspect, float zNear, float zFar) {
+		gluPerspective(    fovy,       aspect,       zNear,       zFar);}
 	// UseProgramObjectARB
 };
 \end class {install("gf/gl",1,1);}
