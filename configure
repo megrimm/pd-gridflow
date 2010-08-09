@@ -824,14 +824,14 @@ f.puts "
 } # end open config.h
 
 #--------------------------------#
-for s in [
-"See ./config.log if you want the details of the configuration tests.",
-"If you are satisfied with that configuration, you may go on,",
-"and do \"make\". \"make install\" is not needed anymore,",
-"just move your gridflow directory to \"lib/pd/extra\".",
-"If you get stuck, you could contact the author about it,",
-"but first make sure you read \"doc/install.html\". ",
-""] do puts "#{White}#{s}#{Light}" end
+puts %{#{White}\
+See ./config.log if you want the details of the configuration tests.
+"If you are satisfied with that configuration, you may go on, and do "make".
+there is no "make install". just move your gridflow directory to
+"lib/pd/extra", and make sure that it's named "gridflow". Or else add a -path
+option towards the folder which contains the folder named "gridflow" (and not
+to the folder named "gridflow" itself). If you get stuck, ask gridflow-dev.
+#{Light}}
 
 #--------------------------------#
 END {
