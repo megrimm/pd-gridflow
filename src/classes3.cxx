@@ -1443,12 +1443,12 @@ GRID_INLET(0) {
 	t_word *vec;
 	float32 tada[n];
 	
-	for (int i=0; i<n; i++) {
-		if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
-			RAISE("%s: no such array", t->s_name);
-		else if (!garray_getfloatwords(a, &npoints, &vec))
-			RAISE("%s: bad template for tabread", t->s_name);
-		else {
+	if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
+		RAISE("%s: no such array", t->s_name);
+	else if (!garray_getfloatwords(a, &npoints, &vec))
+		RAISE("%s: bad template for tabread", t->s_name);
+	else {
+		for (int i=0; i<n; i++) {
 			int index = data[i];
 			if (index < 0) index = 0;
 			else if (index >= npoints) index = npoints - 1;
