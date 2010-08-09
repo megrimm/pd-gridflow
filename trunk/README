@@ -38,7 +38,7 @@ Multimedia Components (optional):
 	FFTW3
 	OpenCV
 	NetPBM
-	OpenGL
+	OpenGL (and GLEW)
 	Apple X11 (for 10.3: http://www.apple.com/support/downloads/x11formacosx.html
 		   for 10.4: http://www.apple.com/support/downloads/x11update2006113.html )
 
@@ -74,7 +74,7 @@ svn update
     In Debian (lenny) or Ubuntu (8.04), do
 	apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
 		libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
-		ruby nasm libglib1.2-dev
+		ruby nasm libglib1.2-dev libglew1.5-dev
 
     At least with Ubuntu you can add those, but haven't tried with Debian yet:
 	apt-get install libcv-dev libdc1394-13-dev
