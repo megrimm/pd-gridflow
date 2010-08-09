@@ -20,7 +20,7 @@
 */
 
 #include "gridflow.hxx.fcs"
-#include <GL/gl.h>
+#include <GL/glew.h>
 #include <ctype.h>
 
 struct EnumType {

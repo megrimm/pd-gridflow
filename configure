@@ -582,10 +582,10 @@ Feature.add {
 			int main () {return 0;}`}}
 Feature.add {
 	tag :opengl
-	name "OpenGL (for GEM support, etc)"
+	name "OpenGL/GLEW (for GEM support, etc)"
 	produces_o ["src/opengl.o"]
-        uses_so $LIBX11DIR+["-lGL"] if not WIN
-        uses_h ["GL/gl.h"]
+        uses_so $LIBX11DIR+["-lGLEW"] if not WIN
+        uses_h ["GL/glew.h"]
 	options ["HAVE_OPENGL"]
 	test proc {
 		c_test %`
@@ -601,8 +601,8 @@ Feature.add {
 	uses_pdlib ["gridflow_gem9292$(PDSUF)",
 		    "gridflow_gem9293$(PDSUF)",
 		    "gridflow_gem9393$(PDSUF)"]
-        uses_so $LIBX11DIR+["-lGL"] if not WIN
-        uses_h ["GL/gl.h"]
+        uses_so $LIBX11DIR+["-lGLEW"] if not WIN
+        uses_h ["GL/glew.h"]
 	options ["HAVE_GEM"]
 	test proc {
 		c_test %`
