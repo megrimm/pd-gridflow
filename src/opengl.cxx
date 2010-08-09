@@ -25,21 +25,26 @@
 
 struct EnumType {
 	const char *name;
-	typedef std::map<t_symbol *,int>  forward_t;  forward_t  forward;
-	typedef std::map<int,t_symbol *> backward_t; backward_t backward;
+	typedef std::map<t_symbol *,GLenum>  forward_t;  forward_t  forward;
+	typedef std::map<GLenum,t_symbol *> backward_t; backward_t backward;
 	EnumType (const char *name) {this->name = name;}
 	GLenum operator () (const t_atom &a) {return (*this)(*(const t_atom2 *)&a);}
 	GLenum operator () (const t_atom2 &a) {
 		if (a.a_type==A_FLOAT) {
 			float f = (float)a;
-			backward_t::iterator it = backward.find((int)a);
-			if (it==backward.end()) RAISE("%d must be an integer from 0 to 9",(int)a);
+			backward_t::iterator it = backward.find(GLenum(a));
+			if (it==backward.end()) RAISE("unknown %s GLenum %d (at least not allowed in this context)",name,int(a));
 			return f;
 		} else if (a.a_type==A_SYMBOL) {
 			forward_t::iterator it = forward.find((t_symbol *)a);
 			if (it==forward.end()) RAISE("unknown %s '%s'",name,((t_symbol *)a)->s_name);
 			return it->second;
 		} else RAISE("to %s: expected float or symbol",name);
+	}
+	t_symbol *reverse (GLenum e) {
+		backward_t::iterator it = backward.find(e);
+		if (it==backward.end()) RAISE("unknown %s GLenum %d (at least not allowed in this context)",name,int(e));
+		return it->second;
 	}
 	EnumType &add (t_symbol *s, GLenum i) {forward[s]=i; backward[i]=s; return *this;}
 };
@@ -85,6 +90,20 @@ MAKETYPE(texture_mag_filter)
 MAKETYPE(texture_wrap)
 MAKETYPE(tex_env_target)
 MAKETYPE(tex_env_parameter)
+MAKETYPE(tex_env_argument)
+MAKETYPE(tex_gen_coord)
+MAKETYPE(tex_gen_parameter)
+MAKETYPE(tex_gen_mode)
+MAKETYPE(matrix_mode)
+MAKETYPE(material_parameter)
+MAKETYPE(map_eval_type)
+MAKETYPE(call_list_type)
+MAKETYPE(draw_pixels_format)
+MAKETYPE(light_parameter)
+MAKETYPE(light_model_parameter)
+MAKETYPE(light_model_color_control)
+MAKETYPE(feedback_buffer_type)
+MAKETYPE(get_parameter)
 static void init_enums () {
 	#define D(NAME) add(tolower_gensym(#NAME+3),NAME)
 	primitive_type
@@ -579,6 +598,187 @@ static void init_enums () {
 	.D(GL_ALPHA_SCALE)
 	.D(GL_COORD_REPLACE)
 	;
+	tex_env_argument
+	.D(GL_ADD)
+	.D(GL_ADD_SIGNED)
+	.D(GL_INTERPOLATE)
+	.D(GL_MODULATE)
+	.D(GL_DECAL)
+	.D(GL_BLEND)
+	.D(GL_REPLACE)
+	.D(GL_SUBTRACT)
+	.D(GL_COMBINE)
+	.D(GL_TEXTURE)
+	.D(GL_CONSTANT)
+	.D(GL_PRIMARY_COLOR)
+	.D(GL_PREVIOUS)
+	.D(GL_SRC_COLOR)
+	.D(GL_ONE_MINUS_SRC_COLOR)
+	.D(GL_SRC_ALPHA)
+	.D(GL_ONE_MINUS_SRC_ALPHA)
+	;
+	tex_gen_coord
+	.D(GL_S)
+	.D(GL_T)
+	.D(GL_R)
+	.D(GL_Q)
+	;
+	tex_gen_parameter
+	.D(GL_TEXTURE_GEN_MODE)
+	.D(GL_OBJECT_PLANE)
+	.D(GL_EYE_PLANE)
+	;
+	tex_gen_mode
+	.D(GL_OBJECT_LINEAR)
+	.D(GL_EYE_LINEAR)
+	.D(GL_SPHERE_MAP)
+	.D(GL_NORMAL_MAP)
+	.D(GL_REFLECTION_MAP)
+	;
+	matrix_mode
+	.D(GL_MODELVIEW)
+        .D(GL_PROJECTION)
+        .D(GL_TEXTURE)
+	;
+	material_parameter
+	.D(GL_AMBIENT)
+	.D(GL_DIFFUSE)
+	.D(GL_SPECULAR)
+	.D(GL_EMISSION)
+	.D(GL_SHININESS)
+	.D(GL_AMBIENT_AND_DIFFUSE)
+	.D(GL_COLOR_INDEXES)
+	;
+	map_eval_type
+	.D(GL_MAP1_VERTEX_3)
+	.D(GL_MAP1_VERTEX_4)
+	.D(GL_MAP1_INDEX)
+	.D(GL_MAP1_COLOR_4)
+	.D(GL_MAP1_NORMAL)
+	.D(GL_MAP1_TEXTURE_COORD_1)
+	.D(GL_MAP1_TEXTURE_COORD_2)
+	.D(GL_MAP1_TEXTURE_COORD_3)
+	.D(GL_MAP1_TEXTURE_COORD_4)
+	;
+	call_list_type
+	.D(GL_BYTE)
+	.D(GL_UNSIGNED_BYTE)
+	.D(GL_SHORT)
+	.D(GL_UNSIGNED_SHORT)
+	.D(GL_INT)
+	.D(GL_UNSIGNED_INT)
+	.D(GL_FLOAT)
+	.D(GL_2_BYTES)
+	.D(GL_3_BYTES)
+	.D(GL_4_BYTES)
+	;
+	draw_pixels_format
+	.D(GL_COLOR_INDEX)
+	.D(GL_STENCIL_INDEX)
+	.D(GL_DEPTH_COMPONENT)
+	.D(GL_RGB)
+	.D(GL_BGR)
+	.D(GL_RGBA)
+	.D(GL_BGRA)
+	.D(GL_RED)
+	.D(GL_GREEN)
+	.D(GL_BLUE)
+	.D(GL_ALPHA)
+	.D(GL_LUMINANCE)
+	.D(GL_LUMINANCE_ALPHA)
+	;
+	light_parameter
+	.D(GL_AMBIENT)
+	.D(GL_DIFFUSE)
+	.D(GL_SPECULAR)
+	.D(GL_POSITION)
+	.D(GL_SPOT_CUTOFF)
+	.D(GL_SPOT_DIRECTION)
+	.D(GL_SPOT_EXPONENT)
+	.D(GL_CONSTANT_ATTENUATION)
+	.D(GL_LINEAR_ATTENUATION)
+	.D(GL_QUADRATIC_ATTENUATION)
+	;
+	light_model_parameter
+	.D(GL_LIGHT_MODEL_AMBIENT)
+	.D(GL_LIGHT_MODEL_LOCAL_VIEWER)
+	.D(GL_LIGHT_MODEL_COLOR_CONTROL)
+	.D(GL_LIGHT_MODEL_TWO_SIDE)
+	;
+	light_model_color_control
+	.D(GL_SEPARATE_SPECULAR_COLOR)
+	.D(GL_SINGLE_COLOR)
+	;	
+	feedback_buffer_type
+	.D(GL_2D)
+	.D(GL_3D)
+	.D(GL_3D_COLOR)
+	.D(GL_3D_COLOR_TEXTURE)
+	.D(GL_4D_COLOR_TEXTURE)
+	;
+	get_parameter // 1
+	.D(GL_ACCUM_ALPHA_BITS).D(GL_ACCUM_BLUE_BITS).D(GL_ACCUM_GREEN_BITS).D(GL_ACCUM_RED_BITS)
+	.D(GL_ACTIVE_TEXTURE)
+	.D(GL_ALPHA_BIAS).D(GL_ALPHA_BITS).D(GL_ALPHA_SCALE).D(GL_ALPHA_TEST).D(GL_ALPHA_TEST_REF)
+	.D(GL_ARRAY_BUFFER_BINDING)
+	.D(GL_ATTRIB_STACK_DEPTH)
+	.D(GL_AUTO_NORMAL)
+	.D(GL_AUX_BUFFERS)
+	.D(GL_BLEND)
+	.D(GL_BLUE_BIAS).D(GL_BLUE_BITS).D(GL_BLUE_SCALE)
+	.D(GL_CLIENT_ATTRIB_STACK_DEPTH)
+	.D(GL_UNPACK_SWAP_BYTES)
+	.D(GL_CLIP_PLANE0).D(GL_CLIP_PLANE1).D(GL_CLIP_PLANE2)
+	.D(GL_CLIP_PLANE3).D(GL_CLIP_PLANE4).D(GL_CLIP_PLANE5)
+	.D(GL_COLOR_ARRAY).D(GL_COLOR_ARRAY_BUFFER_BINDING).D(GL_COLOR_ARRAY_SIZE)
+	.D(GL_COLOR_ARRAY_STRIDE)
+	.D(GL_COLOR_LOGIC_OP)
+	.D(GL_COLOR_MATERIAL).D(GL_COLOR_MATERIAL_FACE).D(GL_COLOR_MATERIAL_PARAMETER)
+	.D(GL_COLOR_MATRIX_STACK_DEPTH)
+	.D(GL_COLOR_SUM).D(GL_COLOR_TABLE)
+	.D(GL_CONVOLUTION_1D).D(GL_CONVOLUTION_2D)
+	.D(GL_CULL_FACE)
+	.D(GL_CURRENT_FOG_COORD)
+	.D(GL_CURRENT_INDEX)
+	.D(GL_CURRENT_PROGRAM)
+	.D(GL_CURRENT_RASTER_DISTANCE)
+	.D(GL_CURRENT_RASTER_INDEX)
+	.D(GL_CURRENT_RASTER_POSITION_VALID)
+	;
+	get_parameter // 1 GLenum
+	.D(GL_ALPHA_TEST_FUNC)
+	.D(GL_BLEND_DST_ALPHA).D(GL_BLEND_DST_RGB)
+	.D(GL_BLEND_EQUATION_RGB).D(GL_BLEND_EQUATION_ALPHA)
+	.D(GL_BLEND_SRC_ALPHA).D(GL_BLEND_SRC_RGB)
+	//.D(GL_CLIENT_ACTIVE_TEXTURE) (minus GL_TEXTURE0)
+	.D(GL_COLOR_ARRAY_TYPE)
+	.D(GL_CULL_FACE_MODE)
+	;
+	get_parameter // 2
+	.D(GL_ALIASED_POINT_SIZE_RANGE)
+	.D(GL_ALIASED_LINE_WIDTH_RANGE)
+	;
+	get_parameter // 3
+	.D(GL_CURRENT_NORMAL)
+	;
+	get_parameter // 4
+	.D(GL_ACCUM_CLEAR_VALUE)
+	.D(GL_BLEND_COLOR)
+	.D(GL_COLOR_CLEAR_VALUE)
+	.D(GL_COLOR_WRITEMASK)
+	.D(GL_CURRENT_COLOR)
+	.D(GL_CURRENT_RASTER_COLOR).D(GL_CURRENT_RASTER_POSITION)
+	.D(GL_CURRENT_RASTER_SECONDARY_COLOR)
+	.D(GL_CURRENT_RASTER_TEXTURE_COORDS)
+	.D(GL_CURRENT_SECONDARY_COLOR)
+	.D(GL_CURRENT_TEXTURE_COORDS)
+	;
+	get_parameter // 16
+	.D(GL_COLOR_MATRIX)
+	;
+	get_parameter // other
+	.D(GL_COMPRESSED_TEXTURE_FORMATS) // see GL_NUM_COMPRESSED_TEXTURE_FORMATS. uses GLenum.
+	;
 }
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
 \class GFGL : FObject {
@@ -587,17 +787,25 @@ static void init_enums () {
 	\decl 0 accum (t_atom op, float value) {glAccum(accum_op(op),value);}
 	// ActiveTextureARB
 	\decl 0 alpha_func (t_atom func, float ref) {glAlphaFunc(depth_func(func),ref);} // clamp
-	// AreTexturesResident
+	\decl 0 are_textures_resident (...) {
+		uint32 textures[argc];
+		GLboolean residences[argc];
+		t_atom2 a[argc];
+		for (int i=0; i<argc; i++) textures[i] = argv[i];
+		if (glAreTexturesResident(argc,textures,residences)) for (int i=0; i<argc; i++) set_atom(a+i,1);
+		else						     for (int i=0; i<argc; i++) set_atom(a+i,residences[i]);
+		outlet_list(outlets[0],&s_list,argc,a);
+	}
 	\decl 0 array_element (int i) {glArrayElement(i);}
 	\decl 0 begin (t_atom2 a) {glBegin(primitive_type(a));}
 	// BindProgramARB
-	// BindTexture //GLAPI void GLAPIENTRY glBindTexture(t_atom target, GLuint texture);
 	\decl 0 bind_texture (t_atom target, uint32 texture) {glBindTexture(texture_target(target),texture);}
-	// Bitmap //glBitmap(int width, int height, float xorig, float yorig, float xmove, float ymove, const GLubyte *bitmap );
+	\decl 0 bitmap (int width, int height, float xorig, float yorig, float xmove, float ymove, void *bitmap) {
+		glBitmap(width,height,xorig,yorig,xmove,ymove,(const GLubyte *)bitmap);}
 	\decl 0 blend_equation (t_atom mode) {glBlendEquation(blend_equation(mode));}
 	\decl 0 blend_func (t_atom sfactor, t_atom dfactor) {glBlendFunc(blend_func(sfactor),blend_func(dfactor));}
 	\decl 0 call_list (uint32 list) {glCallList(list);}
-	// CallLists // GLAPI void GLAPIENTRY glCallLists(int n, t_atom type, const GLvoid *lists ); // not in GEM
+	\decl 0 call_lists (int n, t_atom type, void *lists) {glCallLists(n,call_list_type(type),lists);} // not in GEM
 	\decl 0 clear_accum (float r, float g, float b, float a) {glClearAccum(r,g,b,a);}
 	\decl 0 clear_color (float r, float g, float b, float a) {glClearColor(r,g,b,a);} // clamp
 	\decl 0 clear_depth (float depth) {glClearDepth(depth);} // clamp
@@ -635,7 +843,11 @@ static void init_enums () {
 
 	\decl 0 cull_face (t_atom mode) {glCullFace(which_side(mode));}
 	\decl 0 delete_lists (uint32 list, int range) {glDeleteLists(list,range);}  // not in GEM
-	// DeleteTextures // GLAPI void GLAPIENTRY glDeleteTextures(int n, const GLuint *textures);
+	\decl 0 delete_textures (...) {
+		uint32 textures[argc];
+		for (int i=0; i<argc; i++) textures[i] = argv[i];
+		glDeleteTextures(argc,textures);
+	}
 	\decl 0 depth_func (t_atom func) {glDepthFunc(depth_func(func));}
 	\decl 0 depth_mask (bool flag) {glDepthMask(flag);}
 	\decl 0 depth_range (float near_val, float far_val) {glDepthRange(near_val,far_val);} // clamp
@@ -644,8 +856,13 @@ static void init_enums () {
 	\decl 0 draw_arrays (t_atom mode, int first, int count) {glDrawArrays(primitive_type(mode),first,count);}
 	\decl 0 draw_buffer (t_atom mode) {glDrawBuffer(buffer_mode(mode));}
 	// DrawElements // GLAPI void GLAPIENTRY glDrawElements(t_atom mode, int count, t_atom type, const GLvoid *indices);
+	//\decl 0 draw_elements (t_atom mode, int count, t_atom type, const GLvoid *indices) {
+		//glDrawElements(t_atom mode, int count, t_atom type, const GLvoid *indices);}
 	// GLAPI void GLAPIENTRY glDrawPixels(int width, int height, t_atom format, t_atom type, const GLvoid *pixels); // not in GEM
-	// EdgeFlag // GLAPI void GLAPIENTRY glEdgeFlagv(const GLboolean *flag);
+	\decl 0 draw_pixels (int width, int height, t_atom format, t_atom type, void *pixels) {
+		glDrawPixels(width,height,draw_pixels_format(format),tex_type(type),pixels);
+	}
+	\decl 0 edge_flag (bool flag) {glEdgeFlag(flag);}
 	\decl 0 enable_client_state (t_atom cap) {glEnable(client_state_capability(cap));}
 	\decl 0 enable (t_atom cap) {glEnable(capability(cap));}
 	\decl 0 end () {glEnd();}
@@ -689,12 +906,20 @@ static void init_enums () {
 	// GenProgramsARB
 	// GenTextures
 	// GetError
-	// GetFloatv
 	// GetIntegerv
 	// GLAPI void GLAPIENTRY glGetLightfv(t_atom light, t_atom pname, float *params); // not in GEM
 	// GetMap[dfi]v
 	// GetPointerv
 	// GetString
+	\decl 0 get (t_atom pname) {
+		GLenum e = get_parameter(pname);
+		float fv[16];
+		int n=1; // only support single-value arguments for now
+		glGetFloatv(e,fv);
+		t_atom a[16];
+		for (int i=0; i<n; i++) set_atom(a+i,fv[i]);
+		outlet_anything(outlets[0],get_parameter.reverse(e),n,a);
+	}
 	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
 	// Index(dfi)v?
 	// IndexMask
@@ -704,11 +929,50 @@ static void init_enums () {
 	// IsEnabled
 	// IsList
 	// IsTexture
-	// Light[fi] // GLAPI void GLAPIENTRY glLightfv(t_atom light, t_atom pname, const float *params);
-	// LightModel[fi] // GLAPI void GLAPIENTRY glLightModelfv(t_atom pname, const float *params);
+	\decl 0 light (...) {
+		if (argc<3) RAISE("minimum 3 args");
+		int light = (int)argv[0];
+		GLenum pname = light_parameter(argv[1]);
+		if (light<0 || light>=8) RAISE("$1 must be a number from 0 to 7");
+		switch (pname) {
+		  case GL_AMBIENT: case GL_DIFFUSE: case GL_SPECULAR: case GL_POSITION:
+		    if (argc!=5) RAISE("need 4 floats after $1");
+		    break;
+		  case GL_SPOT_DIRECTION:
+		    if (argc!=4) RAISE("need 3 floats after $1");
+		    break;
+		  case GL_SPOT_CUTOFF: case GL_SPOT_EXPONENT:
+		  case GL_CONSTANT_ATTENUATION: case GL_LINEAR_ATTENUATION: case GL_QUADRATIC_ATTENUATION:
+		    if (argc!=2) RAISE("need 1 float after $1");
+		    break;
+		  default: RAISE("...");
+		}
+		float fv[argc-2];
+		for (int i=2; i<argc; i++) fv[i-2] = argv[i];
+		glLightfv(GL_LIGHT0+light,pname,fv);
+	}
+	\decl 0 light_model (...) {
+		if (argc<2) RAISE("minimum 2 args");
+		GLenum pname = light_model_parameter(argv[0]);
+		switch (pname) {
+		  case GL_LIGHT_MODEL_AMBIENT:
+		    if (argc!=5) RAISE("need 4 floats after $1");
+		    break;
+		  case GL_LIGHT_MODEL_LOCAL_VIEWER: case GL_LIGHT_MODEL_TWO_SIDE:
+		    if (argc!=2) RAISE("need 1 float after $1");
+		    break;
+		  case GL_LIGHT_MODEL_COLOR_CONTROL:
+		    glLightModelf(pname,light_model_color_control(argv[1]));
+		    return;
+		  default: RAISE("...");
+		}
+		float fv[argc-1];
+		for (int i=1; i<argc; i++) fv[i-1] = argv[i];
+		glLightModelfv(pname,fv);
+	}
 	\decl 0 line_stipple (int factor, uint16 pattern) {glLineStipple(factor,pattern);}
 	\decl 0 line_width (float width) {glLineWidth(width);}
-	// ListBase // GLAPI void GLAPIENTRY glListBase( GLuint base ); // not in GEM
+	\decl 0 list_base (uint32 base) {glListBase(base);} // not in GEM
 	\decl 0 load_identity () {glLoadIdentity();}
 	\decl 0 load_matrix (...) {
 		if (argc!=16) RAISE("need 16 args");
@@ -722,17 +986,39 @@ static void init_enums () {
 		glLoadTransposeMatrixf(fv);
 	}
 	\decl 0 logic_op (t_atom opcode) {glLogicOp(logic_op(opcode));}
-	// glMap1f(t_atom target, float u1, float u2, int stride, int order, const float *points );
-	// glMap2f(t_atom target, float u1, float u2, int ustride, int uorder, float v1, float v2, int vstride, int vorder, const float *points );
+	\decl 0 map1 (t_atom target, float u1, float u2, int stride, int order, void *points) {
+		glMap1f(map_eval_type(target),u1,u2,stride,order,(const float *)points);
+	}
+	\decl 0 map2 (t_atom target, float u1, float u2, int ustride, int uorder, float v1, float v2, int vstride, int vorder, void *points) {
+		glMap2f(map_eval_type(target),u1,u2,ustride,uorder,v1,v2,vstride,vorder,(const float *)points);
+	}
 	\decl 0 map_grid (...) {switch (argc) {
 		case 3: glMapGrid1f(argv[0],argv[1],argv[2]); break;
 		case 6: glMapGrid2f(argv[0],argv[1],argv[2],argv[3],argv[4],argv[5]); break;
 		default: RAISE("need 3 or 6 args");
 	}}
-	// Materialfv? // GLAPI void GLAPIENTRY glMaterialfv(t_atom face, t_atom pname, const float *params);
-	// MatrixMode // GLAPI void GLAPIENTRY glMatrixMode(t_atom mode);
+	\decl 0 material (...) {
+		if (argc<3) RAISE("need 3 or more args");
+		GLenum face = which_side(argv[0]);
+		GLenum pname = material_parameter(argv[1]);
+		switch(pname) {
+		  case GL_AMBIENT: case GL_DIFFUSE: case GL_SPECULAR: case GL_EMISSION: case GL_AMBIENT_AND_DIFFUSE:
+			if (argc!=5) RAISE("this $1 needs to be followed by 4 float args");
+			break;
+		  case GL_SHININESS:
+			if (argc!=2) RAISE("this $1 needs to be followed by 1 float arg");
+			break;
+		  case GL_COLOR_INDEXES:
+			if (argc!=4) RAISE("this $1 needs to be followed by 3 float args");
+			break;
+		  default: RAISE("...");
+                }
+                float fv[4];
+		for (int i=1; i<argc; i++) fv[i-1] = argv[i];
+		glMaterialfv(face,pname,fv);
+	}
+	\decl 0 matrix_mode (t_atom mode) {glMatrixMode(matrix_mode(mode));}
 	// MultiTexCoord2fARB
-	// MultMatrix[df] // GLAPI void GLAPIENTRY glMultMatrixf( const float *m );
 	\decl 0 mult_matrix (...) {
 		if (argc!=16) RAISE("need 16 args");
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
@@ -804,7 +1090,17 @@ static void init_enums () {
 		GLenum target = tex_env_target(argv[0]);
 		GLenum pname = tex_env_parameter(argv[1]);
 		switch (pname) {
-		  
+		  case GL_TEXTURE_ENV_MODE: 
+		  case GL_TEXTURE_LOD_BIAS:
+		  case GL_COMBINE_RGB:
+		  case GL_COMBINE_ALPHA:
+		  case GL_SRC0_RGB  : case GL_SRC1_RGB  : case GL_SRC2_RGB  :
+		  case GL_SRC0_ALPHA: case GL_SRC1_ALPHA: case GL_SRC2_ALPHA:
+		  case GL_OPERAND0_RGB  : case GL_OPERAND1_RGB  : case GL_OPERAND2_RGB  :
+		  case GL_OPERAND0_ALPHA: case GL_OPERAND1_ALPHA: case GL_OPERAND2_ALPHA:
+		  case GL_RGB_SCALE:
+		  case GL_ALPHA_SCALE:
+		  case GL_COORD_REPLACE:
 		  default: RAISE("...");
 		}
 		//glTexEnvfv(target,pname,params);
@@ -813,20 +1109,20 @@ static void init_enums () {
 	// glTexGenfv(t_atom coord,  t_atom pname, const float *params);
 	\decl 0 tex_gen (...) {
 		if (argc<3) RAISE("minimum 3 args");
-		GLenum target = texture_target(argv[0]);
-		GLenum pname = texture_parameter(argv[1]);
+		GLenum coord = tex_gen_coord(argv[0]);
+		GLenum pname = tex_gen_parameter(argv[1]);
 		switch (pname) {
 		  default: RAISE("...");
 		}
 		//glTexGenfv(target,pname,params);
 	}
 
-	\decl 0 tex_image_1D(t_atom target, int level, t_atom iformat, int width,                        int border, t_atom format, t_atom type, const GLvoid *pixels) {
+	\decl 0 tex_image_1D(t_atom target, int level, t_atom iformat, int width,                        int border, t_atom format, t_atom type, void *pixels) {
 		if (tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
 		glTexImage1D(tex_target(target),level,tex_iformat(iformat),width,             border,tex_format(format),tex_type(type),pixels);}
-	\decl 0 tex_image_2D(t_atom target, int level, t_atom iformat, int width, int height,            int border, t_atom format, t_atom type, const GLvoid *pixels) {
+	\decl 0 tex_image_2D(t_atom target, int level, t_atom iformat, int width, int height,            int border, t_atom format, t_atom type, void *pixels) {
 		glTexImage2D(tex_target(target),level,tex_iformat(iformat),width,height,      border,tex_format(format),tex_type(type),pixels);}
-	\decl 0 glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border, t_atom format, t_atom type, const GLvoid *pixels) {
+	\decl 0 glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border, t_atom format, t_atom type, void *pixels) {
 		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
 		glTexImage3D(tex_target(target),level,tex_iformat(iformat),width,height,depth,border,tex_format(format),tex_type(type),pixels);} // not in GEM
 
