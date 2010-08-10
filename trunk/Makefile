@@ -11,7 +11,7 @@ RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
-OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o \
+OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/classes_gui.o \
 src/number.1.o src/number.2.o src/number.3.o src/number.4.o \
 src/formats.o
 PDLIB += gridflow_pdp$(PDSUF)
