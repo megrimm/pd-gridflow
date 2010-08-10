@@ -1511,7 +1511,7 @@ GRID_INPUT_INT32(1,r) {} GRID_END
 \end class {install("#tabwrite",2,0);}
 
 //****************************************************************
-void startup_flow_objects3 () {
+void startup_classes3 () {
 	op_os8 = OP(*>>8);
 	\startall
 }
