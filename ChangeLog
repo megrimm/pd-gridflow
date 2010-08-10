@@ -5,9 +5,12 @@ version 9.11 (2010......):
  * [#cast] $1 defaults to int32 (i)
  * [#camera]: added right outlet (for attributes)
  * [#type]: [#type, abbr] gives single-letter type names: b s i l f d
- * added classes [route3] [#type-gui] [#tabread] [#from~]
+ * added classes [route3] [#type-gui] [#tabread] [#tabwrite] [#from~]
+ * added [gf/tk_button] [gf/sys_gui] [gf/wrap] [gf/l2s] [gf/s2l]
  * fixed some rendering bugs in [display] and [#see]
  * [#draw_polygon]: ignore value of "omit" when "draw fill" (to avoid nonsense)
+ * added OpenGL interface class [gf/gl]
+ * fixed detection of png support
 
 version 9.10 (2010.08.04):
 
