@@ -484,7 +484,7 @@ Feature.add {
 	test proc {|f|
 		f.c_test "
 		#include#
-		int main () {return dc1394_get_camera_port==0;}"}}
+		int main () {return dc1394_create_handle==0;}"}}
 Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
