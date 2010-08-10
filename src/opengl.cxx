@@ -1344,7 +1344,9 @@ static void init_enums () {
 
 	// ActiveTextureARB
 	// BindProgramARB
-	\decl 0 blend_equation (t_atom mode) {glBlendEquation(blend_equation(mode));}
+	\decl 0 blend_equation (t_atom mode) {
+		if (!glBlendEquation) RAISE("need OpenGL ARB_imaging extension");
+		glBlendEquation(blend_equation(mode));}
 	// GenProgramsARB
 	// MultiTexCoord2fARB
 	// ProgramEnvParameter4dARB
