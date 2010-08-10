@@ -270,6 +270,8 @@ struct t_atom2 : t_atom {
 	TYPECASTER2(Grid       *,A_GRID   ,"grid"       ,       (Grid *)a_gpointer)
 	TYPECASTER2(GridOutlet *,A_GRIDOUT,"grid outlet", (GridOutlet *)a_gpointer)
 #undef TYPECASTER2
+
+	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
