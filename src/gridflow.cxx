@@ -905,9 +905,10 @@ int handle_braces(int ac, t_atom *av) {
 \end class
 
 void startup_number();
-void startup_flow_objects();
-void startup_flow_objects3();
-void startup_flow_objects2();
+void startup_classes1();
+void startup_classes3();
+void startup_classes2();
+void startup_classes_gui();
 void startup_format();
 STARTUP_LIST(void)
 

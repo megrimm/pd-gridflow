@@ -1001,7 +1001,7 @@ GRID_INPUT(1,dim_grid) {
 \end class {install("#redim",2,1); add_creator("@redim");}
 
 #define OP(x) op_dict[string(#x)]
-void startup_classes_1 () {
+void startup_classes1 () {
 	op_add = OP(+);
 	op_sub = OP(-);
 	op_mul = OP(*);
