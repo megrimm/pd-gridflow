@@ -443,12 +443,14 @@ public:
 	bool selected,vis,use_queue;
 	int sy; int sx;
 	t_symbol *rsym;
+	string outline;
 	GUI_FObject(BFObject *bself, t_symbol *s, VA) : FObject(bself,s,argc,argv) {
 		selected = false;
 		vis = false;
 		use_queue = true;
 		rsym = symprintf("gf%08x",this);
 		pd_bind((t_pd *)bself,rsym);
+		outline = "#aaaaaa";
 	}
 	~GUI_FObject() {
 		pd_unbind((t_pd *)bself,rsym);
@@ -471,7 +473,7 @@ public:
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
 		sys_vgui(".x%x.c itemconfigure {%sR || %sTEXT} -outline %s\n",c,
-			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
+			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":self->outline.data());
 	}
 	static void deletefn(BLAH) {INIT L
 		/* if (self->vis) */ sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
@@ -553,9 +555,9 @@ extern "C" int sys_hostfontsize(int fontsize);
 			else quoted << (char)s[i];
 		}
 		// used to have {Courier -12} but this changed to use pdtk_canvas_new
-		if (vis) sys_vgui("display_update %s %d %d #000000 #ffffc8 %s %d .x%x.c \"%s\"\n",
-			rsym->s_name,text_xpix(bself,mom),text_ypix(bself,mom),selected?"#0000ff":"#aaaaaa",
-			sys_hostfontsize(glist_getfont(mom)),glist_getcanvas(mom),quoted.str().data());
+		if (vis) sys_vgui("display_update %s .x%x.c %d %d #000000 #ffffc8 %s %d \"%s\"\n",
+			rsym->s_name,glist_getcanvas(mom),text_xpix(bself,mom),text_ypix(bself,mom),
+			selected?"#0000ff":"#aaaaaa", sys_hostfontsize(glist_getfont(mom)),quoted.str().data());
 		else {
 			t_canvas *c = glist_getcanvas(mom);
 			sys_vgui(".x%x.c delete %s\n",c,rsym->s_name,rsym->s_name);
@@ -602,7 +604,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 #else
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
-	sys_gui("proc display_update {self x y fg bg outline font canvas text} { \n"
+	sys_gui("proc display_update {self canvas x y fg bg outline font text} { \n"
 		"$canvas delete $self\n"
 		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
 		"$canvas addtag $self withtag ${self}TEXT\n"
@@ -738,7 +740,7 @@ static t_pd *seesend;
 	t_clock *clock; // pitiééééééééééééééé
 	int my1,mx1,my2,mx2; // margins
 	\constructor () {
-		clock = 0;
+		clock = clock_new(bself,(void(*)())doh);
 		my1=5; my2=5; mx1=3; mx2=3;
 		compute_size();
 		hold = false;
@@ -756,7 +758,7 @@ static t_pd *seesend;
 	}
 	~GridSee () {
 		if (spy) pd_free((t_pd *)spy);
-		if (clock) clock_free(clock);
+		clock_free(clock);
 	}
 	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
 	void event (int y, int x, int flags, t_symbol *k, const char *sel) {
@@ -817,18 +819,17 @@ static t_pd *seesend;
 		if (buf) sendbuf();
 		t_glist *c = glist_getcanvas(mom);
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
-		sys_vgui("gridsee_update %s %d %d %d %d %d %d %d %d #000000 #cccccc %s .x%x.c\n",rsym->s_name,
-			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,mx1,my1,mx2,my2,selected?"#0000ff":"#aaaaaa",c);
+		sys_vgui("gridsee_update %s .x%x.c %d %d %d %d %d %d %d %d #cccccc %s\n",rsym->s_name,c,
+			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,mx1,my1,mx2,my2,selected?"#0000ff":"#aaaaaa");
 		outlet_anything(outlets[0],gensym("shown"),0,0);
 	}
 	static void doh (void *x) {INIT1
 		MouseSpy *ms = (MouseSpy *)self->spy->self;
 		ms->set_rcv(symprintf(".x%x",glist_getcanvas(self->mom)));
-		if (self->clock) {clock_free(self->clock); self->clock=0;}
+		//if (self->clock) {clock_free(self->clock); self->clock=0;}
 	}
 	static void visfn(BLAH, int flag) {INIT1
 		GUI_FObject::visfn(x,glist,flag);//super
-		self->clock = clock_new(bself,(void(*)())doh);
 		clock_delay(self->clock,0);
 	}
 	NEWWB
@@ -846,23 +847,25 @@ GRID_INLET(0) {
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
-	sys_gui("proc gridsee_update {self x1 y1 sx sy mx1 my1 mx2 my2 fg bg outline canvas} {\n"
-	    "$canvas delete $self\n"
-	    "set x2 [expr {$x1+$sx}]\n"
-	    "set y2 [expr {$y1+$sy}]\n"
-	    "set x3 [expr {$mx1-1}]; if {$x3<0} {set x3 0}; set x3 [expr {$x1+$x3}]\n"
-	    "set y3 [expr {$my1-1}]; if {$y3<0} {set y3 0}; set y3 [expr {$y1+$y3}]\n"
-	    "set x4 [expr {$mx2-1}]; if {$x4<0} {set x4 0}; set x4 [expr {$x2-$x4}]\n"
-	    "set y4 [expr {$my2-1}]; if {$y4<0} {set y4 0}; set y4 [expr {$y2-$y4}]\n"
-	    "$canvas create rectangle $x1 $y1            $x2            $y2            -fill $bg   "
-		"-tags [list $self ${self}R ] -outline $outline\n"
-	    "$canvas create rectangle $x3 $y3            $x4            $y4            -fill black "
-		"-tags [list $self ${self}RR] -outline black\n"
-	    "$canvas create rectangle $x1 $y1            [expr {$x1+7}] [expr {$y1+2}] -fill white "
-		"-tags [list $self ${self}i0] -outline black\n"
-	    "$canvas create rectangle $x1 [expr {$y2-2}] [expr {$x1+7}] $y2            -fill white "
-		"-tags [list $self ${self}o0] -outline black\n"
-	    "$canvas create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
+	sys_gui("proc GUI_FObject_update {self canvas x1 y1 sx sy bg outline} {\n"
+	"$canvas delete $self\n"
+	"set x2 [expr {$x1+$sx}]\n"
+	"set y2 [expr {$y1+$sy}]\n"
+	"set x7 [expr {$x1+7}]\n"
+	"$canvas create rectangle $x1 $y1            $x2 $y2            -fill $bg   -tags [list $self ${self}R ] -outline $outline\n"
+	"$canvas create rectangle $x1 $y1            $x7 [expr {$y1+2}] -fill white -tags [list $self ${self}i0] -outline black\n"
+	"$canvas create rectangle $x1 [expr {$y2-2}] $x7 $y2            -fill white -tags [list $self ${self}o0] -outline black\n"
+	"}\n");
+	sys_gui("proc gridsee_update {self canvas x1 y1 sx sy mx1 my1 mx2 my2 bg outline} {\n"
+	"GUI_FObject_update $self $canvas $x1 $y1 $sx $sy $bg $outline\n"
+	"set x2 [expr {$x1+$sx}]\n"
+	"set y2 [expr {$y1+$sy}]\n"
+	"set x3 [expr {$mx1-1}]; if {$x3<0} {set x3 $x3}; set x3 [expr {$x1+$x3}]\n"
+	"set y3 [expr {$my1-1}]; if {$y3<0} {set y3 $y3}; set y3 [expr {$y1+$y3}]\n"
+	"set x4 [expr {$mx2-1}]; if {$x4<0} {set x4 $x4}; set x4 [expr {$x2-$x4}]\n"
+	"set y4 [expr {$my2-1}]; if {$y4<0} {set y4 $y4}; set y4 [expr {$y2-$y4}]\n"
+	"$canvas create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
+	"$canvas create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
 /*
  * 	sys_gui("set gridsee_socket [socket -server -port 9999]\n");
@@ -875,6 +878,52 @@ GRID_INLET(0) {
 	pd_anything((t_pd *)seesend,gensym("connect"),2,a);
 	post("postconnect");
 */
+}
+
+//****************************************************************
+
+\class GFTkButton : GUI_FObject {
+	t_symbol *text;
+	\constructor (t_symbol *text) {
+		sy=32;
+		sx=64;
+		this->text = text;
+		outline = "#eeeeee";
+	}
+	\decl 0 bang () {outlet_bang(outlets[0]);}
+	void show () {
+		//if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
+		t_glist *c = glist_getcanvas(mom);
+		sys_vgui("gf/tk_button.update %s .x%x.c %d %d %d %d #ffffff %s\n",rsym->s_name,c,
+			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":outline.data());
+	}
+	static void visfn(BLAH, int flag) {INIT
+		//post("tkbutt visfn: flag=%d self->vis=%d",flag,self->vis);
+		if (flag && !self->vis)
+		//sys_vgui("button .x%x.c.%s -text {%s}\n",c,self->rsym->s_name,self->text->s_name);
+		//sys_vgui(".x%x.c create window %d %d -window .x%x.c.%s -anchor nw -tags [list %s %sW]\n",
+		//	c,text_xpix(bself,self->mom),text_ypix(bself,self->mom),c,self->rsym->s_name,self->rsym->s_name,self->rsym->s_name);
+		sys_vgui("gf/tk_button.create %s .x%x.c %d %d {%s}\n",self->rsym->s_name,c,
+			text_xpix(bself,self->mom),text_ypix(bself,self->mom),self->text->s_name);
+		GUI_FObject::visfn(x,glist,flag);//super
+	}
+	NEWWB
+};
+\end class {
+	install("gf/tk_button",1,1);
+	class_setwidget(fclass->bfclass,GFTkButton::newwb());
+	sys_gui("proc gf/tk_button.create {self c x1 y1 text} {\n"
+	"button $c.$self -text $text -borderwidth 1 -command [list pd $self bang \\;]\n"
+	"place $c.$self -x 0 -y 0\n" // bogus placement just to force [winfo] to work properly later
+	"}\n");
+	sys_gui("proc gf/tk_button.update {self c x1 y1 sx sy bg outline} {\n"
+	"set sx [winfo width $c.$self]\n"
+	"set sy [expr 5+[winfo height $c.$self]]\n"
+	"puts \"sx=$sx sy=$sy\"\n"
+	"GUI_FObject_update $self $c $x1 $y1 $sx $sy $bg $outline\n"
+	"$c create window $x1 [expr $y1+3] -window $c.$self -anchor nw -tags [list $self ${self}W]\n"
+	//"$c coords ${self}W $x1 [expr $y1+3]\n"
+	"}\n");
 }
 
 //****************************************************************
