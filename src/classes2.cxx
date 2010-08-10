@@ -1247,6 +1247,25 @@ string join (int argc, t_atom *argv, string sep, string term) {
 };
 \end class {install("gf/l2s",2,1);}
 
+\class GFS2L : FObject {
+	t_symbol *sep;
+	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
+	\decl 0 symbol (t_symbol *s) {
+		const char *p = s->s_name;
+		const char *q=p;
+		char sepc = *sep->s_name;
+		t_atom2 a[64]; int n=0;
+		for (;;q++) {
+			if (!*q)      {if (q!=s->s_name) a[n++]=symprintf("%.*s",q-p,p); break;}
+			if (*q==sepc) {                  a[n++]=symprintf("%.*s",q-p,p); q++; p=q;}
+			if (n==64) break;
+		}
+		outlet_list(outlets[0],&s_list,n,a);
+	}
+	\decl 1 symbol (t_symbol *sep) {this->sep=sep;}
+};
+\end class {install("gf/s2l",2,1);}
+
 \class GFSysGui : FObject {
 	\constructor () {}
 	\decl 0 list (...) {sys_gui(join(argc,argv," ","\n").data());}
