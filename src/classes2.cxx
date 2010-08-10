@@ -1240,10 +1240,12 @@ string join (int argc, t_atom *argv, string sep, string term) {
 }
 
 \class GFL2S : FObject {
-	\constructor () {}
-	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv," ","").data()));}
+	t_symbol *sep;
+	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
+	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv,sep->s_name,"").data()));}
+	\decl 1 symbol (t_symbol *sep) {this->sep=sep;}
 };
-\end class {install("gf/l2s",1,1);}
+\end class {install("gf/l2s",2,1);}
 
 \class GFSysGui : FObject {
 	\constructor () {}
