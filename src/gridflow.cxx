@@ -1086,9 +1086,10 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	startup_number();
 	\startall
-	startup_flow_objects();
-	startup_flow_objects3();
-	startup_flow_objects2();
+	startup_classes1();
+	startup_classes3();
+	startup_classes2();
+	startup_classes_gui();
 	startup_format();
 	STARTUP_LIST()
 #ifdef HAVE_GEM
