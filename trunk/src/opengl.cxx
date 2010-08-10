@@ -25,8 +25,15 @@
 
 struct EnumType {
 	const char *name;
+	struct EnumInfo {
+		t_symbol *s;
+		int n;
+		// if n==0 : this is not the name of a 'get' attribute
+		// if n>0  : this is the name of a 'get' attribute that has n arguments
+		// if n<0  : this is the name of a 'get' attribute that is currently not supported.
+	};
 	typedef std::map<t_symbol *,GLenum>  forward_t;  forward_t  forward;
-	typedef std::map<GLenum,t_symbol *> backward_t; backward_t backward;
+	typedef std::map<GLenum,EnumInfo>   backward_t; backward_t backward;
 	EnumType (const char *name) {this->name = name;}
 	GLenum operator () (const t_atom &a) {return (*this)(*(const t_atom2 *)&a);}
 	GLenum operator () (const t_atom2 &a) {
@@ -44,9 +51,14 @@ struct EnumType {
 	t_symbol *reverse (GLenum e) {
 		backward_t::iterator it = backward.find(e);
 		if (it==backward.end()) RAISE("unknown %s GLenum %d (at least not allowed in this context)",name,int(e));
-		return it->second;
+		return it->second.s;
 	}
-	EnumType &add (t_symbol *s, GLenum i, int dummy=0) {forward[s]=i; backward[i]=s; return *this;}
+	int argc (GLenum e) {
+		backward_t::iterator it = backward.find(e);
+		if (it==backward.end()) RAISE("unknown %s GLenum %d (at least not allowed in this context)",name,int(e));
+		return it->second.n;
+	}
+ 	EnumType &add (t_symbol *s, GLenum i, int n=0) {forward[s]=i; EnumInfo &ei = backward[i]; ei.s=s; ei.n=n; return *this;}
 };
 static t_symbol *tolower_gensym (const char *s) {
 	char t[64]; strcpy(t,s);
@@ -104,6 +116,8 @@ MAKETYPE(light_model_parameter)
 MAKETYPE(light_model_color_control)
 MAKETYPE(feedback_buffer_type)
 MAKETYPE(get_parameter)
+MAKETYPE(tex_depth_mode)
+MAKETYPE(texture_compare_mode)
 static void init_enums () {
 	#define D(NAME) add(tolower_gensym(#NAME+3),NAME)
 	primitive_type
@@ -482,6 +496,7 @@ static void init_enums () {
 	.D(GL_TEXTURE_COMPARE_FUNC)
 	.D(GL_DEPTH_TEXTURE_MODE)
 	.D(GL_GENERATE_MIPMAP)
+	.D(GL_TEXTURE_BORDER_COLOR) //?
 	;
 	texture_min_filter
 	.D(GL_NEAREST).D(GL_NEAREST_MIPMAP_NEAREST).D(GL_NEAREST_MIPMAP_LINEAR)
@@ -557,6 +572,15 @@ static void init_enums () {
 	.D(GL_SPHERE_MAP)
 	.D(GL_NORMAL_MAP)
 	.D(GL_REFLECTION_MAP)
+	;
+	tex_depth_mode
+	.D(GL_LUMINANCE)
+	.D(GL_INTENSITY)
+	.D(GL_ALPHA)
+	;
+	texture_compare_mode
+	.D(GL_COMPARE_R_TO_TEXTURE)
+	.D(GL_NONE)
 	;
 	matrix_mode
 	.D(GL_MODELVIEW)
@@ -643,7 +667,10 @@ static void init_enums () {
 	#define D(NAME,ARGS...) add(tolower_gensym(#NAME+3),NAME,ARGS)
 	get_parameter // 1
 	.D(GL_ACCUM_ALPHA_BITS,1).D(GL_ACCUM_BLUE_BITS,1).D(GL_ACCUM_GREEN_BITS,1).D(GL_ACCUM_RED_BITS,1)
+	.D(GL_BLEND_COLOR,4)
+	.D(GL_ACCUM_CLEAR_VALUE,4)
 	.D(GL_ACTIVE_TEXTURE,1)
+	.D(GL_ALIASED_POINT_SIZE_RANGE,2).D(GL_ALIASED_LINE_WIDTH_RANGE,2)
 	.D(GL_ALPHA_BIAS,1).D(GL_ALPHA_BITS,1).D(GL_ALPHA_SCALE,1).D(GL_ALPHA_TEST,1).D(GL_ALPHA_TEST_REF,1)
 	.D(GL_ARRAY_BUFFER_BINDING,1)
 	.D(GL_ATTRIB_STACK_DEPTH,1)
@@ -656,54 +683,33 @@ static void init_enums () {
 	.D(GL_CLIP_PLANE3,1).D(GL_CLIP_PLANE4,1).D(GL_CLIP_PLANE5,1)
 	.D(GL_COLOR_ARRAY,1).D(GL_COLOR_ARRAY_BUFFER_BINDING,1).D(GL_COLOR_ARRAY_SIZE,1)
 	.D(GL_COLOR_ARRAY_STRIDE,1)
+	.D(GL_COLOR_CLEAR_VALUE,4)
 	.D(GL_COLOR_LOGIC_OP,1)
 	.D(GL_COLOR_MATERIAL,1).D(GL_COLOR_MATERIAL_FACE,1).D(GL_COLOR_MATERIAL_PARAMETER,1)
+	.D(GL_COLOR_MATRIX,16)
 	.D(GL_COLOR_MATRIX_STACK_DEPTH,1)
 	.D(GL_COLOR_SUM,1).D(GL_COLOR_TABLE,1)
+	.D(GL_COLOR_WRITEMASK,4)
 	.D(GL_CONVOLUTION_1D,1).D(GL_CONVOLUTION_2D,1)
 	.D(GL_CULL_FACE,1)
+	.D(GL_CURRENT_COLOR,4)
 	.D(GL_CURRENT_FOG_COORD,1)
 	.D(GL_CURRENT_INDEX,1)
-	.D(GL_CURRENT_PROGRAM,1)
-	.D(GL_CURRENT_RASTER_DISTANCE,1)
-	.D(GL_CURRENT_RASTER_INDEX,1)
-	.D(GL_CURRENT_RASTER_POSITION_VALID,1)
-	;
-	get_parameter // 1 GLenum
-	.D(GL_ALPHA_TEST_FUNC,1)
-	.D(GL_BLEND_DST_ALPHA,1).D(GL_BLEND_DST_RGB,1)
-	.D(GL_BLEND_EQUATION_RGB,1).D(GL_BLEND_EQUATION_ALPHA,1)
-	.D(GL_BLEND_SRC_ALPHA,1).D(GL_BLEND_SRC_RGB,1)
-	//.D(GL_CLIENT_ACTIVE_TEXTURE,1) (minus GL_TEXTURE0)
-	.D(GL_COLOR_ARRAY_TYPE,1)
-	.D(GL_CULL_FACE_MODE,1)
-	;
-	get_parameter // 2
-	.D(GL_ALIASED_POINT_SIZE_RANGE,2)
-	.D(GL_ALIASED_LINE_WIDTH_RANGE,2)
-	;
-	get_parameter // 3
 	.D(GL_CURRENT_NORMAL,3)
-	;
-	get_parameter // 4
-	.D(GL_ACCUM_CLEAR_VALUE,4)
-	.D(GL_BLEND_COLOR,4)
-	.D(GL_COLOR_CLEAR_VALUE,4)
-	.D(GL_COLOR_WRITEMASK,4)
-	.D(GL_CURRENT_COLOR,4)
+	.D(GL_CURRENT_PROGRAM,1)
+	.D(GL_CURRENT_RASTER_DISTANCE,1).D(GL_CURRENT_RASTER_INDEX,1).D(GL_CURRENT_RASTER_POSITION_VALID,1)
 	.D(GL_CURRENT_RASTER_COLOR,4).D(GL_CURRENT_RASTER_POSITION,4)
-	.D(GL_CURRENT_RASTER_SECONDARY_COLOR,4)
-	.D(GL_CURRENT_RASTER_TEXTURE_COORDS,4)
+	.D(GL_CURRENT_RASTER_SECONDARY_COLOR,4).D(GL_CURRENT_RASTER_TEXTURE_COORDS,4)
 	.D(GL_CURRENT_SECONDARY_COLOR,4)
 	.D(GL_CURRENT_TEXTURE_COORDS,4)
-	;
-	get_parameter // 16
-	.D(GL_COLOR_MATRIX,16)
-	;
-	get_parameter // other
-	.D(GL_COMPRESSED_TEXTURE_FORMATS,-1) // goes with .D(GL_NUM_COMPRESSED_TEXTURE_FORMATS,1) and GLenum
-	;
-	get_parameter // unified
+	//.D(GL_ALPHA_TEST_FUNC,1e)
+	//.D(GL_BLEND_DST_ALPHA,1e).D(GL_BLEND_DST_RGB,1e)
+	//.D(GL_BLEND_EQUATION_RGB,1e).D(GL_BLEND_EQUATION_ALPHA,1e)
+	//.D(GL_BLEND_SRC_ALPHA,1e).D(GL_BLEND_SRC_RGB,1e)
+	//.D(GL_CLIENT_ACTIVE_TEXTURE,1e) (minus GL_TEXTURE0)
+	//.D(GL_COLOR_ARRAY_TYPE,1e)
+	//.D(GL_CULL_FACE_MODE,1e)
+	//.D(GL_COMPRESSED_TEXTURE_FORMATS,-1) // goes with .D(GL_NUM_COMPRESSED_TEXTURE_FORMATS,1) and GLenum
 	.D(GL_DEPTH_BIAS,1).D(GL_DEPTH_BITS,1).D(GL_DEPTH_CLEAR_VALUE,1)
 	//GL_DEPTH_FUNC,1e
 	.D(GL_DEPTH_RANGE,1).D(GL_DEPTH_SCALE,1).D(GL_DEPTH_TEST,1).D(GL_DEPTH_WRITEMASK,1)
@@ -739,7 +745,6 @@ static void init_enums () {
 	.D(GL_LINE_WIDTH,1).D(GL_LINE_WIDTH_GRANULARITY,1).D(GL_LINE_WIDTH_RANGE,2)
 	.D(GL_LIST_BASE,1).D(GL_LIST_INDEX,1).D(GL_LIST_MODE,1)
 	.D(GL_LOGIC_OP_MODE,1)
-
 	.D(GL_MAP1_COLOR_4,1)
 	.D(GL_MAP1_GRID_DOMAIN,2).D(GL_MAP1_GRID_SEGMENTS,1).D(GL_MAP1_INDEX,1).D(GL_MAP1_NORMAL,1)
 	.D(GL_MAP1_TEXTURE_COORD_1,1).D(GL_MAP1_TEXTURE_COORD_2,1).D(GL_MAP1_TEXTURE_COORD_3,1).D(GL_MAP1_TEXTURE_COORD_4,1)
@@ -786,8 +791,6 @@ static void init_enums () {
 	.D(GL_NORMAL_ARRAY_STRIDE,1)
 	//.D(GL_NORMAL_ARRAY_TYPE,1e)
 	.D(GL_NORMALIZE,1)
-
-
 	.D(GL_PACK_ALIGNMENT,1)
 	.D(GL_PACK_IMAGE_HEIGHT,1)
 	.D(GL_PACK_LSB_FIRST,1)
@@ -797,16 +800,9 @@ static void init_enums () {
 	.D(GL_PACK_SKIP_ROWS,1)
 	.D(GL_PACK_SWAP_BYTES,1)
 	.D(GL_PERSPECTIVE_CORRECTION_HINT,1)
-	.D(GL_PIXEL_MAP_A_TO_A_SIZE,1)
-	.D(GL_PIXEL_MAP_B_TO_B_SIZE,1)
-	.D(GL_PIXEL_MAP_G_TO_G_SIZE,1)
-	.D(GL_PIXEL_MAP_I_TO_A_SIZE,1)
-	.D(GL_PIXEL_MAP_I_TO_B_SIZE,1)
-	.D(GL_PIXEL_MAP_I_TO_G_SIZE,1)
-	.D(GL_PIXEL_MAP_I_TO_I_SIZE,1)
-	.D(GL_PIXEL_MAP_I_TO_R_SIZE,1)
-	.D(GL_PIXEL_MAP_R_TO_R_SIZE,1)
-	.D(GL_PIXEL_MAP_S_TO_S_SIZE,1)
+	.D(GL_PIXEL_MAP_A_TO_A_SIZE,1).D(GL_PIXEL_MAP_B_TO_B_SIZE,1).D(GL_PIXEL_MAP_G_TO_G_SIZE,1).D(GL_PIXEL_MAP_R_TO_R_SIZE,1)
+	.D(GL_PIXEL_MAP_I_TO_A_SIZE,1).D(GL_PIXEL_MAP_I_TO_B_SIZE,1).D(GL_PIXEL_MAP_I_TO_G_SIZE,1).D(GL_PIXEL_MAP_I_TO_R_SIZE,1)
+	.D(GL_PIXEL_MAP_I_TO_I_SIZE,1).D(GL_PIXEL_MAP_S_TO_S_SIZE,1)
 	.D(GL_PIXEL_PACK_BUFFER_BINDING,1)
 	.D(GL_PIXEL_UNPACK_BUFFER_BINDING,1)
 	.D(GL_POINT_DISTANCE_ATTENUATION,3)
@@ -867,13 +863,11 @@ static void init_enums () {
 	.D(GL_SELECTION_BUFFER_SIZE,1)
 	.D(GL_SEPARABLE_2D,1)
 	.D(GL_SHADE_MODEL,1)
-	.D(GL_SMOOTH_LINE_WIDTH_RANGE,2)
-	.D(GL_SMOOTH_LINE_WIDTH_GRANULARITY,1)
-	.D(GL_SMOOTH_POINT_SIZE_RANGE,2)
-	.D(GL_SMOOTH_POINT_SIZE_GRANULARITY,1)
+	.D(GL_SMOOTH_LINE_WIDTH_RANGE,2).D(GL_SMOOTH_LINE_WIDTH_GRANULARITY,1)
+	.D(GL_SMOOTH_POINT_SIZE_RANGE,2).D(GL_SMOOTH_POINT_SIZE_GRANULARITY,1)
 	.D(GL_STENCIL_BACK_FAIL,1)
-	.D(GL_STENCIL_BACK_FUNC,1)
 	.D(GL_STENCIL_BACK_PASS_DEPTH_FAIL,1)
+	.D(GL_STENCIL_BACK_FUNC,1)
 	.D(GL_STENCIL_BACK_PASS_DEPTH_PASS,1)
 	.D(GL_STENCIL_BACK_REF,1)
 	.D(GL_STENCIL_BACK_VALUE_MASK,1)
@@ -890,7 +884,6 @@ static void init_enums () {
 	.D(GL_STENCIL_WRITEMASK,1)
 	.D(GL_STEREO,1)
 	.D(GL_SUBPIXEL_BITS,1)
-	
 	.D(GL_TEXTURE_1D,1)
 	.D(GL_TEXTURE_BINDING_1D,1)
 	.D(GL_TEXTURE_2D,1)
@@ -956,7 +949,6 @@ static void init_enums () {
 	\constructor () {}
 	~GFGL() {}
 	\decl 0 accum (t_atom op, float value) {glAccum(accum_op(op),value);}
-	// ActiveTextureARB
 	\decl 0 alpha_func (t_atom func, float ref) {glAlphaFunc(depth_func(func),ref);} // clamp
 	\decl 0 are_textures_resident (...) {
 		uint32 textures[argc];
@@ -969,11 +961,9 @@ static void init_enums () {
 	}
 	\decl 0 array_element (int i) {glArrayElement(i);}
 	\decl 0 begin (t_atom2 a) {glBegin(primitive_type(a));}
-	// BindProgramARB
 	\decl 0 bind_texture (t_atom target, uint32 texture) {glBindTexture(texture_target(target),texture);}
 	\decl 0 bitmap (int width, int height, float xorig, float yorig, float xmove, float ymove, void *bitmap) {
 		glBitmap(width,height,xorig,yorig,xmove,ymove,(const GLubyte *)bitmap);}
-	\decl 0 blend_equation (t_atom mode) {glBlendEquation(blend_equation(mode));}
 	\decl 0 blend_func (t_atom sfactor, t_atom dfactor) {glBlendFunc(blend_func(sfactor),blend_func(dfactor));}
 	\decl 0 call_list (uint32 list) {glCallList(list);}
 	\decl 0 call_lists (int n, t_atom type, void *lists) {glCallLists(n,call_list_type(type),lists);} // not in GEM
@@ -1009,6 +999,7 @@ static void init_enums () {
 	\decl 0 copy_tex_sub_image_2D (t_atom target, int level, int xoffset, int yoffset, int x, int y, int width, int height) {
 		glCopyTexSubImage2D(copy_tex_target(target),level,xoffset,yoffset,x,y,width,height);}
 	\decl 0 copy_tex_sub_image_3D (t_atom target, int level, int xoffset, int yoffset, int zoffset, int x, int y, int width, int height) {
+		if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
 		if (copy_tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
 		glCopyTexSubImage3D(copy_tex_target(target),level,xoffset,yoffset,zoffset,x,y,width,height);}
 
@@ -1061,7 +1052,7 @@ static void init_enums () {
 		GLenum pname = fog_param(argv[0]);
 		if (pname==GL_FOG_COLOR) {
 			if (argc!=5) RAISE("fog color: need 4 floats after this $1");
-			float fv[4]; fv[0]=argv[1]; fv[1]=argv[2]; fv[2]=argv[3]; fv[3]=argv[4];
+			float fv[4]={argv[1],argv[2],argv[3],argv[4]};
 			glFogfv(pname,fv);
 		} else if (pname==GL_FOG_MODE || pname==GL_FOG_DENSITY || pname==GL_FOG_START || pname==GL_FOG_END ||
 		pname==GL_FOG_INDEX || pname==GL_FOG_COORD_SRC) {
@@ -1080,7 +1071,6 @@ static void init_enums () {
 		//outlet_anything(outlets[0],&s_list,n,a);
 		outlet_float(outlets[0],list);
 	}
-	// GenProgramsARB
 	\decl 0 gen_textures (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
 		uint32 textures[n]; glGenTextures(n,textures);
@@ -1094,12 +1084,14 @@ static void init_enums () {
 	// GetString
 	\decl 0 get (t_atom pname) {
 		GLenum e = get_parameter(pname);
+		t_symbol *s = get_parameter.reverse(e);
 		float fv[16];
-		int n=1; // only support single-value arguments for now
+		int n=get_parameter.argc(e); // only support single-value arguments for now
+		if (n<=0) RAISE("reading this property isn't currently supported by GridFlow");
+		//post("reading property %d 0x%04X %s n=%d",e,e,s->s_name,n);
 		glGetFloatv(e,fv);
-		t_atom a[16];
-		for (int i=0; i<n; i++) set_atom(a+i,fv[i]);
-		outlet_anything(outlets[0],get_parameter.reverse(e),n,a);
+		t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,fv[i]);
+		outlet_anything(outlets[0],s,n,a);
 	}
 	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
 	\decl 0 index (float value) {glIndexf(value);}
@@ -1115,15 +1107,10 @@ static void init_enums () {
 		if (light<0 || light>=8) RAISE("$1 must be a number from 0 to 7");
 		switch (pname) {
 		  case GL_AMBIENT: case GL_DIFFUSE: case GL_SPECULAR: case GL_POSITION:
-		    if (argc!=5) RAISE("need 4 floats after $1");
-		    break;
-		  case GL_SPOT_DIRECTION:
-		    if (argc!=4) RAISE("need 3 floats after $1");
-		    break;
-		  case GL_SPOT_CUTOFF: case GL_SPOT_EXPONENT:
-		  case GL_CONSTANT_ATTENUATION: case GL_LINEAR_ATTENUATION: case GL_QUADRATIC_ATTENUATION:
-		    if (argc!=2) RAISE("need 1 float after $1");
-		    break;
+						if (argc!=5) RAISE("need 4 floats after $1"); break;
+		  case GL_SPOT_DIRECTION:	if (argc!=4) RAISE("need 3 floats after $1"); break;
+		  case GL_SPOT_CUTOFF: case GL_SPOT_EXPONENT: case GL_CONSTANT_ATTENUATION: case GL_LINEAR_ATTENUATION:
+		  case GL_QUADRATIC_ATTENUATION:if (argc!=2) RAISE("need 1 float after $1");  break;
 		  default: RAISE("...");
 		}
 		float fv[argc-2];
@@ -1134,12 +1121,9 @@ static void init_enums () {
 		if (argc<2) RAISE("minimum 2 args");
 		GLenum pname = light_model_parameter(argv[0]);
 		switch (pname) {
-		  case GL_LIGHT_MODEL_AMBIENT:
-		    if (argc!=5) RAISE("need 4 floats after $1");
-		    break;
-		  case GL_LIGHT_MODEL_LOCAL_VIEWER: case GL_LIGHT_MODEL_TWO_SIDE:
-		    if (argc!=2) RAISE("need 1 float after $1");
-		    break;
+		  case GL_LIGHT_MODEL_AMBIENT: if (argc!=5) RAISE("need 4 floats after $1"); break;
+		  case GL_LIGHT_MODEL_LOCAL_VIEWER:
+		  case GL_LIGHT_MODEL_TWO_SIDE:if (argc!=2) RAISE("need 1 float after $1");  break;
 		  case GL_LIGHT_MODEL_COLOR_CONTROL:
 		    glLightModelf(pname,light_model_color_control(argv[1]));
 		    return;
@@ -1160,6 +1144,7 @@ static void init_enums () {
 	}
 	\decl 0 load_name (uint32 name) {glLoadName(name);}
 	\decl 0 load_transpose_matrix (...) {
+		if (!glLoadTransposeMatrixf) RAISE("need OpenGL 1.3");
 		if (argc!=16) RAISE("need 16 args");
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
 		glLoadTransposeMatrixf(fv);
@@ -1182,14 +1167,9 @@ static void init_enums () {
 		GLenum pname = material_parameter(argv[1]);
 		switch(pname) {
 		  case GL_AMBIENT: case GL_DIFFUSE: case GL_SPECULAR: case GL_EMISSION: case GL_AMBIENT_AND_DIFFUSE:
-			if (argc!=5) RAISE("this $1 needs to be followed by 4 float args");
-			break;
-		  case GL_SHININESS:
-			if (argc!=2) RAISE("this $1 needs to be followed by 1 float arg");
-			break;
-		  case GL_COLOR_INDEXES:
-			if (argc!=4) RAISE("this $1 needs to be followed by 3 float args");
-			break;
+					if (argc!=5) RAISE("this $1 needs to be followed by 4 float args"); break;
+		  case GL_SHININESS:	if (argc!=2) RAISE("this $1 needs to be followed by 1 float arg");  break;
+		  case GL_COLOR_INDEXES:if (argc!=4) RAISE("this $1 needs to be followed by 3 float args"); break;
 		  default: RAISE("...");
                 }
                 float fv[4];
@@ -1197,13 +1177,13 @@ static void init_enums () {
 		glMaterialfv(face,pname,fv);
 	}
 	\decl 0 matrix_mode (t_atom mode) {glMatrixMode(matrix_mode(mode));}
-	// MultiTexCoord2fARB
 	\decl 0 mult_matrix (...) {
 		if (argc!=16) RAISE("need 16 args");
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
 		glMultMatrixf(fv);
 	}
 	\decl 0 mult_transpose_matrix (...) {
+		if (!glMultTransposeMatrixf) RAISE("need OpenGL 1.3");
 		if (argc!=16) RAISE("need 16 args");
 		float fv[16]; for (int i=0; i<16; i++) fv[i]=argv[i];
 		glMultTransposeMatrixf(fv);
@@ -1226,10 +1206,6 @@ static void init_enums () {
 	\decl 0 pop_name () {glPopName();}
 	// PrioritizeTextures // GLAPI void GLAPIENTRY glPrioritizeTextures(int n, const GLuint *textures, const float *priorities); // clamp
 	//\decl 0 prioritize_textures (...)
-	// ProgramEnvParameter4dARB
-	// ProgramEnvParameter4fvARB
-	// ProgramLocalParameter4fvARB
-	// ProgramStringARB
 	\decl 0 push_attrib (int mask) {glPushAttrib(mask);} // bitfield
 	\decl 0 push_client_attrib (int mask) {glPushClientAttrib(mask);} // bitfield
 	\decl 0 push_matrix () {glPushMatrix();}
@@ -1314,6 +1290,7 @@ static void init_enums () {
 	\decl 0 tex_image_2D(t_atom target, int level, t_atom iformat, int width, int height,            int border, t_atom format, t_atom type, void *pixels) {
 		glTexImage2D(tex_target(target),level,tex_iformat(iformat),width,height,      border,tex_format(format),tex_type(type),pixels);}
 	\decl 0 glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border, t_atom format, t_atom type, void *pixels) {
+		if (!glTexImage3D) RAISE("need OpenGL 1.2");
 		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
 		glTexImage3D(tex_target(target),level,tex_iformat(iformat),width,height,depth,border,tex_format(format),tex_type(type),pixels);} // not in GEM
 
@@ -1322,22 +1299,19 @@ static void init_enums () {
 		GLenum target = texture_target(argv[0]);
 		GLenum pname = texture_parameter(argv[1]);
 		switch (pname) {
-		  case GL_TEXTURE_MIN_FILTER: break;
-		  case GL_TEXTURE_MAG_FILTER: break;
-		  case GL_TEXTURE_MIN_LOD: break;
-		  case GL_TEXTURE_MAX_LOD: break;
-		  case GL_TEXTURE_BASE_LEVEL: break;
-		  case GL_TEXTURE_MAX_LEVEL: break;
-		  case GL_TEXTURE_WRAP_S: case GL_TEXTURE_WRAP_T: case GL_TEXTURE_WRAP_R: break;
-		  case GL_TEXTURE_PRIORITY: break;
-		  case GL_TEXTURE_COMPARE_MODE: break;
-		  case GL_TEXTURE_COMPARE_FUNC: break;
-		  case GL_DEPTH_TEXTURE_MODE: break;
-		  case GL_GENERATE_MIPMAP: break;
+		  case GL_TEXTURE_MIN_FILTER:   glTexParameteri(target,pname,texture_min_filter(  argv[2])); return;
+		  case GL_TEXTURE_MAG_FILTER:   glTexParameteri(target,pname,texture_mag_filter(  argv[2])); return;
+		  case GL_TEXTURE_COMPARE_MODE: glTexParameteri(target,pname,texture_compare_mode(argv[2])); break;
+		  case GL_TEXTURE_COMPARE_FUNC: glTexParameteri(target,pname,depth_func(          argv[2])); break;
+		  case GL_DEPTH_TEXTURE_MODE:   glTexParameteri(target,pname,tex_depth_mode(      argv[2])); break;
+		  case GL_TEXTURE_MIN_LOD: case GL_TEXTURE_MAX_LOD: case GL_TEXTURE_PRIORITY: case GL_GENERATE_MIPMAP:
+		  case GL_TEXTURE_BASE_LEVEL: case GL_TEXTURE_MAX_LEVEL: glTexParameterf(target,pname,argv[2]); return;
+		  case GL_TEXTURE_WRAP_S: case GL_TEXTURE_WRAP_T: case GL_TEXTURE_WRAP_R:
+			glTexParameterf(target,pname,texture_wrap(argv[2]));
+		  case GL_TEXTURE_BORDER_COLOR: if (argc!=5) RAISE("need 4 args after $2");
+			{float fv[4]={argv[2],argv[3],argv[4],argv[5]}; glTexParameterfv(target,pname,fv);} break;
 		  default: RAISE("...");
 		}
-		//glTexParameteriv(target,pname,params);
-		//glTexParameterfv(target,pname,params);
 	}
 
 	\decl 0 tex_sub_image_1D(t_atom target, int level, int xoffset,                           int width,                        t_atom format, t_atom type, const GLvoid *pixels) {
@@ -1346,11 +1320,11 @@ static void init_enums () {
 	\decl 0 tex_sub_image_2D(t_atom target, int level, int xoffset, int yoffset,              int width, int height,            t_atom format, t_atom type, const GLvoid *pixels) {
 		glTexSubImage2D(tex_target(target),level,xoffset,yoffset,        width,height,      tex_format(format),tex_type(type),pixels);}
 	\decl 0 tex_sub_image_3D(t_atom target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, t_atom format, t_atom type, const GLvoid *pixels) {
+		if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
 		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
 		glTexSubImage3D(tex_target(target),level,xoffset,yoffset,zoffset,width,height,depth,tex_format(format),tex_type(type),pixels);} // not in GEM
 
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
-	// Uniform1fARB
 	\decl 0 vertex (...) {switch (argc) {
 		case 2: glVertex2f(argv[0],argv[1]); break;
 		case 3: glVertex3f(argv[0],argv[1],argv[2]); break;
@@ -1358,10 +1332,26 @@ static void init_enums () {
 		default: RAISE("need 2, 3 or 4 args");
 	}}
 	\decl 0 viewport (int x, int y, int width, int height) {glViewport(x,y,width,height);}
+
+//////////////////////////////// GLU section
+
 	\decl 0 look_at (float eyex, float eyey, float eyez, float cx, float cy, float cz, float upx, float upy, float upz) {
 		gluLookAt(     eyex,       eyey,       eyez,       cx,       cy,       cz,       upx,       upy,       upz);}
 	\decl 0 perspective (float fovy, float aspect, float zNear, float zFar) {
 		gluPerspective(    fovy,       aspect,       zNear,       zFar);}
+
+//////////////////////////////// ARB section
+
+	// ActiveTextureARB
+	// BindProgramARB
+	\decl 0 blend_equation (t_atom mode) {glBlendEquation(blend_equation(mode));}
+	// GenProgramsARB
+	// MultiTexCoord2fARB
+	// ProgramEnvParameter4dARB
+	// ProgramEnvParameter4fvARB
+	// ProgramLocalParameter4fvARB
+	// ProgramStringARB
+	// Uniform1fARB
 	// UseProgramObjectARB
 };
 \end class {install("gf/gl",1,1);}
