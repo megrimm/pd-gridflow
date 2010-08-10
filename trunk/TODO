@@ -1,13 +1,28 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
+[ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 --------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
+[ ] dépendance [button]
+[ ] dépendance [count]
+[ ] dépendances [l2s] [s2l]
+[ ] dépendances [sys_gui] [hcs/sys_gui]
+[ ] [#dim_append] [#dim_prepend]
+[ ] [#nothing]
+[ ] remove duplicate entries in the GLenum tables
+[ ] remove black border that just appeared in [#see, margins 0 0 0 0] ([doc_link])
+[ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
+[ ] change description of GridFlow on gridflow.ca and puredata.info
+[ ] figure out domain name transfer problem
 [ ] remove [inv+] and [inv*] aliases
+[ ] terrible bug in [#reverse] !
+[ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] [#] with 0-sized right value gives total crap
 [ ] [gf/error] doesn't report the source of the error like RAISE() does.
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
+[ ] [display] bug : see qbert.pd 
 [ ] répondre à re:[#spigot]
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
@@ -15,8 +30,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] accelerate [#outer ignore (0)]
 [ ] [#print] maxrows doesn't work
 [ ] [lb]
-[ ] invalid command name ".x8f03820.c" with hidden [display],
-    and also, appears in wrong canvas or position in case of GOP sometimes
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
