@@ -428,7 +428,7 @@ Feature.add {
 	tag :png
 	name "PNG Library"
 	uses_so ["-lpng","-lz"]
-	uses_h Or[["libpng/png.h"],["libpng14/png.h"],["libpng12/png.h"],["png.h"]]
+	uses_h Or[["png.h"],["libpng/png.h"],["libpng14/png.h"],["libpng12/png.h"]]
 	produces_o ["src/png.o"]
 	test proc {|f|
 		f.c_test %`
