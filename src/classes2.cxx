@@ -1230,6 +1230,33 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/find_file",1,2);}
 
+string join (int argc, t_atom *argv, string sep, string term) {
+	std::ostringstream os;
+	for (int i=0; i<argc; i++) {
+		os << argv[i];
+		os << (i==argc-1 ? term : sep);
+	}
+	return os.str();
+}
+
+\class GFL2S : FObject {
+	\constructor () {}
+	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv," ","").data()));}
+};
+\end class {install("gf/l2s",1,1);}
+
+\class GFSysGui : FObject {
+	\constructor () {}
+	\decl 0 list (...) {sys_gui(join(argc,argv," ","\n").data());}
+};
+\end class {install("gf/sys_gui",1,0);}
+
+\class GFWrap : FObject {
+	\constructor () {}
+	\decl 0 float (float f) {outlet_float(outlets[0],f-floor(f));}
+};
+\end class {install("gf/wrap",1,1);}
+
 /* hack because hexloader is a myth */
 \class InvTimes : FObject {
 	float b;
