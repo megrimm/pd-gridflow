@@ -1,0 +1,37 @@
+#N canvas 528 157 632 429 10;
+#X obj 0 0 doc_h;
+#X obj 3 375 doc_also;
+#X obj 0 395 doc_f;
+#X obj 14 185 doc_ii 0;
+#X obj 97 185 doc_m i0 list;
+#X obj 103 375 hcs/sys_gui;
+#X obj 137 44 gf/l2s;
+#X obj 3 155 doc_i 2;
+#X obj 14 207 doc_ii 1;
+#X obj 97 207 doc_m i1 symbol;
+#X obj 3 239 doc_o 1;
+#X obj 14 269 doc_oo 0;
+#X obj 97 269 doc_m o0 symbol;
+#X text 232 185 a list of symbols to be joined together.;
+#X text 232 269 symbol to be produced. in the case of an empty list
+\, this will be the empty symbol. if there is more than one input element
+\, each non-last element will be followed by a separator before continuing
+with the next element.;
+#X text 232 330 beware of empty symbols (because of pd's lack of provisions
+for handling them properly).;
+#X obj 181 375 gf/s2l;
+#X obj 229 375 l2s;
+#X obj 3 80 doc_c 1;
+#X obj 14 110 doc_cc 0;
+#X obj 97 110 doc_m c0 symbol;
+#X text 232 110 single-byte symbol used as separator. unlike for [gf/s2l]
+\, this can be any length. (default: single space);
+#X obj 232 207 doc_same 0;
+#X connect 1 1 5 0;
+#X connect 1 1 16 0;
+#X connect 1 1 17 0;
+#X connect 4 1 13 0;
+#X connect 9 1 22 0;
+#X connect 12 1 14 0;
+#X connect 12 1 15 0;
+#X connect 20 1 21 0;

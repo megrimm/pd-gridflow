@@ -1,0 +1,18 @@
+#N canvas 528 157 632 302 10;
+#X obj 0 0 doc_h;
+#X obj 3 248 doc_also;
+#X obj 0 268 doc_f;
+#X obj 3 80 doc_c 0;
+#X obj 14 150 doc_ii 0;
+#X obj 97 150 doc_m i0 list;
+#X obj 103 248 hcs/sys_gui;
+#X obj 181 248 gf/l2s;
+#X obj 137 44 gf/sys_gui;
+#X obj 3 208 doc_o 0;
+#X obj 3 120 doc_i 1;
+#X text 232 150 transformed into a single string just like [gf/l2s]
+does by default \, then sent to the pd client using the sys_gui() command.
+However \, it does not actually create a symbol.;
+#X connect 1 1 6 0;
+#X connect 1 1 7 0;
+#X connect 5 1 11 0;
