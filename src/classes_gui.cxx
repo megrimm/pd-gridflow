@@ -113,12 +113,8 @@ public:
 		//glist_grab(self->mom,(t_gobj *)bself,motionfn,keyfn,xpix,ypix);
 		return 0;
 	}
-	static void motionfn(void *x, float dx, float dy) {INIT1 L
-		//post("motionfn %d %d",dx,dy);
-	}
-	static void keyfn(void *x, float key) {INIT1 L
-		//post("keyfn %d",key);
-	}
+	static void motionfn(void *x, float dx, float dy) {/*INIT1 L*/}
+	static void keyfn(void *x, float key) {/*INIT1 L*/}
 	static void activatefn(BLAH, int state) {INIT /* post("activate %d",state); */}
 	virtual void show() = 0;
 	void changed(t_symbol *foo=0) {foo=foo; if (use_queue) sys_queuegui(bself,mom,redraw); else show();}
@@ -232,17 +228,17 @@ extern "C" int sys_hostfontsize(int fontsize);
 #else
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
-	sys_gui("proc display_update {self canvas x y fg bg outline font text} { \n"
-		"$canvas delete $self\n"
-		"pdtk_text_new $canvas ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
-		"$canvas addtag $self withtag ${self}TEXT\n"
-		"foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {}\n"
+	sys_gui("proc display_update {self c x y fg bg outline font text} { \n"
+		"$c delete $self\n"
+		"pdtk_text_new $c ${self}TEXT [expr $x+2] [expr $y+4] $text $font $fg\n"
+		"$c addtag $self withtag ${self}TEXT\n"
+		"foreach {x1 y1 x2 y2} [$c bbox ${self}TEXT] {}\n"
 		"set sx [expr $x2-$x1+2]; set x2 [expr {$x+$sx}]\n"
 		"set sy [expr $y2-$y1+4]; set y2 [expr {$y+$sy}]\n"
-		"$canvas create polygon $x $y $x2 $y $x2 [expr {$y2-2}] [expr {$x2-2}] $y2 [expr {$x+2}] $y2 $x [expr {$y2-2}]"
+		"$c create polygon $x $y $x2 $y $x2 [expr {$y2-2}] [expr {$x2-2}] $y2 [expr {$x+2}] $y2 $x [expr {$y2-2}]"
 		" $x $y -fill $bg -tags [list $self ${self}R] -outline $outline\n"
-		"$canvas create rectangle $x $y [expr $x+7] [expr $y+2] -fill white -tags [list $self ${self}i0] -outline black\n"
-		"$canvas lower ${self}R ${self}TEXT\n"
+		"$c create rectangle $x $y [expr $x+7] [expr $y+2] -fill white -tags [list $self ${self}i0] -outline black\n"
+		"$c lower ${self}R ${self}TEXT\n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
 #endif
@@ -475,25 +471,22 @@ GRID_INLET(0) {
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
-	sys_gui("proc GUI_FObject_update {self canvas x1 y1 sx sy bg outline} {\n"
-	"$canvas delete $self\n"
-	"set x2 [expr {$x1+$sx}]\n"
-	"set y2 [expr {$y1+$sy}]\n"
-	"set x7 [expr {$x1+7}]\n"
-	"$canvas create rectangle $x1 $y1            $x2 $y2            -fill $bg   -tags [list $self ${self}R ] -outline $outline\n"
-	"$canvas create rectangle $x1 $y1            $x7 [expr {$y1+2}] -fill white -tags [list $self ${self}i0] -outline black\n"
-	"$canvas create rectangle $x1 [expr {$y2-2}] $x7 $y2            -fill white -tags [list $self ${self}o0] -outline black\n"
+	sys_gui("proc GUI_FObject_update {self c x1 y1 sx sy bg outline} {\n"
+	"$c delete $self\n"
+	"set x2 [expr {$x1+$sx}]; set y2 [expr {$y1+$sy}]; set x7 [expr {$x1+7}]\n"
+	"$c create rectangle $x1 $y1            $x2 $y2            -fill $bg   -tags [list $self ${self}R ] -outline $outline\n"
+	"$c create rectangle $x1 $y1            $x7 [expr {$y1+2}] -fill white -tags [list $self ${self}i0] -outline black\n"
+	"$c create rectangle $x1 [expr {$y2-2}] $x7 $y2            -fill white -tags [list $self ${self}o0] -outline black\n"
 	"}\n");
-	sys_gui("proc gridsee_update {self canvas x1 y1 sx sy mx1 my1 mx2 my2 bg outline} {\n"
-	"GUI_FObject_update $self $canvas $x1 $y1 $sx $sy $bg $outline\n"
-	"set x2 [expr {$x1+$sx}]\n"
-	"set y2 [expr {$y1+$sy}]\n"
+	sys_gui("proc gridsee_update {self c x1 y1 sx sy mx1 my1 mx2 my2 bg outline} {\n"
+	"GUI_FObject_update $self $c $x1 $y1 $sx $sy $bg $outline\n"
+	"set x2 [expr {$x1+$sx}]; set y2 [expr {$y1+$sy}]\n"
 	"set x3 [expr {$mx1-1}]; if {$x3<0} {set x3 $x3}; set x3 [expr {$x1+$x3}]\n"
 	"set y3 [expr {$my1-1}]; if {$y3<0} {set y3 $y3}; set y3 [expr {$y1+$y3}]\n"
 	"set x4 [expr {$mx2-1}]; if {$x4<0} {set x4 $x4}; set x4 [expr {$x2-$x4}]\n"
 	"set y4 [expr {$my2-1}]; if {$y4<0} {set y4 $y4}; set y4 [expr {$y2-$y4}]\n"
-	"$canvas create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
-	"$canvas create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
+	"$c create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
+	"$c create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
 /*
  * 	sys_gui("set gridsee_socket [socket -server -port 9999]\n");
@@ -519,6 +512,7 @@ GRID_INLET(0) {
 		outline = "#eeeeee";
 	}
 	\decl 0 bang () {outlet_bang(outlets[0]);}
+	\decl 0 size (int sy, int sx) {this->sy=sy; this->sx=sx;}
 	void show () {
 		//if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
 		t_glist *c = glist_getcanvas(mom);
@@ -526,13 +520,9 @@ GRID_INLET(0) {
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":outline.data());
 	}
 	static void visfn(BLAH, int flag) {INIT
-		//post("tkbutt visfn: flag=%d self->vis=%d",flag,self->vis);
-		if (flag && !self->vis)
-		//sys_vgui("button .x%x.c.%s -text {%s}\n",c,self->rsym->s_name,self->text->s_name);
-		//sys_vgui(".x%x.c create window %d %d -window .x%x.c.%s -anchor nw -tags [list %s %sW]\n",
-		//	c,text_xpix(bself,self->mom),text_ypix(bself,self->mom),c,self->rsym->s_name,self->rsym->s_name,self->rsym->s_name);
-		sys_vgui("gf/tk_button.create %s .x%x.c %d %d {%s}\n",self->rsym->s_name,c,
+		if (flag && !self->vis) sys_vgui("gf/tk_button.create %s .x%x.c %d %d {%s}\n",self->rsym->s_name,c,
 			text_xpix(bself,self->mom),text_ypix(bself,self->mom),self->text->s_name);
+		if (!flag && self->vis) sys_vgui("gf/tk_button.destroy %s .x%x.c\n",self->rsym->s_name,c);
 		GUI_FObject::visfn(x,glist,flag);//super
 	}
 	NEWWB
@@ -545,12 +535,22 @@ GRID_INLET(0) {
 	"place $c.$self -x 0 -y 0\n" // bogus placement just to force [winfo] to work properly later
 	"}\n");
 	sys_gui("proc gf/tk_button.update {self c x1 y1 sx sy bg outline} {\n"
-	"set sx [winfo width $c.$self]\n"
-	"set sy [expr 5+[winfo height $c.$self]]\n"
-	"puts \"sx=$sx sy=$sy\"\n"
-	"GUI_FObject_update $self $c $x1 $y1 $sx $sy $bg $outline\n"
+	"set sx2 [winfo width $c.$self]\n"
+	"set sy2 [expr 5+[winfo height $c.$self]]\n"
+	"if {$sx!=$sx2 || $sy!=$sy2} {pd $self size $sy2 $sx2\\;}\n"
+	"set sx $sx2; set sy $sy2\n"
+
+	//"GUI_FObject_update $self $c $x1 $y1 $sx $sy $bg $outline\n" // but without the main box
+	"$c delete $self\n"
+	"set x2 [expr {$x1+$sx}]; set y2 [expr {$y1+$sy}]; set x7 [expr {$x1+7}]\n"
+	"$c create rectangle $x1 $y1            $x7 [expr {$y1+2}] -fill white -tags [list $self ${self}i0] -outline black\n"
+	"$c create rectangle $x1 [expr {$y2-2}] $x7 $y2            -fill white -tags [list $self ${self}o0] -outline black\n"
+	
 	"$c create window $x1 [expr $y1+3] -window $c.$self -anchor nw -tags [list $self ${self}W]\n"
 	//"$c coords ${self}W $x1 [expr $y1+3]\n"
+	"}\n");
+	sys_gui("proc gf/tk_button.destroy {self c} {\n"
+	"destroy $c.$self\n"
 	"}\n");
 }
 
