@@ -1,4 +1,4 @@
-#N canvas 551 29 632 642 10;
+#N canvas 551 24 632 642 10;
 #X obj 0 0 doc_h gf/;
 #X obj 3 1117 doc_also;
 #X obj 0 1137 doc_f;
@@ -90,6 +90,7 @@ the same number as you'd had to write if you were using GEMgl.;
 name uppercase suffixes like '1D' '2D' '3D' where 'D' means dimension.
 they are currently lowercased and kept.;
 #X text 245 580 not all functions are implemented yet.;
+#X msg 118 50 destroy;
 #X connect 1 1 4 0;
 #X connect 1 1 5 0;
 #X connect 1 1 6 0;
@@ -136,3 +137,4 @@ they are currently lowercased and kept.;
 #X connect 55 2 46 0;
 #X connect 55 2 52 0;
 #X connect 56 0 3 0;
+#X connect 61 0 54 0;
