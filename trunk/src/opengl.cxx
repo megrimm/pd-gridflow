@@ -944,8 +944,8 @@ static void init_enums () {
 		GLboolean residences[argc];
 		t_atom2 a[argc];
 		for (int i=0; i<argc; i++) textures[i] = argv[i];
-		if (glAreTexturesResident(argc,textures,residences)) for (int i=0; i<argc; i++) set_atom(a+i,1);
-		else						     for (int i=0; i<argc; i++) set_atom(a+i,residences[i]);
+		if (glAreTexturesResident(argc,textures,residences)) for (int i=0; i<argc; i++) a[i]=1;
+		else						     for (int i=0; i<argc; i++) a[i]=residences[i];
 		outlet_list(outlets[0],&s_list,argc,a);
 	}
 	\decl 0 array_element (int i) {glArrayElement(i);}
@@ -1056,14 +1056,14 @@ static void init_enums () {
 	\decl 0 gen_lists (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
 		uint32 list = glGenLists(n);
-		//t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,list+i);
+		//t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=list+i;
 		//outlet_anything(outlets[0],&s_list,n,a);
 		outlet_float(outlets[0],list);
 	}
 	\decl 0 gen_textures (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
 		uint32 textures[n]; glGenTextures(n,textures);
-		t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,textures[i]);
+		t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=textures[i];
 		outlet_anything(outlets[0],&s_list,n,a);
 	}
 	// GetError
@@ -1079,7 +1079,7 @@ static void init_enums () {
 		if (n<=0) RAISE("reading this property isn't currently supported by GridFlow");
 		//post("reading property %d 0x%04X %s n=%d",e,e,s->s_name,n);
 		glGetFloatv(e,fv);
-		t_atom a[n]; for (int i=0; i<n; i++) set_atom(a+i,fv[i]);
+		t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=fv[i];
 		outlet_anything(outlets[0],s,n,a);
 	}
 	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
