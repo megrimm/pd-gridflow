@@ -44,7 +44,12 @@ const char *oserr_find(long err)
 	Track track;
 	Media media;
 	TimeValue time;
+	ComponentResult compErr;
 	ComponentInstance component;
+	SCTemporalSettings temporal;
+	SCSpatialSettings spatial;
+	SCDataRateSettings datarate;
+	ImageDescriptionHandle imagedesc;
 	CodecType codec;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
 	Rect r;
@@ -58,7 +63,7 @@ const char *oserr_find(long err)
 	\constructor (t_symbol *mode, string filename) {
 		/*vdc=0;*/
 		movie=0; time=0; movie_file=0; gw=0; buffer=0; dim=0; nframe=0; nframes=0; quality=0;
-		gotdim=false; err=noErr;
+		gotdim=false; err=noErr; compErr=noErr; component=NULL;
 		filename = gf_find_file(filename);
 		FSSpec fss;
 		FSRef fsr;
@@ -76,10 +81,10 @@ const char *oserr_find(long err)
 			track = GetMovieIndTrackType(movie,1,VideoMediaType,movieTrackMediaType);
 			media = GetTrackMedia(track);
 			nframes = GetMediaSampleCount(media);			
-			post("total frames: %d", nframes);
+			//post("total frames: %d", nframes);
 
 			GetMovieBox(movie, &r);
-			post("height: %d  width: %d", r.bottom, r.right);
+			//post("height: %d  width: %d", r.bottom, r.right);
 
 			//post("handle=%d movie=%d tracks=%d", movie_file, movie, GetMovieTrackCount(movie));
 			//post("duration=%d; timescale=%d cHz", (long)GetMovieDuration(movie), (long)GetMovieTimeScale(movie));
@@ -116,6 +121,16 @@ const char *oserr_find(long err)
 			component = OpenDefaultComponent(StandardCompressionType, StandardCompressionSubType);
 			if (!component) RAISE("OpenDefaultComponent failed");
 
+			// unfinished... these values are user-defined
+			spatial.codecType = kJPEGCodecType;
+			spatial.codec = (CodecComponent)65719; // quoi ?
+			spatial.depth = 0;
+			spatial.spatialQuality = codecNormalQuality;
+			temporal.temporalQuality = codecNormalQuality;
+			temporal.frameRate = 0;
+			temporal.keyFrameRate = 0;
+			datarate.frameDuration = 33;
+
 		} else {
 			RAISE("invalid mode (%s)", mode->s_name);
 		}
@@ -127,15 +142,26 @@ const char *oserr_find(long err)
 			DisposeGWorld(gw);
 			CloseMovieFile(movie_file);
 		}
+		if (component){
+			compErr = CloseComponent(component);
+			if (compErr != noErr) RAISE("(CloseComponent)\nerror #%d : %s", compErr, oserr_find(compErr));
+		}
 	}
 	\decl 0 codec (string c);
-	//\decl 0 colorspace (string c);
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 rewind ();
 	\decl 0 size (int32 height, int32 width);
 	\grin 0
+
 	\attr t_symbol *colorspace;
+	\attr int32 frames();
+	//\attr float64 framerate();
+	\attr int32 height();
+	\attr int32 width();
+	//\attr int32 depth();
+	//\attr bool with_audio;
+
 };
 
 \def 0 seek (int frame) {nframe=frame;}
@@ -238,6 +264,14 @@ GRID_INLET(0) {
 		r.left = 0;
 		r.bottom = dim[0];
 		r.right = dim[1];
+		compErr = SCSetInfo(component, scTemporalSettingsType, &temporal);
+		compErr = SCSetInfo(component, scSpatialSettingsType, &spatial);
+		compErr = SCSetInfo(component, scDataRateSettingsType, &datarate);
+		if (compErr != noErr) RAISE("(SCSetInfo)\nerror #%d : %s", compErr, oserr_find(compErr));
+		compErr = SCCompressSequenceBegin(component, GetPortPixMap(gw), &r, &imagedesc);
+		if (compErr != noErr) RAISE("(SCCompressSequenceBegin)\nerror #%d : %s", compErr, oserr_find(compErr));
+		err = BeginMediaEdits(media);
+		if (err != noErr) ERR("BeginMediaEdits");
 	}
 ////	err = QTNewGWorldFromPtr(&m_srcGWorld, k32ARGBPixelFormat, &m_srcRect, NULL, NULL, 0, m_compressImage.data, m_rowBytes);
 	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r, NULL, NULL, 0, buffer, dim.prod(1));
@@ -252,7 +286,14 @@ GRID_INLET(0) {
 } GRID_FINISH {
 } GRID_END
 
-\def 0 codec      (string c) { RAISE("Unimplemented. Sorry."); }
+\def int32 frames () { return nframes; }
+\def int32 height () { return r.bottom; }
+\def int32 width  () { return r.right; }
+\def 0 frames (int32 v) { RAISE("read-only"); }
+\def 0 height (int32 v) { RAISE("use size instead"); }
+\def 0 width  (int32 v) { RAISE("use size instead"); }
+
+\def 0 codec (string c) { RAISE("Unimplemented. Sorry."); }
 
 void post_BitPacking(BitPacking *);
 
