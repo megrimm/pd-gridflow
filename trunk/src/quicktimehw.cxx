@@ -67,12 +67,27 @@ static std::map<string,string> fourccs;
 		with_audio = false;
 	}
 	\decl 0 bang ();
-	\decl 0 seek (int32 frame);
+	\decl 0 seek (int32 frame) {
+		quicktime_set_video_position(anim,clip(frame,int32(0),int32(quicktime_video_length(anim,track)-1)),track);
+	}
 	\decl 0 rewind () {_0_seek(0);}
-	\decl 0 force_size (int32 height, int32 width);
+	\decl 0 force_size (int32 height, int32 width) {force = Dim(height, width); doforce=true;}
 	\decl 0 colorspace (string c);
-	\decl 0 parameter (string name, int32 value);
-	\decl 0 size (int32 height, int32 width);
+	//!@#$ should also support symbol values (how?)
+	\decl 0 parameter (string name, int32 value) {
+		int val = value;
+		//post("quicktime_set_parameter %s %d",name.data(), val);
+		quicktime_set_parameter(anim, const_cast<char *>(name.data()), &val);
+		if (name=="jpeg_quality") jpeg_quality=value;
+	}
+	\decl 0 size (int32 height, int32 width) {
+		if (gotdim) RAISE("video size already set!");
+		// first frame: have to do setup
+		dim = Dim(height,width,3);
+		gotdim = true;
+		quicktime_set_video(anim,1,dim[1],dim[0],m_framerate,m_codec);
+		quicktime_set_cmodel(anim,colorspace);
+	}
 	\grin 0 int
 
 	\attr int32   frames();
@@ -84,10 +99,7 @@ static std::map<string,string> fourccs;
 	\attr bool with_audio;
 };
 
-\def 0 force_size (int32 height, int32 width) {force = Dim(height, width); doforce=true;}
-\def 0 seek (int32 frame) {
-	quicktime_set_video_position(anim,clip(frame,int32(0),int32(quicktime_video_length(anim,track)-1)),track);
-}
+\def 0 framerate (float64 f) {m_framerate=f; quicktime_set_framerate(anim, f);}
 
 \def 0 bang () {
 	if (with_audio) {
@@ -136,27 +148,8 @@ static std::map<string,string> fourccs;
 //	return INT2NUM(nframe);
 }
 
-//!@#$ should also support symbol values (how?)
-\def 0 parameter (string name, int32 value) {
-	int val = value;
-	//post("quicktime_set_parameter %s %d",name.data(), val);
-	quicktime_set_parameter(anim, const_cast<char *>(name.data()), &val);
-	if (name=="jpeg_quality") jpeg_quality=value;
-}
-
-\def 0 framerate (float64 f) {m_framerate=f; quicktime_set_framerate(anim, f);}
-
-\def 0 size (int32 height, int32 width) {
-	if (gotdim) RAISE("video size already set!");
-	// first frame: have to do setup
-	dim = Dim(height,width,3);
-	gotdim = true;
-	quicktime_set_video(anim,1,dim[1],dim[0],m_framerate,m_codec);
-	quicktime_set_cmodel(anim,colorspace);
-}
-
 GRID_INLET(0) {
-	if (in.dim.n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim.n!=3)         RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in.dim[2]!=channels) RAISE("expecting %d channels (got %d)",channels,in.dim[2]);
 	in.set_chunk(0);
 	if (gotdim) {
@@ -211,10 +204,10 @@ GRID_INLET(0) {
 	} else if (c=="YUV420P") { channels=3; colorspace=BC_YUV420P;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",c.data());
 }
-\def int32 depth  () {return quicktime_video_length(anim,track);}
+\def int32 depth  () {return quicktime_video_depth(anim,track);}
 \def int32 height () {return quicktime_video_height(anim,track);}
 \def int32 width  () {return quicktime_video_width(anim,track);}
-\def int32 frames () {return quicktime_video_depth(anim,track);}
+\def int32 frames () {return quicktime_video_length(anim,track);}
 \def float64 framerate () {return quicktime_frame_rate(anim,track);}
 \def string codec () {return string(quicktime_video_compressor(anim,track));}
 \def 0 depth  (int32 v) {RAISE("read-only");}
