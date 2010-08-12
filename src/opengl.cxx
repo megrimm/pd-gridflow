@@ -61,6 +61,8 @@ struct EnumType {
 		return it->second.n;
 	}
  	EnumType &add (t_symbol *s, GLenum i, int n=0) {
+		forward_t::iterator it = forward.find(s);
+		if (it!=forward.end()) post("warning: [gf/gl]: %s: duplicate def of %s",name,s->s_name);
 		forward[s]=i;
 		EnumInfo &ei = backward[i]; ei.s=s; ei.n=n;
 		return *this;
@@ -125,9 +127,16 @@ MAKETYPE(light_parameter)
 MAKETYPE(light_model_parameter)
 MAKETYPE(light_model_color_control)
 MAKETYPE(feedback_buffer_type)
-MAKETYPE(get_parameter)
 MAKETYPE(tex_depth_mode)
 MAKETYPE(texture_compare_mode)
+MAKETYPE(get_parameter)
+MAKETYPE(get_string_parameter)
+MAKETYPE(get_pointer_parameter)
+MAKETYPE(get_map_target)
+MAKETYPE(get_map_parameter)
+MAKETYPE(gl_error)
+MAKETYPE(tex_env_combine_rgb)
+MAKETYPE(tex_env_combine_alpha)
 static void init_enums () {
 	#define D(NAME) add(tolower_gensym(#NAME+3),NAME)
 	#define A(NAME,ARGS...) add(tolower_gensym(#NAME+3),NAME,ARGS)
@@ -284,24 +293,24 @@ static void init_enums () {
 	.D(GL_UNPACK_ALIGNMENT)
 	;
 	pixel_transfer
-	.D(GL_MAP_COLOR)
-	.D(GL_MAP_STENCIL)
-	.D(GL_INDEX_SHIFT)
-	.D(GL_INDEX_OFFSET)
-	.D(GL_RED_SCALE)	.D(GL_RED_BIAS)
-	.D(GL_GREEN_SCALE)	.D(GL_GREEN_BIAS)
-	.D(GL_BLUE_SCALE)	.D(GL_BLUE_BIAS)
-	.D(GL_ALPHA_SCALE)	.D(GL_ALPHA_BIAS)
-	.D(GL_DEPTH_SCALE)	.D(GL_DEPTH_BIAS)
+	.A(GL_MAP_COLOR,1)
+	.A(GL_MAP_STENCIL,1)
+	.A(GL_INDEX_SHIFT,1)
+	.A(GL_INDEX_OFFSET,1)
+	.A(GL_RED_SCALE  ,1)	.A(GL_RED_BIAS  ,1)
+	.A(GL_GREEN_SCALE,1)	.A(GL_GREEN_BIAS,1)
+	.A(GL_BLUE_SCALE ,1)	.A(GL_BLUE_BIAS ,1)
+	.A(GL_ALPHA_SCALE,1)	.A(GL_ALPHA_BIAS,1)
+	.A(GL_DEPTH_SCALE,1)	.A(GL_DEPTH_BIAS,1)
 	//#ifdef ARB
-	.D(GL_POST_COLOR_MATRIX_RED_SCALE)	.D(GL_POST_COLOR_MATRIX_RED_BIAS)
-	.D(GL_POST_COLOR_MATRIX_GREEN_SCALE)	.D(GL_POST_COLOR_MATRIX_GREEN_BIAS)
-	.D(GL_POST_COLOR_MATRIX_BLUE_SCALE)	.D(GL_POST_COLOR_MATRIX_BLUE_BIAS)
-	.D(GL_POST_COLOR_MATRIX_ALPHA_SCALE)	.D(GL_POST_COLOR_MATRIX_ALPHA_BIAS)
-	.D(GL_POST_CONVOLUTION_RED_SCALE)	.D(GL_POST_CONVOLUTION_GREEN_BIAS)
-	.D(GL_POST_CONVOLUTION_RED_BIAS)	.D(GL_POST_CONVOLUTION_GREEN_SCALE)
-	.D(GL_POST_CONVOLUTION_BLUE_SCALE)	.D(GL_POST_CONVOLUTION_BLUE_BIAS)
-	.D(GL_POST_CONVOLUTION_ALPHA_SCALE)	.D(GL_POST_CONVOLUTION_ALPHA_BIAS)
+	.A(GL_POST_COLOR_MATRIX_RED_SCALE  ,1)	.A(GL_POST_COLOR_MATRIX_RED_BIAS  ,1)
+	.A(GL_POST_COLOR_MATRIX_GREEN_SCALE,1)	.A(GL_POST_COLOR_MATRIX_GREEN_BIAS,1)
+	.A(GL_POST_COLOR_MATRIX_BLUE_SCALE ,1)	.A(GL_POST_COLOR_MATRIX_BLUE_BIAS ,1)
+	.A(GL_POST_COLOR_MATRIX_ALPHA_SCALE,1)	.A(GL_POST_COLOR_MATRIX_ALPHA_BIAS,1)
+	.A(GL_POST_CONVOLUTION_RED_SCALE   ,1)	.A(GL_POST_CONVOLUTION_RED_BIAS   ,1)
+	.A(GL_POST_CONVOLUTION_GREEN_SCALE ,1)	.A(GL_POST_CONVOLUTION_GREEN_BIAS ,1)
+	.A(GL_POST_CONVOLUTION_BLUE_SCALE  ,1)	.A(GL_POST_CONVOLUTION_BLUE_BIAS  ,1)
+	.A(GL_POST_CONVOLUTION_ALPHA_SCALE ,1)	.A(GL_POST_CONVOLUTION_ALPHA_BIAS ,1)
 	//#endif
 	;
 	shade_model
@@ -555,6 +564,24 @@ static void init_enums () {
 	.D(GL_REPLACE)
 	.D(GL_COMBINE)
         ;
+        tex_env_combine_rgb
+        .D(GL_REPLACE)
+        .D(GL_MODULATE)
+        .D(GL_ADD)
+        .D(GL_ADD_SIGNED)
+        .D(GL_INTERPOLATE)
+        .D(GL_SUBTRACT)
+        .D(GL_DOT3_RGB)
+        .D(GL_DOT3_RGBA)
+        ;
+        tex_env_combine_alpha
+	.D(GL_REPLACE)
+	.D(GL_MODULATE)
+	.D(GL_ADD)
+	.D(GL_ADD_SIGNED)
+	.D(GL_INTERPOLATE)
+	.D(GL_SUBTRACT)
+        ;
 	tex_gen_coord
 	.D(GL_S)
 	.D(GL_T)
@@ -635,16 +662,16 @@ static void init_enums () {
 	.D(GL_LUMINANCE_ALPHA)
 	;
 	light_parameter
-	.D(GL_AMBIENT)
-	.D(GL_DIFFUSE)
-	.D(GL_SPECULAR)
-	.D(GL_POSITION)
-	.D(GL_SPOT_CUTOFF)
-	.D(GL_SPOT_DIRECTION)
-	.D(GL_SPOT_EXPONENT)
-	.D(GL_CONSTANT_ATTENUATION)
-	.D(GL_LINEAR_ATTENUATION)
-	.D(GL_QUADRATIC_ATTENUATION)
+	.A(GL_AMBIENT,4)
+	.A(GL_DIFFUSE,4)
+	.A(GL_SPECULAR,4)
+	.A(GL_POSITION,4)
+	.A(GL_SPOT_CUTOFF,1)
+	.A(GL_SPOT_DIRECTION,3)
+	.A(GL_SPOT_EXPONENT,1)
+	.A(GL_CONSTANT_ATTENUATION,1)
+	.A(GL_LINEAR_ATTENUATION,1)
+	.A(GL_QUADRATIC_ATTENUATION,1)
 	;
 	light_model_parameter
 	.D(GL_LIGHT_MODEL_AMBIENT)
@@ -664,18 +691,19 @@ static void init_enums () {
 	.D(GL_4D_COLOR_TEXTURE)
 	;
 	get_parameter
+	.add(pixel_transfer)
 	.A(GL_ACCUM_ALPHA_BITS,1).A(GL_ACCUM_BLUE_BITS,1).A(GL_ACCUM_GREEN_BITS,1).A(GL_ACCUM_RED_BITS,1)
 	.A(GL_BLEND_COLOR,4)
 	.A(GL_ACCUM_CLEAR_VALUE,4)
 	.A(GL_ACTIVE_TEXTURE,1)
 	.A(GL_ALIASED_POINT_SIZE_RANGE,2).A(GL_ALIASED_LINE_WIDTH_RANGE,2)
-	.A(GL_ALPHA_BIAS,1).A(GL_ALPHA_BITS,1).A(GL_ALPHA_SCALE,1).A(GL_ALPHA_TEST,1).A(GL_ALPHA_TEST_REF,1)
+	.A(GL_ALPHA_BITS,1).A(GL_ALPHA_TEST,1).A(GL_ALPHA_TEST_REF,1)
 	.A(GL_ARRAY_BUFFER_BINDING,1)
 	.A(GL_ATTRIB_STACK_DEPTH,1)
 	.A(GL_AUTO_NORMAL,1)
 	.A(GL_AUX_BUFFERS,1)
 	.A(GL_BLEND,1)
-	.A(GL_BLUE_BIAS,1).A(GL_BLUE_BITS,1).A(GL_BLUE_SCALE,1)
+	.A(GL_BLUE_BITS,1)
 	.A(GL_CLIENT_ATTRIB_STACK_DEPTH,1)
 	.A(GL_CLIP_PLANE0,1).A(GL_CLIP_PLANE1,1).A(GL_CLIP_PLANE2,1)
 	.A(GL_CLIP_PLANE3,1).A(GL_CLIP_PLANE4,1).A(GL_CLIP_PLANE5,1)
@@ -708,9 +736,9 @@ static void init_enums () {
 	//.A(GL_COLOR_ARRAY_TYPE,1e)
 	//.A(GL_CULL_FACE_MODE,1e)
 	//.A(GL_COMPRESSED_TEXTURE_FORMATS,-1) // goes with .A(GL_NUM_COMPRESSED_TEXTURE_FORMATS,1) and GLenum
-	.A(GL_DEPTH_BIAS,1).A(GL_DEPTH_BITS,1).A(GL_DEPTH_CLEAR_VALUE,1)
+	.A(GL_DEPTH_BITS,1)
 	//GL_DEPTH_FUNC,1e
-	.A(GL_DEPTH_RANGE,1).A(GL_DEPTH_SCALE,1).A(GL_DEPTH_TEST,1).A(GL_DEPTH_WRITEMASK,1)
+	.A(GL_DEPTH_RANGE,1).A(GL_DEPTH_TEST,1).A(GL_DEPTH_WRITEMASK,1)
 	.A(GL_DITHER,1)
 	.A(GL_DOUBLEBUFFER,1)
 	.A(GL_DRAW_BUFFER,1)
@@ -727,11 +755,11 @@ static void init_enums () {
 	.A(GL_FRAGMENT_SHADER_DERIVATIVE_HINT,1)
 	.A(GL_FRONT_FACE,1)
 	.A(GL_GENERATE_MIPMAP_HINT,1)
-	.A(GL_GREEN_BIAS,1).A(GL_GREEN_BITS,1).A(GL_GREEN_SCALE,1)
+	.A(GL_GREEN_BITS,1)
 	.A(GL_HISTOGRAM,1)
 	.A(GL_INDEX_ARRAY,1).A(GL_INDEX_ARRAY_BUFFER_BINDING,1).A(GL_INDEX_ARRAY_STRIDE,1).A(GL_INDEX_ARRAY_TYPE,1)
 	.A(GL_INDEX_BITS,1).A(GL_INDEX_CLEAR_VALUE,1).A(GL_INDEX_LOGIC_OP,1).A(GL_INDEX_MODE,1)
-	.A(GL_INDEX_OFFSET,1).A(GL_INDEX_SHIFT,1).A(GL_INDEX_WRITEMASK,1)
+	.A(GL_INDEX_WRITEMASK,1)
 	//GL_LIGHTi,1
 	.A(GL_LIGHTING,1)
 	.A(GL_LIGHT_MODEL_AMBIENT,4)
@@ -750,7 +778,6 @@ static void init_enums () {
 	.A(GL_MAP2_GRID_DOMAIN,4).A(GL_MAP2_GRID_SEGMENTS,2).A(GL_MAP2_INDEX,1).A(GL_MAP2_NORMAL,1)
 	.A(GL_MAP2_TEXTURE_COORD_1,1).A(GL_MAP2_TEXTURE_COORD_2,1).A(GL_MAP2_TEXTURE_COORD_3,1).A(GL_MAP2_TEXTURE_COORD_4,1)
 	.A(GL_MAP2_VERTEX_3,1).A(GL_MAP2_VERTEX_4,1)
-	.A(GL_MAP_COLOR,1).A(GL_MAP_STENCIL,1)
 	.A(GL_MATRIX_MODE,1)
 	.A(GL_MAX_3D_TEXTURE_SIZE,1)
 	.A(GL_MAX_CLIENT_ATTRIB_STACK_DEPTH,1)
@@ -823,27 +850,11 @@ static void init_enums () {
 	.A(GL_POLYGON_SMOOTH_HINT,1)
 	.A(GL_POLYGON_STIPPLE,1)
 	.A(GL_POST_COLOR_MATRIX_COLOR_TABLE,1)
-	.A(GL_POST_COLOR_MATRIX_RED_BIAS,1)
-	.A(GL_POST_COLOR_MATRIX_GREEN_BIAS,1)
-	.A(GL_POST_COLOR_MATRIX_BLUE_BIAS,1)
-	.A(GL_POST_COLOR_MATRIX_ALPHA_BIAS,1)
-	.A(GL_POST_COLOR_MATRIX_RED_SCALE,1)
-	.A(GL_POST_COLOR_MATRIX_GREEN_SCALE,1)
-	.A(GL_POST_COLOR_MATRIX_BLUE_SCALE,1)
-	.A(GL_POST_COLOR_MATRIX_ALPHA_SCALE,1)
 	.A(GL_POST_CONVOLUTION_COLOR_TABLE,1)
-	.A(GL_POST_CONVOLUTION_RED_BIAS,1)
-	.A(GL_POST_CONVOLUTION_GREEN_BIAS,1)
-	.A(GL_POST_CONVOLUTION_BLUE_BIAS,1)
-	.A(GL_POST_CONVOLUTION_ALPHA_BIAS,1)
-	.A(GL_POST_CONVOLUTION_RED_SCALE,1)
-	.A(GL_POST_CONVOLUTION_GREEN_SCALE,1)
-	.A(GL_POST_CONVOLUTION_BLUE_SCALE,1)
-	.A(GL_POST_CONVOLUTION_ALPHA_SCALE,1)
 	.A(GL_PROJECTION_MATRIX,16)
 	.A(GL_PROJECTION_STACK_DEPTH,1)
 	//.A(GL_READ_BUFFER,1e)
-	.A(GL_RED_BIAS,1).A(GL_RED_BITS,1).A(GL_RED_SCALE,1)
+	.A(GL_RED_BITS,1)
 	//.A(GL_RENDER_MODE,1e)
 	.A(GL_RESCALE_NORMAL,1)
 	.A(GL_RGBA_MODE,1)
@@ -925,22 +936,40 @@ static void init_enums () {
 	.A(GL_ZOOM_X,1)
 	.A(GL_ZOOM_Y,1)
 	;
-	// strings:
-	//.D(GL_VENDOR,1).D(GL_RENDERER,1).D(GL_VERSION,1).D(GL_SHADING_LANGUAGE_VERSION,1).D(GL_EXTENSIONS,1) // string
-
-	// pointers:
-	//.D(GL_COLOR_ARRAY_POINTER,1).D(GL_EDGE_FLAG_ARRAY_POINTER,1).D(GL_FOG_COORD_ARRAY_POINTER,1)
-	//.D(GL_FEEDBACK_BUFFER_POINTER,1).D(GL_INDEX_ARRAY_POINTER,1).D(GL_NORMAL_ARRAY_POINTER,1)
-	//.D(GL_SECONDARY_COLOR_ARRAY_POINTER,1).D(GL_SELECTION_BUFFER_POINTER,1)
-	//.D(GL_TEXTURE_COORD_ARRAY_POINTER,1).D(GL_VERTEX_ARRAY_POINTER,1)
-
-	// maps:
-	//.D(GL_MAP1_COLOR_4).D(GL_MAP1_INDEX).D(GL_MAP1_NORMAL)
-	//.D(GL_MAP1_TEXTURE_COORD_1).D(GL_MAP1_TEXTURE_COORD_2).D(GL_MAP1_TEXTURE_COORD_3).D(GL_MAP1_TEXTURE_COORD_4)
-	//.D(GL_MAP1_VERTEX_3).D(GL_MAP1_VERTEX_4)
-	//.D(GL_MAP2_COLOR_4).D(GL_MAP2_INDEX).D(GL_MAP2_NORMAL)
-	//.D(GL_MAP2_TEXTURE_COORD_1).D(GL_MAP2_TEXTURE_COORD_2).D(GL_MAP2_TEXTURE_COORD_3).D(GL_MAP2_TEXTURE_COORD_4)
-	//.D(GL_MAP2_VERTEX_3).D(GL_MAP2_VERTEX_4)
+	get_string_parameter
+	.A(GL_VENDOR,1).A(GL_RENDERER,1)
+	.A(GL_VERSION,1).A(GL_SHADING_LANGUAGE_VERSION,1)
+	.A(GL_EXTENSIONS,1)
+	;
+	get_pointer_parameter
+	.A(GL_COLOR_ARRAY_POINTER,1).A(GL_EDGE_FLAG_ARRAY_POINTER,1).A(GL_FOG_COORD_ARRAY_POINTER,1)
+	.A(GL_FEEDBACK_BUFFER_POINTER,1).A(GL_INDEX_ARRAY_POINTER,1).A(GL_NORMAL_ARRAY_POINTER,1)
+	.A(GL_SECONDARY_COLOR_ARRAY_POINTER,1).A(GL_SELECTION_BUFFER_POINTER,1)
+	.A(GL_TEXTURE_COORD_ARRAY_POINTER,1).A(GL_VERTEX_ARRAY_POINTER,1)
+	;
+	get_map_target
+	.D(GL_MAP1_COLOR_4).D(GL_MAP1_INDEX).D(GL_MAP1_NORMAL)
+	.D(GL_MAP1_TEXTURE_COORD_1).D(GL_MAP1_TEXTURE_COORD_2).D(GL_MAP1_TEXTURE_COORD_3).D(GL_MAP1_TEXTURE_COORD_4)
+	.D(GL_MAP1_VERTEX_3).D(GL_MAP1_VERTEX_4)
+	.D(GL_MAP2_COLOR_4).D(GL_MAP2_INDEX).D(GL_MAP2_NORMAL)
+	.D(GL_MAP2_TEXTURE_COORD_1).D(GL_MAP2_TEXTURE_COORD_2).D(GL_MAP2_TEXTURE_COORD_3).D(GL_MAP2_TEXTURE_COORD_4)
+	.D(GL_MAP2_VERTEX_3).D(GL_MAP2_VERTEX_4)
+	;
+	get_map_parameter
+	.A(GL_COEFF,-1)
+	.A(GL_ORDER,-1)
+	.A(GL_DOMAIN,-1)
+	;
+	gl_error
+	.D(GL_NO_ERROR)
+	.D(GL_INVALID_ENUM)
+	.D(GL_INVALID_VALUE)
+	.D(GL_INVALID_OPERATION)
+	.D(GL_STACK_OVERFLOW)
+	.D(GL_STACK_UNDERFLOW)
+	.D(GL_OUT_OF_MEMORY)
+	.D(GL_TABLE_TOO_LARGE)
+	;
 }
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
 \class GFGL : FObject {
@@ -1015,11 +1044,14 @@ static void init_enums () {
 	\decl 0 disable (t_atom cap) {glDisable(capability(cap));}
 	\decl 0 draw_arrays (t_atom mode, int first, int count) {glDrawArrays(primitive_type(mode),first,count);}
 	\decl 0 draw_buffer (t_atom mode) {glDrawBuffer(buffer_mode(mode));}
-	// DrawElements // GLAPI void GLAPIENTRY glDrawElements(t_atom mode, int count, t_atom type, const GLvoid *indices);
-	//\decl 0 draw_elements (t_atom mode, int count, t_atom type, const GLvoid *indices) {
-		//glDrawElements(t_atom mode, int count, t_atom type, const GLvoid *indices);}
-	// GLAPI void GLAPIENTRY glDrawPixels(int width, int height, t_atom format, t_atom type, const GLvoid *pixels); // not in GEM
-	\decl 0 draw_pixels (int width, int height, t_atom format, t_atom type, void *pixels) {
+	\decl 0 draw_elements (...) {
+		if (argc<2) RAISE("need minimum 1 arg");
+		GLenum mode = primitive_type(argv[0]);
+		uint32 iv[argc-1];
+		for (int i=1; i<argc; i++) iv[i-1]=argv[i];
+		glDrawElements(mode,argc-1,GL_UNSIGNED_INT,iv);
+	}
+	\decl 0 draw_pixels (int width, int height, t_atom format, t_atom type, void *pixels) { // not in GEM
 		glDrawPixels(width,height,draw_pixels_format(format),tex_type(type),pixels);
 	}
 	\decl 0 edge_flag (bool flag) {glEdgeFlag(flag);}
@@ -1042,7 +1074,7 @@ static void init_enums () {
 		case 2: glEvalPoint2(argv[0],argv[1]); break;
 		default: RAISE("need 1 or 2 args");
 	}}
-	// FeedbackBuffer // void glFeedbackBuffer(int size, t_atom type, float *buffer);
+	// will probably not support FeedbackBuffer // void glFeedbackBuffer(int size, t_atom type, float *buffer);
 	\decl 0 finish () {glFinish();}
 	\decl 0 flush  () {glFlush();}
 	\decl 0 fog (...) {
@@ -1075,11 +1107,46 @@ static void init_enums () {
 		t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=textures[i];
 		outlet_anything(outlets[0],&s_list,n,a);
 	}
-	// GetError
-	// GLAPI void GLAPIENTRY glGetLightfv(t_atom light, t_atom pname, float *params); // not in GEM
-	// GetMap[dfi]v
-	// GetPointerv
-	// GetString
+	\decl 0 get_error () {
+		t_symbol *error = gensym("error");
+		for (;;) {
+			GLenum e = glGetError();
+			if (e==GL_NO_ERROR) break;
+			t_atom2 a[1]; a[0] = gl_error.reverse(e);
+			outlet_anything(outlets[0],error,1,a);
+		}
+	}
+	\decl 0 get_light (int light, t_atom pname) { // not in GEM
+		GLenum e = light_parameter(pname);
+		int n = light_parameter.argc(e);
+		float fv[n]; t_atom2 a[n];
+		glGetLightfv(GL_LIGHT0+light,e,fv);
+		for (int i=0; i<n; i++) a[i]=fv[i];
+		outlet_list(outlets[0],&s_list,n,a);
+	}
+	\decl 0 get_map (t_atom target, t_atom pname) {
+		RAISE("what do i do with this ?");
+		//float fv[n];
+		//glGetMapfv(get_map_target(target),get_map_parameter(pname),fv);
+		//t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=fv[i];
+		//outlet_list(outlets[0],&s_list,n,a);
+	}
+	\decl 0 get_pointer (t_atom pname) {
+		RAISE("what do i do with this ?");
+		//void *pv[n];
+		//glGetPointerv(get_pointer_parameter(pname),pv);
+		//if (!p) RAISE("boo");
+	}
+	\decl 0 get_string (t_atom pname) {
+		const char *s = (const char *)glGetString(get_string_parameter(pname));
+		if (!s) RAISE("boo");
+		outlet_symbol(outlets[0],gensym(s));
+	}
+	\decl 0 get_tex_env (t_atom target, t_atom pname) {
+		GLenum e = tex_env_parameter(pname);
+		int n = tex_env_parameter.argc(e);
+		n=n;
+	}
 	\decl 0 get (t_atom pname) {
 		GLenum e = get_parameter(pname);
 		t_symbol *s = get_parameter.reverse(e);
@@ -1103,6 +1170,8 @@ static void init_enums () {
 		int light = (int)argv[0];
 		GLenum pname = light_parameter(argv[1]);
 		if (light<0 || light>=8) RAISE("$1 must be a number from 0 to 7");
+		int n = light_parameter.argc(pname);
+		n=n;// can replace this switch by an actual use of n.
 		switch (pname) {
 		  case GL_AMBIENT: case GL_DIFFUSE: case GL_SPECULAR: case GL_POSITION:
 						if (argc!=5) RAISE("need 4 floats after $1"); break;
@@ -1217,7 +1286,6 @@ static void init_enums () {
 	\decl 0 rect (float x1, float y1, float x2, float y2) {glRectf(x1,y1,x2,y2);}
 	\decl 0 read_buffer (t_atom mode) {glReadBuffer(buffer_mode(mode));} // not in GEM
 	\decl 0 render_mode (t_atom mode) {glRenderMode(render_mode(mode));}
-	// ReportError ???
 	\decl 0 rotate (float a, float x, float y, float z) {glRotatef(a,x,y,z);}
 	\decl 0 scale           (float x, float y, float z) {glScalef(x,y,z);}
 	\decl 0 scissor(int x, int y, int width, int height) {glScissor(x,y,width,height);}
@@ -1238,11 +1306,12 @@ static void init_enums () {
 		default: RAISE("need 1, 2, 3 or 4 args");
 	}}
 
-	// glTexEnvfv(t_atom target, t_atom pname, const float *params);
 	\decl 0 tex_env (...) {
 		if (argc<3) RAISE("minimum 3 args");
 		GLenum target = tex_env_target(argv[0]);
 		GLenum pname = tex_env_parameter(argv[1]);
+		int n = tex_env_parameter.argc(pname);
+		n=n;
 		if (target==GL_TEXTURE_FILTER_CONTROL) {
 		 switch (pname) {
 		  case GL_TEXTURE_LOD_BIAS:
@@ -1251,20 +1320,21 @@ static void init_enums () {
 		 }
 		} else if (target==GL_TEXTURE_ENV) {
 		 switch (pname) {
-		  case GL_TEXTURE_ENV_MODE: 
-		  case GL_COMBINE_RGB:
-		  case GL_COMBINE_ALPHA:
-		  case GL_SRC0_RGB  : case GL_SRC1_RGB  : case GL_SRC2_RGB  :
-		  case GL_SRC0_ALPHA: case GL_SRC1_ALPHA: case GL_SRC2_ALPHA:
-		  case GL_OPERAND0_RGB  : case GL_OPERAND1_RGB  : case GL_OPERAND2_RGB  :
-		  case GL_OPERAND0_ALPHA: case GL_OPERAND1_ALPHA: case GL_OPERAND2_ALPHA:
-		  case GL_RGB_SCALE:
-		  case GL_ALPHA_SCALE:
+		  //case GL_TEXTURE_ENV_COLOR: 
+		  case GL_TEXTURE_ENV_MODE: glTexEnvi(target,pname,tex_env_function(     argv[2])); return;
+		  case GL_COMBINE_RGB:      glTexEnvi(target,pname,tex_env_combine_rgb(  argv[2])); return;
+		  case GL_COMBINE_ALPHA:    glTexEnvi(target,pname,tex_env_combine_alpha(argv[2])); return;
+		  //case GL_SRC0_RGB  : case GL_SRC1_RGB  : case GL_SRC2_RGB  :
+		  //case GL_SRC0_ALPHA: case GL_SRC1_ALPHA: case GL_SRC2_ALPHA:
+		  //case GL_OPERAND0_RGB  : case GL_OPERAND1_RGB  : case GL_OPERAND2_RGB  :
+		  //case GL_OPERAND0_ALPHA: case GL_OPERAND1_ALPHA: case GL_OPERAND2_ALPHA:
+		  //case GL_RGB_SCALE:
+		  //case GL_ALPHA_SCALE:
 		  default: RAISE("...");
 		 }
 		} else if (target==GL_POINT_SPRITE) {
 		 switch (pname) {
-		  case GL_COORD_REPLACE:
+		  //case GL_COORD_REPLACE: // 1 bool
 		  default: RAISE("...");
 		 }
 		}
@@ -1276,6 +1346,7 @@ static void init_enums () {
 		if (argc<3) RAISE("minimum 3 args");
 		GLenum coord = tex_gen_coord(argv[0]);
 		GLenum pname = tex_gen_parameter(argv[1]);
+		coord=coord;
 		switch (pname) {
 		  default: RAISE("...");
 		}
