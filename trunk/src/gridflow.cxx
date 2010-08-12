@@ -139,6 +139,8 @@ static t_symbol *eatsymbol (int &argc, t_atom *&argv, int &i) {
 #define EATSYMBOL eatsymbol(argc,argv,i)
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	// currently not supporting *m$ ... see man page
+	// will not support length modifiers at all (hh h l ll L q j z t)
+	// currently not supporting 'formats' p n m
 	// currently not supporting %_ (a former extension standing for any atom... merge this functionality with %s or whatever)
 	// have our own proper atom_string
 	int i=0;
@@ -167,7 +169,7 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 			case 0: oprintf(o,form,          int(EATFLOAT)); break;
 			case 1: oprintf(o,form,k[0],     int(EATFLOAT)); break;
 			case 2: oprintf(o,form,k[0],k[1],int(EATFLOAT)); break;
-		}} else if (strchr("fg",*s)) {switch (n) {
+		}} else if (strchr("eEfFgGaA",*s)) {switch (n) {
 			case 0: oprintf(o,form,          EATFLOAT); break;
 			case 1: oprintf(o,form,k[0],     EATFLOAT); break;
 			case 2: oprintf(o,form,k[0],k[1],EATFLOAT); break;
