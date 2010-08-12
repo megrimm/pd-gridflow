@@ -129,22 +129,25 @@ void pd_post (const char *s, int argc, t_atom *argv) {
 	post("%s",os.str().data());
 }
 
+static float eatfloat (int argc, t_atom *argv, int &i) {
+	if (!argc) RAISE("not enough args");
+	if (argv[i].a_type != A_FLOAT) RAISE("expected float");
+	return argv[i++].a_float;
+}
+static t_symbol *eatsymbol (int &argc, t_atom *&argv, int &i) {
+	if (!argc) RAISE("not enough args");
+	if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
+	return argv[i++].a_symbol;
+}
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	int i=0;
 	for (; *s; s++) {
 		if (*s!='%') {o << (char)*s; continue;}
 		s++; // skip the %
 		switch (*s) {
-		  case 'f':
-			if (!argc) RAISE("not enough args");
-			if (argv[i].a_type != A_FLOAT) RAISE("expected float");
-			o << argv[i++].a_float;
-		  break;
-		  case 's':
-			if (!argc) RAISE("not enough args");
-			if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
-			o << argv[i++].a_symbol->s_name;
-		  break;
+		  case 'd': o << long(eatfloat(argc,argv,i)); break;
+		  case 'f': o << eatfloat(argc,argv,i); break;
+		  case 's': o << eatsymbol(argc,argv,i)->s_name; break;
 		  case '_':
 			if (!argc) RAISE("not enough args");
 			char buf[MAXPDSTRING];
@@ -158,6 +161,7 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 			RAISE("sorry, the format character '%c' is not supported yet",*s);
 		}
 	}
+	return;
 }
 
 std::ostream &operator << (std::ostream &self, const t_atom &a) {
