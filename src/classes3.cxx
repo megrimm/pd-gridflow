@@ -292,7 +292,6 @@ GRID_INLET(0) {
 	\decl 1 float (int dim1) {this->dim1=dim1;}
 	\grin 0
 };
-
 GRID_INLET(0) {
 	d=dim1;
 	if (d<0) d+=in.dim.n;
@@ -302,10 +301,10 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	long f1=in.dim.prod(d), f2=in.dim.prod(d+1);
 	while (n) {
-		long hf1=f1/2;
 		T *data2 = data+f1-f2;
-		for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
-		out->send(f1,data);
+		//long hf1=f1/2; for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
+		T tada[f1]; for (long i=0; i<f1; i+=f2) tada[i]=data2[-i];
+		out->send(f1,tada);
 		data+=f1; n-=f1;
 	}
 } GRID_END
