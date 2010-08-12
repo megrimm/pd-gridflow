@@ -1,0 +1,29 @@
+#N canvas 380 27 632 399 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 345 doc_also;
+#X obj 0 365 doc_f;
+#X obj 3 85 doc_c 1;
+#X obj 14 115 doc_cc 0;
+#X obj 3 160 doc_i 2;
+#X obj 14 190 doc_ii 0;
+#X obj 14 251 doc_ii 1;
+#X obj 3 283 doc_o 1;
+#X obj 14 313 doc_oo 0;
+#X obj 97 251 doc_m i1 list;
+#X text 232 115 format string \, joined with single spaces (just like
+default of [gf/l2s]);
+#X obj 97 190 doc_m i0 list;
+#X text 232 190 elements for the format string. will result in errors
+when element list has float instead of symbol \, symbol instead of
+float \, or is too short. (isn't supposed to crash \, unlike the original
+sprintf()).;
+#X obj 103 345 makefilename;
+#X obj 97 313 doc_m o0 symbol;
+#X obj 97 115 doc_m c0;
+#X obj 232 251 doc_same 0;
+#X obj 134 45 gf/sprintf;
+#X text 214 44 very good replacement for [makefilename];
+#X connect 1 1 14 0;
+#X connect 10 1 17 0;
+#X connect 12 1 13 0;
+#X connect 16 1 11 0;
