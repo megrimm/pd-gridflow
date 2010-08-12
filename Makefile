@@ -114,11 +114,6 @@ DEPRECATED = motion_detection color mouse fade scale_to \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out
 
 ALIASES += deprecated/@fade.pd deprecated/@!.pd doc/flow_classes/@complex_sq-help.pd
-ALIASES += doc/flow_classes/inv+-help.pd  abstractions/inv+.pd
-ifeq ($(OS),nt)
-else
-ALIASES += doc/flow_classes/inv\*-help.pd abstractions/inv\*.pd
-endif
 
 aliases:: $(ALIASES)
 
@@ -130,18 +125,6 @@ deprecated/@!.pd: deprecated/0x40!.pd
 
 doc/flow_classes/@complex_sq-help.pd: doc/flow_classes/0x40complex_sq-help.pd
 	cp doc/flow_classes/0x40complex_sq-help.pd doc/flow_classes/@complex_sq-help.pd
-
-doc/flow_classes/inv+-help.pd: doc/flow_classes/inv0x2b-help.pd
-	cp doc/flow_classes/inv0x2b-help.pd doc/flow_classes/inv+-help.pd
-
-doc/flow_classes/inv\*-help.pd: doc/flow_classes/inv0x2a-help.pd
-	cp doc/flow_classes/inv0x2a-help.pd doc/flow_classes/inv\*-help.pd
-
-abstractions/inv+.pd: abstractions/inv0x2b.pd
-	cp abstractions/inv0x2b.pd abstractions/inv+.pd
-
-abstractions/inv\*.pd: abstractions/inv0x2a.pd
-	cp abstractions/inv0x2a.pd abstractions/inv\*.pd
 
 clean::
 	@-$(RM) gridflow.pd_linux *.o */*.o *.so
