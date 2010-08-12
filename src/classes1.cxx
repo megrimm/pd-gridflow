@@ -576,7 +576,7 @@ GRID_INLET(0) {
 				if (pn>nn) COPY(data2+nn,rdata,pn-nn);
 				op->zip(pn/op->size,tada,data2);
 			}
-		} else op->map(pn,tada,*rdata);
+		} else op->map(pn,tada,loop ? *rdata : T(0));
 		out->send(pn,tada);
 		n-=pn; data+=pn;
 	}
