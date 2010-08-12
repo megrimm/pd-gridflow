@@ -130,24 +130,24 @@ void pd_post (const char *s, int argc, t_atom *argv) {
 }
 
 static float eatfloat (int argc, t_atom *argv, int &i) {
-	if (!argc) RAISE("not enough args");
-	if (argv[i].a_type != A_FLOAT) RAISE("expected float");
-	return argv[i++].a_float;
-}
+	if (!argc) RAISE("not enough args"); if (argv[i].a_type != A_FLOAT) RAISE("expected float");
+	return argv[i++].a_float;}
 static t_symbol *eatsymbol (int &argc, t_atom *&argv, int &i) {
-	if (!argc) RAISE("not enough args");
-	if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
-	return argv[i++].a_symbol;
-}
+	if (!argc) RAISE("not enough args"); if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
+	return argv[i++].a_symbol;}
+#define EATFLOAT   eatfloat(argc,argv,i)
+#define EATSYMBOL eatsymbol(argc,argv,i)
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	int i=0;
+	const char *t;
 	for (; *s; s++) {
 		if (*s!='%') {o << (char)*s; continue;}
+		t=s; // future use
 		s++; // skip the %
 		switch (*s) {
-		  case 'd': o << long(eatfloat(argc,argv,i)); break;
-		  case 'f': o << eatfloat(argc,argv,i); break;
-		  case 's': o << eatsymbol(argc,argv,i)->s_name; break;
+		  case 'd': case 'i': o << long(EATFLOAT); break;
+		  case 'f': o << EATFLOAT; break;
+		  case 's': o << EATSYMBOL->s_name; break;
 		  case '_':
 			if (!argc) RAISE("not enough args");
 			char buf[MAXPDSTRING];
