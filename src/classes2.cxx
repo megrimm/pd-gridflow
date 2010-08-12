@@ -730,33 +730,47 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (...) {
 		std::ostringstream o;
 		char buf[MAXPDSTRING];
-		for (int i=0; i<argc; i++) {
-			atom_string(&argv[i],buf,MAXPDSTRING);
-			o << buf;
-			if (i!=argc-1) o << ' ';
-		}
+		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
 		format = o.str();
 	}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
-	\decl 0 list (...);
+	\decl 0 list (...) {
+		t_binbuf *b = mom->gl_obj.te_binbuf;
+		t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
+		std::ostringstream o;
+		o << "[";
+		if (binbuf_getnatom(b)) o<<*binbuf_getvec(b);
+		for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
+		o << "]: ";
+		pd_oprintf(o,format.data(),argc,argv);
+		t_canvas *canvas = canvas_getrootfor(mom);
+		string s = o.str();
+		pd_error(canvas,"%s",s.data());
+	}
 };
-
-\def 0 list (...) {
-	t_binbuf *b = mom->gl_obj.te_binbuf;
-	t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
-	std::ostringstream o;
-	o << "[";
-	if (binbuf_getnatom(b)) o<<*binbuf_getvec(b);
-	for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
-	o << "]: ";
-	pd_oprintf(o,format.data(),argc,argv);
-	t_canvas *canvas = canvas_getrootfor(mom);
-	string s = o.str();
-	pd_error(canvas,"%s",s.data());
-}
 \end class {install("gf/error",1,0);}
+
+\class GFSprintf : FObject {
+	string format;
+	\constructor (...) {
+		std::ostringstream o;
+		char buf[MAXPDSTRING];
+		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
+		format = o.str();
+	}
+	\decl 0 bang   ()          {_0_list(0,0);}
+	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 list (...) {
+		std::ostringstream o;
+		pd_oprintf(o,format.data(),argc,argv);
+		string s = o.str();
+		outlet_symbol(outlets[0],gensym(o.str().data()));
+	}
+};
+\end class {install("gf/sprintf",1,1);}
 
 \class ForEach : FObject {
 	\constructor () {}
