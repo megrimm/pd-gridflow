@@ -1232,10 +1232,7 @@ string string_replace (string victim, string from, string to) {
 
 string join (int argc, t_atom *argv, string sep, string term) {
 	std::ostringstream os;
-	for (int i=0; i<argc; i++) {
-		os << argv[i];
-		os << (i==argc-1 ? term : sep);
-	}
+	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
 	return os.str();
 }
 
@@ -1279,15 +1276,22 @@ string join (int argc, t_atom *argv, string sep, string term) {
 \end class {install("gf/wrap",1,1);}
 
 /* hack because hexloader is a myth */
+\class InvPlus : FObject {
+	float b;
+	\constructor (float b=1) {this->b=b;}
+	\decl 0 float (float a)          {           outlet_float(outlets[0],b-a);}
+	\decl 0 list  (float a, float b) {this->b=b; outlet_float(outlets[0],b-a);}
+	\decl 1 float (float b) {this->b=b;}
+	\decl 1 list  (float b) {this->b=b;}};
+\end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
 \class InvTimes : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a)          {           outlet_float(outlets[0],b/a);}
 	\decl 0 list  (float a, float b) {this->b=b; outlet_float(outlets[0],b/a);}
 	\decl 1 float (float b) {this->b=b;}
-	\decl 1 list  (float b) {this->b=b;}
-};
-\end class {install("inv*",2,1);}
+	\decl 1 list  (float b) {this->b=b;}};
+\end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
 \class GridFlowClass : FObject {
 	\constructor () {}
