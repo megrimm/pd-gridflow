@@ -761,6 +761,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFSprintf : FObject {
 	string format;
 	\constructor (...) {format = join(argc,argv);}
+	\decl 1 list (...) {format = join(argc,argv);}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
@@ -768,14 +769,15 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		std::ostringstream o;
 		pd_oprintf(o,format.data(),argc,argv);
 		string s = o.str();
-		outlet_symbol(outlets[0],gensym(o.str().data()));
+		outlet_symbol(outlets[0],gensym(s.data()));
 	}
 };
-\end class {install("gf/sprintf",1,1);}
+\end class {install("gf/sprintf",2,1);}
 \class GridSprintf : FObject {
 	string format;
 	\attr NumberTypeE cast;
 	\constructor (...) {format = join(argc,argv); cast = int32_e;}
+	\decl 1 list (...) {format = join(argc,argv);}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
@@ -786,7 +788,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		GridOutlet out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
 	}
 };
-\end class {install("#sprintf",1,1);}
+\end class {install("#sprintf",2,1);}
 
 \class ForEach : FObject {
 	\constructor () {}
