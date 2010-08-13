@@ -54,7 +54,7 @@ GRID_INLET(0) {
 	d=data; for (int y=0; y<sy; y+=2, d+=3*sx) for (int x=0; x<sx; x+=2,d+=6) *tada++ = (RGB2V_(d[0],d[1],d[2])-128)<<8;
 	d=data; for (int y=0; y<sy; y+=2, d+=3*sx) for (int x=0; x<sx; x+=2,d+=6) *tada++ = (RGB2U_(d[0],d[1],d[2])-128)<<8;
 
-	pdp_packet_pass_if_valid(outlets[0],&packet);
+	pdp_packet_pass_if_valid(out[0],&packet);
 } GRID_FINISH {
 } GRID_END
 \end class {install("#to_pdp",1,1);}

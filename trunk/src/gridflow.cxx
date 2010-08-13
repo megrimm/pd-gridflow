@@ -198,12 +198,18 @@ ostream &operator << (ostream &self, const t_atom &a) {
 	return self;
 }
 
-// from desiredata/src/kernel.c
-void outlet_atom(t_outlet *x, t_atom *a) {
-    if      (a->a_type==A_FLOAT  ) outlet_float(  x,a->a_float);
-    else if (a->a_type==A_SYMBOL ) outlet_symbol( x,a->a_symbol);
-    else if (a->a_type==A_POINTER) outlet_pointer(x,a->a_gpointer);
+// adapted from desiredata/src/kernel.c
+void PtrOutlet::operator () (t_atom *a) {
+    if      (a->a_type==A_FLOAT  ) outlet_float(  p,a->a_float);
+    else if (a->a_type==A_SYMBOL ) outlet_symbol( p,a->a_symbol);
+    else if (a->a_type==A_POINTER) outlet_pointer(p,a->a_gpointer);
     else error("can't send atom whose type is %d",a->a_type);
+}
+void outlet_atom2 (t_outlet *self, t_atom *av) {
+	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
+	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
+	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
+	outlet_list(self,gensym("list"),1,av);
 }
 
 //----------------------------------------------------------------
@@ -630,8 +636,8 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 	mom = (t_canvas *)canvas_getcurrent();
 	ninlets  = 1;
 	noutlets = 0;
-	inlets  = new  BFProxy*[1];
-	outlets = new PtrOutlet[1];
+	inlets = new  BFProxy*[1];
+	out    = new PtrOutlet[1];
 	FClass *fc = fclasses[name];
 	inlets[0] = 0; // inlet 0 of this table is not in use
 	ninlets_set( fc->ninlets ,false);
@@ -640,7 +646,7 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 FObject::~FObject () {
 	ninlets_set(1,false);
 	delete[] inlets;
-	delete[] outlets;
+	delete[] out;
 }
 static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
@@ -738,12 +744,12 @@ void FObject::noutlets_set (int n, bool draw) {
 	if (draw) BFObject_undrawio(bself);
 	if (noutlets<n) {
 		PtrOutlet*noo = new PtrOutlet[n>0?n:1];
-		memcpy(noo,outlets,noutlets*sizeof(t_outlet*));
-		delete[] outlets;
-		outlets = noo;
-		while (noutlets<n) outlets[noutlets++].p = outlet_new(bself,&s_anything);
+		memcpy(noo,out,noutlets*sizeof(t_outlet*));
+		delete[] out;
+		out = noo;
+		while (noutlets<n) out[noutlets++].p = outlet_new(bself,&s_anything);
 	} else {
-		while (noutlets>n) outlet_free(outlets[--noutlets]);
+		while (noutlets>n) outlet_free(out[--noutlets]);
 	}
 	if (draw) BFObject_redraw(bself);
 }
@@ -824,9 +830,9 @@ void fclass_install(FClass *fclass, FClass *super) {
 	if (fclass->startup) fclass->startup(fclass);
 }
 
-void install2(FClass *fclass, const char *name, int inlets, int outlets, int flags) {
-	fclass->ninlets = inlets;
-	fclass->noutlets = outlets;
+void install2(FClass *fclass, const char *name, int ninlets, int noutlets, int flags) {
+	fclass->ninlets = ninlets;
+	fclass->noutlets = noutlets;
 	fclass->name = string(name);
 	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
 		sizeof(BFObject), flags, A_GIMME,0);

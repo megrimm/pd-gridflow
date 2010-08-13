@@ -162,7 +162,7 @@ GRID_INPUT(1,dim_grid) {
 };
 GRID_INLET(0) {
 } GRID_FLOW {
-	for (int i=0; i<n; i++) outlet_float(outlets[0],data[i]);
+	for (int i=0; i<n; i++) out[0](float(data[i]));
 } GRID_END
 \end class {install("#to_float",1,1); add_creator("#to_f"); add_creator("#export"); add_creator("@export");}
 
@@ -176,7 +176,7 @@ GRID_INLET(0) {
 	char c[n+1];
 	for (int i=0; i<n; i++) c[i]=(char)data[i];
 	c[n]=0;
-	outlet_symbol(outlets[0],gensym(c));
+	out[0](gensym(c));
 } GRID_END
 \end class {install("#to_symbol",1,1); add_creator("#to_s"); add_creator("#export_symbol"); add_creator("@export_symbol");}
 
@@ -933,7 +933,7 @@ GRID_INPUT(0,from) {_0_bang();} GRID_END
 	\constructor () {}
 	\grin 0
 };
-GRID_INLET(0) {} GRID_FINISH {outlet_bang(outlets[0]);} GRID_END
+GRID_INLET(0) {} GRID_FINISH {out[0]();} GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
 \class GridDim : FObject {
 	\constructor () {}
@@ -950,8 +950,8 @@ GRID_INLET(0) {
 	\grin 0
 };
 GRID_INLET(0) {
-	if (abbr) outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in.nt].alias)));
-	else      outlet_symbol(outlets[0],gensym(const_cast<char *>(number_type_table[in.nt].name)));
+	if (abbr) out[0](gensym(const_cast<char *>(number_type_table[in.nt].alias)));
+	else      out[0](gensym(const_cast<char *>(number_type_table[in.nt].name)));
 } GRID_END
 \end class {install("#type",1,1); add_creator("@type");}
 

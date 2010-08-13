@@ -244,7 +244,7 @@ typedef struct {
 	}
 	\decl 0 fullscreen (bool toggle=1); // not working
 	\decl 0 border     (bool toggle=1);
-	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
+	\decl 0 loadbang () {out[0](gensym("nogrey"),0,0);}
 //	\decl 0 raise ();
 	\grin 0 int
 };
@@ -396,7 +396,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	SETFLOAT(a+0,y);
 	SETFLOAT(a+1,x);
 	SETFLOAT(a+2,state);
-	outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	out[0](gensym("position"),COUNT(a),a);
 }
 
 void FormatX11::call() {
@@ -434,7 +434,7 @@ void FormatX11::call() {
 			SETFLOAT(at+1,ek->x);
 			SETFLOAT(at+2,ek->state);
 			SETSYMBOL(at+3,gensym(buf));
-			outlet_anything(outlets[0],sel,4,at);
+			out[0](sel,4,at);
 			//XFree(kss);
 		}break;
 		case MotionNotify:{

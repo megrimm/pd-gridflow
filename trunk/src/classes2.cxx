@@ -131,7 +131,7 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 		j++;
 		int k=j;
 		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
-		//outlet_anything2(outlets[sargc],j-k,av+k);
+		//outlet_anything2(out[sargc],j-k,av+k);
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
@@ -151,14 +151,13 @@ void Args::process_args (int argc, t_atom *argv) {
 			}
 		} else v = &argv[i];
 		if (sargv[i].name==wildcard) {
-			if (argc-i>0) outlet_list(outlets[i],&s_list,argc-i,argv+i);
-			else outlet_bang(outlets[i]);
+			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
 		} else {
 			if (v->a_type==A_LIST) {
 				t_binbuf *b = (t_binbuf *)v->a_gpointer;
-				outlet_list(outlets[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) outlet_symbol(outlets[i],v->a_symbol);
-			else outlet_anything2(outlets[i],1,v);
+				out[i](binbuf_getnatom(b),binbuf_getvec(b));
+			} else if (v->a_type==A_SYMBOL) out[i](v->a_symbol);
+			else outlet_anything2(out[i],1,v);
 		}
 	}
 	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
@@ -223,9 +222,7 @@ const char *atomtype_to_s (t_atomtype t) {
 	table_t table;
 	\constructor () {}
 	//void outlet_entry(const typeof(table.begin()) &f) // can't use this in gcc<4.4
-	void outlet_entry(const table_t::iterator &f) {
-		outlet_anything(outlets[0],f->first,f->second.size(),&*f->second.begin());
-	}
+	void outlet_entry(const table_t::iterator &f) {out[0](f->first,f->second.size(),&*f->second.begin());}
 	\decl 0 get (t_symbol *s=0) {
 		if (s) {
 			typeof(table.begin()) f = table.find(s);
@@ -301,17 +298,10 @@ static bool atom_eq (const t_atom &a, const t_atom &b) {
 	\decl 0 symbol(t_atom2 a) {find(&a);}
 	void find (const t_atom *a) {
 		int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
-		outlet_float(outlets[0],i==ac?-1:i);
+		out[0](i==ac?-1:i);
 	}
 };
 \end class {install("listfind",2,1);}
-
-void outlet_atom2 (t_outlet *self, t_atom *av) {
-	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
-	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
-	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
-	outlet_list(self,gensym("list"),1,av);
-}
 
 \class ListRead : FObject { /* sounds like tabread */
 	int ac;
@@ -321,8 +311,8 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 	\decl 0 float(float f) {
 		int i = int(f);
 		if (i<0) i+=ac;
-		if (i<0 || i>=ac) {outlet_bang(outlets[0]); return;} /* out-of-range */
-		outlet_atom2(outlets[0],&at[i]);
+		if (i<0 || i>=ac) {out[0](); return;} /* out-of-range */
+		outlet_atom2(out[0],&at[i]);
 	}
 	\decl 1 list(...) {
 		if (at) delete[] at;
@@ -347,7 +337,7 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 	~Range () {delete[] mosusses;}
 	\decl 0 float(float f) {
 		int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
-		outlet_float(outlets[i],f);
+		out[i](f);
 	}
 	\decl 0 list(float f) {_0_float(f);}
 	\decl void _n_float(int i, float f);
@@ -428,8 +418,8 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 	SETFLOAT(b+0,tv.tv_sec/86400);
 	SETFLOAT(b+1,mod(tv.tv_sec,86400));
 	SETFLOAT(b+2,tv.tv_usec);
-	outlet_anything(outlets[2],&s_list,6,a);
-	outlet_anything(outlets[1],&s_list,3,b);
+	out[2](6,a);
+	out[1](3,b);
 	send_out(0,strlen(tt),tt);
 }
 
@@ -503,11 +493,11 @@ void ParallelPort::call() {
 #ifndef __WIN32__
 	int flags;
 	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
-	if (this->flags!=flags) outlet_float(outlets[2],flags);
+	if (this->flags!=flags) out[2](flags);
 	this->flags = flags;
 	int status;
 	if (ioctl(fd,LPGETSTATUS,&status)<0) post("ioctl: %s",strerror(errno));
-	if (this->status!=status) outlet_float(outlets[1],status);
+	if (this->status!=status) out[1](status);
 	this->status = status;
 	if (clock) clock_delay(clock,2000);
 #endif
@@ -526,7 +516,7 @@ void ParallelPort::call() {
 	\decl void anything(...) {
 		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-		outlet_anything(outlets[i],sel,argc-1,argv+1);
+		out[i](sel,argc-1,argv+1);
 	}
 	\decl 1 list(...) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -546,7 +536,7 @@ void ParallelPort::call() {
 		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
 		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list;
-		outlet_anything(outlets[i],sel,argc-1,argv+1);
+		out[i](sel,argc-1,argv+1);
 	}
 	\decl 1 list(...) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -578,7 +568,7 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 };
 \def void anything(...) {
 	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	outlet_anything(outlets[index],sel,argc-1,argv+1);
+	out[index](sel,argc-1,argv+1);
 	if (mode) {
 		index += sgn(mode);
 		if (index<lo || index>hi) {
@@ -638,8 +628,8 @@ t_class *ReceivesProxy_class;
 	do_bind(argc,argv);
 }
 void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
-	outlet_symbol(  self->parent->outlets[1],self->suffix);
-	outlet_anything(self->parent->outlets[0],s,argc,argv);
+	self->parent->out[1](self->suffix);
+	self->parent->out[0](s,argc,argv);
 }
 \end class {
 	install("receives",1,2);
@@ -653,7 +643,7 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	\decl void _0_symbol(t_symbol *s);
 };
 \def void _0_symbol(t_symbol *s) {
-	outlet_float(outlets[0],!!zgetfn(&pd_objectmaker,s));
+	out[0](!!zgetfn(&pd_objectmaker,s));
 }
 \end class {install("class_exists",1,1);}
 
@@ -668,10 +658,10 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	list = list_new(argc,argv);
 }
 \def 0 list (...) {
-	if (binbuf_getnatom(list) != argc) {outlet_float(outlets[0],0); return;}
+	if (binbuf_getnatom(list) != argc) {out[0](0); return;}
 	t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
-	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {outlet_float(outlets[0],0); return;}
-	outlet_float(outlets[0],1);
+	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {out[0](0); return;}
+	out[0](1);
 }
 \end class {install("list.==",2,1);}
 
@@ -701,21 +691,21 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	clock_t time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
-	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_utime-time)*1000/HZ);}
+	\decl 1 bang () {NOWIN; struct tms t; times(&t); out[0]((t.tms_utime-time)*1000/HZ);}
 };
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
-	\decl 1 bang () {NOWIN; struct tms t; times(&t); outlet_float(outlets[0],(t.tms_stime-time)*1000/HZ);}
+	\decl 1 bang () {NOWIN; struct tms t; times(&t); out[0]((t.tms_stime-time)*1000/HZ);}
 };
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {time=rdtsc();}
-	\decl 1 bang () {outlet_float(outlets[0],(rdtsc()-time)*1000.0/cpu_hertz);}
+	\decl 1 bang () {out[0]((rdtsc()-time)*1000.0/cpu_hertz);}
 };
 \end class {install("tsctime",2,1);
 	struct timeval t0,t1;
@@ -762,7 +752,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
-		outlet_symbol(outlets[0],gensym(s.data()));
+		out[0](gensym(s.data()));
 	}
 };
 \end class {install("gf/sprintf",2,1);}
@@ -783,7 +773,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class ForEach : FObject {
 	\constructor () {}
-	\decl 0 list (...) {for (int i=0; i<argc; i++) outlet_atom(outlets[0],&argv[i]);}
+	\decl 0 list (...) {for (int i=0; i<argc; i++) out[0](argv+i);}
 };
 \end class {install("foreach",1,1);}
 
@@ -794,13 +784,13 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasFileName : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 bang () {MOM; outlet_symbol(outlets[0],m->gl_name ? m->gl_name : gensym("empty"));}
+	\decl 0 bang () {MOM; out[0](m->gl_name ? m->gl_name : gensym("empty"));}
 };
 \end class {install("gf/canvas_filename",1,1);}
 \class GFCanvasDollarZero : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 bang () {MOM; outlet_float(outlets[0],canvas_getenv(m)->ce_dollarzero);}
+	\decl 0 bang () {MOM; out[0](canvas_getenv(m)->ce_dollarzero);}
 };
 \end class {install("gf/canvas_dollarzero",1,1);}
 \class GFCanvasGetPos : FObject {
@@ -810,7 +800,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		t_atom a[2];
 		SETFLOAT(a+0,m->gl_obj.te_xpix);
 		SETFLOAT(a+1,m->gl_obj.te_ypix);
-		outlet_list(outlets[0],&s_list,2,a);
+		out[0](2,a);
 	}
 };
 \end class {install("gf/canvas_getpos",1,1);}
@@ -837,7 +827,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasEditMode : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 bang () {MOM; outlet_float(outlets[0],m->gl_edit);}
+	\decl 0 bang () {MOM; out[0](int(m->gl_edit));}
 };
 \end class {install("gf/canvas_edit_mode",1,1);}
 \class GFCanvasIsSelected : FObject {
@@ -847,7 +837,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM;
 		if (!m->gl_owner) RAISE("chosen canvas is not in any canvas");
-		outlet_float(outlets[0],(t_float)glist_isselected(m->gl_owner,(t_gobj *)m));
+		out[0](glist_isselected(m->gl_owner,(t_gobj *)m));
 	}
 };
 \end class {install("gf/canvas_isselected",1,1);}
@@ -869,9 +859,9 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
 	\decl 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
 	\decl 0 xid (t_symbol *t, t_symbol *u) {MOM
-		outlet_symbol(outlets[2],symprintf(".x%lx",m));
-		outlet_symbol(outlets[1],u);
-		outlet_symbol(outlets[0],t);
+		out[2](symprintf(".x%lx",m));
+		out[1](u);
+		out[0](t);
 	}
 };
 \end class {install("gf/canvas_xid",1,3);}
@@ -912,7 +902,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasCount : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; outlet_float(outlets[0],k);}
+	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; out[0](k);}
 };
 \end class {install("gf/canvas_count",1,1);}
 \class GFCanvasIndex : FObject {
@@ -924,7 +914,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		if (!mm) RAISE("chosen canvas is not in any canvas");
 		int k=0;
 		canvas_each(y,mm) {if (y==(t_gobj *)m) break; else k++;}
-		outlet_float(outlets[0],k);
+		out[0](k);
 	}
 };
 \end class {install("gf/canvas_index",1,1);}
@@ -1059,8 +1049,8 @@ struct _inlet {
 		if (horiz) x += x2-x1+incr;
 		else       y += y2-y1+incr;
 	}
-	if (horiz) outlet_float(outlets[0],x-x_start);
-	else       outlet_float(outlets[0],y-y_start);
+	if (horiz) out[0](x-x_start);
+	else       out[0](y-y_start);
 #else
 	post("doesn't work with DesireData");
 #endif
@@ -1127,7 +1117,7 @@ t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((lon
 		wb->w_getrectfn((t_gobj *)s->s_thing,mom,&x1,&y1,&x2,&y2);
 		SETFLOAT(a+0,x1); SETFLOAT(a+1,y1);
 		SETFLOAT(a+2,x2); SETFLOAT(a+3,y2);
-		outlet_anything(outlets[0],&s_list,4,a);
+		out[0](4,a);
 	}
 };
 
@@ -1155,21 +1145,21 @@ string string_replace (string victim, string from, string to) {
 	string b = string(from->s_name);
 	string c = string(to->s_name);
 	a = string_replace(a,b,c);
-	outlet_symbol(outlets[0],gensym(a.c_str()));
+	out[0](gensym(a.c_str()));
 }
 \end class {install("gf/string_replace",1,1);}
 
 \class GFStringLessThan : FObject {
 	t_symbol *than;
 	\constructor (t_symbol *than=&s_) {this->than=than;}
-	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strcmp(it->s_name,than->s_name)<0);}
+	\decl 0 symbol (t_symbol *it) {out[0](strcmp(it->s_name,than->s_name)<0);}
 	\decl 1 symbol (t_symbol *than) {this->than=than;}
 };
 \end class {install("gf/string_<",2,1); class_sethelpsymbol(fclass->bfclass,gensym("gf/string_0x3c"));}
 
 \class GFStringLength : FObject {
 	\constructor () {}
-	\decl 0 symbol (t_symbol *it) {outlet_float(outlets[0],strlen(it->s_name));}
+	\decl 0 symbol (t_symbol *it) {out[0](strlen(it->s_name));}
 };
 \end class {install("gf/string_length",1,1);}
 
@@ -1180,9 +1170,9 @@ string string_replace (string victim, string from, string to) {
 	    #ifdef __WIN32__
 		RAISE("getppid unsupported on win32");
 	    #else
-		outlet_float(outlets[1],getppid());
+		out[1](getppid());
 	    #endif
-	    outlet_float(outlets[0],getpid());
+	    out[0](getpid());
 	}
 };
 \end class {install("gf/getpid",1,2);}
@@ -1192,14 +1182,14 @@ string string_replace (string victim, string from, string to) {
 	\decl 0 bang () {
 	    char bof[PATH_MAX];
 	    if (!getcwd(bof,sizeof(bof))) RAISE("getcwd: %s",strerror(errno));
-	    outlet_symbol(outlets[0],gensym(bof));
+	    out[0](gensym(bof));
 	}
 };
 \end class {install("gf/getcwd",1,1);}
 
 \class GFSelector : FObject {
 	\constructor () {}
-	\decl void anything (...) {outlet_symbol(outlets[0],gensym(argv[0].a_symbol->s_name+3));}
+	\decl void anything (...) {out[0](gensym(argv[0].a_symbol->s_name+3));}
 };
 \end class {install("gf/selector",1,1);}
 
@@ -1210,22 +1200,22 @@ string string_replace (string victim, string from, string to) {
 	    int fd;
 	    char bof[MAXPDSTRING], *bofp;
 	    fd=open_via_path(canvas_getdir(m)->s_name,s->s_name,"",bof,&bofp,MAXPDSTRING,1);
-	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],symprintf("%s/%s",bof,bofp)); return;}
+	    if (fd>=0) {close(fd); out[0](symprintf("%s/%s",bof,bofp)); return;}
 	    canvas_makefilename(m,s->s_name,bof,MAXPDSTRING);
 	    fd = open(bof,0,O_RDONLY);
 	    //post("(2) fd=%d for %s",fd,bof);
-	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(bof)); return;}
+	    if (fd>=0) {close(fd); out[0](gensym(bof)); return;}
 
 	    string b = gf_find_file(string(s->s_name));
 	    fd = open(b.data(),0,O_RDONLY);
 	    //post("(3) fd=%d for %s",fd,b.data());
-	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],gensym(b.data())); return;}
+	    if (fd>=0) {close(fd); out[0](gensym(b.data())); return;}
 
 	    fd = open(s->s_name,0,O_RDONLY);
 	    //post("(4) fd=%d for %s",fd,s->s_name);
-	    if (fd>=0) {close(fd); outlet_symbol(outlets[0],s); return;}
+	    if (fd>=0) {close(fd); out[0](s); return;}
 
-	    outlet_bang(outlets[1]);
+	    out[1]();
 	}
 };
 \end class {install("gf/find_file",1,2);}
@@ -1233,7 +1223,7 @@ string string_replace (string victim, string from, string to) {
 \class GFL2S : FObject {
 	t_symbol *sep;
 	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
-	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv,sep->s_name).data()));}
+	\decl 0 list (...) {out[0](gensym(join(argc,argv,sep->s_name).data()));}
 	\decl 1 symbol (t_symbol *sep) {this->sep=sep;}
 };
 \end class {install("gf/l2s",2,1);}
@@ -1251,7 +1241,7 @@ string string_replace (string victim, string from, string to) {
 			if (*q==sepc) {                  a[n++]=symprintf("%.*s",q-p,p); q++; p=q;}
 			if (n==64) break;
 		}
-		outlet_list(outlets[0],&s_list,n,a);
+		out[0](n,a);
 	}
 	\decl 1 symbol (t_symbol *sep) {this->sep=sep;}
 };
@@ -1265,7 +1255,7 @@ string string_replace (string victim, string from, string to) {
 
 \class GFWrap : FObject {
 	\constructor () {}
-	\decl 0 float (float f) {outlet_float(outlets[0],f-floor(f));}
+	\decl 0 float (float f) {out[0](f-floor(f));}
 };
 \end class {install("gf/wrap",1,1);}
 
@@ -1273,16 +1263,16 @@ string string_replace (string victim, string from, string to) {
 \class InvPlus : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
-	\decl 0 float (float a)          {           outlet_float(outlets[0],b-a);}
-	\decl 0 list  (float a, float b) {this->b=b; outlet_float(outlets[0],b-a);}
+	\decl 0 float (float a)          {           out[0](b-a);}
+	\decl 0 list  (float a, float b) {this->b=b; out[0](b-a);}
 	\decl 1 float (float b) {this->b=b;}
 	\decl 1 list  (float b) {this->b=b;}};
 \end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
 \class InvTimes : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
-	\decl 0 float (float a)          {           outlet_float(outlets[0],b/a);}
-	\decl 0 list  (float a, float b) {this->b=b; outlet_float(outlets[0],b/a);}
+	\decl 0 float (float a)          {           out[0](b/a);}
+	\decl 0 list  (float a, float b) {this->b=b; out[0](b/a);}
 	\decl 1 float (float b) {this->b=b;}
 	\decl 1 list  (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
@@ -1299,13 +1289,13 @@ string string_replace (string victim, string from, string to) {
 			SETFLOAT(a+0,GF_VERSION_A);
 			SETFLOAT(a+1,GF_VERSION_B);
 			SETFLOAT(a+2,GF_VERSION_C);
-			outlet_anything(outlets[0],s,3,a);
+			out[0](s,3,a);
 		}
 		if (s==gensym("folder")) {
 			t_atom a[1];
 			extern t_symbol *gridflow_folder;
 			SETSYMBOL(a+0,gridflow_folder);
-			outlet_anything(outlets[0],s,1,a);
+			out[0](s,1,a);
 		}
 	}
 };
@@ -1315,7 +1305,7 @@ map<t_canvas *, map<t_gobj *, int> > propertybang_map;
 \class PropertyBang : FObject {
 	\constructor () {propertybang_map[canvas_getabstop(mom)][(t_gobj *)bself]=1;}
 	~PropertyBang () {propertybang_map[canvas_getabstop(mom)].erase((t_gobj *)bself);}
-	void properties () {outlet_bang(outlets[0]);}
+	void properties () {out[0]();}
 };
 extern "C" void canvas_properties(t_gobj *z, t_glist *owner);
 void canvas_properties2(t_gobj *z, t_glist *owner) {

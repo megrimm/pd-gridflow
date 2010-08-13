@@ -902,7 +902,7 @@ static void init_enums () {
 		for (int i=0; i<argc; i++) textures[i] = argv[i];
 		if (glAreTexturesResident(argc,textures,residences)) for (int i=0; i<argc; i++) a[i]=1;
 		else						     for (int i=0; i<argc; i++) a[i]=residences[i];
-		outlet_list(outlets[0],&s_list,argc,a);
+		out[0](argc,a);
 	}
 	\decl 0 array_element (int i) {glArrayElement(i);}
 	\decl 0 begin (t_atom2 a) {glBegin(primitive_type(a));}
@@ -1016,14 +1016,14 @@ static void init_enums () {
 		if (n<1) RAISE("$1 must be at least 1");
 		uint32 list = glGenLists(n);
 		//t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=list+i;
-		//outlet_anything(outlets[0],&s_list,n,a);
-		outlet_float(outlets[0],list);
+		//out[0](n,a);
+		out[0](list);
 	}
 	\decl 0 gen_textures (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
 		uint32 textures[n]; glGenTextures(n,textures);
 		t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=textures[i];
-		outlet_anything(outlets[0],&s_list,n,a);
+		out[0](&s_list,n,a);
 	}
 	\decl 0 get_error () {
 		t_symbol *error = gensym("error");
@@ -1031,7 +1031,7 @@ static void init_enums () {
 			GLenum e = glGetError();
 			if (e==GL_NO_ERROR) break;
 			t_atom2 a[1]; a[0] = gl_error.reverse(e);
-			outlet_anything(outlets[0],error,1,a);
+			out[0](error,1,a);
 		}
 	}
 	\decl 0 get_light (int light, t_atom pname) { // not in GEM
@@ -1040,14 +1040,14 @@ static void init_enums () {
 		float fv[n]; t_atom2 a[n];
 		glGetLightfv(GL_LIGHT0+light,e,fv);
 		for (int i=0; i<n; i++) a[i]=fv[i];
-		outlet_list(outlets[0],&s_list,n,a);
+		out[0](n,a);
 	}
 	\decl 0 get_map (t_atom target, t_atom pname) {
 		RAISE("what do i do with this ?");
 		//float fv[n];
 		//glGetMapfv(get_map_target(target),get_map_parameter(pname),fv);
 		//t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=fv[i];
-		//outlet_list(outlets[0],&s_list,n,a);
+		//out[0](n,a);
 	}
 	\decl 0 get_pointer (t_atom pname) {
 		RAISE("what do i do with this ?");
@@ -1058,7 +1058,7 @@ static void init_enums () {
 	\decl 0 get_string (t_atom pname) {
 		const char *s = (const char *)glGetString(get_string_parameter(pname));
 		if (!s) RAISE("boo");
-		outlet_symbol(outlets[0],gensym(s));
+		out[0](gensym(s));
 	}
 	\decl 0 get_tex_env (t_atom target, t_atom pname) {
 		GLenum e = tex_env_parameter(pname);
@@ -1074,15 +1074,15 @@ static void init_enums () {
 		//post("reading property %d 0x%04X %s n=%d",e,e,s->s_name,n);
 		glGetFloatv(e,fv);
 		t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=fv[i];
-		outlet_anything(outlets[0],s,n,a);
+		out[0](s,n,a);
 	}
 	\decl 0 hint (t_atom target, t_atom mode) {glHint(hint_target(target),hint_mode(mode));}
 	\decl 0 index (float value) {glIndexf(value);}
 	\decl 0 index_mask (bool flag) {glIndexMask(flag);}
 	\decl 0 init_names () {glInitNames();}
-	\decl 0 is_enabled (t_atom cap) {outlet_float(outlets[0],glIsEnabled(capability(cap)));}
-	\decl 0 is_list    (uint32 list   ) {outlet_float(outlets[0],glIsList(   list   ));}
-	\decl 0 is_texture (uint32 texture) {outlet_float(outlets[0],glIsTexture(texture));}
+	\decl 0 is_enabled (t_atom cap    ) {out[0](glIsEnabled(capability(cap)));}
+	\decl 0 is_list    (uint32 list   ) {out[0](glIsList(   list   ));}
+	\decl 0 is_texture (uint32 texture) {out[0](glIsTexture(texture));}
 	\decl 0 light (...) {
 		if (argc<3) RAISE("minimum 3 args");
 		int light = (int)argv[0];

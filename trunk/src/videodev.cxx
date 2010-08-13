@@ -310,12 +310,12 @@ t_symbol *safe_gensym(const char *name) {
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
 		t_atom a[2];
-		SETFLOAT(a+0,vcaps.minheight); SETFLOAT(a+1,vcaps.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		SETFLOAT(a+0,vcaps.maxheight); SETFLOAT(a+1,vcaps.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
+		SETFLOAT(a+0,vcaps.minheight); SETFLOAT(a+1,vcaps.minwidth); out[0](gensym("minsize"),2,a);
+		SETFLOAT(a+0,vcaps.maxheight); SETFLOAT(a+1,vcaps.maxwidth); out[0](gensym("maxsize"),2,a);
 		string foo = choice_to_s(vp.palette,COUNT(video_palette_choice),video_palette_choice);
 		SETSYMBOL(a,gensym(foo.data()));
-		outlet_anything(outlets[0],gensym("palette"),1,a);
-		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); outlet_anything(outlets[0],gensym("size"),    2,a);
+		out[0](gensym("palette"),1,a);
+		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); out[0](gensym("size"),2,a);
 	}
 }
 

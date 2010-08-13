@@ -124,7 +124,7 @@ static map<string,string> fourccs;
 	}
 	long length = quicktime_video_length(anim,track);
 	long nframe = quicktime_video_position(anim,track);
-	if (nframe >= length) {outlet_bang(outlets[0]); return;}
+	if (nframe >= length) {out[0](); return;}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
 	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
 		RAISE("LQT says this video cannot be decoded into the chosen colorspace");

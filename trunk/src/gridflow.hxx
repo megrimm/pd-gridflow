@@ -807,7 +807,19 @@ struct BFObject : t_object {
 struct PtrOutlet {
 	t_outlet *p;
 	operator t_outlet * () {return p;}
+	void operator () ()              {outlet_bang(   p  );}
+	void operator () (int f)         {outlet_float(  p,f);}
+	void operator () (long f)        {outlet_float(  p,f);}
+	void operator () (size_t f)      {outlet_float(  p,f);}
+	void operator () (float f)       {outlet_float(  p,f);}
+	void operator () (double f)      {outlet_float(  p,f);}
+	void operator () (t_symbol *s)   {outlet_symbol( p,s);}
+	void operator () (t_gpointer *g) {outlet_pointer(p,g);}
+	void operator () (             int argc, t_atom *argv) {outlet_list(p,&s_list,argc,argv);}
+	void operator () (t_symbol *s, int argc, t_atom *argv) {outlet_anything(p,s,  argc,argv);}
+	void operator () (t_atom *a);
 };
+void outlet_atom2 (t_outlet *self, t_atom *av);
 
 // represents objects that have inlets/outlets
 \class FObject {
@@ -815,8 +827,8 @@ struct PtrOutlet {
 	virtual void changed (t_symbol *s=0) {}
 	BFObject *bself; // point to PD peer
 	int ninlets,noutlets; // per object settings (not class)
-	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
-	PtrOutlet *outlets;  // direct access to outlets (not linked lists)
+	BFProxy  **inlets; // direct access to  inlets (not linked lists)
+	PtrOutlet *out;    // direct access to outlets (not linked lists)
 	t_canvas *mom;
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
@@ -826,7 +838,7 @@ struct PtrOutlet {
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
-		outlet_list(outlets[outlet],&s_list,argc,foo);
+		outlet_list(out[outlet],&s_list,argc,foo);
 	}
 	\decl 0 get (t_symbol *s=0);
 	\decl 0 help ();
@@ -949,11 +961,6 @@ struct _canvasenvironment {
     t_atom *ce_argv;    /* array of "$" arguments */
     int ce_dollarzero;  /* value of "$0" */
 };
-#endif
-
-// from desiredata/src/kernel.c
-#ifndef DESIRE
-extern void outlet_atom(t_outlet *x, t_atom *a);
 #endif
 
 #endif // __GF_GRID_H

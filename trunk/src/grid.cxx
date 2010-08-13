@@ -191,7 +191,7 @@ GridOut::GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_
 	t_atom a[1];
 	SETGRIDOUT(a,this);
 	if (parent) {
-		outlet_anything(parent->outlets[woutlet],s_grid,1,a);
+		outlet_anything(parent->out[woutlet],s_grid,1,a);
 		if (!dim.prod()) finish();
 	}
 }

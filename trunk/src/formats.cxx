@@ -70,14 +70,14 @@ void suffixes_are (const char *name, const char *suffixes) {
   \decl 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
-	if (!t) outlet_symbol(outlets[2],gensym(s));
+	if (!t) out[2](gensym(s));
 	else {
 		*t = 0;
 		for (char *u=t+1; *u; u++) *u=tolower(*u);
-		outlet_symbol(outlets[1],gensym(t+1));
+		out[1](gensym(t+1));
 		map<string,string>::iterator u = suffix_table.find(string(t+1));
-		if (u==suffix_table.end()) outlet_bang(outlets[0]);
-		else outlet_symbol(outlets[0],gensym((char *)u->second.data()));
+		if (u==suffix_table.end()) out[0]();
+		else out[0](gensym((char *)u->second.data()));
 	}
 	free(s);
   }

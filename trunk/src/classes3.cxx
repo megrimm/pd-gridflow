@@ -341,8 +341,8 @@ GRID_INLET(0) {
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
 	go->send(2,blah);
-	outlet_float(outlets[1],blah[0]);
-	outlet_float(outlets[2],blah[1]);
+	out[1](blah[0]);
+	out[2](blah[1]);
 } GRID_END
 
 \end class {install("#centroid",1,3);}
@@ -1281,7 +1281,7 @@ GRID_INLET(0) {
 	if (in.dim[0]!=this->n) RAISE("expecting dim(%ld), got dim(%ld)",this->n,in.dim[0]);
 	in.set_chunk(0);
 } GRID_FLOW {
-	for (int i=n-1; i>=0; i--) outlet_float(outlets[i],(t_float)data[i]);
+	for (int i=n-1; i>=0; i--) out[i](float(data[i]));
 } GRID_END
 \end class {install("#unpack",1,0);}
 
