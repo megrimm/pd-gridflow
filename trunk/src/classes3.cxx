@@ -303,7 +303,7 @@ GRID_INLET(0) {
 	while (n) {
 		T *data2 = data+f1-f2;
 		//long hf1=f1/2; for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
-		T tada[f1]; for (long i=0; i<f1; i+=f2) tada[i]=data2[-i];
+		T tada[f1]; for (long i=0; i<f1; i+=f2) COPY(tada+i,data2-i,f2);
 		out->send(f1,tada);
 		data+=f1; n-=f1;
 	}
