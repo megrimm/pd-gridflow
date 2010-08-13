@@ -33,7 +33,7 @@ typedef
 #endif
 AAAttr;
 
-static std::map<string,const aa_driver *> drivers;
+static map<string,const aa_driver *> drivers;
 
 \class FormatAALib : Format {
 	aa_context *context;

@@ -34,8 +34,8 @@ struct EnumType {
 		// if n>0  : this is the name of a 'get' attribute that has n arguments
 		// if n<0  : this is the name of a 'get' attribute that is currently not supported.
 	};
-	typedef std::map<t_symbol *,GLenum>  forward_t;  forward_t  forward;
-	typedef std::map<GLenum,EnumInfo>   backward_t; backward_t backward;
+	typedef map<t_symbol *,GLenum>  forward_t;  forward_t  forward;
+	typedef map<GLenum,EnumInfo>   backward_t; backward_t backward;
 	EnumType (const char *name) {this->name = name;}
 	GLenum operator () (const t_atom &a) {return (*this)(*(const t_atom2 *)&a);}
 	GLenum operator () (const t_atom2 &a) {

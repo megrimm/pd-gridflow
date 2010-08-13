@@ -66,8 +66,8 @@ extern t_class *text_class;
 #include <cxxabi.h>
 #endif
 
-std::map<string,FClass *> fclasses;
-std::map<t_class *,FClass *> fclasses_pd;
+map<string,FClass *> fclasses;
+map<t_class *,FClass *> fclasses_pd;
 t_symbol *gridflow_folder;
 
 //using namespace std;
@@ -77,7 +77,7 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
 Barf::Barf(const char *s, ...) {
-    std::ostringstream os;
+    ostringstream os;
     va_list ap;
     va_start(ap,s);
     voprintf(os,s,ap);
@@ -85,7 +85,7 @@ Barf::Barf(const char *s, ...) {
     text = os.str();
 }
 Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
-    std::ostringstream os;
+    ostringstream os;
     va_list ap;
     va_start(ap,fmt);
     voprintf(os,fmt,ap);
@@ -99,12 +99,12 @@ void Barf::error(BFObject *bself, int winlet, const char *selector) {
 	else    pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,selector?selector:"(???)",text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
-	std::ostringstream os; os << s->s_name;
+	ostringstream os; os << s->s_name;
 	for (int i=0; i<argc; i++) os << (i ? " " : " ") << argv[i];
         ::error("[%s]: %s",os.str().data(),text.data());
 }
 
-void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
+void pd_oprint (ostream &o, int argc, t_atom *argv) {
 	for (int i=0; i<argc; i++) {
 		t_atomtype t = argv[i].a_type;
 		if (t==A_FLOAT) o << argv[i].a_float;
@@ -123,7 +123,7 @@ void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
 }
 
 void pd_post (const char *s, int argc, t_atom *argv) {
-	std::ostringstream os;
+	ostringstream os;
 	if (s) os << s << ": ";
 	pd_oprint(os,argc,argv);
 	post("%s",os.str().data());
@@ -138,7 +138,7 @@ static t_symbol *eatsymbol (int argc, t_atom *argv, int &i) {if (!argc) RAISE("n
 	if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol in $%d",i+1);	return argv[i++].a_symbol;}
 #define EATFLOAT   eatfloat(argc,argv,i)
 #define EATSYMBOL eatsymbol(argc,argv,i)
-void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
+void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 	int i=0;
 	const char *t;
 	for (; *s; s++) {
@@ -176,7 +176,7 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	}
 }
 
-std::ostream &operator << (std::ostream &self, const t_atom &a) {
+ostream &operator << (ostream &self, const t_atom &a) {
 	switch (a.a_type) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
@@ -548,7 +548,7 @@ bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 #define lstat stat
 #endif
 
-std::vector<string> gf_data_path;
+vector<string> gf_data_path;
 string gf_find_file (string x) {
 	if (strchr(x.data(),'/')) return x;
 	int n = gf_data_path.size();
@@ -751,7 +751,7 @@ void FObject::noutlets_set (int n, bool draw) {
 string BFObject::binbuf_string () {
 	t_binbuf *b = te_binbuf;
 	if (!b) return "[???]";
-	std::ostringstream s;
+	ostringstream s;
 	int n = binbuf_getnatom(b);
 	t_atom2 *at = (t_atom2 *)binbuf_getvec(b);
 	for (int i=0; i<n; i++) s << (i ? at[i].a_type==A_COMMA ? "" : " " : "[") << at[i];

@@ -55,7 +55,7 @@ struct _outlet {
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
 string join (int argc, t_atom *argv, string sep=" ", string term="") {
-	std::ostringstream os;
+	ostringstream os;
 	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
 	return os.str();
 }
@@ -219,7 +219,7 @@ const char *atomtype_to_s (t_atomtype t) {
 \end class {install("setargs",1,1);}
 
 \class GFAttr : FObject {
-	typedef std::map<t_symbol *,std::vector<t_atom2> > table_t;
+	typedef map<t_symbol *,vector<t_atom2> > table_t;
 	table_t table;
 	\constructor () {}
 	//void outlet_entry(const typeof(table.begin()) &f) // can't use this in gcc<4.4
@@ -259,7 +259,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listreverse",1,1);}
 
 \class ListFlatten : FObject {
-	std::vector<t_atom2> contents;
+	vector<t_atom2> contents;
 	\constructor () {}
 	void traverse (int argc, t_atom2 *argv) {
 		for (int i=0; i<argc; i++) {
@@ -360,7 +360,7 @@ void outlet_atom2 (t_outlet *self, t_atom *av) {
 
 /*
 string ssprintf(const char *fmt, ...) {
-	std::ostringstream os;
+	ostringstream os;
 	va_list va;
 	va_start(va,fmt);
 	voprintf(os,fmt,va);
@@ -375,7 +375,7 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 	string prefix;
 	t_pd *gp;
 	\constructor (const t_atom *s=0) {
-		std::ostringstream text;
+		ostringstream text;
 		if (s) text << *s; else text << "print";
 		prefix = text.str();
 		t_atom a[1];
@@ -387,7 +387,7 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 	~GFPrint () {pd_free(gp);}
 	\decl 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
 	\decl void anything (...) {
-		std::ostringstream text;
+		ostringstream text;
 		text << prefix << ":";
 		t_symbol *l = gensym("_0_list");
 		t_symbol *f = gensym("_0_float");
@@ -740,7 +740,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 list (...) {
 		t_binbuf *b = mom->gl_obj.te_binbuf;
 		t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
-		std::ostringstream o;
+		ostringstream o;
 		o << "[";
 		if (b && binbuf_getnatom(b)) o<<*binbuf_getvec(b); else o<<"???";
 		if (ce) for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
@@ -761,7 +761,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
-		std::ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
+		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		outlet_symbol(outlets[0],gensym(s.data()));
 	}
 };
@@ -775,7 +775,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
-		std::ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
+		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		GridOutlet out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
 	}
 };
@@ -1037,7 +1037,7 @@ struct _inlet {
 	if (dir==&s_x) horiz=false; else
 	if (dir==&s_y) horiz=true;  else RAISE("$1 must be x or y");
 #ifndef DESIRE
-	std::vector<t_object *> v;
+	vector<t_object *> v;
 	BEGIN
 	wire_each(wire,ouch) {
 		//post("wire to object of class %s ISINLET=%d",pd_class(wire->to)->c_name->s_name,ISINLET(wire->to));
@@ -1311,7 +1311,7 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gridflow",1,1);}
 
-std::map<t_canvas *, std::map<t_gobj *, int> > propertybang_map;
+map<t_canvas *, map<t_gobj *, int> > propertybang_map;
 \class PropertyBang : FObject {
 	\constructor () {propertybang_map[canvas_getabstop(mom)][(t_gobj *)bself]=1;}
 	~PropertyBang () {propertybang_map[canvas_getabstop(mom)].erase((t_gobj *)bself);}

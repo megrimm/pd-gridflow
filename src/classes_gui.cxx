@@ -145,11 +145,11 @@ extern "C" int sys_hostfontsize(int fontsize);
 //#ifdef DESIRE
 \class Display : GUI_FObject {
 	int y,x;
-	std::ostringstream text;
+	ostringstream text;
 	t_pd *gp;
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
-		std::ostringstream os;
+		ostringstream os;
 		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
@@ -166,8 +166,8 @@ extern "C" int sys_hostfontsize(int fontsize);
 	\decl 0 grid(...);
 	\decl 0 very_long_name_that_nobody_uses(...);
  	void show() { /* or hide */
-		std::ostringstream quoted;
-		std::string ss = text.str();
+		ostringstream quoted;
+		string ss = text.str();
 		const char *s = ss.data();
 		int n = ss.length();
 		for (int i=0;i<n;i++) {
@@ -402,7 +402,7 @@ static t_pd *seesend;
 	#undef FOO
 	\grin 0
 	void sendbuf () {
-	    std::ostringstream os;
+	    ostringstream os;
 	    int i=0,j=0,t=0;
 	    int chans = buf->dim[2];
 	    int xs = buf->dim[1];

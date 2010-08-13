@@ -112,7 +112,7 @@ GridHandler *stromgol; // remove this asap
 		process(n,(uint8 *)name);
 	}
 	\decl 0 to_ascii(...) {
-		std::ostringstream os;
+		ostringstream os;
 		pd_oprint(os,argc,argv);
 		string s = os.str();
 		long n = s.length();
@@ -231,8 +231,8 @@ GRID_INLET(0) {
 			pd_typedmess(dest,gensym("very_long_name_that_nobody_uses"),n,a);
 		}
 	}
-	void puts (std::string s) {puts(s.data());}
-	void puts (std::ostringstream &s) {puts(s.str());}
+	void puts (string s) {puts(s.data());}
+	void puts (ostringstream &s) {puts(s.str());}
 	template <class T> void make_columns (int n, T *data) {
 		if (NumberTypeE_type_of(data)==float32_e) {columns=10; return;}
 		if (NumberTypeE_type_of(data)==float64_e) {columns=20; return;}
@@ -246,19 +246,19 @@ GRID_INLET(0) {
 		int mind = 1 + (minv<0) + int(log(max(1.,fabs(minv)))/log(base));
 		columns = max(maxd,mind);
 	}
-	std::string format (NumberTypeE nt) {
+	string format (NumberTypeE nt) {
 		if (nt==float32_e) return "%6f";
 		if (nt==float64_e) return "%14f";
-		std::ostringstream r;
+		ostringstream r;
 		r << "%";
 		r << columns;
 		//if (nt==int64_e) r << "l";
 		r << "d"; // integer bases 2,8,16 are no longer handled here
 		return r.str();
 	}
-	template <class T> void dump(std::ostream &s, int n, T *data, char sep=' ', int trunc=-1) {
+	template <class T> void dump(ostream &s, int n, T *data, char sep=' ', int trunc=-1) {
 		if (trunc<0) trunc=this->trunc;
-		std::string f = format(NumberTypeE_type_of(data));
+		string f = format(NumberTypeE_type_of(data));
 		for (int i=0; i<n; i++) {
 			if (base==2 || base==8 || base==16) {
 				static char digits[] = "0123456789ABCDEF";
@@ -277,7 +277,7 @@ GRID_INLET(0) {
 			if (s.tellp()>trunc) return;
 		}
 	}
-	void dump_dims(std::ostream &s, GridInlet &in) {
+	void dump_dims(ostream &s, GridInlet &in) {
 		if (name && name!=&s_) s << name->s_name << ": ";
 		s << "Dim[";
 		for (int i=0; i<in.dim.n; i++) {
@@ -292,7 +292,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
-	std::ostringstream head;
+	ostringstream head;
 	dump_dims(head,in);
 	int ndim = in.dim.n;
 	if (ndim > 3) {
@@ -308,7 +308,7 @@ GRID_INLET(0) {
 		long sy = in.dim[0];
 		long sx = n/sy;
 		for (int row=0; row<sy; row++) {
-			std::ostringstream body;
+			ostringstream body;
 			dump(body,sx,&data[sx*row],' ',trunc);
 			if (body.tellp()>trunc) body << "...";
 			puts(body);
@@ -322,7 +322,7 @@ GRID_INLET(0) {
 		int sz = n/sy;
 		int sz2 = sz/in.dim[1];
 		for (int row=0; row<sy; row++) {
-			std::ostringstream str;
+			ostringstream str;
 			for (int col=0; col<sx; col++) {
 				str << "(";
 				dump(str,sz2,&data[sz*row+sz2*col],' ',trunc);
@@ -334,7 +334,7 @@ GRID_INLET(0) {
 	}
 	end_hook();
 } GRID_FINISH {
-	std::ostringstream head;
+	ostringstream head;
 	dump_dims(head,in);
 	if (in.dim.prod()==0) puts(head);
 } GRID_END
