@@ -6,11 +6,17 @@ version 9.11 (2010......):
  * [#camera]: added right outlet (for attributes)
  * [#type]: [#type, abbr] gives single-letter type names: b s i l f d
  * added classes [route3] [#type-gui] [#tabread] [#tabwrite] [#from~]
- * added [gf/tk_button] [gf/sys_gui] [gf/wrap] [gf/l2s] [gf/s2l]
+ * added classes [gf/tk_button] [gf/sys_gui] [gf/wrap] [gf/l2s] [gf/s2l]
+ * added classes [gf/sprintf] supporting nearly all options of sprintf()
+ * added OpenGL interface class [gf/gl]
  * fixed some rendering bugs in [display] and [#see]
  * [#draw_polygon]: ignore value of "omit" when "draw fill" (to avoid nonsense)
- * added OpenGL interface class [gf/gl]
  * fixed detection of png support
+ * [#io.quicktimehw]: fixed method 'get'
+ * [#reverse]: fixed buffer copy bug
+ * [#]: fixed problem with 0-sized right input
+ * [gf/error]: method 'list': also print info about the object box where it is
+ * [gf/error]: supports the same options that [gf/sprintf] does.
 
 version 9.10 (2010.08.04):
 
