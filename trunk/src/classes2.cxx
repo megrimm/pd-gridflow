@@ -733,12 +733,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class GFError : FObject {
 	string format;
-	\constructor (...) {
-		std::ostringstream o;
-		char buf[MAXPDSTRING];
-		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
-		format = o.str();
-	}
+	\constructor (...) {format = join(argc,argv);}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
@@ -766,9 +761,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
-		std::ostringstream o;
-		pd_oprintf(o,format.data(),argc,argv);
-		string s = o.str();
+		std::ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		outlet_symbol(outlets[0],gensym(s.data()));
 	}
 };
@@ -782,9 +775,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
-		std::ostringstream o;
-		pd_oprintf(o,format.data(),argc,argv);
-		string s = o.str();
+		std::ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		GridOutlet out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
 	}
 };
