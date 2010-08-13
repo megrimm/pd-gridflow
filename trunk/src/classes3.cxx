@@ -1437,22 +1437,17 @@ GRID_INPUT(1,r) {} GRID_END
 GRID_INLET(0) {	
 	go = new GridOut(this,0,in.dim,float32_e);
 } GRID_FLOW {
-	t_garray *a;
+	t_garray *a = (t_garray *)pd_findbyclass(t, garray_class)); if (!a) RAISE("%s: no such array", t->s_name);
 	int npoints;
 	t_word *vec;
 	float32 tada[n];
 	
-	if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
-		RAISE("%s: no such array", t->s_name);
-	else if (!garray_getfloatwords(a, &npoints, &vec))
-		RAISE("%s: bad template for tabread", t->s_name);
-	else {
-		for (int i=0; i<n; i++) {
-			int index = data[i];
-			if (index < 0) index = 0;
-			else if (index >= npoints) index = npoints - 1;
-			tada[i] = (npoints ? vec[index].w_float : 0);
-		}
+	if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
+	for (int i=0; i<n; i++) {
+		int index = data[i];
+		if (index < 0) index = 0;
+		else if (index >= npoints) index = npoints - 1;
+		tada[i] = (npoints ? vec[index].w_float : 0);
 	}
 	go->send(n,tada);
 } GRID_END
@@ -1478,23 +1473,18 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int32 *rdata = (int32 *)*r;
 	int npoints, nval=in.dim.prod(), nidx=r->dim.prod();
-	t_garray *a;
+	t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
 	t_word *vec;
 
-	if (!(a = (t_garray *)pd_findbyclass(t, garray_class)))
-		RAISE("%s: no such array", t->s_name);
-	else if (!garray_getfloatwords(a, &npoints, &vec))
-		RAISE("%s: bad template for tabread", t->s_name);
-	else {
-		for (int i=0; i<nidx; i++) {
-			int n = rdata[i];
-			if (n < 0)
-				n = 0;
-			else if (n >= npoints)
-				n = npoints-1;
-			// if there are less values than there are indexes, we loop over the value list
-			vec[n].w_float = data[i%nval];
-		}
+	if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
+	for (int i=0; i<nidx; i++) {
+		int n = rdata[i];
+		if (n < 0)
+			n = 0;
+		else if (n >= npoints)
+			n = npoints-1;
+		// if there are less values than there are indexes, we loop over the value list
+		vec[n].w_float = data[i%nval];
 	}
 	garray_redraw(a);
 } GRID_END
