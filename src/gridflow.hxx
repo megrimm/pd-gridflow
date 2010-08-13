@@ -267,12 +267,13 @@ struct t_atom2 : t_atom {
 	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return               a_float ;}
 
 #define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
-	TYPECASTER2(string    ,A_SYMBOL ,"symbol"     ,string(a_symbol->s_name))
-	TYPECASTER2(t_symbol *,A_SYMBOL ,"symbol"     ,       a_symbol         )
-	TYPECASTER2(void     *,A_POINTER,"pointer"    ,              a_gpointer)
-	TYPECASTER2(t_binbuf *,A_LIST   ,"nested list",  (t_binbuf *)a_gpointer)
-	TYPECASTER2(Grid     *,A_GRID   ,"grid"       ,      (Grid *)a_gpointer)
-	TYPECASTER2(GridOut  *,A_GRIDOUT,"grid outlet",   (GridOut *)a_gpointer)
+	TYPECASTER2(string      ,A_SYMBOL ,"symbol"     ,string(a_symbol->s_name))
+	//TYPECASTER2(const char *,A_SYMBOL ,"symbol"     ,       a_symbol->s_name ) //"ambiguous" ?
+	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,       a_symbol         )
+	TYPECASTER2(void       *,A_POINTER,"pointer"    ,              a_gpointer)
+	TYPECASTER2(t_binbuf   *,A_LIST   ,"nested list",  (t_binbuf *)a_gpointer)
+	TYPECASTER2(Grid       *,A_GRID   ,"grid"       ,      (Grid *)a_gpointer)
+	TYPECASTER2(GridOut    *,A_GRIDOUT,"grid outlet",   (GridOut *)a_gpointer)
 #undef TYPECASTER2
 
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
@@ -280,7 +281,14 @@ struct t_atom2 : t_atom {
 	t_atom2 () {}
 };
 
-template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
+template <class T> static inline T convert(const t_atom &x, T *foo) {
+	const t_atom2 *xx = (const t_atom2 *)&x;
+	return (T)*xx;
+}
+static inline const char *convert(const t_atom &x, const char **foo) {
+	const t_atom2 *xx = (const t_atom2 *)&x;
+	return ((t_symbol *)*xx)->s_name;
+}
 
 //****************************************************************
 
