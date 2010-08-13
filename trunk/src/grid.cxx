@@ -80,7 +80,7 @@ void Grid::init_from_atom(const t_atom &x) {
 		CHECK_ALIGN(data,nt);
 		((int32 *)*this)[0] = (int32)a.a_float;
 	} else {
-		std::ostringstream s; s << x;
+		ostringstream s; s << x;
 		RAISE("can't convert to grid: %s",s.str().data());
 	}
 }
@@ -205,7 +205,7 @@ void GridOutlet::create_buf () {
 	if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
 	buf.init(Dim(v),nt);
 #ifdef TRACEBUFS
-	std::ostringstream text;
+	ostringstream text;
 	oprintf(text,"GridOutlet: %20s buf for sending to  ",buf->dim->to_s());
 	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
 	post("%s",text.str().data());

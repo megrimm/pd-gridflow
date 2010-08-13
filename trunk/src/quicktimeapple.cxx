@@ -29,11 +29,11 @@
 #include <string.h>
 #include <errno.h>
 #include <map>
-std::map<long,const char *> oserr_table;
+map<long,const char *> oserr_table;
 
 const char *oserr_find(long err)
 {
-	std::map<long,const char *>::iterator it = oserr_table.find(err);
+	map<long,const char *>::iterator it = oserr_table.find(err);
 	return (it == oserr_table.end()) ? "undefined error..." : it->second;
 }
 

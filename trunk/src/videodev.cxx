@@ -146,8 +146,8 @@ static string choice_to_s(int value, int n, const char **table) {
 		return string(table[value]);
 	}
 }
-void post(std::ostringstream &o) {string os = o.str(); post("%s",os.data());}
-static void gfpost(VideoChannel *self) {std::ostringstream buf; buf << "[VideoChannel] ";
+void post(ostringstream &o) {string os = o.str(); post("%s",os.data());}
+static void gfpost(VideoChannel *self) {ostringstream buf; buf << "[VideoChannel] ";
 	WH(channel,"%d");
 	WH(name,"\"%.32s\"");
 	WH(tuners,"%d");
@@ -155,7 +155,7 @@ static void gfpost(VideoChannel *self) {std::ostringstream buf; buf << "[VideoCh
 	WH(type,"0x%04x");
 	WH(norm,"%d");
 	post(buf);}
-static void gfpost(VideoTuner *self) {std::ostringstream buf; buf << "[VideoTuner] ";
+static void gfpost(VideoTuner *self) {ostringstream buf; buf << "[VideoTuner] ";
 	WH(tuner,"%d");
 	WH(name,"\"%.32s\"");
 	WH(rangelow,"%lu");
@@ -164,20 +164,20 @@ static void gfpost(VideoTuner *self) {std::ostringstream buf; buf << "[VideoTune
 	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
 	post(buf);}
-static void gfpost(VideoWindow *self) {std::ostringstream buf; buf << "[VideoWindow] ";
+static void gfpost(VideoWindow *self) {ostringstream buf; buf << "[VideoWindow] ";
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
 	post(buf);}
-static void gfpost(VideoMbuf *self) {std::ostringstream buf; buf << "[VideoMBuf] ";
+static void gfpost(VideoMbuf *self) {ostringstream buf; buf << "[VideoMBuf] ";
 	WH(size,"%d");
 	WH(frames,"%d");
 	oprintf(buf,"offsets=[");
 	for (int i=0; i<self->frames; i++) oprintf(buf,"%d%s",self->offsets[i],i+1==self->frames?"]":", ");
 	post(buf);}
-static void gfpost(VideoMmap *self) {std::ostringstream buf; buf << "[VideoMMap] ";
+static void gfpost(VideoMmap *self) {ostringstream buf; buf << "[VideoMMap] ";
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
@@ -281,7 +281,7 @@ t_symbol *safe_gensym(const char *name) {
 	
 	void detect_palettes () {
 		palettes=0;
-		std::ostringstream supp;
+		ostringstream supp;
 		supp << "camera supports palettes :";
 #if 1 /* keep this at "1" most of the time, because at "0" it crashes certain camera drivers ! */
 		int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUYV,VIDEO_PALETTE_YUV420P};

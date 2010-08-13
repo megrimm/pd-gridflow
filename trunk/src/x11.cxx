@@ -81,7 +81,7 @@ typedef struct {
 	P<BitPacking> bit_packing;
 	Dim dim;
 	t_clock *clock;
-	std::string title;
+	string title;
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif

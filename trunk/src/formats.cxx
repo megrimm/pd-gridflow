@@ -56,23 +56,18 @@
 	destructor : close a handler
 */
 
-std::map<std::string,std::string> suffix_table;
+map<string,string> suffix_table;
 void suffixes_are (const char *name, const char *suffixes) {
-	std::string name2 = name;
+	string name2 = name;
 	char *suff2 = strdup(suffixes);
 	char *suff3 = suff2+strlen(suff2);
 	for (char *s=suff2; s<suff3; s++) if (*s==' ' || *s==',') *s=0;
-	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {
-		std::string ss = s;
-		suffix_table[ss]=name2;
-	}
+	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {string ss = s; suffix_table[ss]=name2;}
 }
 
 \class SuffixLookup : FObject {
   \constructor () {}
-  \decl 0 symbol (t_symbol *str);
-};
-\def 0 symbol (t_symbol *str) {
+  \decl 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
 	if (!t) outlet_symbol(outlets[2],gensym(s));
@@ -80,12 +75,13 @@ void suffixes_are (const char *name, const char *suffixes) {
 		*t = 0;
 		for (char *u=t+1; *u; u++) *u=tolower(*u);
 		outlet_symbol(outlets[1],gensym(t+1));
-		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
+		map<string,string>::iterator u = suffix_table.find(string(t+1));
 		if (u==suffix_table.end()) outlet_bang(outlets[0]);
 		else outlet_symbol(outlets[0],gensym((char *)u->second.data()));
 	}
 	free(s);
-}
+  }
+};
 \end class {install("gf/suffix_lookup",1,3);}
 
 \class Format : FObject

@@ -415,9 +415,9 @@ const long op_table4_n = COUNT(op_table4);
 #define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[string(A[i].name)]=&A[i];
 
 #ifdef PASS1
-std::map<string,NumberType *> number_type_dict;
-std::map<string,Numop *> op_dict;
-std::map<string,Numop *> vop_dict;
+map<string,NumberType *> number_type_dict;
+map<string,Numop *> op_dict;
+map<string,Numop *> vop_dict;
 void startup_number () {
 	INIT_TABLE( op_dict,op_table1)
 	INIT_TABLE( op_dict,op_table2)

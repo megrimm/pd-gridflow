@@ -27,8 +27,8 @@
 #include <map>
 #include <vector>
 
-static std::map<string,std::vector<string> *> codecs;
-static std::map<string,string> fourccs;
+static map<string,vector<string> *> codecs;
+static map<string,string> fourccs;
 
 \class FormatQuickTimeHW : Format {
 	quicktime_t *anim;
@@ -225,7 +225,7 @@ GRID_INLET(0) {
 		const lqt_codec_info_t *s = lqt_get_video_codec_info(i);
 		if (!s->name) {fprintf(stderr,"[#in quicktime]: skipping codec with null name!\n"); continue;}
 		string name = string(s->name);
-		std::vector<string> *f = new std::vector<string>(s->num_fourccs);
+		vector<string> *f = new vector<string>(s->num_fourccs);
 		if (!s->fourccs) {post("WARNING: no fourccs (quicktime library is broken?)"); goto hell;}
 		//fprintf(stderr,"num_fourccs=%d fourccs=%p\n",s->num_fourccs,s->fourccs);
 		for (int j=0; j<s->num_fourccs; j++) {

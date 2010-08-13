@@ -28,7 +28,7 @@
 
 #define MODE(x,y,palette) /* nothing for now */
 
-static std::map<int,string> feature_names;
+static map<int,string> feature_names;
 
 static void setup_modes () {
     int i=64; // format 0
@@ -155,7 +155,7 @@ typedef nodeid_t NID;
 	int width;
 	dc1394_cameracapture camera;
 	dc1394_feature_set features;
-	std::map<int,int> feature_index;
+	map<int,int> feature_index;
 	\constructor (t_symbol *mode) {
 		bool gotone=false;
 		post("DC1394: hello world");

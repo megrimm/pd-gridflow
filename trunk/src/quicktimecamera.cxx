@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <CoreServices/CoreServices.h>
 #include <map>
-extern std::map<long,const char *> oserr_table;
+extern map<long,const char *> oserr_table;
 
 #define DEBUG false
 

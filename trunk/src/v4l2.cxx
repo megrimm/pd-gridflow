@@ -58,13 +58,13 @@ static bool debug=1;
 #define WHFLAGS(_field_,_table_)       oprintf(buf, "%s:%s " ,#_field_,flags_to_s( self->_field_,COUNT(_table_),_table_).data());
 #define WHCHOICE(_field_,_table_)      oprintf(buf, "%s=%s; ",#_field_,choice_to_s(self->_field_,COUNT(_table_),_table_).data());
 static string flags_to_s(int value, int n, const char **table) {
-	std::ostringstream buf; buf << "("; bool empty=true;
+	ostringstream buf; buf << "("; bool empty=true;
 	for(int i=0; i<n; i++) if ((value & (1<<i)) != 0) {buf << (empty ? "(" : " ") << table[i];}
 	buf << ")"; return buf.str();}
 static string choice_to_s(int value, int n, const char **table) {
-	if (value < 0 || value >= n) {std::ostringstream buf; buf << "(Unknown #" << value << ")"; return buf.str();}
+	if (value < 0 || value >= n) {ostringstream buf; buf << "(Unknown #" << value << ")"; return buf.str();}
 	else	return string(table[value]);}
-static void gfpost(v4l2_input *self) {std::ostringstream buf; buf << "[v4l2_input] ";
+static void gfpost(v4l2_input *self) {ostringstream buf; buf << "[v4l2_input] ";
 	WH(index,"%u");
 	WH(name,"\"%.32s\"");
 	WH(type,"0x%08x");
@@ -73,7 +73,7 @@ static void gfpost(v4l2_input *self) {std::ostringstream buf; buf << "[v4l2_inpu
 	WH(std,"0x%08x");
 	WH(status,"0x%08x");
 	post("%s",buf.str().data());}
-static void gfpost(v4l2_tuner *self) {std::ostringstream buf; buf << "[v4l2_tuner] ";
+static void gfpost(v4l2_tuner *self) {ostringstream buf; buf << "[v4l2_tuner] ";
 	WH(index,"%u");
 	WH(name,"\"%.32s\"");
 	WH(type,"0x%08x");
@@ -84,7 +84,7 @@ static void gfpost(v4l2_tuner *self) {std::ostringstream buf; buf << "[v4l2_tune
 	WH(audmode,"0x%08x");
 	WH(signal,"%d");
 	WH(afc,"%d");}
-static void gfpost(v4l2_window *self) {std::ostringstream buf; buf << "[v4l2_window] ";
+static void gfpost(v4l2_window *self) {ostringstream buf; buf << "[v4l2_window] ";
 	WHYX(pos,w.top,w.left);
 	WHYX(size,w.height,w.width);
 //	enum v4l2_field  	field;
@@ -92,7 +92,7 @@ static void gfpost(v4l2_window *self) {std::ostringstream buf; buf << "[v4l2_win
 	WH(clipcount,"%u");
 	//WH(global_alpha,"%d"); but is a uint8.
 	post("%s",buf.str().data());}
-static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_format]";
+static void gfpost(v4l2_format *self) {ostringstream buf; buf << "[v4l2_format]";
 	WH(type,"%u");
 	if (self->type!=V4L2_BUF_TYPE_VIDEO_CAPTURE) return;
 	WHYX(size,fmt.pix.height,fmt.pix.width);
@@ -102,7 +102,7 @@ static void gfpost(v4l2_format *self) {std::ostringstream buf; buf << "[v4l2_for
 	WH(fmt.pix.sizeimage,"0x%08x");
 	WH(fmt.pix.colorspace,"0x%08x");
 	WH(fmt.pix.priv,"0x%08x");}
-static void gfpost(v4l2_requestbuffers *self) {std::ostringstream buf; buf << "[v4l2_requestbuffers]";
+static void gfpost(v4l2_requestbuffers *self) {ostringstream buf; buf << "[v4l2_requestbuffers]";
 	WH(count,"%u");
 	WH(type,"%u"); // enum v4l2_buf_type
 	WH(memory,"%u"); // enum v4l2_memory
