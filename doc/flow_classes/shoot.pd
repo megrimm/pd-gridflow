@@ -71,7 +71,7 @@
 #X obj 142 459 shunt;
 #X obj 185 207 t b s b;
 #X msg 178 459 \; pd quit;
-#X msg 309 382 1;
+#X msg 224 227 1;
 #X msg 82 245 list \$2 \$1;
 #X connect 0 0 27 1;
 #X connect 1 0 0 0;
