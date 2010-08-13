@@ -184,7 +184,6 @@ struct Frame {uint8 *p; size_t n;};
 	\attr int channel();
 	\attr int tuner();
 	\decl 0 size (int sy, int sx);
-	\decl 0 transfer (string sym, int queuemax=2);
 
 	\attr t_symbol *colorspace;
 	\attr int32  frequency();
@@ -206,11 +205,9 @@ struct Frame {uint8 *p; size_t n;};
 	FObject::_0_get(s);
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
-		t_atom a[2];
-		//SETFLOAT(a+0,cap.minheight); SETFLOAT(a+1,cap.minwidth); out[0](gensym("minsize"),2,a);
-		//SETFLOAT(a+0,cap.maxheight); SETFLOAT(a+1,cap.maxwidth); out[0](gensym("maxsize"),2,a);
-		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); out[0](gensym("size"),2,a);
-		SETSYMBOL(a,gensym("mmap")); out[0](gensym("transfer"),1,a);
+		//{t_atom2 a[2] = {cap.minheight,cap.minwidth}; out[0](gensym("minsize"),2,a);}
+		//{t_atom2 a[2] = {cap.maxheight,cap.maxwidth}; out[0](gensym("maxsize"),2,a);}
+		{t_atom2 a[2] = {dim[0],dim[1]}; out[0](gensym("size"),2,a);}
 	}
 }
 
@@ -226,8 +223,7 @@ struct Frame {uint8 *p; size_t n;};
 	if (debug) gfpost(&fmt);
 	WIOCTL(fd, VIDIOC_S_FMT, &fmt);
 	if (int(f.width)!=sy || int(f.height)!=sx)
-                post("note: camera driver rejected (%d %d) resolution in favour of (%d %d)",
-			sy,sx,f.height,f.width);
+                post("note: camera driver rejected (%d %d) resolution in favour of (%d %d)",sy,sx,f.height,f.width);
 	sy = f.height;
 	sx = f.width;
 	palette = f.pixelformat;
@@ -434,18 +430,6 @@ GRID_INLET(0) {
 	WIOCTL(fd, VIDIOC_S_INPUT, &vchan);
 }
 \def int channel () {return current_channel;}
-
-\def 0 transfer (string sym, int queuemax=2) {
-	RAISE("de que c'est?");
-/*
-	if (sym!="mmap") RAISE("don't know that transfer mode");
-	dealloc_image();
-	alloc_image();
-	queuemax=min(8,min(queuemax,vmbuf.frames));
-	post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
-	this->queuemax=queuemax;
-*/
-}
 
 \def uint16 brightness ()                 {return v4l2_get_control(fd,V4L2_CID_BRIGHTNESS);}
 \def 0      brightness (uint16 brightness){       v4l2_set_control(fd,V4L2_CID_BRIGHTNESS,brightness);}

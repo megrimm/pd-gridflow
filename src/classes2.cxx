@@ -399,17 +399,8 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 		if (!tmp) RAISE("localtime: %s",strerror(errno));
 		char tt[MAXPDSTRING];
 		strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
-		t_atom2 a[6];
-		a[0]=tmp->tm_year+1900;
-		a[1]=tmp->tm_mon-1;
-		a[2]=tmp->tm_mday;
-		a[3]=tmp->tm_hour;
-		a[4]=tmp->tm_min;
-		a[5]=tmp->tm_sec;
-		t_atom2 b[3];
-		b[0]=tv.tv_sec/86400;
-		b[1]=mod(tv.tv_sec,86400);
-		b[2]=tv.tv_usec;
+		t_atom2 a[6] = {tmp->tm_year+1900,tmp->tm_mon-1,tmp->tm_mday,tmp->tm_hour,tmp->tm_min,tmp->tm_sec};
+		t_atom2 b[3] = {tv.tv_sec/86400,mod(tv.tv_sec,86400),tv.tv_usec};
 		out[2](6,a);
 		out[1](3,b);
 		send_out(0,strlen(tt),tt);
@@ -588,7 +579,7 @@ t_class *ReceivesProxy_class;
 		do_bind(argc-n,argv+n);
 	}
 	\decl 0 bang () {_0_list(0,0);}
-	\decl 0 symbol (t_symbol *s) {t_atom2 a[1]; a[0]=s; _0_list(1,a);}
+	\decl 0 symbol (t_symbol *s) {t_atom2 a[1] = {s}; _0_list(1,a);}
 	\decl 0 list (...) {do_unbind(); do_bind(argc,argv);}
 	void do_bind (int argc, t_atom2 *argv) {
 		ac = argc;
@@ -770,12 +761,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasGetPos : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 bang () {MOM;
-		t_atom2 a[2];
-		a[0]=m->gl_obj.te_xpix;
-		a[1]=m->gl_obj.te_ypix;
-		out[0](2,a);
-	}
+	\decl 0 bang () {MOM; t_atom2 a[2] = {m->gl_obj.te_xpix, m->gl_obj.te_ypix}; out[0](2,a);}
 };
 \end class {install("gf/canvas_getpos",1,1);}
 \class GFCanvasSetPos : FObject {
@@ -1087,7 +1073,7 @@ t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((lon
 		if (!canvas_contains(mom,(t_gobj *)s->s_thing)) RAISE("object is not in this canvas");
 		int x1,y1,x2,y2;
 		wb->w_getrectfn((t_gobj *)s->s_thing,mom,&x1,&y1,&x2,&y2);
-		t_atom2 a[4]; a[0]=x1; a[1]=y1; a[2]=x2; a[3]=y2; out[0](4,a);
+		t_atom2 a[4] = {x1,y1,x2,y2}; out[0](4,a);
 	}
 };
 
@@ -1243,6 +1229,7 @@ string string_replace (string victim, string from, string to) {
 	\decl 1 list  (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
+extern t_symbol *gridflow_folder; 
 \class GridFlowClass : FObject {
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
@@ -1250,19 +1237,8 @@ string string_replace (string victim, string from, string to) {
 			_0_get(gensym("version"));
 			_0_get(gensym("folder"));
 		}
-		if (s==gensym("version")) {
-			t_atom2 a[3];
-			a[0]=GF_VERSION_A;
-			a[1]=GF_VERSION_B;
-			a[2]=GF_VERSION_C;
-			out[0](s,3,a);
-		}
-		if (s==gensym("folder")) {
-			t_atom2 a[1];
-			extern t_symbol *gridflow_folder;
-			a[0]=gridflow_folder;
-			out[0](s,1,a);
-		}
+		if (s==gensym("version")) {t_atom2 a[3] = {GF_VERSION_A,GF_VERSION_B,GF_VERSION_C}; out[0](s,3,a);}
+		if (s==gensym("folder")) {t_atom2 a[1] = {gridflow_folder}; out[0](s,1,a);}
 	}
 };
 \end class {install("gridflow",1,1);}

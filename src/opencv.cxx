@@ -177,18 +177,15 @@ void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim &dim) { // was de
 }
 
 void set_atom (t_atom *a, CvPoint &v) {
-	t_binbuf *b = binbuf_new();
-	binbuf_addv(b,"ii",v.y,v.x);
+	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ii",v.y,v.x);
 	SETLIST(a,b);
 }
 void set_atom (t_atom *a, CvSize &v) {
-	t_binbuf *b = binbuf_new();
-	binbuf_addv(b,"ii",v.height,v.width);
+	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ii",v.height,v.width);
 	SETLIST(a,b);
 }
-void set_atom (t_atom *a, CvScalar &scal) {
-	t_binbuf *b = binbuf_new();
-	binbuf_addv(b,"ffff",scal.val[0],scal.val[1],scal.val[2],scal.val[3]);
+void set_atom (t_atom *a, CvScalar &s) {
+	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ffff",s.val[0],s.val[1],s.val[2],s.val[3]);
 	SETLIST(a,b);
 }
 CvPoint  convert (const t_atom &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}

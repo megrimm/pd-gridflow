@@ -612,13 +612,13 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	t_atom2 argv[ac+1];
 	for (int i=0; i<ac; i++) argv[i+1] = at[i];
 	int argc = handle_braces(ac,argv+1);
-	SETFLOAT(argv+0,winlet);
+	argv[0]=winlet;
 	FMethod m;
 	char buf[64], bof[64];
 
 	sprintf(buf,"_%d_%s",winlet,selector->s_name); m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc  ,argv+1); return;}
-	sprintf(bof,"_n_%s",selector->s_name);         m=funcall_lookup(bself,bof); if (m) {m(bself->self,argc+1,argv  ); return;}
-	m = funcall_lookup(bself,"anything");        if (m) {SETSYMBOL(argv+0,gensym(buf)); m(bself->self,argc+1,argv  ); return;}
+	sprintf(bof,"_n_%s",        selector->s_name); m=funcall_lookup(bself,bof); if (m) {m(bself->self,argc+1,argv  ); return;}
+	m = funcall_lookup(bself,"anything");                  if (m) {argv[0]=gensym(buf); m(bself->self,argc+1,argv  ); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,selector->s_name);}
 }
@@ -845,13 +845,15 @@ void install2(FClass *fclass, const char *name, int ninlets, int noutlets, int f
 	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
 
+//static inline const t_atom &convert(const t_atom &x, const t_atom *foo) {return x;}
+
 /* This code handles nested lists because PureData doesn't do it */
-int handle_braces(int ac, t_atom *av) {
+int handle_braces(int ac, t_atom *av_) {
+	t_atom2 *av = (t_atom2 *)av_;
 	int stack[16];
 	int stackn=0;
 	int j=0;
 	t_binbuf *buf = binbuf_new();
-	//startpost("1: "); postatom(ac,av); post("");
 	for (int i=0; i<ac; ) {
 		int close=0;
 		if (av[i].a_type==A_SYMBOL) {
@@ -875,24 +877,23 @@ int handle_braces(int ac, t_atom *av) {
 					char ss[MAXPDSTRING];
 					int n = min(long(se-s),long(MAXPDSTRING-1));
 					sprintf(ss,"%.*s",n,s);
-					SETSYMBOL(av+j,gensym(ss)); j++; // av[j++] = gensym(s);
+					av[j++]=gensym(ss);
 				}
 			}
 		} else av[j++]=av[i];
 		i++;
 		while (close--) {
-			if (!stackn) {binbuf_free(buf); RAISE("close-paren without open-paren",av[i]);}
+			if (!stackn) {binbuf_free(buf); RAISE("close-paren without open-paren");}
 			t_binbuf *a2 = binbuf_new(); /* leak because there is no deallocation mechanism whatsoever */
 			int j2 = stack[--stackn];
 			binbuf_add(a2,j-j2,av+j2);
 			j=j2;
-			SETLIST(av+j,a2);
+			av[j]=a2;
 			j++;
 		}
 	}
 	binbuf_free(buf);
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
-	//startpost("2: "); postatom(ac,av); post("");
 	return j;
 }
 
@@ -903,15 +904,14 @@ int handle_braces(int ac, t_atom *av) {
 \def 0 get (t_symbol *s=0) {
 	FClass *fc = fclasses_pd[pd_class(bself)];
 	if (!s) {
-		t_atom a[1];
 		foreach(attr,fc->attrs) {
-			SETSYMBOL(a,gensym((char *)attr->second->name.data()));
+			t_atom2 a[1] = {gensym((char *)attr->second->name.data())};
 			pd_typedmess((t_pd *)bself,gensym("get"),1,a);
 		}
 	} else {
 		FMethod m = funcall_lookup(bself,"___get");
 		if (!m) RAISE("missing ___get");
-		t_atom2 a[1]; SETSYMBOL(a,s); m(this,1,a);
+		t_atom2 a[1] = {s}; m(this,1,a);
 	}
 }
 \def 0 help () {

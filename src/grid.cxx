@@ -188,12 +188,7 @@ void GridInlet::from_grid(Grid *g) {
 
 GridOut::GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_) {
 	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; sender=this; fresh=true;
-	t_atom a[1];
-	SETGRIDOUT(a,this);
-	if (parent) {
-		outlet_anything(parent->out[woutlet],s_grid,1,a);
-		if (!dim.prod()) finish();
-	}
+	if (parent) {t_atom2 a[1] = {this}; outlet_anything(parent->out[woutlet],s_grid,1,a); if (!dim.prod()) finish();}
 }
 
 void GridOut::create_buf () {
