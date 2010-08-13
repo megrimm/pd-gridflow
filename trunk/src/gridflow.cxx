@@ -129,20 +129,16 @@ void pd_post (const char *s, int argc, t_atom *argv) {
 	post("%s",os.str().data());
 }
 
-static float eatfloat (int argc, t_atom *argv, int &i) {
-	if (!argc) RAISE("not enough args"); if (argv[i].a_type != A_FLOAT) RAISE("expected float in $%d",i+1);
-	return argv[i++].a_float;}
-static t_symbol *eatsymbol (int &argc, t_atom *&argv, int &i) {
-	if (!argc) RAISE("not enough args"); if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol in $%d",i+1);
-	return argv[i++].a_symbol;}
+// currently not supporting *m$ ... see man page
+// will not support length modifiers at all (hh h l ll L q j z t)
+// currently not supporting 'formats' p n m
+static float     eatfloat  (int argc, t_atom *argv, int &i) {if (!argc) RAISE("not enough args");
+	if (argv[i].a_type != A_FLOAT) RAISE("expected float in $%d",i+1);	return argv[i++].a_float;}
+static t_symbol *eatsymbol (int argc, t_atom *argv, int &i) {if (!argc) RAISE("not enough args");
+	if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol in $%d",i+1);	return argv[i++].a_symbol;}
 #define EATFLOAT   eatfloat(argc,argv,i)
 #define EATSYMBOL eatsymbol(argc,argv,i)
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
-	// currently not supporting *m$ ... see man page
-	// will not support length modifiers at all (hh h l ll L q j z t)
-	// currently not supporting 'formats' p n m
-	// currently not supporting %_ (a former extension standing for any atom... merge this functionality with %s or whatever)
-	// have our own proper atom_string
 	int i=0;
 	const char *t;
 	for (; *s; s++) {
@@ -153,7 +149,6 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 		while (strchr("#0- +'I",*s)) s++; // skip flags
 		if (*s>='1' && *s<='9') {do {s++;} while (*s>='0' && *s<='9');} // skip field width
 		else if (*s=='*') {s++; n++;}
-		//post("precision debug %c @ %d",*s,s-t);
 		if (*s=='.') { // precision
 			s++;
 			if (*s>='1' && *s<='9') {do {s++;} while (*s>='0' && *s<='9');} // skip field width
@@ -161,7 +156,6 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 		}
 		if (strchr("hlLqjzt",*s)) RAISE("can't use length modifier '%c' in the context of pd",*s);
 		char form[t-s+2]; sprintf(form,"%.*s",s-t+1,t);
-		//o << "[" << form << "]";
 		int k[2];
 		if (n>0) k[0]=int(EATFLOAT);
 		if (n>1) k[1]=int(EATFLOAT);
@@ -179,8 +173,6 @@ void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 			case 2: oprintf(o,form,k[0],k[1],EATSYMBOL->s_name); break;
 		}} else if (strchr("%",*s)) o << "%";
 		else RAISE("sorry, the format character '%c' is not supported yet, in \"%.*s\"",*s,s+1-t,t);
-		//case '_': if (!argc) RAISE("not enough args");
-		//	char buf[MAXPDSTRING]; atom_string(&argv[i++],buf,MAXPDSTRING); o << buf; break;
 	}
 }
 
