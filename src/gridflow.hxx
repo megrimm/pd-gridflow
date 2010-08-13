@@ -804,6 +804,11 @@ struct BFObject : t_object {
     //void send () {outlet_bang(
 };*/
 
+struct PtrOutlet {
+	t_outlet *p;
+	operator t_outlet * () {return p;}
+};
+
 // represents objects that have inlets/outlets
 \class FObject {
 	virtual ~FObject ();
@@ -811,7 +816,7 @@ struct BFObject : t_object {
 	BFObject *bself; // point to PD peer
 	int ninlets,noutlets; // per object settings (not class)
 	BFProxy  **inlets;    // direct access to  inlets (not linked lists)
-	t_outlet **outlets;   // direct access to outlets (not linked lists)
+	PtrOutlet *outlets;  // direct access to outlets (not linked lists)
 	t_canvas *mom;
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
