@@ -104,11 +104,11 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
 } 
-void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
-	if (!argc) outlet_bang(o);
-	else if (argv[0].a_type==A_SYMBOL)        outlet_anything(o,argv[0].a_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_float);
-	else outlet_anything(o,&s_list,argc,argv);
+void outlet_anything2 (PtrOutlet o, int argc, t_atom *argv) {
+	if (!argc) o();
+	else if (argv[0].a_type==A_SYMBOL)           o(argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) o(argv[0].a_float);
+	else o(argc,argv);
 }
 void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	if (!argc) pd_bang(o);
@@ -131,7 +131,6 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 		j++;
 		int k=j;
 		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
-		//outlet_anything2(out[sargc],j-k,av+k);
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
@@ -250,7 +249,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 	\constructor () {}
 	\decl 0 list(...) {
 		for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
-		outlet_list(bself->te_outlet,&s_list,argc,argv);
+		out[0](argc,argv);
 	}
 };
 \end class {install("listreverse",1,1);}
@@ -266,7 +265,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 	}
 	\decl 0 list(...) {
 		traverse(argc,argv);
-		outlet_list(bself->te_outlet,&s_list,contents.size(),&contents[0]);
+		out[0](contents.size(),&contents[0]);
 		contents.clear();
 	}
 };
@@ -287,19 +286,16 @@ static bool atom_eq (const t_atom &a, const t_atom &b) {
 	t_atom *at;
 	~ListFind() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
-	\decl 0 list(...) {if (argc<1) RAISE("empty input"); else find(argv);}
+	\decl 0 list(...) {if (argc<1) RAISE("empty input"); else find(*argv);}
 	\decl 1 list(...) {
 		if (at) delete[] at;
 		ac = argc;
 		at = new t_atom[argc];
 		for (int i=0; i<argc; i++) at[i] = argv[i];
 	}
-	\decl 0 float (t_atom2 a) {find(&a);}
-	\decl 0 symbol(t_atom2 a) {find(&a);}
-	void find (const t_atom *a) {
-		int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
-		out[0](i==ac?-1:i);
-	}
+	\decl 0 float (t_atom2 a) {find(a);}
+	\decl 0 symbol(t_atom2 a) {find(a);}
+	void find (const t_atom2 &a) {int i=0; for (; i<ac; i++) if (atom_eq(at[i],a)) break; out[0](i==ac?-1:i);}
 };
 \end class {install("listfind",2,1);}
 
