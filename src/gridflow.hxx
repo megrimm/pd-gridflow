@@ -276,6 +276,8 @@ struct t_atom2 : t_atom {
 #undef TYPECASTER2
 
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
+	template <class T> t_atom2             (T value) {set_atom(this,value);              };
+	t_atom2 () {}
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
@@ -313,9 +315,9 @@ public:
 };
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
-template <class T> inline void COPY  (T *dest, const T *src, long n) {gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));}
-template <class T> inline void CLEAR (T *dest,               long n) {memset(dest,0,n*sizeof(T));}
-template <class T> static void memswap (T *a,  T *b,         long n) {T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);}
+template <class T> inline void COPY  (T *dest, const T *src, long n=1) {gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));}
+template <class T> inline void CLEAR (T *dest,               long n=1) {memset(dest,0,n*sizeof(T));}
+template <class T> static void memswap (T *a,  T *b,         long n=1) {T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);}
 
 //****************************************************************
 
