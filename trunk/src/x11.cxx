@@ -107,7 +107,8 @@ typedef struct {
 	bool alloc_image (int sx, int sy);
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
-	void report_pointer(int y, int x, int state);
+	void report_pointer(int y, int x, int state) {t_atom2 a[3] = {y,x,state}; out[0](gensym("position"),COUNT(a),a);}
+
 	void prepare_colormap();
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\constructor (...) {
@@ -380,11 +381,8 @@ void FormatX11::set_wm_hints () {
 	if (!is_owner) return;
 	XWMHints wmh;
 	char buf[256],*bufp=buf;
-	if (title=="") {
-		sprintf(buf,"GridFlow (%d,%d,%d)",dim[0],dim[1],dim[2]);
-	} else {
-		sprintf(buf,"%.255s",title.data());
-	}
+	if (title=="") sprintf(buf,"GridFlow (%d,%d,%d)",dim[0],dim[1],dim[2]);
+	else           sprintf(buf,"%.255s",title.data());
 	XTextProperty wtitle; XStringListToTextProperty((char **)&bufp, 1, &wtitle);
 	XSizeHints sh;
 	sh.flags=PSize|PMaxSize|PMinSize;
@@ -394,14 +392,6 @@ void FormatX11::set_wm_hints () {
 	wmh.flags = InputHint;
 	XSetWMProperties(display,window,&wtitle,&wtitle,0,0,&sh,&wmh,0);
 	XFree(wtitle.value); // do i really have to do that?
-}
-
-void FormatX11::report_pointer(int y, int x, int state) {
-	t_atom a[3];
-	SETFLOAT(a+0,y);
-	SETFLOAT(a+1,x);
-	SETFLOAT(a+2,state);
-	out[0](gensym("position"),COUNT(a),a);
 }
 
 void FormatX11::call() {

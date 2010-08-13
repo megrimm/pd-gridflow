@@ -281,14 +281,11 @@ GemState::GemState() {}
 	}
 	~GemDead () {/*delete cache; delete state;*/}
 	\decl 0 bang () {
-		t_atom ap[2];
-		SETPOINTER(ap+0,(t_gpointer *)cache); // GemCache
-		SETPOINTER(ap+1,(t_gpointer *)state);
+		t_atom2 ap[2] = {(t_gpointer *)cache,(t_gpointer *)state};
 		out[0](gensym("gem_state"),2,ap);
 	}
 	\decl 0 float (float state) {
-		t_atom ap[1];
-		SETFLOAT(ap,!!state);
+		t_atom2 ap[1] = {!!state};
 		out[0](gensym("gem_state"),1,ap);
 	}
 };

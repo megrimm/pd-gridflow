@@ -80,10 +80,7 @@ static void build_keyboard () {
 }
 
 static void report_pointer () {
-	t_atom a[3];
-	SETFLOAT(a+0,mousey);
-	SETFLOAT(a+1,mousex);
-	SETFLOAT(a+2,mousem);
+	t_atom2 a[3] = {mousey,mousex,mousem};
 	pd_anything(gensym("#sdl")->s_thing,gensym("position"),COUNT(a),a);
 }
 
@@ -106,15 +103,11 @@ static void HandleEvent () {
 				break;
 			}
 			t_symbol *sel = gensym(const_cast<char *>(event.type==SDL_KEYDOWN ? "keypress" : "keyrelease"));
-			t_atom at[4];
 			mousem &= ~0xFF;
 			mousem |= mod;
-			SETFLOAT(at+0,mousey);
-			SETFLOAT(at+1,mousex);
-			SETFLOAT(at+2,mousem);
 			int k = event.key.keysym.sym;
 			if (k<0 || k>=SDLK_LAST) RAISE("impossible key number %d, SDLK_LAST = %d",k,SDLK_LAST);
-			SETSYMBOL(at+3,keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k));
+			t_atom2 at[4] = {mousey,mousex,mousem, keyboard[k] ? keyboard[k] : symprintf("unknown_%d",k)};
 			pd_anything(gensym("#sdl")->s_thing,sel,4,at);
 		    } break;
 		    case SDL_MOUSEBUTTONDOWN: {mousem |=  (128<<event.button.button); report_pointer();} break;
@@ -131,25 +124,15 @@ static void HandleEvent () {
 }
 
 static t_clock *cloque;
+static void start ();
+static void stop ();
 
-static void start () {
-	screen=0;
-	if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
-	atexit(SDL_Quit);
-	resize_window(320,240);
-	cloque = clock_new(&sdl_global_class,(t_method)FormatSDL_call);
-	clock_delay(cloque,0);
-}
-static void stop () {
-	clock_unset(cloque);
-	clock_free(cloque);
-	SDL_Quit();
-}
 \class FormatSDL : Format {
 	P<BitPacking> bit_packing;
-	void call ();
-	\decl 0 setcursor (int shape);
-	\decl 0 hidecursor ();
+	void call () {HandleEvent(); clock_delay(cloque,20);}
+	static void call_(FormatSDL *self) {self->call();}
+	\decl 0 setcursor (int shape) {SDL_ShowCursor(SDL_ENABLE);}
+	\decl 0 hidecursor ()         {SDL_ShowCursor(SDL_DISABLE);}
 	\decl 0 title (const char *title) {SDL_WM_SetCaption(title,title);}
 	\decl 0 position   (...) {out[0](gensym("position"),  argc,argv);}
 	\decl 0 keypress   (...) {out[0](gensym("keypress"),  argc,argv);}
@@ -176,9 +159,19 @@ static void stop () {
 		if (!--in_use) stop();
 	}
 };
-
-void FormatSDL::call() {HandleEvent(); clock_delay(cloque,20);}
-void FormatSDL_call(FormatSDL *self) {self->call();}
+static void start () {
+	screen=0;
+	if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
+	atexit(SDL_Quit);
+	resize_window(320,240);
+	cloque = clock_new(&sdl_global_class,(t_method)FormatSDL::call_);
+	clock_delay(cloque,0);
+}
+static void stop () {
+	clock_unset(cloque);
+	clock_free(cloque);
+	SDL_Quit();
+}
 
 GRID_INLET(0) {
 	if (in.dim.n != 3) RAISE("expecting 3 dimensions: rows,columns,channels");
@@ -201,9 +194,6 @@ GRID_INLET(0) {
 } GRID_FINISH {
 	SDL_UpdateRect(screen,0,0,in.dim[1],in.dim[0]);
 } GRID_END
-
-\def 0 setcursor  (int shape) {SDL_ShowCursor(SDL_ENABLE);}
-\def 0 hidecursor ()          {SDL_ShowCursor(SDL_DISABLE);}
 
 \end class FormatSDL {install_format("#io.sdl",2,"");}
 void startup_sdl () {

@@ -339,12 +339,11 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		//Rect r;
 		//OSErr e = SGGetChannelBounds (m_vc,&r);
 		//if (e!=noErr) RAISE("SGGetChannelBounds error");
-		t_atom a[2];
-		//SETFLOAT(a+0,          1); SETFLOAT(a+1,         1); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		//SETFLOAT(a+0,   r.bottom); SETFLOAT(a+1,   r.right); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		SETFLOAT(a+0,di.minDestHeight); SETFLOAT(a+1,di.minDestWidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		SETFLOAT(a+0,di.maxDestHeight); SETFLOAT(a+1,di.maxDestWidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		SETFLOAT(a+0,     rect.bottom); SETFLOAT(a+1,     rect.right); outlet_anything(outlets[0],gensym(   "size"),2,a);
+		//{t_atom2 a[2] = {               1,              1}; out[0](gensym("minsize"),2,a);}
+		//{t_atom2 a[2] = {        r.bottom,        r.right}; out[0](gensym("maxsize"),2,a);}
+		{t_atom2 a[2] =   {di.minDestHeight,di.minDestWidth}; out[0](gensym("minsize"),2,a);}
+		{t_atom2 a[2] =   {di.maxDestHeight,di.maxDestWidth}; out[0](gensym("maxsize"),2,a);}
+		{t_atom2 a[2] =   {     rect.bottom,     rect.right}; out[0](gensym(   "size"),2,a);}
 	}
 }
 

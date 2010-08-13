@@ -353,8 +353,7 @@ static void expect_pair (const Dim &dim) {if (dim.prod()!=2) RAISE("expecting on
 \class GridMoment : FObject {
 	\constructor (int order=1) {
 		offset.constrain(expect_pair);
-		//t_atom2 a[2] = {t_atom2(0),t_atom2(0)};
-		t_atom a[2]; SETFLOAT(a,0); SETFLOAT(a+1,0);
+		t_atom2 a[2] = {t_atom2(0),t_atom2(0)};
 		offset=new Grid(2,a,int32_e);
 		if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
 		this->order=order;
