@@ -2,6 +2,15 @@
 
 source ../../tcl/pd_parser.tcl
 
+proc scrounche {list} {
+  set s [join $list " "]
+  regsub -all { \\,} $s ,
+}
+
+#puts      [join [list hello \\, world] " "]
+#puts [scrounche [list hello \\, world]]
+#exit
+
 proc basename {f} {lindex [file split $f] end}
 
 set files [glob *-help.pd cv/*-help.pd gf/*-help.pd]
@@ -15,7 +24,7 @@ foreach fname $files {
   puts $g "<img src=\"[regsub # [regsub {pd$} [basename $fname] png] %23]\"><br clear=\"left\">"
   puts $g "<p class=\"hidden\">"
   foreach line [pd_mess_split [read $f]] {
-    if {[lindex $line 1] == "text"} {puts $g [lrange $line 4 end]}
+    if {[lindex $line 1] == "text"} {puts $g [scrounche [lrange $line 4 end]]}
   }
   puts $g "</p></body></html>"
   close $f
