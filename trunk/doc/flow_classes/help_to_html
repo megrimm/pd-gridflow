@@ -8,11 +8,11 @@ set files [glob *-help.pd cv/*-help.pd gf/*-help.pd]
 set n [llength $files]; set i 0
 foreach fname $files {
   set f [open $fname]
-  set g [open png/[regsub {pd$} [basename $fname] html] w]
+  set g [open png/[regsub {pd$} $fname html] w]
   puts $g "<html><head><title>$fname</title></head>"
   puts $g "<style type=\"text/css\">.hidden\{font-size: 8px\; color: white\}</style>"
   puts $g "<body>"
-  puts $g "<img src=\"[regsub # [regsub {pd$} $fname png] %23]\"><br clear=\"left\">"
+  puts $g "<img src=\"[regsub # [regsub {pd$} [basename $fname] png] %23]\"><br clear=\"left\">"
   puts $g "<p class=\"hidden\">"
   foreach line [pd_mess_split [read $f]] {
     if {[lindex $line 1] == "text"} {puts $g [lrange $line 4 end]}
