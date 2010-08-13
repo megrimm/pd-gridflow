@@ -1,6 +1,6 @@
-#N canvas 618 54 632 403 10;
+#N canvas 596 54 632 428 10;
 #X obj 0 0 doc_h;
-#X obj 0 374 doc_f;
+#X obj 0 394 doc_f;
 #X obj 3 259 doc_i 1;
 #X obj 3 334 doc_o 0;
 #X obj 14 289 doc_ii 0;
@@ -20,7 +20,10 @@ the file will be looked for according to [gf/find_file 1] \, that is
 #X obj 97 192 doc_m c1 float;
 #X text 232 192 if 0 \, look for \$1-help.pd in doc/flow_classes/;
 #X text 232 214 if 1 \, look for \$1.pd in doc/;
+#X obj 3 374 doc_also;
+#X obj 103 374 doc_link doc_same;
 #X connect 6 1 7 0;
 #X connect 9 1 10 0;
 #X connect 14 1 15 0;
 #X connect 14 1 16 0;
+#X connect 17 1 18 0;
