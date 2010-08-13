@@ -364,11 +364,9 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 		ostringstream text;
 		if (s) text << *s; else text << "print";
 		prefix = text.str();
-		t_atom a[1];
-		SETSYMBOL(a,gensym(prefix.data()));
+		t_atom2 a[1]; a[0]=gensym(prefix.data());
 		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
 		gp = pd_newest();
-		SETPOINTER(a,(t_gpointer *)bself);
 	}
 	~GFPrint () {pd_free(gp);}
 	\decl 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
@@ -590,7 +588,7 @@ t_class *ReceivesProxy_class;
 		do_bind(argc-n,argv+n);
 	}
 	\decl 0 bang () {_0_list(0,0);}
-	\decl 0 symbol (t_symbol *s) {t_atom2 a[1]; SETSYMBOL(a,s); _0_list(1,a);}
+	\decl 0 symbol (t_symbol *s) {t_atom2 a[1]; a[0]=s; _0_list(1,a);}
 	\decl 0 list (...) {do_unbind(); do_bind(argc,argv);}
 	void do_bind (int argc, t_atom2 *argv) {
 		ac = argc;
@@ -773,9 +771,9 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM;
-		t_atom a[2];
-		SETFLOAT(a+0,m->gl_obj.te_xpix);
-		SETFLOAT(a+1,m->gl_obj.te_ypix);
+		t_atom2 a[2];
+		a[0]=m->gl_obj.te_xpix;
+		a[1]=m->gl_obj.te_ypix;
 		out[0](2,a);
 	}
 };
@@ -1087,11 +1085,9 @@ t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((lon
 		t_widgetbehavior *wb = class_getwidget(c);
 		if (!wb) RAISE("not a patchable object");
 		if (!canvas_contains(mom,(t_gobj *)s->s_thing)) RAISE("object is not in this canvas");
-		int x1,y1,x2,y2; t_atom a[4];
+		int x1,y1,x2,y2;
 		wb->w_getrectfn((t_gobj *)s->s_thing,mom,&x1,&y1,&x2,&y2);
-		SETFLOAT(a+0,x1); SETFLOAT(a+1,y1);
-		SETFLOAT(a+2,x2); SETFLOAT(a+3,y2);
-		out[0](4,a);
+		t_atom2 a[4]; a[0]=x1; a[1]=y1; a[2]=x2; a[3]=y2; out[0](4,a);
 	}
 };
 
@@ -1255,16 +1251,16 @@ string string_replace (string victim, string from, string to) {
 			_0_get(gensym("folder"));
 		}
 		if (s==gensym("version")) {
-			t_atom a[3];
-			SETFLOAT(a+0,GF_VERSION_A);
-			SETFLOAT(a+1,GF_VERSION_B);
-			SETFLOAT(a+2,GF_VERSION_C);
+			t_atom2 a[3];
+			a[0]=GF_VERSION_A;
+			a[1]=GF_VERSION_B;
+			a[2]=GF_VERSION_C;
 			out[0](s,3,a);
 		}
 		if (s==gensym("folder")) {
-			t_atom a[1];
+			t_atom2 a[1];
 			extern t_symbol *gridflow_folder;
-			SETSYMBOL(a+0,gridflow_folder);
+			a[0]=gridflow_folder;
 			out[0](s,1,a);
 		}
 	}

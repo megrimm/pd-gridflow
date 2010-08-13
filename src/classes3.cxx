@@ -1290,31 +1290,29 @@ GRID_INLET(0) {
 \class GridRotatificator : FObject {
 	int angle;
 	int from, to, n;
-	\decl 0 float (int scale);
-	\decl 0 axis (int from, int to, int n);
+	\decl 0 float (int scale) {
+		int32 rotator[n*n];
+		for (int i=0; i<n; i++) for (int j=0; j<n; j++) rotator[i*n+j] = scale * (i==j);
+		float th = angle * M_PI / 18000;
+		for (int i=0; i<2; i++) for (int j=0; j<2; j++)
+			rotator[(i?to:from)*n+(j?to:from)] = (int32)round(scale*cos(th+(j-i)*M_PI/2));
+		GridOut go(this,0,Dim(n,n),int32_e);
+		go.send(n*n,rotator);
+	}
+	\decl 0 axis (int from, int to, int n) {
+		if (n<0) RAISE("n-axis number incorrect");
+		if (from<0 || from>=n) RAISE("from-axis number incorrect");
+		if (to  <0 || to  >=n) RAISE(  "to-axis number incorrect");
+		this->from = from;
+		this->  to =   to;
+		this->   n =    n;
+	}
 	\constructor (int from=0, int to=1, int n=2) {
 		angle=0;
 		_0_axis(from,to,n);
 	}
 	\decl 1 float(int angle) {this->angle = angle;}
 };
-\def 0 float (int scale) {
-	int32 rotator[n*n];
-	for (int i=0; i<n; i++) for (int j=0; j<n; j++) rotator[i*n+j] = scale * (i==j);
-	float th = angle * M_PI / 18000;
-	for (int i=0; i<2; i++) for (int j=0; j<2; j++)
-		rotator[(i?to:from)*n+(j?to:from)] = (int32)round(scale*cos(th+(j-i)*M_PI/2));
-	GridOut go(this,0,Dim(n,n),int32_e);
-	go.send(n*n,rotator);
-}
-\def 0 axis(int from, int to, int n) {
-	if (n<0) RAISE("n-axis number incorrect");
-	if (from<0 || from>=n) RAISE("from-axis number incorrect");
-	if (to  <0 || to  >=n) RAISE(  "to-axis number incorrect");
-	this->from = from;
-	this->  to =   to;
-	this->   n =    n;
-}
 \end class {install("#rotatificator",2,1);}
 
 static void expect_min_one_dim (const Dim &d) {
