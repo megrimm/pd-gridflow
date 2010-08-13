@@ -2,12 +2,13 @@
 
 source ../../tcl/pd_parser.tcl
 
+proc basename {f} {lindex [file split $f] end}
+
 set files [glob *-help.pd cv/*-help.pd gf/*-help.pd]
 set n [llength $files]; set i 0
 foreach fname $files {
-  puts -nonewline "\r$i files out of $n"; flush stdout
   set f [open $fname]
-  set g [open png/[regsub {pd$} $fname html] w]
+  set g [open png/[regsub {pd$} [basename $fname] html] w]
   puts $g "<html><head><title>$fname</title></head>"
   puts $g "<style type=\"text/css\">.hidden\{font-size: 8px\; color: white\}</style>"
   puts $g "<body>"
@@ -19,6 +20,6 @@ foreach fname $files {
   puts $g "</p></body></html>"
   close $f
   close $g
-  incr i
+  incr i; puts -nonewline "\r$i files out of $n"; flush stdout
 }
 puts ""
