@@ -771,6 +771,27 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	}
 };
 \end class {install("gf/sprintf",1,1);}
+\class GridSprintf : FObject {
+	string format;
+	\attr NumberTypeE cast;
+	\constructor (...) {
+		std::ostringstream o;
+		char buf[MAXPDSTRING];
+		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
+		format = o.str();
+		cast = int32_e;
+	}
+	\decl 0 bang   ()          {_0_list(0,0);}
+	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 list (...) {
+		std::ostringstream o;
+		pd_oprintf(o,format.data(),argc,argv);
+		string s = o.str();
+		GridOutlet out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
+	}
+};
+\end class {install("#sprintf",1,1);}
 
 \class ForEach : FObject {
 	\constructor () {}
