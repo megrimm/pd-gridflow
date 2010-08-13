@@ -45,7 +45,11 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #include <malloc.h>
 #endif
 
-typedef std::string string;
+using std::string;
+using std::map;
+using std::vector;
+using std::ostream;
+using std::ostringstream;
 
 #ifndef a_float
 #define a_float    a_w.w_float
@@ -263,8 +267,8 @@ struct t_atom2 : t_atom {
 	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return               a_float ;}
 
 #define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
-	TYPECASTER2(std::string ,A_SYMBOL ,"symbol"     ,std::string(a_symbol->s_name))
-	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,            a_symbol         )
+	TYPECASTER2(string      ,A_SYMBOL ,"symbol"     , string(a_symbol->s_name))
+	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,        a_symbol         )
 	TYPECASTER2(void       *,A_POINTER,"pointer"    ,               a_gpointer)
 	TYPECASTER2(t_binbuf   *,A_LIST   ,"nested list",   (t_binbuf *)a_gpointer)
 	TYPECASTER2(Grid       *,A_GRID   ,"grid"       ,       (Grid *)a_gpointer)
@@ -354,7 +358,7 @@ struct Dim {
 		for (Card i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	char *to_s() const; // should be std::string
+	char *to_s() const; // should be string
 	bool operator==(const Dim &o) const {
 		if (n!=o.n) return false;
 		for (Card i=0; i<n; i++) if (v[i]!=o[i]) return false;
@@ -544,9 +548,9 @@ EACH_NUMBER_TYPE(FOO)
 };
 
 extern NumberType number_type_table[];
-extern std::map<string,NumberType *> number_type_dict;
-extern std::map<string,Numop *> op_dict;
-extern std::map<string,Numop *> vop_dict;
+extern map<string,NumberType *> number_type_dict;
+extern map<string,Numop *> op_dict;
+extern map<string,Numop *> vop_dict;
 
 static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_symbol->s_name));}
@@ -727,8 +731,8 @@ struct FClass {
 	int noutlets;
 	t_class *bfclass;
 	string name;
-	std::map<string,FMethod> methods;
-	std::map<string,AttrDecl *> attrs;
+	map<string,FMethod> methods;
+	map<string,AttrDecl *> attrs;
 };
 
 void fclass_install(FClass *fc, FClass *super);
@@ -741,7 +745,7 @@ struct GridOutlet : CObject {
 	static const long MAX_PACKET_SIZE = 1<<12;
 
 	// read-only (set-once)
-	FObject *parent; Dim dim; NumberTypeE nt; std::vector<GridInlet *> inlets;
+	FObject *parent; Dim dim; NumberTypeE nt; vector<GridInlet *> inlets;
 	GridOutlet *sender; // dummy (because of P<Dim> to Dim)
 
 	// continually changed
@@ -802,7 +806,7 @@ struct BFObject : t_object {
 	t_canvas *mom;
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
-	std::vector<P<GridInlet> > in;
+	vector<P<GridInlet> > in;
 	P<GridOutlet> out;
 	FObject(BFObject *bself, MESSAGE);
 	template <class T> void send_out(int outlet, int argc, T *argv) {
@@ -855,10 +859,10 @@ void call_super(int argc, t_atom *argv);
 };
 \end class
 
-extern std::vector<string> gf_data_path;
+extern vector<string> gf_data_path;
 string gf_find_file (string x);
-void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
-void pd_oprint (std::ostream &o, int argc, t_atom *argv);
+void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv);
+void pd_oprint (ostream &o, int argc, t_atom *argv);
 void pd_post (const char *s, int argc, t_atom *argv);
 
 inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
@@ -873,7 +877,7 @@ inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
 
-extern std::map<string,FClass *> fclasses;
+extern map<string,FClass *> fclasses;
 int handle_braces(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;
@@ -889,14 +893,14 @@ static inline int vasprintf(char **buf, const char *s, va_list args) {
 
 /* both oprintf are copied from desiredata */
 
-static inline int voprintf(std::ostream &buf, const char *s, va_list args) {
+static inline int voprintf(ostream &buf, const char *s, va_list args) {
     char *b;
     int n = vasprintf(&b,s,args);
     buf << b;
     free(b);
     return n;
 }
-static inline int oprintf(std::ostream &buf, const char *s, ...) {
+static inline int oprintf(ostream &buf, const char *s, ...) {
     va_list args;
     va_start(args,s);
     int n = voprintf(buf,s,args);
@@ -918,7 +922,7 @@ inline t_symbol *symprintf(const char *s, ...) {
 }
 #endif
 
-std::ostream &operator << (std::ostream &self, const t_atom &a);
+ostream &operator << (ostream &self, const t_atom &a);
 
 // from pd/src/g_canvas.c
 #ifdef DESIRE
