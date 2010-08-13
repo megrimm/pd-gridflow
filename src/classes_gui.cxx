@@ -154,17 +154,23 @@ extern "C" int sys_hostfontsize(int fontsize);
 		gp = pd_newest();
 		t_atom a[1];
 		SETFLOAT(a,20);
-		pd_typedmess(gp,gensym("maxrows"),1,a);
+		pd_anything(gp,gensym("maxrows"),1,a);
 		text << "...";
 		SETPOINTER(a,(t_gpointer *)bself);
-		pd_typedmess(gp,gensym("dest"),1,a);
+		pd_anything(gp,gensym("dest"),1,a);
  		changed();
 	}
 	~Display () {pd_free(gp);}
-	\decl void anything (...);
-	\decl 0 set_size(int sy, int sx);
-	\decl 0 grid(...);
-	\decl 0 very_long_name_that_nobody_uses(...);
+	\decl 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
+	\decl 0 grid(...) {
+		text.str("");
+		pd_typedmess(gp,gensym("grid"),argc,argv);
+		changed();
+	}
+	\decl 0 very_long_name_that_nobody_uses (...) {
+		if (text.str().length()) text << "\n";
+		for (int i=0; i<argc; i++) text << char(TO(int32,argv[i]));
+	}
  	void show() { /* or hide */
 		ostringstream quoted;
 		string ss = text.str();
@@ -194,34 +200,24 @@ extern "C" int sys_hostfontsize(int fontsize);
 		sys_vgui(".x%x.c itemconfigure %sR -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
 		sys_vgui(".x%x.c itemconfigure %sTEXT -fill %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
-};
-\def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
-\def void anything (...) {
-	string sel = string(argv[0]).data()+3;
-	text.str("");
-	if (sel=="float") {}
-	else if (sel=="list" && argc>=2 && argv[1].a_type==A_FLOAT) {}
-	else {text << sel; if (argc>1) text << " ";}
-	long nl=0;
-	for (int i=1; i<argc; i++) {
-		text << argv[i];
-		if (i!=argc-1) {
-			text << " ";
-			long length = text.str().size();
-			if (length-nl>64) {text << "\\\n"; nl=length;}
+	\decl void anything (...) {
+		string sel = string(argv[0]).data()+3;
+		text.str("");
+		if (sel=="float") {}
+		else if (sel=="list" && argc>=2 && argv[1].a_type==A_FLOAT) {}
+		else {text << sel; if (argc>1) text << " ";}
+		long nl=0;
+		for (int i=1; i<argc; i++) {
+			text << argv[i];
+			if (i!=argc-1) {
+				text << " ";
+				long length = text.str().size();
+				if (length-nl>64) {text << "\\\n"; nl=length;}
+			}
 		}
+		changed();
 	}
-	changed();
-}
-\def 0 grid(...) {
-	text.str("");
-	pd_typedmess(gp,gensym("grid"),argc,argv);
-	changed();
-}
-\def 0 very_long_name_that_nobody_uses(...) {
-	if (text.str().length()) text << "\n";
-	for (int i=0; i<argc; i++) text << char(TO(int32,argv[i]));
-}
+};
 \end class {
 #ifdef DESIRE
 	install("gf/display",1,0);
@@ -398,7 +394,8 @@ static t_pd *seesend;
 	\decl 0 position   (int y, int x, int flags             ) {event(y,x,flags,0,"position"  );}
 	\decl 0 keypress   (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keypress"  );}
 	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keyrelease");}
-	\decl 0 margins (int y1, int x1, int y2, int x2) {my1=y1; mx1=x1; my2=y2; mx2=x2; compute_size(); changed();}
+	\decl 0 margins (int y1,        int x1,        int y2,        int x2) {
+		   my1=max(0,y1); mx1=max(0,x1); my2=max(0,y2); mx2=max(0,x2); compute_size(); changed();}
 	#undef FOO
 	\grin 0
 	void sendbuf () {
@@ -471,6 +468,7 @@ GRID_INLET(0) {
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
+	sys_gui("proc max {a b} {if {$a>$b} {return $a} {return $b}}\n");
 	sys_gui("proc GUI_FObject_update {self c x1 y1 sx sy bg outline} {\n"
 	"$c delete $self\n"
 	"set x2 [expr {$x1+$sx}]; set y2 [expr {$y1+$sy}]; set x7 [expr {$x1+7}]\n"
@@ -481,10 +479,10 @@ GRID_INLET(0) {
 	sys_gui("proc gridsee_update {self c x1 y1 sx sy mx1 my1 mx2 my2 bg outline} {\n"
 	"GUI_FObject_update $self $c $x1 $y1 $sx $sy $bg $outline\n"
 	"set x2 [expr {$x1+$sx}]; set y2 [expr {$y1+$sy}]\n"
-	"set x3 [expr {$mx1-1}]; if {$x3<0} {set x3 $x3}; set x3 [expr {$x1+$x3}]\n"
-	"set y3 [expr {$my1-1}]; if {$y3<0} {set y3 $y3}; set y3 [expr {$y1+$y3}]\n"
-	"set x4 [expr {$mx2-1}]; if {$x4<0} {set x4 $x4}; set x4 [expr {$x2-$x4}]\n"
-	"set y4 [expr {$my2-1}]; if {$y4<0} {set y4 $y4}; set y4 [expr {$y2-$y4}]\n"
+	"set x3 [expr {$x1+[max 0 [expr {$mx1-1}]]}]\n"
+	"set y3 [expr {$y1+[max 0 [expr {$my1-1}]]}]\n"
+	"set x4 [expr {$x2-[max 0 [expr {$mx2-1}]]}]\n"
+	"set y4 [expr {$y2-[max 0 [expr {$my2-1}]]}]\n"
 	"$c create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
 	"$c create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
