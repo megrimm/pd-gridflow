@@ -238,7 +238,7 @@ def handle_grin(line)
 	fields = line.split(/\s+/)
 	i = fields[0].to_i
 	Out.print "GRINDECL(#{i})"
-	handle_decl "#{i} grid(GridOutlet *foo);"
+	handle_decl "#{i} grid(GridOut *foo);"
 	handle_decl "#{i} list(...);"
 	handle_decl "#{i} float(float f);"
 	$stack[-1].grins[i] = fields.dup
@@ -254,9 +254,9 @@ def handle_end(line)
 	frame.grins.each {|i,v|
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN_#{v[1]||'all'}(#{cl}::grinw_#{i});"
 		check = "CHECK_GRIN(#{cl},#{i});"
-		handle_def "#{i} grid(GridOutlet *foo) {#{check}in[#{i}]->begin(foo);}"
-		handle_def "#{i} list(...)             {#{check}in[#{i}]->from_list(argc,argv);}" if not frame.methods["_#{i}_list" ].done
-		handle_def "#{i} float(float f)        {#{check}in[#{i}]->from_float(f);}"        if not frame.methods["_#{i}_float"].done
+		handle_def "#{i} grid(GridOut *foo) {#{check}in[#{i}]->begin(foo);}"
+		handle_def "#{i} list(...)          {#{check}in[#{i}]->from_list(argc,argv);}" if not frame.methods["_#{i}_list" ].done
+		handle_def "#{i} float(float f)     {#{check}in[#{i}]->from_float(f);}"        if not frame.methods["_#{i}_float"].done
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop

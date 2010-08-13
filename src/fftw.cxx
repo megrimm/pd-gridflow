@@ -65,7 +65,7 @@ GRID_INLET(0) {
 		v[in.dim.n] = 2;
 		dim = Dim(in.dim.n+1,v);
 	} else dim = Dim(in.dim.n-1,in.dim.v);
-	GridOutlet out(this,0,dim,in.nt);
+	GridOut out(this,0,dim,in.nt);
 	float32 *tada = (float32 *)memalign(16,dim.prod()*sizeof(float32));
 	long chans = in.dim.n>=3 ? in.dim[2] : 1;
 	CHECK_ALIGN16(data,in.nt)

@@ -776,7 +776,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
-		GridOutlet out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
+		GridOut out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
 	}
 };
 \end class {install("#sprintf",2,1);}

@@ -291,62 +291,62 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 	int palette = fmt.fmt.pix.pixelformat;
 	if (palette==V4L2_PIX_FMT_YUYV) {
 		uint8 *bufy = buf;
-		GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
+		GridOut go(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
 		if (cs=="y") {
 		    for(int y=0; y<sy; bufy+=sx, y++) {
 			for (int x=0,xx=0; x<sx; x+=2,xx+=4) {
 				b2[xx+0]=YUV2Y(bufy[x+0],0,0);
 				b2[xx+1]=YUV2Y(bufy[x+2],0,0);
 			}
-			out.send(bs,b2);
+			go.send(bs,b2);
 		    }
 		} else if (cs=="rgb") {
 		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="rgba") {
 		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx*2; x+=4,xx+=8) {GETYUYV(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+4,Y2,U,V);
 				b2[xx+3]=255; b2[xx+7]=255;}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="yuv") {
 		    for(int y=0; y<sy; bufy+=2*sx, y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx*2; x+=4,xx+=6) {GETYUYV(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="magic") {
 		    int sx2 = sx/2;
 		    for(int y=0; y<sy; bufy+=2*sx, y+=2) {
  			for (int x=0,xx=0; x<sx2; x+=3,xx+=3) {b2[xx+0]=bufy[x+0]; b2[xx+1]=bufy[x+1]; b2[xx+2]=bufy[x+3];}
-			out.send(bs,b2);
+			go.send(bs,b2);
 		    }
 		}
 	} else if (palette==V4L2_PIX_FMT_YVU420) {
 		uint8 *bufy = buf, *bufu = buf+sx*sy, *bufv = buf+sx*sy*5/4;
-		GridOutlet out(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
+		GridOut go(this,0,cs=="magic"?Dim(sy>>downscale,sx>>downscale,3):dim,cast);
 		if (cs=="y") {
-		    out.send(sy*sx,buf);
+		    go.send(sy*sx,buf);
 		} else if (cs=="rgb") {
 		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420P(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+3,Y2,U,V);}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="rgba") {
 		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx; x+=2,xx+=8) {GET420P(x); YUV2RGB(b2+xx,Y1,U,V); YUV2RGB(b2+xx+4,Y2,U,V);
 			b2[xx+3]=255; b2[xx+7]=255;}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="yuv") {
 		    for(int y=0; y<sy; bufy+=sx, bufu+=(sx/2)*(y&1), bufv+=(sx/2)*(y&1), y++) {int Y1,Y2,U,V;
 			for (int x=0,xx=0; x<sx; x+=2,xx+=6) {GET420P(x); YUV2YUV(b2+xx,Y1,U,V); YUV2YUV(b2+xx+3,Y2,U,V);}
-			out.send(bs,b2);}
+			go.send(bs,b2);}
 		} else if (cs=="magic") {
 		    int sx2 = sx/2;
 		    for(int y=0; y<sy/2; bufy+=2*sx, bufu+=sx2, bufv+=sx2, y++) {
  			for (int x=0,xx=0; x<sx2; x++,xx+=3) {b2[xx+0]=bufy[x+x]; b2[xx+1]=bufu[x]; b2[xx+2]=bufv[x];}
-			out.send(bs,b2);
+			go.send(bs,b2);
 		    }
 		}
 	} else if (palette==V4L2_PIX_FMT_RGB24) {
-		GridOutlet out(this,0,dim,cast);
+		GridOut go(this,0,dim,cast);
 		uint8 rgb[sx*4];
 		uint8 b2[sx*3];
 		if (cs=="y") {
@@ -356,19 +356,19 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 					b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 					b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
 				}
-				out.send(bs,b2);
+				go.send(bs,b2);
 			}
 		} else if (cs=="rgb") {
 			for(int y=0; y<sy; y++) {
 			        bit_packing3->unpack(sx,buf+y*sx*bit_packing3->bytes,rgb);
-			 	out.send(bs,rgb);
+			 	go.send(bs,rgb);
 			}
 		} else if (cs=="rgba") {
 			for(int y=0; y<sy; y++) {
 				uint8 *buf2 = buf+y*sx*bit_packing4->bytes;
 			        bit_packing4->unpack(sx,buf2,rgb);
 			        for (int x=0; x<sx; x++) buf2[4*x+3]=255; /* i hope this is correct. not tested. */
-			 	out.send(bs,rgb);
+			 	go.send(bs,rgb);
 			}
 		} else if (cs=="yuv") {
 			for(int y=0; y<sy; y++) {
@@ -378,7 +378,7 @@ void FormatV4L2::frame_finished (uint8 *buf) {
 					b2[xx+1] = RGB2U(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
 					b2[xx+2] = RGB2V(rgb[xx+0],rgb[xx+1],rgb[xx+2]);
 				}
-				out.send(bs,b2);
+				go.send(bs,b2);
 			}
 		} else if (cs=="magic") RAISE("magic colorspace not supported with a RGB palette");
 	} else {

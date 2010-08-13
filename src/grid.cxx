@@ -103,7 +103,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-void GridInlet::begin(GridOutlet *sender) {
+void GridInlet::begin(GridOut *sender) {
 	if (this->sender) RAISE("grid inlet aborting from %s at %ld/%ld because of %s",
 		ARGS(this->sender->parent),long(dex),long(dim.prod()),ARGS(sender->parent));
 	this->sender = sender;
@@ -171,7 +171,7 @@ void GridInlet::finish() {
 }
 
 template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
-	GridOutlet out(0,-1,g->dim,g->nt);
+	GridOut out(0,-1,g->dim,g->nt);
 	begin(&out);
 	size_t n = g->dim.prod();
 	if (n) out.send(n,(T *)*g); else finish();
@@ -184,9 +184,9 @@ void GridInlet::from_grid(Grid *g) {
 #undef FOO
 }
 
-/* **************** GridOutlet ************************************ */
+/* **************** GridOut ************************************ */
 
-GridOutlet::GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_) {
+GridOut::GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_) {
 	parent=parent_; dim=dim_; nt=nt_; dex=0; bufi=0; sender=this; fresh=true;
 	t_atom a[1];
 	SETGRIDOUT(a,this);
@@ -196,7 +196,7 @@ GridOutlet::GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTyp
 	}
 }
 
-void GridOutlet::create_buf () {
+void GridOut::create_buf () {
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	//size_t ntsz = number_type_table[nt].size;
@@ -206,7 +206,7 @@ void GridOutlet::create_buf () {
 	buf.init(Dim(v),nt);
 #ifdef TRACEBUFS
 	ostringstream text;
-	oprintf(text,"GridOutlet: %20s buf for sending to  ",buf->dim->to_s());
+	oprintf(text,"GridOut: %20s buf for sending to  ",buf->dim->to_s());
 	for (uint i=0; i<inlets.size(); i++) text << " " << (void *)inlets[i]->parent;
 	post("%s",text.str().data());
 #endif
@@ -215,7 +215,7 @@ void GridOutlet::create_buf () {
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(long n, T *data) {
+void GridOut::send_direct(long n, T *data) {
 	CHECK_BUSY(outlet); CHECK_TYPE(*data,nt); CHECK_ALIGN(data,nt);
 	while (n>0) {
 		long pn = n;//min((long)n,MAX_PACKET_SIZE);
@@ -224,7 +224,7 @@ void GridOutlet::send_direct(long n, T *data) {
 	}
 }
 
-void GridOutlet::flush() {
+void GridOut::flush() {
 	if (fresh || !bufi) return;
 #define FOO(T) send_direct(bufi,(T *)buf);
 	TYPESWITCH(buf.nt,FOO,)
@@ -238,7 +238,7 @@ static void convert_number_type(int n, T *out, S *in) {for (int i=0; i<n; i++) o
 //!@#$ buffering in outlet still is 8x faster...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_2(long n, T *data) {
+void GridOut::send_2(long n, T *data) {
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data,nt);
 	if (NumberTypeE_type_of(data)!=nt) {
@@ -266,12 +266,12 @@ void GridOutlet::send_2(long n, T *data) {
 	}
 }
 
-void GridOutlet::callback(GridInlet &in) {
+void GridOut::callback(GridInlet &in) {
 	CHECK_BUSY1(outlet);
 	inlets.push_back(&in);
 }
 
-void GridOutlet::finish () {
+void GridOut::finish () {
 	flush();
 	for (uint32 i=0; i<inlets.size(); i++) inlets[i]->finish();
 	sender=0;
@@ -280,7 +280,7 @@ void GridOutlet::finish () {
 // never call this. this is a hack to make some things work.
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
-	GridOutlet foo(0,0,0);
+	GridOut foo(0,0,0);
 #define FOO(S) foo.send(0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO

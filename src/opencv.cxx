@@ -161,16 +161,16 @@ void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim &dim) { // was de
 	int n = self->cols;
 	int e = CV_MAT_TYPE(cvGetElemType(self));
 	int c = CV_MAT_CN(  cvGetElemType(self));
-	GridOutlet *out = new GridOutlet(obj,0,dim);
+	GridOut *go = new GridOut(obj,0,dim);
 	for (int i=0; i<m; i++) {
 		uchar *meuh = cvPtr2D(self,i,0,0);
 		switch (e) {
-		  case CV_8U:  out->send(c*n,  (uint8 *)meuh); break;
-		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
-		  case CV_32S: out->send(c*n,  (int32 *)meuh); break;
-		  case CV_32F: out->send(c*n,(float32 *)meuh); break;
+		  case CV_8U:  go->send(c*n,  (uint8 *)meuh); break;
+		  case CV_16S: go->send(c*n,  (int16 *)meuh); break;
+		  case CV_32S: go->send(c*n,  (int32 *)meuh); break;
+		  case CV_32F: go->send(c*n,(float32 *)meuh); break;
 		  #ifndef HAVE_LITE
-		  case CV_64F: out->send(c*n,(float64 *)meuh); break;
+		  case CV_64F: go->send(c*n,(float64 *)meuh); break;
 		  #endif
 		}
 	}
@@ -229,8 +229,8 @@ GRID_INLET(0) {
 	cvRelease(&a);
 	cvRelease(&b);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in.dim,in.nt);
-	out->send(o->dim.prod(),(T *)o->data);
+	go = new GridOut(this,0,in.dim,in.nt);
+	go->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 GRID_INPUT2(1,r) {} GRID_END
 \end class {}
@@ -271,8 +271,8 @@ GRID_INLET(0) {
 	cvInvert(a,c);
 	cvRelease(&a);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in.dim,in.nt);
-	out->send(o->dim.prod(),(T *)o->data);
+	go = new GridOut(this,0,in.dim,in.nt);
+	go->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 \end class {install("cv/#Invert",1,1);}
 
@@ -298,9 +298,9 @@ GRID_INLET(0) {
 	cvRelease(&c0);
 	cvRelease(&c1);
 	cvRelease(&c2);
-	out = new GridOutlet(this,2,in.dim,in.nt); out->send(o2->dim.prod(),(T *)o2->data);
-	out = new GridOutlet(this,1,in.dim,in.nt); out->send(o1->dim.prod(),(T *)o1->data);
-	out = new GridOutlet(this,0,in.dim,in.nt); out->send(o0->dim.prod(),(T *)o0->data);
+	go = new GridOut(this,2,in.dim,in.nt); go->send(o2->dim.prod(),(T *)o2->data);
+	go = new GridOut(this,1,in.dim,in.nt); go->send(o1->dim.prod(),(T *)o1->data);
+	go = new GridOut(this,0,in.dim,in.nt); go->send(o0->dim.prod(),(T *)o0->data);
 } GRID_END
 \end class {install("cv/#SVD",1,3);}
 
@@ -327,7 +327,7 @@ GRID_INLET(0) {
 	IplImage *img = cvImageGrid(l);
 	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
 	cvReleaseImageHeader(&img);
-	out = new GridOutlet(this,0,in.dim,in.nt); out->send(in.dim.prod(),(T *)*l);
+	go = new GridOut(this,0,in.dim,in.nt); go->send(in.dim.prod(),(T *)*l);
 } GRID_END
 \end class {install("cv/#Ellipse",1,2);}
 
@@ -447,11 +447,11 @@ GRID_INLET(0) {
 	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
 	int n = ret ? ret->total : 0;
-	out = new GridOutlet(this,0,Dim(n,2,2));
+	go = new GridOut(this,0,Dim(n,2,2));
 	for (int i=0; i<n; i++) {
 		CvRect *r = (CvRect *)cvGetSeqElem(ret,i);
 		int32 duh[] = {r->y,r->x,r->y+r->height,r->x+r->width};
-		out->send(4,duh);
+		go->send(4,duh);
 	}
 } GRID_END
 \end class {install("cv/#HaarDetectObjects",2,1);}
@@ -482,8 +482,8 @@ GRID_INLET(0) {
 	int w[in.dim.n];
 	COPY(w,in.dim.v,in.dim.n);
 	w[in.dim.n-1] = 1;
-	out = new GridOutlet(this,0,Dim(in.dim.n,w));
-	out->send(v[0],(int32 *)*o);
+	go = new GridOut(this,0,Dim(in.dim.n,w));
+	go->send(v[0],(int32 *)*o);
 	cvRelease(&a);
 	cvRelease(&c);
 } GRID_END
@@ -512,7 +512,7 @@ GRID_INLET(0) {
 	cvCornerHarris(a,c,block_size,aperture_size,k);
 	cvRelease(&a);
 	cvRelease(&c);
-	out = new GridOutlet(this,0,in.dim,in.nt); out->send(o->dim.prod(),(T *)o->data);
+	go = new GridOut(this,0,in.dim,in.nt); go->send(o->dim.prod(),(T *)o->data);
 } GRID_END
 
 \end class {install("cv/#CornerHarris",1,1);}

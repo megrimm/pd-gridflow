@@ -117,7 +117,7 @@ static map<string,string> fourccs;
 		lqt_decode_audio_track(anim,0,output_f,samples,track);
 		float sound2[samples*achannels];
 		for (int i=0; i<samples; i++) for (int j=0; j<achannels; j++) sound2[i*achannels+j] = sound[j*samples+i];
-		GridOutlet out(this,0,Dim(samples,achannels),float32_e);
+		GridOut out(this,0,Dim(samples,achannels),float32_e);
 		out.send(samples*achannels,sound2);
 		advance += samples;
 	    }
@@ -142,7 +142,7 @@ static map<string,string> fourccs;
 	uint8 buf[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
-	GridOutlet out(this,0,Dim(sy,sx,channels),cast);
+	GridOut out(this,0,Dim(sy,sx,channels),cast);
 	out.send(sy*sx*channels,buf);
 	started=true;
 //	return INT2NUM(nframe);

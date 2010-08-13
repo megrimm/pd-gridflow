@@ -72,14 +72,14 @@ using std::ostringstream;
 #define A_LIST    t_atomtype(13) /* (t_binbuf *) */
 #endif
 #define A_GRID    t_atomtype(14) /* (Grid *)    */
-#define A_GRIDOUT t_atomtype(15) /* (GridOutlet *) */
+#define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
 struct Grid;
-struct GridOutlet;
-static inline void SETLIST(   t_atom *a, t_binbuf *b)   {a->a_type = A_LIST;    a->a_gpointer = (t_gpointer *)b;}
-static inline void SETGRID(   t_atom *a, Grid *g)       {a->a_type = A_GRID;    a->a_gpointer = (t_gpointer *)g;}
-static inline void SETGRIDOUT(t_atom *a, GridOutlet *g) {a->a_type = A_GRIDOUT; a->a_gpointer = (t_gpointer *)g;}
-static inline void SETNULL(   t_atom *a)                {a->a_type = A_NULL;    a->a_gpointer = 0;}
+struct GridOut;
+static inline void SETLIST(   t_atom *a, t_binbuf *b) {a->a_type = A_LIST;    a->a_gpointer = (t_gpointer *)b;}
+static inline void SETGRID(   t_atom *a, Grid *g)     {a->a_type = A_GRID;    a->a_gpointer = (t_gpointer *)g;}
+static inline void SETGRIDOUT(t_atom *a, GridOut *g)  {a->a_type = A_GRIDOUT; a->a_gpointer = (t_gpointer *)g;}
+static inline void SETNULL(   t_atom *a)              {a->a_type = A_NULL;    a->a_gpointer = 0;}
 
 typedef t_binbuf t_list;
 
@@ -267,12 +267,12 @@ struct t_atom2 : t_atom {
 	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return               a_float ;}
 
 #define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
-	TYPECASTER2(string      ,A_SYMBOL ,"symbol"     , string(a_symbol->s_name))
-	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,        a_symbol         )
-	TYPECASTER2(void       *,A_POINTER,"pointer"    ,               a_gpointer)
-	TYPECASTER2(t_binbuf   *,A_LIST   ,"nested list",   (t_binbuf *)a_gpointer)
-	TYPECASTER2(Grid       *,A_GRID   ,"grid"       ,       (Grid *)a_gpointer)
-	TYPECASTER2(GridOutlet *,A_GRIDOUT,"grid outlet", (GridOutlet *)a_gpointer)
+	TYPECASTER2(string    ,A_SYMBOL ,"symbol"     ,string(a_symbol->s_name))
+	TYPECASTER2(t_symbol *,A_SYMBOL ,"symbol"     ,       a_symbol         )
+	TYPECASTER2(void     *,A_POINTER,"pointer"    ,              a_gpointer)
+	TYPECASTER2(t_binbuf *,A_LIST   ,"nested list",  (t_binbuf *)a_gpointer)
+	TYPECASTER2(Grid     *,A_GRID   ,"grid"       ,      (Grid *)a_gpointer)
+	TYPECASTER2(GridOut  *,A_GRIDOUT,"grid outlet",   (GridOut *)a_gpointer)
 #undef TYPECASTER2
 
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
@@ -669,7 +669,7 @@ struct GridInlet : CObject {
 	FObject *parent; const GridHandler *gh;
 	
 	// set once per transmission
-	GridOutlet *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
+	GridOut *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
 	
 	// modified continually
 	long dex; int chunk; PtrGrid buf; /* factor-chunk buffer */ long bufi; /* buffer index: how much of buf is filled */
@@ -679,7 +679,7 @@ struct GridInlet : CObject {
 	~GridInlet() {}
 	void set_chunk(long whichdim);
 	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
-	void begin(GridOutlet *sender);
+	void begin(GridOut *sender);
 	void finish();
 	template <class T> void flow(long n, T *data); // n=-1 is begin, and n=-2 is finish.
 	void from_list(VA, NumberTypeE nt=int32_e) {Grid t(argc,argv,nt); from_grid(&t);}
@@ -738,15 +738,15 @@ struct FClass {
 void fclass_install(FClass *fc, FClass *super);
 
 //****************************************************************
-// GridOutlet represents a grid-aware outlet
-struct GridOutlet : CObject {
+// GridOut represents a grid transmission from the perspective of the sender
+struct GridOut : CObject {
 	// number of (minimum,maximum) BYTES to send at once
 	static const long MIN_PACKET_SIZE = 1<<8;
 	static const long MAX_PACKET_SIZE = 1<<12;
 
 	// read-only (set-once)
 	FObject *parent; Dim dim; NumberTypeE nt; vector<GridInlet *> inlets;
-	GridOutlet *sender; // dummy (because of P<Dim> to Dim)
+	GridOut *sender; // dummy (because of P<Dim> to Dim)
 
 	// continually changed
 	long dex; // how many numbers were already sent in this connection
@@ -754,8 +754,8 @@ struct GridOutlet : CObject {
 	long bufi; // number of bytes used in the buffer
 	bool fresh; /* 0 = buf was inited */
 
-	GridOutlet(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
-	~GridOutlet() {}
+	GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
+	~GridOut() {}
 	void callback(GridInlet &in);
 
 	// send/send_direct: data belongs to caller, may be stack-allocated,
@@ -795,6 +795,15 @@ struct BFObject : t_object {
 	string binbuf_string ();
 };
 
+/* not planning to use or rely on those fields at all. it's more about C++ifying the normal interface to it. */
+/*struct _outlet {
+    t_object *o_owner;
+    struct _outlet *o_next;
+    t_outconnect *o_connections;
+    t_symbol *o_sym;
+    //void send () {outlet_bang(
+};*/
+
 // represents objects that have inlets/outlets
 \class FObject {
 	virtual ~FObject ();
@@ -807,7 +816,7 @@ struct BFObject : t_object {
 	void  ninlets_set(int n, bool draw=true);
 	void noutlets_set(int n, bool draw=true);
 	vector<P<GridInlet> > in;
-	P<GridOutlet> out;
+	P<GridOut> go;
 	FObject(BFObject *bself, MESSAGE);
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
