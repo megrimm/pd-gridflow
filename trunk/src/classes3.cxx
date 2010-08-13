@@ -100,8 +100,8 @@ GRID_INLET(0) {
 		clock = clock_new(bself,(void(*)())clock_bang_);
 	}
 	void clock_bang () {
-		GridOutlet out(this,0,blah->dim,blah->nt);
-		out.send(blah->dim.prod(),(float32 *)*blah);
+		GridOut go(this,0,blah->dim,blah->nt);
+		go.send(blah->dim.prod(),(float32 *)*blah);
 	}
 	static void clock_bang_ (BFObject *bself) {((GridFromTilde *)bself->self)->clock_bang();}
 	~GridFromTilde () {delete[] sigin; if (sam) delete[] sam;}
@@ -154,7 +154,7 @@ GRID_INLET(0) {
 			if (v[i]!=r->dim[i]) RAISE("dimensions mismatch: dim #%i, left is %d, right is %d",i,v[i],r->dim[i]);
 		}
 	}
-	out=new GridOutlet(this,0,Dim(d.n,v),in.nt);
+	go=new GridOut(this,0,Dim(d.n,v),in.nt);
 	in.set_chunk(w);
 } GRID_FLOW {
 	int w = which_dim;
@@ -170,7 +170,7 @@ GRID_INLET(0) {
 			SCOPY(data4,data,3); SCOPY(data4+3,data2,1);
 			n-=3; data+=3; data2+=1; data4+=4;
 		}
-		out->send(m,data3);
+		go->send(m,data3);
 	} else if (a+b<=16) {
 		int m = n+n*b/a;
 		T data3[m];
@@ -179,16 +179,16 @@ GRID_INLET(0) {
 			COPY(data3+i,data,a); data+=a; i+=a; n-=a;
 			COPY(data3+i,data2,b); data2+=b; i+=b;
 		}
-		out->send(m,data3);
+		go->send(m,data3);
 	} else {
 		while (n) {
-			out->send(a,data);
-			out->send(b,data2);
+			go->send(a,data);
+			go->send(b,data2);
 			data+=a; data2+=b; n-=a;
 		}
 	}
 } GRID_FINISH {
-	if (in.dim.prod()==0) out->send(r->dim.prod(),(T *)*r);
+	if (in.dim.prod()==0) go->send(r->dim.prod(),(T *)*r);
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
 \end class {install("#join",2,1); add_creator("@join");}
@@ -213,7 +213,7 @@ FOO(float64)
 
 GRID_INLET(0) {
 	if (in.dim.n<1) RAISE("minimum 1 dimension");
-	out=new GridOutlet(this,0,in.dim);
+	go=new GridOut(this,0,in.dim);
 	in.set_chunk(in.dim.n-1);
 } GRID_FLOW {
 	long m = in.dim.prod(in.dim.n-1);
@@ -223,7 +223,7 @@ GRID_INLET(0) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
 		qsort(foo,m,sizeof(T *),(comparator_t)GradeFunction<T>::comparator);
 		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
-		out->send(m,bar);
+		go->send(m,bar);
 	}
 } GRID_END
 
@@ -256,20 +256,20 @@ GRID_INLET(0) {
 		RAISE("would swap dimensions %d and %d but this grid has only %d dimensions", dim1,dim2,in.dim.n);
 	memswap(v+d1,v+d2,1);
 	if (d1==d2) {
-		out=new GridOutlet(this,0,Dim(in.dim.n,v),in.nt);
+		go=new GridOut(this,0,Dim(in.dim.n,v),in.nt);
 	} else {
 		nd = in.dim.prod(1+max(d1,d2));
 		nc = in.dim[max(d1,d2)];
 		nb = nc&&nd ? in.dim.prod(1+min(d1,d2))/nc/nd : 0;
 		na = in.dim[min(d1,d2)];
-		out=new GridOutlet(this,0,Dim(in.dim.n,v),in.nt);
+		go=new GridOut(this,0,Dim(in.dim.n,v),in.nt);
 		in.set_chunk(min(d1,d2));
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
 	//T res[na*nb*nc*nd];
 	T *res = NEWBUF(T,na*nb*nc*nd);
-	if (dim1==dim2) { out->send(n,data); return; }
+	if (dim1==dim2) {go->send(n,data); return;}
 	int prod = na*nb*nc*nd;
 	for (; n; n-=prod, data+=prod) {
 		for (long a=0; a<na; a++)
@@ -277,9 +277,9 @@ GRID_INLET(0) {
 				for (long c=0; c<nc; c++)
 					COPY(res +((c*nb+b)*na+a)*nd,
 					     data+((a*nb+b)*nc+c)*nd,nd);
-		out->send(na*nb*nc*nd,res);
+		go->send(na*nb*nc*nd,res);
 	}
-	DELBUF(res); //!@#$ if an exception was thrown by out->send, this never gets done
+	DELBUF(res); //!@#$ if an exception was thrown by go->send, this never gets done
 } GRID_END
 
 \end class {install("#transpose",3,1); add_creator("@transpose");}
@@ -296,7 +296,7 @@ GRID_INLET(0) {
 	d=dim1;
 	if (d<0) d+=in.dim.n;
 	if (d>=in.dim.n || d<0) RAISE("would reverse dimension %d but this grid has only %d dimensions",dim1,in.dim.n);
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(d);
 } GRID_FLOW {
 	long f1=in.dim.prod(d), f2=in.dim.prod(d+1);
@@ -304,7 +304,7 @@ GRID_INLET(0) {
 		T *data2 = data+f1-f2;
 		//long hf1=f1/2; for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
 		T tada[f1]; for (long i=0; i<f1; i+=f2) COPY(tada+i,data2-i,f2);
-		out->send(f1,tada);
+		go->send(f1,tada);
 		data+=f1; n-=f1;
 	}
 } GRID_END
@@ -322,7 +322,7 @@ GRID_INLET(0) {
 	if (in.dim.n != 3) RAISE("expecting 3 dims");
 	if (in.dim[2] != 1) RAISE("expecting 1 channel");
 	in.set_chunk(1);
-	out=new GridOutlet(this,0,Dim(2), in.nt);
+	go=new GridOut(this,0,Dim(2), in.nt);
 	sumx=0; sumy=0; sum=0; y=0;
 } GRID_FLOW {
 	int sx = in.dim[1];
@@ -340,7 +340,7 @@ GRID_INLET(0) {
 	int32 blah[2];
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
-	out->send(2,blah);
+	go->send(2,blah);
 	outlet_float(outlets[1],blah[0]);
 	outlet_float(outlets[2],blah[1]);
 } GRID_END
@@ -371,8 +371,8 @@ GRID_INLET(0) {
 	if (in.dim[2] != 1) RAISE("expecting 1 channel");
 	in.set_chunk(1);
 	switch (order) {
-	    case 1: out=new GridOutlet(this,0,Dim(2  ), in.nt); break;
-	    case 2: out=new GridOutlet(this,0,Dim(2,2), in.nt); break;
+	    case 1: go=new GridOut(this,0,Dim(2  ), in.nt); break;
+	    case 2: go=new GridOut(this,0,Dim(2,2), in.nt); break;
 	    default: RAISE("supports only orders 1 and 2 for now");
 	}
 	sumx=0; sumy=0; sumxy=0; sum=0; y=0;
@@ -409,14 +409,14 @@ GRID_INLET(0) {
 	    case 1: /* centroid vector */
 		blah[0] = sum ? sumy/sum : 0;
 		blah[1] = sum ? sumx/sum : 0;
-		out->send(2,blah);
+		go->send(2,blah);
 	    break;
 	    case 2: /* covariance matrix */
 		blah[0] = sum ? sumy/sum : 0;
 		blah[1] = sum ? sumxy/sum : 0;
 		blah[2] = sum ? sumxy/sum : 0;
 		blah[3] = sum ? sumx/sum : 0;
-		out->send(4,blah);
+		go->send(4,blah);
 	    break;
 	}
 } GRID_END
@@ -488,16 +488,16 @@ GRID_INLET(0) {
 				s.x/s.area};
 			float a[] = {s.area};
 			send_out(3,1,a);
-			GridOutlet o2(this,2,Dim(2));   o2.send(2,cooked+4);
-			GridOutlet o1(this,1,Dim(2,2)); o1.send(4,cooked);
+			GridOut o2(this,2,Dim(2));   o2.send(2,cooked+4);
+			GridOut o1(this,1,Dim(2,2)); o1.send(4,cooked);
 		} else {
 			float32 cooked[4] = {s.y,s.x1,s.y,s.x2};
-			GridOutlet o1(this,1,Dim(2,2)); o1.send(4,cooked);
+			GridOut o1(this,1,Dim(2,2)); o1.send(4,cooked);
 		}
 		label++;
 	}
-	out = new GridOutlet(this,0,Dim(sy,sx,1),in.nt);
-	out->send(n,dat);
+	go = new GridOut(this,0,Dim(sy,sx,1),in.nt);
+	go->send(n,dat);
 	DELBUF(dat);
 } GRID_END
 
@@ -520,13 +520,13 @@ GRID_INLET(0) {
 	COPY(v,in.dim.v,n);
 	v[n-1]--;
 	in.set_chunk(in.dim.n-1);
-	out=new GridOutlet(this,0,Dim(n,v),in.nt);
+	go=new GridOut(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
 	int m = in.dim.prod(in.dim.n-1);
 	for (; n; n-=m,data+=m) {
 		op_mul->map(m-1,data,(T)z);
 		op_div->map(m-1,data,data[m-1]);
-		out->send(m-1,data);
+		go->send(m-1,data);
 	}	
 } GRID_END
 \end class {install("#perspective",1,1); add_creator("@perspective");}
@@ -558,7 +558,7 @@ GRID_INLET(0) {
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i]=in.dim[i]+diml[i]+dimr[i];
 	in.set_chunk(0);
-	out=new GridOutlet(this,0,Dim(n,v),in.nt);
+	go=new GridOut(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
 	int sy = in.dim[0];
 	int sx = in.dim[1]; int zx = sx+diml[1]+dimr[1];
@@ -566,13 +566,13 @@ GRID_INLET(0) {
 	int sxc = sx*sc; int zxc = zx*zc;
 	int32 duh[zxc];
 	for (int x=0; x<zxc; x++) duh[x]=0;
-	for (int y=0; y<diml[0]; y++) out->send(zxc,duh);
+	for (int y=0; y<diml[0]; y++) go->send(zxc,duh);
 	for (int y=0; y<sy; y++) {
-		out->send(diml[1]*sc,duh);
-		out->send(sxc,data+y*sxc);
-		out->send(dimr[1]*sc,duh);
+		go->send(diml[1]*sc,duh);
+		go->send(sxc,data+y*sxc);
+		go->send(dimr[1]*sc,duh);
 	}	
-	for (int i=0; i<dimr[0]; i++) out->send(zxc,duh);
+	for (int i=0; i<dimr[0]; i++) go->send(zxc,duh);
 } GRID_END
 
 GRID_INPUT(1,diml_grid) {diml = diml_grid->to_dim();} GRID_END
@@ -680,17 +680,17 @@ GRID_INLET(0) {
 	//a=new Grid(da,in.nt); // with this condition it's 2% faster but takes more RAM.
 	int v[da.n]; COPY(v,da.v,da.n);
 	if (!wrap) {v[0]-=db[0]-1; v[1]-=db[1]-1;}
-	out=new GridOutlet(this,0,Dim(da.n,v),in.nt);
+	go=new GridOut(this,0,Dim(da.n,v),in.nt);
 } GRID_FLOW {
 	COPY((T *)*a+in.dex, data, n);
 } GRID_FINISH {
 	make_plan((T)0);
 	long dbx = b->dim[1];
 	long dby = b->dim[0];
-	long day = out->dim[0];
-	long n =   out->dim.prod(1);
-	long sx =  out->dim[1]+dbx-1;
-	long sxc = out->dim.prod(2)*sx;
+	long day = go->dim[0];
+	long n =   go->dim.prod(1);
+	long sx =  go->dim[1]+dbx-1;
+	long sxc = go->dim.prod(2)*sx;
 	T buf[n];
 	T buf2[sxc];
 	T orh=0;
@@ -706,10 +706,10 @@ GRID_INLET(0) {
 				else      copy_row(buf2,sx,ay+by,0);
 				if (!plan[i].neutral) op->map(sxc,buf2,rh);
 			}
-			fold->zip(n,buf,buf2+bx*out->dim.prod(2));
+			fold->zip(n,buf,buf2+bx*go->dim.prod(2));
 			orh=rh;
 		}
-		out->send(n,buf);
+		go->send(n,buf);
 	}
 	//a=0; // comment this out when trying to recycle a (use the dim.equal above)
 } GRID_END
@@ -749,7 +749,7 @@ static void expect_scale_factor (const Dim &dim) {
 GRID_INLET(0) {
 	Dim &a = in.dim;
 	expect_picture(a);
-	out=new GridOutlet(this,0,Dim(a[0]*scaley,a[1]*scalex,a[2]),in.nt);
+	go=new GridOut(this,0,Dim(a[0]*scaley,a[1]*scalex,a[2]),in.nt);
 	in.set_chunk(1);
 } GRID_FLOW {
 	int rowsize = in.dim.prod(1);
@@ -767,7 +767,7 @@ GRID_INLET(0) {
 		default: LOOP(chans) {for (int c=0; c<chans; c++) Z(c);}
 		}
 		#undef LOOP
-		for (int j=0; j<scaley; j++) out->send(rowsize*scalex,buf);
+		for (int j=0; j<scaley; j++) go->send(rowsize*scalex,buf);
 	}
 	#undef Z
 } GRID_END
@@ -804,7 +804,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 GRID_INLET(0) {
 	Dim &a = in.dim;
 	if (a.n!=3) RAISE("(height,width,chans) please");
-	out=new GridOutlet(this,0,Dim(a[0]/scaley,a[1]/scalex,a[2]),in.nt);
+	go=new GridOut(this,0,Dim(a[0]/scaley,a[1]/scalex,a[2]),in.nt);
 	in.set_chunk(1);
 	// i don't remember why two rows instead of just one.
 	temp=new Grid(Dim(2,in.dim[1]/scalex,in.dim[2]),in.nt);
@@ -831,9 +831,9 @@ GRID_INLET(0) {
 			}
 			#undef LOOP
 			y++;
-			if (y%scaley==0 && out->sender) {
+			if (y%scaley==0 && go->sender) {
 				op_div->map(rowsize2,buf,(T)(scalex*scaley));
-				out->send(rowsize2,buf);
+				go->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}
 			data+=rowsize;
@@ -842,7 +842,7 @@ GRID_INLET(0) {
 	#undef Z
 	} else {
 	#define Z(z) buf[p+z]=data[i+z]
-		for (; n>0 && out->sender; data+=rowsize, n-=rowsize,y++) {
+		for (; n>0 && go->sender; data+=rowsize, n-=rowsize,y++) {
 			if (y%scaley!=0) continue;
 			#define LOOP(z) for (int i=0,p=0; p<rowsize2; i+=xinc, p+=z)
 			switch(in.dim[2]) {
@@ -853,7 +853,7 @@ GRID_INLET(0) {
 			default:LOOP(chans) {for (int k=0; k<chans; k++) Z(k);}break;
 			}
 			#undef LOOP
-			out->send(rowsize2,buf);
+			go->send(rowsize2,buf);
 		}
 	}
 	#undef Z
@@ -878,7 +878,7 @@ GRID_INLET(0) {
 	if (a[1]!=r->dim[1]) RAISE("same width please");
 	if (a[0]!=r->dim[0]) RAISE("same height please");
 	in.set_chunk(2);
-	out=new GridOutlet(this,0,r->dim);
+	go=new GridOut(this,0,r->dim);
 } GRID_FLOW {
 	T *rr = ((T *)*r) + in.dex*3/4;
 	T foo[n*3/4];
@@ -890,7 +890,7 @@ GRID_INLET(0) {
 		COMPUTE_ALPHA(2,3);
 	}
 #undef COMPUTE_ALPHA
-	out->send(n*3/4,foo);
+	go->send(n*3/4,foo);
 } GRID_END
 
 GRID_INPUT(1,r) {} GRID_END
@@ -974,7 +974,7 @@ GRID_INLET(0) {
 	if (in.dim.n!=3) RAISE("expecting 3 dimensions");
 	if (in.dim[2]!=color->dim[0]) RAISE("image does not have same number of channels (%d) as stored color (%d)",
 	    in.dim[2], color->dim[0]);
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	lines_start = lines_stop = 0;
 	in.set_chunk(1);
 	int nl = lines->dim[0];
@@ -1002,7 +1002,7 @@ GRID_INLET(0) {
 			}
 		}
 		if (lines_start == lines_stop) {
-			out->send(f,data);
+			go->send(f,data);
 		} else {
 			int32 xl = in.dim[1];
 			T data2[f];
@@ -1043,7 +1043,7 @@ GRID_INLET(0) {
 				}
 				lines_start=lines_stop;
 			}
-			out->send(f,data2);
+			go->send(f,data2);
 		}
 		n-=f;
 		data+=f;
@@ -1129,7 +1129,7 @@ GRID_INLET(0) {
 		RAISE("right_hand has %d channels, alpha=%d, left_hand has %d, expecting %d or %d",
 			rchan, alpha?1:0, lchan, rchan-(alpha?1:0), rchan);
 	}
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(1);
 } GRID_FLOW {
 	int f = in.dim.prod(1);
@@ -1149,9 +1149,9 @@ GRID_INLET(0) {
 			} else {
 				draw_segment(data2,data,y-py,px);
 			}
-			out->send(f,data2);
+			go->send(f,data2);
 		} else {
-			out->send(f,data);
+			go->send(f,data);
 		}
 	}
 } GRID_END
@@ -1184,7 +1184,7 @@ GRID_INPUT(2,points) {} GRID_END
 
 GRID_INLET(0) {
 	SAME_TYPE(in,color);
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	if (points->dim.n!=2) RAISE("points should be a 2-D grid");
 	if (points->dim[1] != in.dim.n - color->dim.n) RAISE("wrong number of dimensions");
 	in.set_chunk(0);
@@ -1199,7 +1199,7 @@ GRID_INLET(0) {
 		off *= cn;
 		for (long j=0; j<cn; j++) data[off+j] = cdata[j];
 	}
-//	out->send(data);
+//	go->send(data);
 } GRID_END
 \end class {install("#draw_points",3,1);}
 
@@ -1214,7 +1214,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	if (in.dim.n!=3) RAISE("requires 3 dimensions: dim(y,x,3)");
 	if (in.dim[2]!=3) RAISE("requires 3 channels");
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(2);
 } GRID_FLOW {
 	T tada[n];
@@ -1225,7 +1225,7 @@ GRID_INLET(0) {
 			tada[i+0]=data[i+0]; tada[i+1]=data[i+1]; tada[i+2]=data[i+2];
 		}
 	}
-	out->send(n,tada);
+	go->send(n,tada);
 } GRID_END
 
 \end class {install("#noise_gate_yuvs",2,1);}
@@ -1251,8 +1251,8 @@ GRID_INLET(0) {
 	\decl void _n_float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl void _n_list  (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl 0 bang () {
-		out=new GridOutlet(this,0,a->dim,a->nt);
-		#define FOO(T) out->send(n,(T *)*a);
+		go=new GridOut(this,0,a->dim,a->nt);
+		#define FOO(T) go->send(n,(T *)*a);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
@@ -1304,8 +1304,8 @@ GRID_INLET(0) {
 	float th = angle * M_PI / 18000;
 	for (int i=0; i<2; i++) for (int j=0; j<2; j++)
 		rotator[(i?to:from)*n+(j?to:from)] = (int32)round(scale*cos(th+(j-i)*M_PI/2));
-	GridOutlet out(this,0,Dim(n,n),int32_e);
-	out.send(n*n,rotator);
+	GridOut go(this,0,Dim(n,n),int32_e);
+	go.send(n*n,rotator);
 }
 \def 0 axis(int from, int to, int n) {
 	if (n<0) RAISE("n-axis number incorrect");
@@ -1344,8 +1344,8 @@ static void expect_min_one_dim (const Dim &d) {
 			cdata[*ldata]++;
 		}
 		for (int i=0; i<numClusters; i++) OP(/)->map(chans,sdata+i*chans,(T)cdata[i]);
-		out = new GridOutlet(this,1,counts->dim,counts->nt); out->send(counts->dim.prod(),(int32 *)*counts);
-		out = new GridOutlet(this,0,  sums->dim,  sums->nt); out->send(  sums->dim.prod(),(T     *)*  sums);
+		go = new GridOut(this,1,counts->dim,counts->nt); go->send(counts->dim.prod(),(int32 *)*counts);
+		go = new GridOut(this,0,  sums->dim,  sums->nt); go->send(  sums->dim.prod(),(T     *)*  sums);
 	}
 };
 
@@ -1390,7 +1390,7 @@ GRID_INLET(0) {
 	if (w<0 || w>=in.dim.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in.dim.n);
 	if (!r) {t_atom a[1]; SETFLOAT(a,256); r=new Grid(1,a);}
 	SAME_TYPE(in,r);
-	out = new GridOutlet(this,0,in.dim,in.nt);
+	go = new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(w);
 	int sxc = in.dim.prod(w);
 	size_t rn = r->dim.prod();
@@ -1411,12 +1411,12 @@ GRID_INLET(0) {
 		CLEAR(tada+sxc,sc);
 		if (rn==1) for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rvalue  );
 		else       for (int i=sxc-1; i>=0; i--) tada[i   ] = shr8r(tada[i+sc]*256 + (data[i]-tada[i+sc])*rdata[i]);
-		out->send(sxc,tada);
+		go->send(sxc,tada);
 	    } else {
 		CLEAR(tada,sc);
 		if (rn==1) for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rvalue  );
 		else       for (int i=0; i<sxc; i++)    tada[i+sc] = shr8r(tada[i   ]*256 + (data[i]-tada[i   ])*rdata[i]);
-		out->send(sxc,tada+sc);
+		go->send(sxc,tada+sc);
 	    }
 	}
 } GRID_END
@@ -1435,7 +1435,7 @@ GRID_INPUT(1,r) {} GRID_END
 };
 
 GRID_INLET(0) {	
-	out = new GridOutlet(this,0,in.dim,float32_e);
+	go = new GridOut(this,0,in.dim,float32_e);
 } GRID_FLOW {
 	t_garray *a;
 	int npoints;
@@ -1454,7 +1454,7 @@ GRID_INLET(0) {
 			tada[i] = (npoints ? vec[index].w_float : 0);
 		}
 	}
-	out->send(n,tada);
+	go->send(n,tada);
 } GRID_END
 
 \end class {install("#tabread",1,1);}

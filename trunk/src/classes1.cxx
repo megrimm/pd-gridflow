@@ -74,9 +74,9 @@ static void   expect_max_one_dim     (const Dim &d) {if (d.n>1 ) RAISE("expectin
 	\grin 0
 };
 GRID_INLET(0) {
-	out = new GridOutlet(this,0,in.dim,cast);
+	go = new GridOut(this,0,in.dim,cast);
 } GRID_FLOW {
-	out->send(n,data);
+	go->send(n,data);
 } GRID_END
 \end class {install("#cast",1,1); add_creator("@cast");}
 
@@ -104,11 +104,11 @@ GridHandler *stromgol; // remove this asap
 		}
 	}
 	~GridImport() {}
-	\decl 0 reset() {int32 foo[1]={0}; if (out) while (out->sender) out->send(1,foo);}
+	\decl 0 reset() {int32 foo[1]={0}; if (go) while (go->sender) go->send(1,foo);}
 	\decl 0 symbol(t_symbol *x) {
 		const char *name = x->s_name;
 		long n = strlen(name);
-		if (per_message) out=new GridOutlet(this,0,Dim(n));
+		if (per_message) go=new GridOut(this,0,Dim(n));
 		process(n,(uint8 *)name);
 	}
 	\decl 0 to_ascii(...) {
@@ -116,7 +116,7 @@ GridHandler *stromgol; // remove this asap
 		pd_oprint(os,argc,argv);
 		string s = os.str();
 		long n = s.length();
-		if (per_message) out=new GridOutlet(this,0,Dim(n),cast);
+		if (per_message) go=new GridOut(this,0,Dim(n),cast);
 		process(n,(uint8 *)s.data());
 	}
 	\decl 0 bang() {_0_list(0,0);}
@@ -128,9 +128,9 @@ GridHandler *stromgol; // remove this asap
 		if (in.size()<=0) in.resize(1);
 		if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 		while (n) {
-			if (!out || !out->sender) out = new GridOutlet(this,0,per_message?in[0]->dim:dim,cast);
-			long n2 = min((long)n,out->dim.prod()-out->dex);
-			out->send(n2,data);
+			if (!go || !go->sender) go = new GridOut(this,0,per_message?in[0]->dim:dim,cast);
+			long n2 = min((long)n,go->dim.prod()-go->dex);
+			go->send(n2,data);
 			n-=n2; data+=n2;
 		}
 	}
@@ -148,7 +148,7 @@ GRID_INPUT(1,dim_grid) {
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 	in[0]->from_list(argc,argv,cast);
-	if (!argc && per_message) out = new GridOutlet(this,0,Dim(0),cast);
+	if (!argc && per_message) go = new GridOut(this,0,Dim(0),cast);
 }
 
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
@@ -428,7 +428,7 @@ GRID_INLET(0) {
 	int nd = nb-nc+na-1;
 	COPY(v,in.dim.v,na-1);
 	COPY(v+na-1,r->dim.v+nc,nb-nc);
-	out=new GridOutlet(this,0,Dim(nd,v),r->nt);
+	go=new GridOut(this,0,Dim(nd,v),r->nt);
 	if (nc>0) in.set_chunk(na-1);
 } GRID_FLOW {
 	int na = in.dim.n;
@@ -463,9 +463,9 @@ GRID_INLET(0) {
 		case 4: for (; i<nd; i++, foo+=4) SCOPY(foo,p+4*v[i],4); break; \
 		default:; }; \
 		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
-		out->send(size*nd,tada); \
+		go->send(size*nd,tada); \
 	} else { \
-		for (int i=0; i<nd; i++) out->send(size,p+size*v[i]); \
+		for (int i=0; i<nd; i++) go->send(size,p+size*v[i]); \
 	} \
 }
 	TYPESWITCH(r->nt,FOO,)
@@ -474,7 +474,7 @@ GRID_INLET(0) {
 	if (in.dim.prod()==0) {
 		long n = in.dim.prod(0,-2);
 		long size = r->dim.prod();
-#define FOO(T) while (n--) out->send(size,(T *)*r);
+#define FOO(T) while (n--) go->send(size,(T *)*r);
 		TYPESWITCH(r->nt,FOO,)
 #undef FOO
 	}
@@ -507,7 +507,7 @@ GRID_INLET(1) {
 	while (lsd>=nn-in.dim.n) {
 		lsd--;
 		//int cs = in.dim.prod(lsd-nn+in.dim.n);
-		if (/*cs*(number_type_table[in.nt].size/8)>GridOutlet::MAX_PACKET_SIZE ||*/
+		if (/*cs*(number_type_table[in.nt].size/8)>GridOut::MAX_PACKET_SIZE ||*/
 			fromb[lsd]!=0 || sizeb[lsd]!=r->dim[lsd]) break;
 	}
 	lsd++;
@@ -553,11 +553,11 @@ GRID_INLET(0) {
 	if (op->size>1 && (in.dim[in.dim.n-1]!=op->size || r->dim[r->dim.n-1]!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in.dim.to_s(),r->dim.to_s());
-	out=new GridOutlet(this,0,in.dim,in.nt);
-	//if (out->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",out->inlets[0]->dim.to_s());
-	if (out->fresh) out->create_buf(); /* force it now (hack) */
+	go=new GridOut(this,0,in.dim,in.nt);
+	//if (go->inlets.size()==1) post("[#]: 1 receiver with bugger size %s",go->inlets[0]->dim.to_s());
+	if (go->fresh) go->create_buf(); /* force it now (hack) */
 } GRID_FLOW {
-	long moton = out->buf.dim.prod();
+	long moton = go->buf.dim.prod();
 	T *rdata = (T *)*r;
 	long loop = r->dim.prod();
 	while (n) {
@@ -565,10 +565,10 @@ GRID_INLET(0) {
 		T tada[pn];
 		COPY(tada,data,pn);
 		if (loop>1) {
-			if (in.dex+pn <= loop) op->zip(pn/op->size,tada,rdata+out->dex); else {
+			if (in.dex+pn <= loop) op->zip(pn/op->size,tada,rdata+go->dex); else {
 				// !@#$ should prebuild and reuse this array when "loop" is small
 				T data2[pn];
-				long ii = mod(out->dex,loop);
+				long ii = mod(go->dex,loop);
 				long m = min(loop-ii,pn);
 				COPY(data2,rdata+ii,m);
 				long nn = m+((pn-m)/loop)*loop;
@@ -577,7 +577,7 @@ GRID_INLET(0) {
 				op->zip(pn/op->size,tada,data2);
 			}
 		} else op->map(pn,tada,loop ? *rdata : T(0));
-		out->send(pn,tada);
+		go->send(pn,tada);
 		n-=pn; data+=pn;
 	}
 } GRID_END
@@ -604,12 +604,12 @@ GRID_INLET(0) {
 	COPY(v+yi,in.dim.v+an-bn,bn);
 	if (seed) SAME_DIM(an-(yi+1),in.dim,(yi+1),seed->dim,0);
 	if (!op->on(*data)->fold) RAISE("operator %s does not support fold",op->name);
-	out=new GridOutlet(this,0,Dim(an-1,v),in.nt);
+	go=new GridOut(this,0,Dim(an-1,v),in.nt);
 	in.set_chunk(yi);
 	if (in.dim.prod(yi)==0) {
-		long n = out->dim.prod();
+		long n = go->dim.prod();
 		T x=0; op->on(x)->neutral(&x,at_left);
-		for(long i=0; i<n; i++) out->send(1,&x);
+		for(long i=0; i<n; i++) go->send(1,&x);
 	}
 } GRID_FLOW {
 	int an = in.dim.n;
@@ -624,7 +624,7 @@ GRID_INLET(0) {
 		else {T neu; op->on(*buf)->neutral(&neu,at_left); op_put->map(zn,buf+i,neu);}
 		op->fold(zn,yn,buf+i,data);
 	}
-	out->send(nn/yn,buf);
+	go->send(nn/yn,buf);
 } GRID_FINISH {
 } GRID_END
 
@@ -645,7 +645,7 @@ GRID_INLET(0) {
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
 	if (seed) SAME_DIM(bn,in.dim,an-bn,seed->dim,0);
 	if (!op->on(*data)->scan) RAISE("operator %s does not support scan",op->name);
-	out=new GridOutlet(this,0,in.dim,in.nt);
+	go=new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(an-bn-1);
 } GRID_FLOW {
 	int an = in.dim.n;
@@ -662,7 +662,7 @@ GRID_INLET(0) {
 		T seed[zn]; op_put->map(zn,seed,neu);
 		for (long i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
 	}
-	out->send(n,buf);
+	go->send(n,buf);
 } GRID_END
 
 \end class {install("#scan",1,1);}
@@ -727,7 +727,7 @@ GRID_INLET(0) {
 	int32 v[n];
 	COPY(v,a.v,a.n-1);
 	COPY(v+a.n-1,b.v+1,b.n-1);
-	out=new GridOutlet(this,0,Dim(n,v),in.nt);
+	go=new GridOut(this,0,Dim(n,v),in.nt);
 	in.set_chunk(a.n-1);
 	long sjk=r->dim.prod(), sj=in.dim.prod(a.n-1), sk=sjk/sj;
 	long chunk = max(1L,MAX_PACKET_SIZE/sjk);
@@ -761,7 +761,7 @@ GRID_INLET(0) {
 		DOT_ADD_MUL_2(4)
 		default:for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
 		}
-		out->send(chunk*sk,buf2);
+		go->send(chunk*sk,buf2);
 		n-=chunk*sj;
 		data+=chunk*sj;
 	}
@@ -780,7 +780,7 @@ GRID_INLET(0) {
 			op->zip(chunk*sk,buf,(T *)*r2+i*off*sk);
 			fold->zip(chunk*sk,buf2,buf);
 		}
-		out->send(chunk*sk,buf2);
+		go->send(chunk*sk,buf2);
 		n-=chunk*sj;
 		data+=chunk*sj;
 	}
@@ -813,7 +813,7 @@ GRID_INLET(0) {
 	int32 v[n];
 	COPY(v,a.v,a.n);
 	COPY(v+a.n,b.v,b.n);
-	out=new GridOutlet(this,0,Dim(n,v),in.nt);
+	go=new GridOut(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
 	long b_prod = r->dim.prod();
 	if (!b_prod) return; /* nothing to do... and avoid deadly divisions by zero */
@@ -822,7 +822,7 @@ GRID_INLET(0) {
 		while (n) {
 			for (long j=0; j<b_prod; j++) buf[j] = *data;
 			op->zip(b_prod,buf,(T *)*r);
-			out->send(b_prod,buf);
+			go->send(b_prod,buf);
 			data++; n--;
 		}
 		return;
@@ -844,7 +844,7 @@ GRID_INLET(0) {
 	int nn=(n/ch)*ch;
 	for (int j=0; j<nn; j+=ch) op->zip(ch,buf+j,buf2);
 	op->zip(n-nn,buf+nn,buf2);
-	out->send(n,buf);
+	go->send(n,buf);
 } GRID_END
 
 GRID_INPUT(1,r) {} GRID_END
@@ -904,14 +904,14 @@ void GridFor::trigger (T bogus) {
 	if (from->dim.n==0) {d = Dim(*nn);}
 	else {nn[n]=n;       d = Dim(n+1,nn);}
 	int total = d.prod();
-	out=new GridOutlet(this,0,d,from->nt);
+	go=new GridOut(this,0,d,from->nt);
 	if (total==0) return;
 	int k=0;
 	for(int d=0;;d++) {
 		// here d is the dim# to reset; d=n for none
 		for(;d<n;d++) x[k+d]=fromb[d];
 		k+=n;
-		if (k==64*n) {out->send(k,x); k=0; COPY(x,x+63*n,n);}
+		if (k==64*n) {go->send(k,x); k=0; COPY(x,x+63*n,n);}
 		else {                             COPY(x+k,x+k-n,n);}
 		d--;
 		// here d is the dim# to increment
@@ -921,7 +921,7 @@ void GridFor::trigger (T bogus) {
 			if (x[k+d]!=to2[d]) break;
 		}
 	}
-	end: if (k) out->send(k,x);
+	end: if (k) go->send(k,x);
 }
 GRID_INPUT(2,step) {} GRID_END
 GRID_INPUT(1,to) {} GRID_END
@@ -940,8 +940,8 @@ GRID_INLET(0) {} GRID_FINISH {outlet_bang(outlets[0]);} GRID_END
 	\grin 0
 };
 GRID_INLET(0) {
-	GridOutlet out(this,0,Dim(in.dim.n));
-	out.send(in.dim.n,in.dim.v);
+	GridOut go(this,0,Dim(in.dim.n));
+	go.send(in.dim.n,in.dim.v);
 } GRID_END
 \end class {install("#dim",1,1); add_creator("@dim");}
 \class GridType : FObject {
@@ -975,18 +975,18 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	long a=in.dim.prod(), b=dim.prod();
 	if (a<b) temp=new Grid(Dim(a),in.nt);
-	out=new GridOutlet(this,0,dim,in.nt);
+	go=new GridOut(this,0,dim,in.nt);
 } GRID_FLOW {
 	long i = in.dex;
-	if (!temp) {long n2 = min(n,   dim.prod()-i);                             if (n2>0) out->send(n2,data);}
-	else       {long n2 = min(n,in.dim.prod()-i); COPY((T *)*temp+i,data,n2); if (n2>0) out->send(n2,data);}
+	if (!temp) {long n2 = min(n,   dim.prod()-i);                             if (n2>0) go->send(n2,data);}
+	else       {long n2 = min(n,in.dim.prod()-i); COPY((T *)*temp+i,data,n2); if (n2>0) go->send(n2,data);}
 } GRID_FINISH {
 	if (!!temp) {
 		long a = in.dim.prod(), b = dim.prod();
 		if (a) {
-			for (long i=a; i<b; i+=a) out->send(min(a,b-i),(T *)*temp);
+			for (long i=a; i<b; i+=a) go->send(min(a,b-i),(T *)*temp);
 		} else {
-			T foo[1]={0}; for (long i=0; i<b; i++) out->send(1,foo);
+			T foo[1]={0}; for (long i=0; i<b; i++) go->send(1,foo);
 		}
 	}
 	temp=0;

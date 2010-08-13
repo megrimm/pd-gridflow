@@ -119,7 +119,7 @@ GRID_INLET(0) {
 
 \def 0 dump () {
 	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
-	GridOutlet out(this,0,Dim(3,v));
+	GridOut out(this,0,Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
 		for (int x=0; x<aa_scrwidth(context); x++) {
 			int32 data[2];

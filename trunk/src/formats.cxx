@@ -208,7 +208,7 @@ struct GridHeader {
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
 		dim = Dim(head.dimn,dimv);
 	}
-	GridOutlet out(this,0,dim,nt);
+	GridOut out(this,0,dim,nt);
 	long nn = dim.prod();
 	
 #define FOO(T) {T data[nn]; size_t nnn = fread(data,1,nn*sizeof(T),f); \
@@ -307,7 +307,7 @@ TYPESWITCH(in.nt,FOO,)
 	int maxnum = getuint();
 	if (maxnum!=255) RAISE("expected max to be 255 (8 bits per value)");
 	size_t sxc = sx*sc;
-	GridOutlet out(this,0,Dim(sy,sx,sc),cast);
+	GridOut out(this,0,Dim(sy,sx,sc),cast);
 	uint8 row[sx*3];
 	switch (b) {
 		case '2': case '3': {

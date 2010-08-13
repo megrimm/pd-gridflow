@@ -191,7 +191,7 @@ const char *oserr_find(long err)
 
 //////// début de copier-coller de #io.quicktimeapple 0 bang
 
-	GridOutlet out(this,0,dim,cast);
+	GridOut out(this,0,dim,cast);
 	string cs = colorspace->s_name;
 	int sy = dim[0];
 	int sx = dim[1];

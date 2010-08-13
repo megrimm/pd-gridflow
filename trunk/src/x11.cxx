@@ -455,13 +455,13 @@ void FormatX11_call(FormatX11 *p) {p->call();}
 
 \def 0 bang () {
 	XGetSubImage(display, window, 0, 0, dim[1], dim[0], (unsigned)-1, ZPixmap, ximage, 0, 0);
-	GridOutlet out(this,0,dim,cast);
+	GridOut go(this,0,dim,cast);
 	int sy=dim[0], sx=dim[1], bs=dim.prod(1);
 	uint8 b2[bs];
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = image + ximage->bytes_per_line * y;
 		bit_packing->unpack(sx,b1,b2);
-		out.send(bs,b2);
+		go.send(bs,b2);
 	}
 }
 

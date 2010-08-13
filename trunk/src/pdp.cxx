@@ -84,7 +84,7 @@ static void pdpproxy_process(pdpproxy *self) {
 			*tada++ = YUV2B(datay[1]>>7,u,v);
 		}
 	}
-	GridOutlet o((FObject *)self->daddy,0,Dim(sy,sx,3),int32_e); // why (FObject *) cast ???
+	GridOut o((FObject *)self->daddy,0,Dim(sy,sx,3),int32_e); // why (FObject *) cast ???
 	o.send(sy*sx*3,tada2);
 }
 static void pdpproxy_free(pdpproxy *x) {pdp_imagebase_free(x);}
