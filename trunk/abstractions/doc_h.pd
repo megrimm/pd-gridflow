@@ -115,7 +115,7 @@
 #N canvas 20 0 488 687 screenshots 1;
 #X obj 12 543 #in;
 #X msg 12 524 open x11 here \$1 \, bang;
-#X obj 48 600 #out;
+#X obj 48 630 #out;
 #X obj 10 10 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X obj 12 467 t b b;
@@ -124,7 +124,7 @@
 #X obj 58 486 delay;
 #X obj 58 467 t b f;
 #X obj 27 9 r justscreenshot;
-#X msg 48 619 \; shoot end;
+#X msg 48 649 \; shoot end;
 #X msg 12 486 bang;
 #X obj 128 123 r \$0-rien;
 #X obj 128 66 pack s \$0;
@@ -177,7 +177,10 @@
 #X obj 191 241 gf/wrap;
 #X obj 128 104 gf/sys_gui;
 #X msg 128 85 list pd \$2-rien [\$1.c yview] [format %c 59];
-#X msg 48 581 open png/\$1 \, autoclose;
+#X obj 48 588 pack s s;
+#X obj 311 571 symbol \$1;
+#X msg 48 611 open png/\$2\$1 \, autoclose;
+#X obj 311 552 loadbang;
 #X connect 0 0 5 0;
 #X connect 1 0 0 0;
 #X connect 2 0 10 0;
@@ -260,7 +263,10 @@
 #X connect 60 0 50 1;
 #X connect 60 0 59 1;
 #X connect 62 0 61 0;
-#X connect 63 0 2 0;
+#X connect 63 0 65 0;
+#X connect 64 0 63 1;
+#X connect 65 0 2 0;
+#X connect 66 0 64 0;
 #X restore 6 257 pd screenshots;
 #X obj 332 28 bng 12 250 50 0 justscreenshot empty scrineshotte 17
 7 0 8 -159808 -1 -191407;
