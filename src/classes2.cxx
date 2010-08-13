@@ -54,6 +54,12 @@ struct _outlet {
 
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
+string join (int argc, t_atom *argv, string sep=" ", string term="") {
+	std::ostringstream os;
+	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
+	return os.str();
+}
+
 //****************************************************************
 
 struct ArgSpec {
@@ -754,12 +760,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class GFSprintf : FObject {
 	string format;
-	\constructor (...) {
-		std::ostringstream o;
-		char buf[MAXPDSTRING];
-		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
-		format = o.str();
-	}
+	\constructor (...) {format = join(argc,argv);}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
@@ -774,13 +775,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GridSprintf : FObject {
 	string format;
 	\attr NumberTypeE cast;
-	\constructor (...) {
-		std::ostringstream o;
-		char buf[MAXPDSTRING];
-		for (int i=0; i<argc; i++) {atom_string(&argv[i],buf,MAXPDSTRING); o << buf; if (i!=argc-1) o << ' ';}
-		format = o.str();
-		cast = int32_e;
-	}
+	\constructor (...) {format = join(argc,argv); cast = int32_e;}
 	\decl 0 bang   ()          {_0_list(0,0);}
 	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
@@ -1242,16 +1237,10 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/find_file",1,2);}
 
-string join (int argc, t_atom *argv, string sep, string term) {
-	std::ostringstream os;
-	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
-	return os.str();
-}
-
 \class GFL2S : FObject {
 	t_symbol *sep;
 	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
-	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv,sep->s_name,"").data()));}
+	\decl 0 list (...) {outlet_symbol(outlets[0],gensym(join(argc,argv,sep->s_name).data()));}
 	\decl 1 symbol (t_symbol *sep) {this->sep=sep;}
 };
 \end class {install("gf/l2s",2,1);}
