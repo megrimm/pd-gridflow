@@ -631,7 +631,7 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 	ninlets  = 1;
 	noutlets = 0;
 	inlets  = new  BFProxy*[1];
-	outlets = new t_outlet*[1];
+	outlets = new PtrOutlet[1];
 	FClass *fc = fclasses[name];
 	inlets[0] = 0; // inlet 0 of this table is not in use
 	ninlets_set( fc->ninlets ,false);
@@ -737,11 +737,11 @@ void FObject::noutlets_set (int n, bool draw) {
 	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
 	if (draw) BFObject_undrawio(bself);
 	if (noutlets<n) {
-		t_outlet **noo = new t_outlet*[n>0?n:1];
+		PtrOutlet*noo = new PtrOutlet[n>0?n:1];
 		memcpy(noo,outlets,noutlets*sizeof(t_outlet*));
 		delete[] outlets;
 		outlets = noo;
-		while (noutlets<n) outlets[noutlets++] = outlet_new(bself,&s_anything);
+		while (noutlets<n) outlets[noutlets++].p = outlet_new(bself,&s_anything);
 	} else {
 		while (noutlets>n) outlet_free(outlets[--noutlets]);
 	}
