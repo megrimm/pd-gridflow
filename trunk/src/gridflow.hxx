@@ -912,6 +912,8 @@ inline void set_atom (t_atom *a, string    v) {SETSYMBOL(a,gensym(v.data()));}
 inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
+inline void set_atom (t_atom *a, t_gpointer *v) {SETPOINTER(a,v);}
+inline void set_atom (t_atom *a, GridOut  *v) {SETGRIDOUT(a,v);}
 inline void set_atom (t_atom *a, const t_atom &v) {*a=v;}
 
 extern map<string,FClass *> fclasses;
