@@ -1437,7 +1437,7 @@ GRID_INPUT(1,r) {} GRID_END
 GRID_INLET(0) {	
 	go = new GridOut(this,0,in.dim,float32_e);
 } GRID_FLOW {
-	t_garray *a = (t_garray *)pd_findbyclass(t, garray_class)); if (!a) RAISE("%s: no such array", t->s_name);
+	t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
 	int npoints;
 	t_word *vec;
 	float32 tada[n];
