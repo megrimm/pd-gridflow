@@ -76,8 +76,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 		for (char *u=t+1; *u; u++) *u=tolower(*u);
 		out[1](gensym(t+1));
 		map<string,string>::iterator u = suffix_table.find(string(t+1));
-		if (u==suffix_table.end()) out[0]();
-		else out[0](gensym((char *)u->second.data()));
+		if (u==suffix_table.end()) out[0](); else out[0](gensym((char *)u->second.data()));
 	}
 	free(s);
   }
@@ -166,15 +165,23 @@ struct GridHeader {
 		_0_open(mode,filename);
 	}
 	\decl 0 bang ();
-	\decl 0 headerless (...);
-	\decl 0 headerful ();
-	\decl 0 seek_byte (int64 bytepos);
-	~FormatGrid() {
-		//@stream.close if @stream
-		//GridFlow.hunt_zombies
+	\decl 0 headerless (...) {
+		if (argc>=0 && argv[0].a_type==A_LIST) {
+			t_binbuf *b = (t_binbuf *)argv[0]; argc = binbuf_getnatom(b); argv = (t_atom2 *)binbuf_getvec(b);}
+		int v[argc];
+		for (int i=0; i<argc; i++) v[i] = argv[i];
+		dim = Dim(argc,v);
+		headerless = true;
 	}
-//	\decl void raw_open_gzip_in(string filename);
-//	\decl void raw_open_gzip_out(string filename);
+	\decl 0 headerful () {headerless = false;}
+	\decl 0 seek_byte (int64 pos) {fseek(f,pos,SEEK_SET);}
+	~FormatGrid() {/* @stream.close if @stream; GridFlow.hunt_zombies */}
+	//\decl void raw_open_gzip_in( string filename) {
+		//r,w = IO.pipe; if (pid=fork) {GridFlow.subprocesses[pid]=true; w.close; @stream = r;}
+		//else {r.close; STDOUT.reopen w; STDIN.reopen filename, "r"; exec "gzip", "-dc";}
+	//\decl void raw_open_gzip_out(string filename) {
+		//r,w = IO.pipe; if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
+		//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
 };
 \def 0 bang () {
 	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
@@ -247,30 +254,11 @@ TYPESWITCH(in.nt,FOO,)
 	fflush(f);
 } GRID_END
 
-\def 0 headerless (...) {
-	if (argc>=0 && argv[0].a_type==A_LIST) {
-		t_binbuf *b = (t_binbuf *)argv[0]; argc = binbuf_getnatom(b); argv = (t_atom2 *)binbuf_getvec(b);}
-	int v[argc];
-	for (int i=0; i<argc; i++) v[i] = argv[i];
-	dim = Dim(argc,v);
-	headerless = true;
-}
-\def 0 headerful () {headerless = false;}
-\def 0 seek_byte (int64 pos) {fseek(f,pos,SEEK_SET);}
-
-//\def void raw_open_gzip_in(string filename) {
-	//r,w = IO.pipe
-	//if (pid=fork) {GridFlow.subprocesses[pid]=true; w.close; @stream = r;}
-	//else {r.close; STDOUT.reopen w; STDIN.reopen filename, "r"; exec "gzip", "-dc";}
-//\def void raw_open_gzip_out(string filename) {
-	//r,w = IO.pipe
-	//if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
-	//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
-
 \end class FormatGrid {install_format("#io.grid",6,"grid");}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define RERR RAISE("error reading header: %s",feof(f) ? "end of file" : strerror(ferror(f)))
 \class FormatNetPBM : Format {
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {Format::_0_open(mode,filename);}
@@ -291,7 +279,6 @@ TYPESWITCH(in.nt,FOO,)
 	}
 	\decl 0 bang ();
 };
-#define RERR RAISE("error reading header: %s",feof(f) ? "end of file" : strerror(ferror(f)))
 \def 0 bang () {
 	int a = fgetc(f); if (a==EOF) RAISE("error reading header magic");
 	int b = fgetc(f); if (a==EOF) RAISE("error reading header magic");
@@ -312,8 +299,7 @@ TYPESWITCH(in.nt,FOO,)
 	switch (b) {
 		case '2': case '3': {
 			size_t n = out.dim.prod();
-			int32 x;
-			for (size_t i=0; i<n; i++) if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);
+			for (size_t i=0; i<n; i++) {int32 x; if (fscanf(f,"%d",&x)<1) RERR; else out.send(1,&x);}
 		} break;
 		case '5': case '6': {
 			for (size_t y=0; y<sy; y++) if (fread(row,1,sxc,f)<sxc) RERR; else out.send(sxc,row);

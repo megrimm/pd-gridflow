@@ -120,7 +120,6 @@ GridHandler *stromgol; // remove this asap
 		process(n,(uint8 *)s.data());
 	}
 	\decl 0 bang() {_0_list(0,0);}
-	//\decl 0 list(...);
 	\decl 1 per_message() {per_message=true; dim_grid=0;}
 	\grin 0
 	\grin 1 int32
@@ -144,6 +143,7 @@ GRID_INPUT(1,dim_grid) {
 	per_message=false;
 } GRID_END
 
+// needs to stay a \def because it's implicitly \decl'd in \grin 0
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);

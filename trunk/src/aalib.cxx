@@ -58,10 +58,24 @@ static map<string,const aa_driver *> drivers;
 		post("aalib image size: %s",Dim(3,v).to_s());
 	}
 	~FormatAALib () {if (context) aa_close(context);}
-	\decl 0 hidecursor ();
-	\decl 0 print (int y, int x, int a, string text);
-	\decl 0 draw ();
-	\decl 0 dump ();
+	\decl 0 hidecursor () {aa_hidemouse(context);}
+	\decl 0 print (int y, int x, int a, string text) {
+		aa_puts(context,x,y,(AAAttr)a,(char *)text.data());
+		if (autodraw==1) aa_flush(context);
+	}
+	\decl 0 draw () {aa_flush(context);}
+	\decl 0 dump () {
+		int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
+		GridOut out(this,0,Dim(3,v));
+		for (int y=0; y<aa_scrheight(context); y++) {
+			for (int x=0; x<aa_scrwidth(context); x++) {
+				int32 data[2];
+				data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
+				data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
+				out.send(2,data);
+			}
+		}
+	}
 	\grin 0 int
 };
 
@@ -109,26 +123,6 @@ GRID_INLET(0) {
 	}
 	if (autodraw==1) aa_flush(context);
 } GRID_END
-
-\def 0 hidecursor () { aa_hidemouse(context); }
-\def 0 draw () { aa_flush(context); }
-\def 0 print (int y, int x, int a, string text) {
-	aa_puts(context,x,y,(AAAttr)a,(char *)text.data());
-	if (autodraw==1) aa_flush(context);
-}
-
-\def 0 dump () {
-	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
-	GridOut out(this,0,Dim(3,v));
-	for (int y=0; y<aa_scrheight(context); y++) {
-		for (int x=0; x<aa_scrwidth(context); x++) {
-			int32 data[2];
-			data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
-			data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
-			out.send(2,data);
-		}
-	}
-}
 
 \end class FormatAALib {
 	const aa_driver *const *p = aa_drivers;

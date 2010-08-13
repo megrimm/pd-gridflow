@@ -494,7 +494,7 @@ GRID_INLET(0) {RAISE("can't write.");} GRID_END
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {
 		post("no tuner #%d", value);
 	} else {
-		vtuner.mode = value; //gfpost(&vtuner);
+		vtuner.mode = value;
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }

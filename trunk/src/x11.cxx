@@ -118,7 +118,7 @@ typedef struct {
 #endif
 		int sy=240, sx=320; // defaults
 		argv++, argc--;
-		t_symbol *domain = argc<1 ? gensym("here") : argv[0];
+		t_symbol *domain = argc<1 ? gensym("here") : (t_symbol *)argv[0];
 		int i;
 		char host[256];
 		if (domain==gensym("here")) {
@@ -208,7 +208,17 @@ typedef struct {
 		_0_border(1);
 	}
 
-	\decl 0 bang ();
+	\decl 0 bang () {
+		XGetSubImage(display, window, 0, 0, dim[1], dim[0], (unsigned)-1, ZPixmap, ximage, 0, 0);
+		GridOut go(this,0,dim,cast);
+		int sy=dim[0], sx=dim[1], bs=dim.prod(1);
+		uint8 b2[bs];
+		for(int y=0; y<sy; y++) {
+			uint8 *b1 = image + ximage->bytes_per_line * y;
+			bit_packing->unpack(sx,b1,b2);
+			go.send(bs,b2);
+		}
+	}
 	void call ();
 	\decl 0 out_size (int sy, int sx) {resize_window(sx,sy);}
 	\decl 0 setcursor (int shape) {
@@ -242,7 +252,21 @@ typedef struct {
 		XWarpPointer(display,None,None,0,0,0,0,x,y);
 		XFlush(display);
 	}
-	\decl 0 fullscreen (bool toggle=1); // not working
+	\decl 0 fullscreen (bool toggle=1) { // not working
+		fullscreen=toggle;
+		XEvent xev; CLEAR(&xev); typeof(xev.xclient) &xc = xev.xclient;
+		xc.type = ClientMessage;
+		xc.serial = 0;
+		xc.send_event = True;
+		xc.message_type = XA_NET_WM_STATE;
+		xc.window = window;
+		xc.format = 32;
+		xc.data.l[0] = toggle;
+		xc.data.l[1] = XA_NET_WM_STATE_FULLSCREEN;
+		if (!XSendEvent(display,root_window,False,SubstructureRedirectMask|SubstructureNotifyMask,&xev))
+		RAISE("can't set fullscreen");
+		XFlush(display);
+	}
 	\decl 0 border     (bool toggle=1);
 	\decl 0 loadbang () {out[0](gensym("nogrey"),0,0);}
 //	\decl 0 raise ();
@@ -261,25 +285,6 @@ typedef struct {
 	//XConfigureWindow(display,window,CWStackMode,&changes);
 	//XFlush(display);
 //}
-
-\def 0 fullscreen (bool toggle=1) {
-	fullscreen=toggle;
-	XEvent xev; typeof(xev.xclient) &xc = xev.xclient;
-        xc.type = ClientMessage;
-        xc.serial = 0;
-        xc.send_event = True;
-        xc.message_type = XA_NET_WM_STATE;
-        xc.window = window;
-        xc.format = 32;
-        xc.data.l[0] = toggle;
-        xc.data.l[1] = XA_NET_WM_STATE_FULLSCREEN;
-        xc.data.l[2] = 0;
-        xc.data.l[3] = 0;
-        xc.data.l[4] = 0;
-        if (!XSendEvent(display,root_window,False,SubstructureRedirectMask|SubstructureNotifyMask,&xev))
-            RAISE("can't set fullscreen");
-        XFlush(display);
-}
 
 // from Motif:
 #define MWM_HINTS_FUNCTIONS     (1L << 0)
@@ -407,39 +412,29 @@ void FormatX11::call() {
 		XNextEvent(display,&e);
 		switch (e.type) {
 		case Expose:{
-			XExposeEvent *ex = (XExposeEvent *)&e;
-			if (mode==2) show_section(ex->x,ex->y,ex->width,ex->height);
+			XExposeEvent &ex = e.xexpose;
+			if (mode==2) show_section(ex.x,ex.y,ex.width,ex.height);
 		}break;
-		case ButtonPress:{
-			XButtonEvent *eb = (XButtonEvent *)&e;
-			eb->state |= 128<<eb->button;
-			report_pointer(eb->y,eb->x,eb->state);
-		}break;
-		case ButtonRelease:{
-			XButtonEvent *eb = (XButtonEvent *)&e;
-			eb->state &= ~(128<<eb->button);
-			report_pointer(eb->y,eb->x,eb->state);
-		}break;
+		case ButtonPress:  {XButtonEvent &eb = e.xbutton; eb.state |=   128<<eb.button ;
+			report_pointer(eb.y,eb.x,eb.state);}break;
+		case ButtonRelease:{XButtonEvent &eb = e.xbutton; eb.state &= ~(128<<eb.button);
+			report_pointer(eb.y,eb.x,eb.state);}break;
 		case KeyPress:
 		case KeyRelease:{
-			XKeyEvent *ek = (XKeyEvent *)&e;
+			XKeyEvent &ek = e.xkey;
 			//XLookupString(ek, buf, 63, 0, 0);
-			char *kss = XKeysymToString(XLookupKeysym(ek, 0));
+			char *kss = XKeysymToString(XLookupKeysym(&ek,0));
 			char buf[64];
 			if (!kss) return; /* unknown keys ignored */
 			if (isdigit(*kss)) sprintf(buf,"D%s",kss); else strcpy(buf,kss);
-			t_atom at[4];
 			t_symbol *sel = gensym(const_cast<char *>(e.type==KeyPress ? "keypress" : "keyrelease"));
-			SETFLOAT(at+0,ek->y);
-			SETFLOAT(at+1,ek->x);
-			SETFLOAT(at+2,ek->state);
-			SETSYMBOL(at+3,gensym(buf));
+			t_atom2 at[4] = {ek.y,ek.x,ek.state,gensym(buf)};
 			out[0](sel,4,at);
 			//XFree(kss);
 		}break;
 		case MotionNotify:{
-			XMotionEvent *em = (XMotionEvent *)&e;
-			report_pointer(em->y,em->x,em->state);
+			XMotionEvent &em = *(XMotionEvent *)&e;
+			report_pointer(em.y,em.x,em.state);
 		}break;
 		case DestroyNotify:{
 			post("This window is being closed, so this handler will close too!");
@@ -452,18 +447,6 @@ void FormatX11::call() {
 	clock_delay(clock,20);
 }
 void FormatX11_call(FormatX11 *p) {p->call();}
-
-\def 0 bang () {
-	XGetSubImage(display, window, 0, 0, dim[1], dim[0], (unsigned)-1, ZPixmap, ximage, 0, 0);
-	GridOut go(this,0,dim,cast);
-	int sy=dim[0], sx=dim[1], bs=dim.prod(1);
-	uint8 b2[bs];
-	for(int y=0; y<sy; y++) {
-		uint8 *b1 = image + ximage->bytes_per_line * y;
-		bit_packing->unpack(sx,b1,b2);
-		go.send(bs,b2);
-	}
-}
 
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;

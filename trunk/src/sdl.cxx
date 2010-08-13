@@ -150,7 +150,7 @@ static void stop () {
 	void call ();
 	\decl 0 setcursor (int shape);
 	\decl 0 hidecursor ();
-	\decl 0 title (string title);
+	\decl 0 title (const char *title) {SDL_WM_SetCaption(title,title);}
 	\decl 0 position   (...) {out[0](gensym("position"),  argc,argv);}
 	\decl 0 keypress   (...) {out[0](gensym("keypress"),  argc,argv);}
 	\decl 0 keyrelease (...) {out[0](gensym("keyrelease"),argc,argv);}
@@ -168,7 +168,7 @@ static void stop () {
 			break;
 		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 		}
-		_0_title(string("GridFlow SDL"));
+		_0_title("GridFlow SDL");
 	}
 	\grin 0 int
 	~FormatSDL () {
@@ -177,7 +177,6 @@ static void stop () {
 	}
 };
 
-\def 0 title (string title) {SDL_WM_SetCaption(title.data(),title.data());}
 void FormatSDL::call() {HandleEvent(); clock_delay(cloque,20);}
 void FormatSDL_call(FormatSDL *self) {self->call();}
 
