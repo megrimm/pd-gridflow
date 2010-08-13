@@ -3,22 +3,14 @@ L = much later (whenever we get to know how to do it...)
 
 [ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 --------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
-[ ] dépendance [button]
-[ ] dépendance [count]
-[ ] dépendances [l2s] [s2l]
-[ ] dépendances [sys_gui] [hcs/sys_gui]
-[ ] [#dim_append] [#dim_prepend]
-[ ] [#nothing]
-[ ] remove duplicate entries in the GLenum tables
+[ ] bundle m_pd.h ?
 [ ] remove black border that just appeared in [#see, margins 0 0 0 0] ([doc_link])
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
 [ ] change description of GridFlow on gridflow.ca and puredata.info
 [ ] figure out domain name transfer problem
-[ ] remove [inv+] and [inv*] aliases
-[ ] terrible bug in [#reverse] !
 [ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
-[ ] [#] with 0-sized right value gives total crap
 [ ] [gf/error] doesn't report the source of the error like RAISE() does.
+[ ] [gf/error] and [sprintf]: support the rest of args that make sense
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
@@ -112,11 +104,11 @@ L = much later (whenever we get to know how to do it...)
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
 [ ] multi-valued attributes in source_filter
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
-[ ] png_check_sig est désuet
-[ ] #include <libpng12/png.h> utilise pas l'autodétection
 [ ] reduce [doc_h] clock again before release !
 [ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
 [ ] revoir le système de paquetage pour linux.
+[ ] [#dim_append] [#dim_prepend] (pas si utiles que ça...?)
+[ ] [#nothing]
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
