@@ -2,7 +2,10 @@
 
 source ../../tcl/pd_parser.tcl
 
-foreach fname [glob *-help.pd cv/*-help.pd gf/*-help.pd] {
+set files [glob *-help.pd cv/*-help.pd gf/*-help.pd]
+set n [llength $files]; set i 0
+foreach fname $files {
+  puts -nonewline "\r$i files out of $n"; flush stdout
   set f [open $fname]
   set g [open png/[regsub {pd$} $fname html] w]
   puts $g "<html><head><title>$fname</title></head>"
@@ -16,6 +19,6 @@ foreach fname [glob *-help.pd cv/*-help.pd gf/*-help.pd] {
   puts $g "</p></body></html>"
   close $f
   close $g
-  #exit
+  incr i
 }
-
+puts ""
