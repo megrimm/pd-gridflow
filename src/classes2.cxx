@@ -742,8 +742,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
 		std::ostringstream o;
 		o << "[";
-		if (binbuf_getnatom(b)) o<<*binbuf_getvec(b);
-		for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
+		if (b && binbuf_getnatom(b)) o<<*binbuf_getvec(b); else o<<"???";
+		if (ce) for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
 		o << "]: ";
 		pd_oprintf(o,format.data(),argc,argv);
 		t_canvas *canvas = canvas_getrootfor(mom);
