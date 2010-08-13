@@ -1,24 +1,24 @@
 #N canvas 380 24 632 642 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 946 doc_also;
-#X obj 0 966 doc_f;
+#X obj 3 994 doc_also;
+#X obj 0 1014 doc_f;
 #X obj 3 146 doc_c 1;
 #X obj 3 221 doc_i 2;
 #X obj 14 251 doc_ii 0;
-#X obj 14 839 doc_ii 1;
-#X obj 3 871 doc_o 1;
-#X obj 14 901 doc_oo 0;
-#X obj 97 839 doc_m i1 list;
+#X obj 14 887 doc_ii 1;
+#X obj 3 919 doc_o 1;
+#X obj 14 949 doc_oo 0;
+#X obj 97 887 doc_m i1 list;
 #X text 232 176 format string \, joined with single spaces (just like
 default of [gf/l2s]);
 #X obj 97 251 doc_m i0 list;
-#X obj 103 946 makefilename;
-#X obj 97 901 doc_m o0 symbol;
-#X obj 232 839 doc_same 0;
+#X obj 103 994 makefilename;
+#X obj 97 949 doc_m o0 symbol;
+#X obj 232 887 doc_same 0;
 #X obj 134 45 gf/sprintf;
-#X obj 187 946 zexy/makesymbol;
-#X obj 289 946 cyclone/sprintf;
-#X obj 391 946 #sprintf;
+#X obj 187 994 zexy/makesymbol;
+#X obj 289 994 cyclone/sprintf;
+#X obj 391 994 #sprintf;
 #X obj 14 176 doc_cc any;
 #X obj 97 176 doc_m cany <atom>;
 #X obj 14 176 doc_cc 0;
@@ -26,7 +26,7 @@ default of [gf/l2s]);
 when element list has float instead of symbol \, symbol instead of
 float \, or is too short. (isn't supposed to crash \, unlike [makefilename]).
 ;
-#X text 232 560 %ld %lld %hd %hhd and other variants of the same kind
+#X text 232 608 %ld %lld %hd %hhd and other variants of the same kind
 (with l ll h hh L q j z t) are not supported and rejected. They don't
 make sense in the context of Pd anyway.;
 #X text 232 512 %m %n %p formats and 1$ 2$ 3$ placeholders are currently
@@ -34,11 +34,8 @@ not supported \, but if you find a reason to support them \, contact
 gridflow-dev.;
 #X text 233 109 Also \, produces a single symbol output \, no reparsing
 à la cyclone/sprintf.;
-#X text 232 901 a single symbol \, no reparsing. if you want a grid
+#X text 232 949 a single symbol \, no reparsing. if you want a grid
 output instead \, look at [#sprintf].;
-#X text 232 608 all other features of sprintf() from <stdio.h> are
-supposed to be supported. this was coded by reading a version of "man
-3 sprintf" dated 19 déc 2008;
 #X text 232 39 very good replacement for [makefilename] \, [zexy/makesymbol]
 \, and [cyclone/sprintf].;
 #X text 233 76 Supports most of the sprintf features that are rejected
@@ -69,19 +66,25 @@ output. [makefilename] crashes after 1000 bytes (that usually means
 around 1000 characters). beware that many objects have a 1000 character
 limit bug \, including many pd internal classes \, many external classes
 \, but not GridFlow classes.;
+#X text 232 560 all other features of sprintf() from <stdio.h> are
+supposed to be supported. this was coded by reading a version of "man
+3 sprintf" dated 19 déc 2008;
+#X text 232 839 see also http://www.kernel.org/doc/man-pages/online/pages/man3/sprintf.3.html
+;
 #X connect 1 1 12 0;
 #X connect 1 1 16 0;
 #X connect 1 1 17 0;
 #X connect 1 1 18 0;
 #X connect 9 1 14 0;
 #X connect 11 1 22 0;
-#X connect 11 1 30 0;
+#X connect 11 1 29 0;
 #X connect 11 1 24 0;
-#X connect 11 1 23 0;
-#X connect 11 1 27 0;
-#X connect 11 1 31 0;
-#X connect 11 1 32 0;
-#X connect 11 1 36 0;
 #X connect 11 1 37 0;
+#X connect 11 1 30 0;
+#X connect 11 1 31 0;
+#X connect 11 1 35 0;
+#X connect 11 1 36 0;
+#X connect 11 1 38 0;
+#X connect 11 1 23 0;
 #X connect 13 1 26 0;
 #X connect 20 1 10 0;
