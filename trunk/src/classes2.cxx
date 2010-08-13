@@ -60,6 +60,28 @@ string join (int argc, t_atom *argv, string sep=" ", string term="") {
 	return os.str();
 }
 
+/* get the owner of the result of canvas_getenv */
+#ifdef HAVE_DESIREDATA
+#define gl_env env
+#define gl_owner owner
+#endif
+static t_canvas *canvas_getabstop(t_canvas *x) {
+    while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
+    return x;
+} 
+void outlet_anything2 (PtrOutlet o, int argc, t_atom *argv) {
+	if (!argc) o();
+	else if (argv[0].a_type==A_SYMBOL)           o(argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) o(argv[0].a_float);
+	else o(argc,argv);
+}
+void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
+	if (!argc) pd_bang(o);
+	else if (argv[0].a_type==A_SYMBOL)       pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) pd_float(o,argv[0].a_float);
+	else pd_typedmess(o,&s_list,argc,argv);
+}
+
 //****************************************************************
 
 struct ArgSpec {
@@ -95,27 +117,6 @@ struct ArgSpec {
 	\decl 0 loadbang ();
 	void process_args (int argc, t_atom *argv);
 };
-/* get the owner of the result of canvas_getenv */
-#ifdef HAVE_DESIREDATA
-#define gl_env env
-#define gl_owner owner
-#endif
-static t_canvas *canvas_getabstop(t_canvas *x) {
-    while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
-    return x;
-} 
-void outlet_anything2 (PtrOutlet o, int argc, t_atom *argv) {
-	if (!argc) o();
-	else if (argv[0].a_type==A_SYMBOL)           o(argv[0].a_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) o(argv[0].a_float);
-	else o(argc,argv);
-}
-void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
-	if (!argc) pd_bang(o);
-	else if (argv[0].a_type==A_SYMBOL)       pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) pd_float(o,argv[0].a_float);
-	else pd_typedmess(o,&s_list,argc,argv);
-}
 \def 0 loadbang () {
 	t_canvasenvironment *env = canvas_getenv(mom);
 	int ac = env->ce_argc;
@@ -336,10 +337,9 @@ static bool atom_eq (const t_atom &a, const t_atom &b) {
 		out[i](f);
 	}
 	\decl 0 list(float f) {_0_float(f);}
-	\decl void _n_float(int i, float f);
+	// precedence problem in dispatcher... does this problem still exist?
+	\decl void _n_float(int i, float f) {if (!i) _0_float(f); else mosusses[i-1] = f;}
 };
- // precedence problem in dispatcher... does this problem still exist?
-\def void _n_float(int i, float f) {if (!i) _0_float(f); else mosusses[i-1] = f;}
 \end class {install("range",1,1); add_creator("gf/range");}
 
 //****************************************************************
@@ -393,32 +393,30 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 
 \class UnixTime : FObject {
 	\constructor () {}
-	\decl 0 bang ();
+	\decl 0 bang () {
+		timeval tv;
+		gettimeofday(&tv,0);
+		time_t t = time(0);
+		struct tm *tmp = localtime(&t);
+		if (!tmp) RAISE("localtime: %s",strerror(errno));
+		char tt[MAXPDSTRING];
+		strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
+		t_atom2 a[6];
+		a[0]=tmp->tm_year+1900;
+		a[1]=tmp->tm_mon-1;
+		a[2]=tmp->tm_mday;
+		a[3]=tmp->tm_hour;
+		a[4]=tmp->tm_min;
+		a[5]=tmp->tm_sec;
+		t_atom2 b[3];
+		b[0]=tv.tv_sec/86400;
+		b[1]=mod(tv.tv_sec,86400);
+		b[2]=tv.tv_usec;
+		out[2](6,a);
+		out[1](3,b);
+		send_out(0,strlen(tt),tt);
+	}
 };
-\def 0 bang () {
-	timeval tv;
-	gettimeofday(&tv,0);
-	time_t t = time(0);
-	struct tm *tmp = localtime(&t);
-	if (!tmp) RAISE("localtime: %s",strerror(errno));
-	char tt[MAXPDSTRING];
-	strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
-	t_atom a[6];
-	SETFLOAT(a+0,tmp->tm_year+1900);
-	SETFLOAT(a+1,tmp->tm_mon-1);
-	SETFLOAT(a+2,tmp->tm_mday);
-	SETFLOAT(a+3,tmp->tm_hour);
-	SETFLOAT(a+4,tmp->tm_min);
-	SETFLOAT(a+5,tmp->tm_sec);
-	t_atom b[3];
-	SETFLOAT(b+0,tv.tv_sec/86400);
-	SETFLOAT(b+1,mod(tv.tv_sec,86400));
-	SETFLOAT(b+2,tv.tv_usec);
-	out[2](6,a);
-	out[1](3,b);
-	send_out(0,strlen(tt),tt);
-}
-
 \end class UnixTime {install("unix_time",1,3);}
 
 
@@ -475,15 +473,14 @@ void ParallelPort_call(ParallelPort *self);
 		clock_delay(clock,0);
 	}
 	void call ();
-	\decl 0 float (float x);
-	\decl 0 bang ();
+	#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
+	\decl 0 float (float x) {
+		uint8 foo = (uint8) x;
+		if (fwrite(&foo,1,1,f)<1) FRAISE(fwrite,f);
+		if (!fflush(f)<0)         FRAISE(fflush,f);
+	}
+	\decl 0 bang () {status = flags = 0xdeadbeef; call();}
 };
-#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
-\def 0 float (float x) {
-  uint8 foo = (uint8) x;
-  if (fwrite(&foo,1,1,f)<1) FRAISE(fwrite,f);
-  if (!fflush(f)<0)         FRAISE(fflush,f);
-}
 void ParallelPort_call(ParallelPort *self) {self->call();}
 void ParallelPort::call() {
 #ifndef __WIN32__
@@ -498,7 +495,6 @@ void ParallelPort::call() {
 	if (clock) clock_delay(clock,2000);
 #endif
 }
-\def 0 bang () {status = flags = 0xdeadbeef; call();}
 //outlet 0 reserved (future use)
 \end class {install("parallel_port",1,3);}
 
@@ -559,22 +555,20 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 		this->index=i;
 		noutlets_set(n);
 	}
-	\decl void anything(...);
-	\decl 1 float(int i);
-};
-\def void anything(...) {
-	t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
-	out[index](sel,argc-1,argv+1);
-	if (mode) {
-		index += sgn(mode);
-		if (index<lo || index>hi) {
-			int k = max(hi-lo+1,0);
-			int m = gf_abs(mode);
-			if (m==1) index = mod(index-lo,k)+lo; else {mode=-mode; index+=mode;}
+	\decl 1 float(int i) {index = mod(i,n);}
+	\decl void anything(...) {
+		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		out[index](sel,argc-1,argv+1);
+		if (mode) {
+			index += sgn(mode);
+			if (index<lo || index>hi) {
+				int k = max(hi-lo+1,0);
+				int m = gf_abs(mode);
+				if (m==1) index = mod(index-lo,k)+lo; else {mode=-mode; index+=mode;}
+			}
 		}
 	}
-}
-\def 1 float(int i) {index = mod(i,n);}
+};
 \end class {install("shunt",2,0);}
 
 struct Receives;
@@ -595,9 +589,9 @@ t_class *ReceivesProxy_class;
 		int n = min(1,argc);
 		do_bind(argc-n,argv+n);
 	}
-	\decl 0 bang ();
-	\decl 0 symbol (t_symbol *s);
-	\decl 0 list (...);
+	\decl 0 bang () {_0_list(0,0);}
+	\decl 0 symbol (t_symbol *s) {t_atom2 a[1]; SETSYMBOL(a,s); _0_list(1,a);}
+	\decl 0 list (...) {do_unbind(); do_bind(argc,argv);}
 	void do_bind (int argc, t_atom2 *argv) {
 		ac = argc;
 		av = new ReceivesProxy *[argc];
@@ -617,12 +611,6 @@ t_class *ReceivesProxy_class;
 	}
 	~Receives () {do_unbind();}
 };
-\def 0 bang () {_0_list(0,0);}
-\def 0 symbol (t_symbol *s) {t_atom2 a[1]; SETSYMBOL(a,s); _0_list(1,a);}
-\def 0 list (...) {
-	do_unbind();
-	do_bind(argc,argv);
-}
 void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom *argv) {
 	self->parent->out[1](self->suffix);
 	self->parent->out[0](s,argc,argv);
@@ -636,29 +624,21 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 /* this can't report on bang,float,symbol,pointer,list because zgetfn can't either */
 \class ClassExists : FObject {
 	\constructor () {}
-	\decl void _0_symbol(t_symbol *s);
+	\decl void _0_symbol(t_symbol *s) {out[0](!!zgetfn(&pd_objectmaker,s));}
 };
-\def void _0_symbol(t_symbol *s) {
-	out[0](!!zgetfn(&pd_objectmaker,s));
-}
 \end class {install("class_exists",1,1);}
 
 \class ListEqual : FObject {
 	t_list *list;
 	\constructor (...) {list=0; _1_list(argc,argv);}
-	\decl 0 list (...);
-	\decl 1 list (...);
+	\decl 1 list (...) {if (list) list_free(list); list = list_new(argc,argv);}
+	\decl 0 list (...)  {
+		if (binbuf_getnatom(list) != argc) {out[0](0); return;}
+		t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
+		for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {out[0](0); return;}
+		out[0](1);
+	}
 };
-\def 1 list (...) {
-	if (list) list_free(list);
-	list = list_new(argc,argv);
-}
-\def 0 list (...) {
-	if (binbuf_getnatom(list) != argc) {out[0](0); return;}
-	t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
-	for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {out[0](0); return;}
-	out[0](1);
-}
 \end class {install("list.==",2,1);}
 
 //****************************************************************
@@ -803,22 +783,21 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFCanvasSetPos : FObject {
 	int n;
 	\constructor (int n=0) {this->n=n;}
-	\decl 0 list (...);
+	\decl 0 list (...) {MOM;
+		if (argc!=2) RAISE("wrong number of args");
+		((t_text *)m)->te_xpix = atom_getintarg(0,argc,argv);
+		((t_text *)m)->te_ypix = atom_getintarg(1,argc,argv);
+		t_canvas *granny = m->gl_owner;
+		if (!granny) RAISE("chosen canvas is not in any canvas");
+	    #ifdef DESIRE
+		gobj_changed(m);
+	    #else
+		gobj_vis((t_gobj *)m,granny,0);
+		gobj_vis((t_gobj *)m,granny,1);
+		canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)m);
+	    #endif
+	}
 };
-\def 0 list (...) {MOM;
-	if (argc!=2) RAISE("wrong number of args");
-	((t_text *)m)->te_xpix = atom_getintarg(0,argc,argv);
-	((t_text *)m)->te_ypix = atom_getintarg(1,argc,argv);
-	t_canvas *granny = m->gl_owner;
-	if (!granny) RAISE("chosen canvas is not in any canvas");
-#ifdef DESIRE
-	gobj_changed(m);
-#else
-        gobj_vis((t_gobj *)m,granny,0);
-        gobj_vis((t_gobj *)m,granny,1);
-	canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)m);
-#endif
-}
 \end class {install("gf/canvas_setpos",1,0);}
 \class GFCanvasEditMode : FObject {
 	int n;
@@ -865,17 +844,16 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \class GFCanvasHeHeHe : FObject {
 	int n;
 	\constructor (int n) {this->n=n;}
-	\decl 0 float (float y);
+	\decl 0 float (float y) {MOM;
+		int osx = int(m->gl_screenx2-m->gl_screenx1); // old size x
+		int osy = int(m->gl_screeny2-m->gl_screeny1); // old size y
+		m->gl_screenx2 = m->gl_screenx1 + 632;
+		if (m->gl_screeny2-m->gl_screeny1 < int(y)) m->gl_screeny2 = m->gl_screeny1+int(y);
+		int  sx = int(m->gl_screenx2-m->gl_screenx1); // new size x
+		int  sy = int(m->gl_screeny2-m->gl_screeny1); // new size y
+		if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%lx %dx%d\n",long(m),sx,sy);
+	}
 };
-\def 0 float (float y) {MOM;
-	int osx = int(m->gl_screenx2-m->gl_screenx1); // old size x
-	int osy = int(m->gl_screeny2-m->gl_screeny1); // old size y
-	m->gl_screenx2 = m->gl_screenx1 + 632;
-	if (m->gl_screeny2-m->gl_screeny1 < int(y)) m->gl_screeny2 = m->gl_screeny1+int(y);
-	int  sx = int(m->gl_screenx2-m->gl_screenx1); // new size x
-	int  sy = int(m->gl_screeny2-m->gl_screeny1); // new size y
-	if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%lx %dx%d\n",long(m),sx,sy);
-}
 \end class {install("gf/canvas_hehehe",1,1);}
 
 #define DASHRECT "-outline #80d4b2 -dash {2 6 2 6}"
@@ -1134,15 +1112,11 @@ string string_replace (string victim, string from, string to) {
 	t_symbol *from;
 	t_symbol *to;
 	\constructor (t_symbol *from=&s_, t_symbol *to=&s_) {this->from=from; this->to=to;}
-	\decl 0 symbol (t_symbol *victim);
+	\decl 0 symbol (t_symbol *victim) {
+		string a = string_replace(victim->s_name,from->s_name,to->s_name);
+		out[0](gensym(a.c_str()));
+	}
 };
-\def 0 symbol (t_symbol *victim) {
-	string a = string(victim->s_name);
-	string b = string(from->s_name);
-	string c = string(to->s_name);
-	a = string_replace(a,b,c);
-	out[0](gensym(a.c_str()));
-}
 \end class {install("gf/string_replace",1,1);}
 
 \class GFStringLessThan : FObject {
