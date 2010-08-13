@@ -284,12 +284,12 @@ GemState::GemState() {}
 		t_atom ap[2];
 		SETPOINTER(ap+0,(t_gpointer *)cache); // GemCache
 		SETPOINTER(ap+1,(t_gpointer *)state);
-		outlet_anything(outlets[0],gensym("gem_state"),2,ap);
+		out[0](gensym("gem_state"),2,ap);
 	}
 	\decl 0 float (float state) {
 		t_atom ap[1];
 		SETFLOAT(ap,!!state);
-		outlet_anything(outlets[0],gensym("gem_state"),1,ap);
+		out[0](gensym("gem_state"),1,ap);
 	}
 };
 \end class {install("gemdead",1,1);}

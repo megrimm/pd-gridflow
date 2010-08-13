@@ -207,10 +207,10 @@ struct Frame {uint8 *p; size_t n;};
 	// size are abnormal attributes (does not use nested list)
 	if (!s) {
 		t_atom a[2];
-		//SETFLOAT(a+0,cap.minheight); SETFLOAT(a+1,cap.minwidth); outlet_anything(outlets[0],gensym("minsize"),2,a);
-		//SETFLOAT(a+0,cap.maxheight); SETFLOAT(a+1,cap.maxwidth); outlet_anything(outlets[0],gensym("maxsize"),2,a);
-		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); outlet_anything(outlets[0],gensym("size"),2,a);
-		SETSYMBOL(a,gensym("mmap")); outlet_anything(outlets[0],gensym("transfer"),1,a);
+		//SETFLOAT(a+0,cap.minheight); SETFLOAT(a+1,cap.minwidth); out[0](gensym("minsize"),2,a);
+		//SETFLOAT(a+0,cap.maxheight); SETFLOAT(a+1,cap.maxwidth); out[0](gensym("maxsize"),2,a);
+		SETFLOAT(a+0,dim[0]); SETFLOAT(a+1,dim[1]); out[0](gensym("size"),2,a);
+		SETSYMBOL(a,gensym("mmap")); out[0](gensym("transfer"),1,a);
 	}
 }
 

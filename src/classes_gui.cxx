@@ -317,7 +317,7 @@ static t_symbol *s_empty;
 		if (key) SETSYMBOL(a+3,key);
 		t_symbol *s = gensym(ss);
 		if (snd) pd_anything((t_pd *)snd,s,key?4:3,a);
-		else outlet_anything(outlets[0] ,s,key?4:3,a);
+		else                      out[0](s,key?4:3,a);
 	}
 	\decl 0 mouse   (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags|=  128<<but ;          event("position");}
 	\decl 0 mouseup (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags&=~(128<<but);          event("position");}
@@ -392,7 +392,7 @@ static t_pd *seesend;
 			t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags);
 			if (k) SETSYMBOL(a+3,k);
 			hold = (flags&-256) != 0;
-			outlet_anything(outlets[0],gensym(sel),k?4:3,a);
+			out[0](gensym(sel),k?4:3,a);
 		}
 	}
 	\decl 0 position   (int y, int x, int flags             ) {event(y,x,flags,0,"position"  );}
@@ -445,7 +445,7 @@ static t_pd *seesend;
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
 		sys_vgui("gridsee_update %s .x%x.c %d %d %d %d %d %d %d %d #cccccc %s\n",rsym->s_name,c,
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,mx1,my1,mx2,my2,selected?"#0000ff":"#aaaaaa");
-		outlet_anything(outlets[0],gensym("shown"),0,0);
+		out[0](gensym("shown"),0,0);
 	}
 	static void doh (void *x) {INIT1
 		MouseSpy *ms = (MouseSpy *)self->spy->self;
@@ -511,7 +511,7 @@ GRID_INLET(0) {
 		this->text = text;
 		outline = "#eeeeee";
 	}
-	\decl 0 bang () {outlet_bang(outlets[0]);}
+	\decl 0 bang () {out[0]();}
 	\decl 0 size (int sy, int sx) {this->sy=sy; this->sx=sx;}
 	void show () {
 		//if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);

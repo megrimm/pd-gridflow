@@ -151,10 +151,10 @@ static void stop () {
 	\decl 0 setcursor (int shape);
 	\decl 0 hidecursor ();
 	\decl 0 title (string title);
-	\decl 0 position   (...) {outlet_anything(outlets[0],gensym("position"),  argc,argv);}
-	\decl 0 keypress   (...) {outlet_anything(outlets[0],gensym("keypress"),  argc,argv);}
-	\decl 0 keyrelease (...) {outlet_anything(outlets[0],gensym("keyrelease"),argc,argv);}
-	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
+	\decl 0 position   (...) {out[0](gensym("position"),  argc,argv);}
+	\decl 0 keypress   (...) {out[0](gensym("keypress"),  argc,argv);}
+	\decl 0 keyrelease (...) {out[0](gensym("keyrelease"),argc,argv);}
+	\decl 0 loadbang ()      {out[0](gensym("nogrey"),0,0);}
 	\constructor (t_symbol *mode) {
 		pd_bind((t_pd *)bself,gensym("#sdl"));
 		if (!in_use) start();
