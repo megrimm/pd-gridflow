@@ -533,7 +533,7 @@ Feature.add {
 		`}}
 Feature.add {
 	tag :puredata
-	name "PureData (or DesireData)"
+	name "PureData"
 	options ["HAVE_PUREDATA"]
 	uses_h ["m_pd.h"]
 	test proc {
@@ -548,16 +548,6 @@ Feature.add {
 				PD_MAJOR_VERSION*100+PD_MINOR_VERSION
 			#endif
 			)); return 0;}`}}
-Feature.add {
-	tag :desiredata
-	name "DesireData"
-	uses_h ["m_pd.h"]
-	defines ["HAVE_DESIREDATA"]
-	#uses_feature :puredata
-	test proc {
-		c_test %`
-			#include#
-			int main () {return !gobj_subscribe;}`}}
 Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
