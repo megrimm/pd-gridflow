@@ -200,16 +200,16 @@ ostream &operator << (ostream &self, const t_atom &a) {
 
 // adapted from desiredata/src/kernel.c
 void PtrOutlet::operator () (t_atom *a) {
-    if      (a->a_type==A_FLOAT  ) outlet_float(  p,a->a_float);
-    else if (a->a_type==A_SYMBOL ) outlet_symbol( p,a->a_symbol);
-    else if (a->a_type==A_POINTER) outlet_pointer(p,a->a_gpointer);
+    if      (a->a_type==A_FLOAT  ) (*this)(a->a_float);
+    else if (a->a_type==A_SYMBOL ) (*this)(a->a_symbol);
+    else if (a->a_type==A_POINTER) (*this)(a->a_gpointer);
     else error("can't send atom whose type is %d",a->a_type);
 }
-void outlet_atom2 (t_outlet *self, t_atom *av) {
-	if (av->a_type==A_FLOAT)   outlet_float(  self,av->a_float);    else
-	if (av->a_type==A_SYMBOL)  outlet_symbol( self,av->a_symbol);   else
-	if (av->a_type==A_POINTER) outlet_pointer(self,av->a_gpointer); else
-	outlet_list(self,gensym("list"),1,av);
+void outlet_atom2 (PtrOutlet self, t_atom *av) {
+	if (av->a_type==A_FLOAT)   self(av->a_float);    else
+	if (av->a_type==A_SYMBOL)  self(av->a_symbol);   else
+	if (av->a_type==A_POINTER) self(av->a_gpointer); else
+	self(1,av);
 }
 
 //----------------------------------------------------------------
