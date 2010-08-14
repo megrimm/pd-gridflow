@@ -152,12 +152,9 @@ extern "C" int sys_hostfontsize(int fontsize);
 		ostringstream os;
 		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
-		t_atom a[1];
-		SETFLOAT(a,20);
-		pd_anything(gp,gensym("maxrows"),1,a);
+		{t_atom2 a[1] = {20}; pd_anything(gp,gensym("maxrows"),1,a);}
 		text << "...";
-		SETPOINTER(a,(t_gpointer *)bself);
-		pd_anything(gp,gensym("dest"),1,a);
+		{t_atom2 a[1] = {(t_gpointer *)bself}; pd_anything(gp,gensym("dest"),1,a);}
  		changed();
 	}
 	~Display () {pd_free(gp);}
@@ -272,7 +269,7 @@ static t_symbol *s_empty;
 		if (rcv) pd_bind((t_pd *)bself,rcv);
 	}
 	\decl void anything (...) {
-		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3); // this is getting tiring
+		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3); // this is getting tiring
 		if (snd) pd_anything(snd,sel,argc-1,argv+1);
 	}
 	void set_rcv (t_symbol *rcv_=0) {
@@ -298,7 +295,7 @@ static t_symbol *s_empty;
 	BFObject *proxy;
 	\constructor (t_symbol *rcv_=s_default) {
 		snd = 0;
-		t_atom a[1]; SETSYMBOL(a,rcv_==s_default?symprintf(".x%x",mom):rcv_);
+		t_atom2 a[1] = {rcv_==s_default?symprintf(".x%x",mom):rcv_};
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy_proxy"),1,a);
 		proxy = (BFObject *)pd_newest();
 		((MouseSpyProxy *)proxy->self)->snd = (t_pd *)bself;
@@ -306,11 +303,7 @@ static t_symbol *s_empty;
 	void set_rcv (t_symbol *rcv_=0) {((MouseSpyProxy *)proxy->self)->set_rcv(rcv_);}
 	~MouseSpy () {((MouseSpyProxy *)proxy->self)->delayed_free();}
 	void event (const char *ss, t_symbol *key=0) {
-		t_atom a[4];
-		SETFLOAT(a+0,y);
-		SETFLOAT(a+1,x);
-		SETFLOAT(a+2,flags&511);
-		if (key) SETSYMBOL(a+3,key);
+		t_atom2 a[4] = {y,x,flags&511}; if (key) a[3]=key;
 		t_symbol *s = gensym(ss);
 		if (snd) pd_anything((t_pd *)snd,s,key?4:3,a);
 		else                      out[0](s,key?4:3,a);
@@ -318,9 +311,9 @@ static t_symbol *s_empty;
 	\decl 0 mouse   (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags|=  128<<but ;          event("position");}
 	\decl 0 mouseup (int x_, int y_, int but, int z=0) {y=y_; x=x_; flags&=~(128<<but);          event("position");}
 	\decl 0 motion  (int x_, int y_, int flags_      ) {y=y_; x=x_; flags&=~12; flags|=flags_*2; event("position");}
-	\decl 0 key     (int on, t_atom ascii, int drop) {
+	\decl 0 key     (int on, t_atom2 ascii, int drop) {
 		t_symbol *key;
-		if (ascii.a_type==A_SYMBOL) key = ascii.a_symbol;
+		if (ascii.a_type==A_SYMBOL) key = ascii;
 		else {
 			int i = int(ascii.a_float);
 			key = (i<0 || i>=128 || !keyboard[i]) ? symprintf("%c",i) : keyboard[i];
@@ -367,7 +360,7 @@ static t_pd *seesend;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
 		fast=false;
 		changed();
-		t_atom a[1]; SETSYMBOL(a,s_empty);
+		t_atom2 a[1] = {s_empty};
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
 		spy = (BFObject *)pd_newest(); if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
@@ -385,8 +378,7 @@ static t_pd *seesend;
 		t_canvas *can = mom; /* and not glist_getcanvas(mom) */
 		y-=text_ypix(bself,can)+4; x-=text_xpix(bself,can)+2;
 		if (hold || (y>=0 && y<sy-9 && x>=0 && x<sx-5)) {
-			t_atom a[4]; SETFLOAT(a+0,y); SETFLOAT(a+1,x); SETFLOAT(a+2,flags);
-			if (k) SETSYMBOL(a+3,k);
+			t_atom2 a[4] = {y,x,flags}; if (k) a[3]=k;
 			hold = (flags&-256) != 0;
 			out[0](gensym(sel),k?4:3,a);
 		}
@@ -490,11 +482,8 @@ GRID_INLET(0) {
  * 	sys_gui("set gridsee_socket [socket -server -port 9999]\n");
 	pd_anything(&pd_objectmaker,gensym("netsend"),0,0);
 	seesend = (t_pd *)pd_newest(); if (!seesend) post("no seesend?"); else post("seesend!");
-	t_atom a[2];
-	SETSYMBOL(a,gensym("localhost"));
-	SETFLOAT(a+1,9999);
 	post("preconnect");
-	pd_anything((t_pd *)seesend,gensym("connect"),2,a);
+	t_atom2 a[2] = {gensym("localhost"),9999}; pd_anything((t_pd *)seesend,gensym("connect"),2,a);
 	post("postconnect");
 */
 }
