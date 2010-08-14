@@ -87,7 +87,7 @@ void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 struct ArgSpec {
 	t_symbol *name;
 	t_symbol *type;
-	t_atom defaultv;
+	t_atom2 defaultv;
 };
 
 \class Args : FObject {
@@ -105,7 +105,7 @@ struct ArgSpec {
 				sargv[i].type = atom_getsymbolarg(1,bac,bat);
 				if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
 			} else if (argv[i].a_type==A_SYMBOL) {
-				sargv[i].name = argv[i].a_symbol;
+				sargv[i].name = argv[i];
 				sargv[i].type = gensym("a");
 				SETNULL(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
@@ -120,18 +120,18 @@ struct ArgSpec {
 \def 0 loadbang () {
 	t_canvasenvironment *env = canvas_getenv(mom);
 	int ac = env->ce_argc;
-	t_atom av[ac];
+	t_atom2 av[ac];
 	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
 	//ac = handle_braces(ac,av);
 	t_symbol *comma = gensym(",");
 	int j;
-	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
+	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==comma) break;
 	int jj = handle_braces(j,av);
 	process_args(jj,av);
 	while (j<ac) {
 		j++;
 		int k=j;
-		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_symbol==comma) break;
+		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==comma) break;
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
@@ -141,7 +141,7 @@ void Args::process_args (int argc, t_atom *argv) {
 	t_canvas *canvas = canvas_getrootfor(mom);
 	t_symbol *wildcard = gensym("*");
 	for (int i=sargc-1; i>=0; i--) {
-		t_atom *v;
+		t_atom2 *v;
 		if (i>=argc) {
 			if (sargv[i].defaultv.a_type != A_NULL) {
 				v = &sargv[i].defaultv;
@@ -149,14 +149,14 @@ void Args::process_args (int argc, t_atom *argv) {
 				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
 				continue;
 			}
-		} else v = &argv[i];
+		} else v = (t_atom2 *)&argv[i];
 		if (sargv[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
 		} else {
 			if (v->a_type==A_LIST) {
-				t_binbuf *b = (t_binbuf *)v->a_gpointer;
+				t_binbuf *b = *v;
 				out[i](binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) out[i](v->a_symbol);
+			} else if (v->a_type==A_SYMBOL) out[i](v);
 			else outlet_anything2(out[i],1,v);
 		}
 	}
@@ -233,7 +233,7 @@ const char *atomtype_to_s (t_atomtype t) {
 	}
 	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
 	\decl void anything (...) {
-		t_symbol *sel = (t_symbol *)argv[0]; sel = gensym(sel->s_name+3);
+		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
 		table[sel].clear();
 		for (int i=1; i<argc; i++) table[sel].push_back(argv[i]);
 	}
@@ -328,7 +328,7 @@ static bool atom_eq (const t_atom &a, const t_atom &b) {
 		nmosusses = argc;
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
 		mosusses = new t_float[argc];
-		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_float;
+		for (int i=0; i<argc; i++) mosusses[i]=argv[i];
 		 ninlets_set(1+nmosusses);
 		noutlets_set(1+nmosusses);
 	}
@@ -496,15 +496,14 @@ void ParallelPort::call() {
 	~Route2() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...) {
-		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
 		out[i](sel,argc-1,argv+1);
 	}
-	\decl 1 list(...) {
+	\decl 1 list(...) { // in the future, this could be a one-liner, right ?
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-		if (sels) delete[] sels;
-		nsels = argc; sels = new t_symbol*[argc];
-		for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
+		if (sels) delete[] sels; nsels = argc; sels = new t_symbol*[argc];
+		for (int i=0; i<argc; i++) sels[i] = argv[i];
 	}
 };
 \end class {install("route2",1,1);}
@@ -515,16 +514,15 @@ void ParallelPort::call() {
 	~Route3() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...) {
-		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
 		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list;
 		out[i](sel,argc-1,argv+1);
 	}
 	\decl 1 list(...) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-		if (sels) delete[] sels;
-		nsels = argc; sels = new t_symbol*[argc];
-		for (int i=0; i<argc; i++) sels[i] = argv[i].a_symbol;
+		if (sels) delete[] sels; nsels = argc; sels = new t_symbol*[argc];
+		for (int i=0; i<argc; i++) sels[i] = argv[i];
 	}
 };
 \end class {install("route3",1,1);}
@@ -547,7 +545,7 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	}
 	\decl 1 float(int i) {index = mod(i,n);}
 	\decl void anything(...) {
-		t_symbol *sel = gensym(argv[0].a_symbol->s_name+3);
+		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
 		out[index](sel,argc-1,argv+1);
 		if (mode) {
 			index += sgn(mode);
@@ -713,9 +711,9 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	string format;
 	\constructor (...) {format = join(argc,argv);}
 	\decl 1 list (...) {format = join(argc,argv);}
-	\decl 0 bang   ()          {_0_list(0,0);}
-	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
-	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 bang   ()          {_0_list(0,0);}  // ought to be redundant
+	\decl 0 float  (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
+	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		out[0](gensym(s.data()));
@@ -727,9 +725,9 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\attr NumberTypeE cast;
 	\constructor (...) {format = join(argc,argv); cast = int32_e;}
 	\decl 1 list (...) {format = join(argc,argv);}
-	\decl 0 bang   ()          {_0_list(0,0);}
-	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
-	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
+	\decl 0 bang   ()          {_0_list(0,0);}  // ought to be redundant
+	\decl 0 float  (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
+	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		GridOut out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
@@ -770,8 +768,8 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 list (...) {MOM;
 		if (argc!=2) RAISE("wrong number of args");
-		((t_text *)m)->te_xpix = atom_getintarg(0,argc,argv);
-		((t_text *)m)->te_ypix = atom_getintarg(1,argc,argv);
+		((t_text *)m)->te_xpix = argv[0];
+		((t_text *)m)->te_ypix = argv[1];
 		t_canvas *granny = m->gl_owner;
 		if (!granny) RAISE("chosen canvas is not in any canvas");
 	    #ifdef DESIRE

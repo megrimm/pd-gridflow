@@ -655,7 +655,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     BFObject *bself = (BFObject *)pd_new(qlass);
     try {
 	int argc = ac;
-	t_atom argv[argc];
+	t_atom2 argv[argc];
 	for (int i=0; i<argc; i++) argv[i] = at[i];
 	argc = handle_braces(argc,argv);
 	int j;
@@ -671,7 +671,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		j++;
 		int k=j;
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
-		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k].a_symbol,j-k-1,argv+k+1);
+		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k],j-k-1,argv+k+1);
 	}
         #ifdef DES_BUGS
 	    post("BFObject_new..... bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
@@ -990,12 +990,12 @@ extern "C" void canvas_delete(t_canvas *, t_gobj *);
 #define glist_delete canvas_delete
 #endif
 
-static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
+static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom2 *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas else: there is no last object"); return;}
 	if (pd_newest()) return;
 	glist_delete(self,g);
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
-	pd_typedmess((t_pd *)self,argv[0].a_symbol,argc-1,argv+1);
+	pd_typedmess((t_pd *)self,argv[0],argc-1,argv+1);
 }
 
 struct _inlet {t_pd i_pd; struct _inlet *i_next;};
@@ -1007,12 +1007,12 @@ static t_pd *text_firstinlet (t_object *self) {
 	//post("firstin=%d n=%d offsetof=%d",((char *)self)[i],n,offsetof(t_class,c_firstin));
 	return n ? (t_pd *)self : (t_pd *)self->ob_inlet;
 }
-static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
+static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom2 *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas last: there is no last object"); return;}
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
 	//post("tolast: class=%s",pd_class(g)->c_name->s_name);
 	t_pd *r = text_firstinlet((t_text *)g);
-	pd_typedmess(r,argv[0].a_symbol,argc-1,argv+1);
+	pd_typedmess(r,argv[0],argc-1,argv+1);
 }
 static void canvas_last_activate (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas last: there is no last object"); return;}
