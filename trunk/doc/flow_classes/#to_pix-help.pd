@@ -1,4 +1,4 @@
-#N canvas 594 0 632 665 10;
+#N canvas 594 0 632 642 10;
 #X obj 365 42 loadbang;
 #X obj 130 52 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1
 ;
@@ -7,24 +7,23 @@
 #X msg 371 81 destroy;
 #X text 150 49 <-- start playing the video;
 #X text 93 252 <-- imports gridflow grids into GEM;
-#X text 232 708 Modified gemstate so that the pix is equal to the Grid
+#X text 232 817 Modified gemstate so that the pix is equal to the Grid
 of inlet 1;
-#X text 232 589 Something coming from [gemhead];
 #X msg 57 197 yflip \$1;
 #X obj 57 180 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
 #X obj 0 0 doc_h;
-#X obj 3 559 doc_i 2;
-#X obj 3 678 doc_o 1;
-#X obj 3 519 doc_c 0;
-#X obj 14 589 doc_ii 0;
-#X obj 14 646 doc_ii 1;
-#X obj 14 708 doc_oo 0;
-#X obj 97 589 doc_m i0 gem_state;
-#X obj 97 611 doc_m i0 yflip;
-#X obj 97 646 doc_m i1 grid;
-#X obj 97 708 doc_m o0 gem_state;
-#X obj 0 773 doc_f;
+#X obj 3 629 doc_i 2;
+#X obj 3 787 doc_o 1;
+#X obj 3 589 doc_c 0;
+#X obj 14 659 doc_ii 0;
+#X obj 14 716 doc_ii 1;
+#X obj 14 817 doc_oo 0;
+#X obj 97 659 doc_m i0 gem_state;
+#X obj 97 681 doc_m i0 yflip;
+#X obj 97 716 doc_m i1 grid;
+#X obj 97 817 doc_m o0 gem_state;
+#X obj 0 882 doc_f;
 #X obj 77 105 b;
 #X obj 77 124 fps;
 #X floatatom 77 143 5 0 0 0 - - -;
@@ -53,9 +52,7 @@ of inlet 1;
 #X connect 5 1 1 0;
 #X connect 7 0 2 1;
 #X restore 157 164 pd to_rgba_if_not_already;
-#X text 232 646 Grid with 3 or 4 channels (4th channel gets destroyed)
-;
-#X text 232 611 With one boolean argument that selects the order in
+#X text 232 681 With one boolean argument that selects the order in
 which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 140 444 rotateXYZ;
 #X floatatom 157 420 5 0 0 0 - - -;
@@ -65,15 +62,14 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 45 384 shunt;
 #X obj 81 384 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
-#X obj 3 753 doc_also;
-#X obj 103 753 #from_pix;
-#X text 169 753 [examples/game_of_life_gem.pd];
+#X obj 3 862 doc_also;
+#X obj 103 862 #from_pix;
+#X text 169 862 [examples/game_of_life_gem.pd];
 #X obj 455 236 #in deux_piastres.png;
 #X obj 472 217 loadbang;
 #X obj 455 218 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
 #X obj 45 253 #to_pix;
-#X obj 130 88 #in violoncelle.mov;
 #X obj 130 69 metro 33.3333;
 #X obj 72 360 alpha;
 #X msg 365 61 create \, 1 \, color 0.5 0.5 0.5;
@@ -84,8 +80,6 @@ which the y dimension of the Grid will be read \, defaults to '0';
 #X obj 323 188 display;
 #X msg 224 68 colorspace rgba;
 #X obj 157 184 # + (0 0 0 128);
-#X text 40 482 Note : you can get some timebased 'moiré' effects if
-the arguments to the [gemwin] and the [metro] are not synched;
 #X floatatom 221 420 5 0 0 0 - - -;
 #X floatatom 189 420 5 0 0 0 - - -;
 #X obj 140 463 cube 3;
@@ -119,60 +113,80 @@ the arguments to the [gemwin] and the [metro] are not synched;
 #X obj 193 204 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
 1;
 #X text 209 203 more stuff for testing;
-#X connect 0 0 51 0;
-#X connect 1 0 49 0;
-#X connect 2 0 47 0;
-#X connect 3 0 52 0;
-#X connect 3 0 63 0;
-#X connect 4 0 36 0;
-#X connect 9 0 47 0;
-#X connect 10 0 9 0;
-#X connect 18 1 8 0;
-#X connect 19 1 33 0;
-#X connect 20 1 32 0;
-#X connect 21 1 7 0;
+#X text 232 716 Grid with 3 or 4 channels. 4th channel is no longer
+ignored since GF 9.9. If the 4th channel is absent \, it will be assumed
+to be 255 all over (normally meaning "fully opaque" in alpha terms).
+;
+#X obj 130 88 #in violoncelle.mov;
+#X text 39 482 Note : you can get some timebased 'moiré' effects if
+the arguments to the [gemwin] and the [metro] are not synched. that
+is \, some frames will be duplicated or ignored \, and some won't.
+To have each frame be displayed by [gemwin] \, the gemwin argument
+multiplied by the metro argument must give 1000 : for example [gemwin
+20] goes with [metro 50] \, and [gemwin 50] goes with [metro 20].;
+#X text 232 659 Something coming from [gemhead] (or [gemdead]);
+#X obj 361 862 gemhead;
+#X obj 415 862 gemdead;
+#X obj 469 862 gemwin;
+#X obj 517 862 #to_pdp;
+#X connect 0 0 48 0;
+#X connect 1 0 46 0;
+#X connect 2 0 45 0;
+#X connect 3 0 49 0;
+#X connect 3 0 59 0;
+#X connect 4 0 34 0;
+#X connect 8 0 45 0;
+#X connect 9 0 8 0;
+#X connect 17 1 77 0;
+#X connect 18 1 31 0;
+#X connect 19 1 74 0;
+#X connect 20 1 7 0;
+#X connect 22 0 23 0;
 #X connect 23 0 24 0;
-#X connect 24 0 25 0;
-#X connect 26 0 48 0;
-#X connect 27 0 48 0;
-#X connect 28 0 48 0;
-#X connect 29 0 47 1;
-#X connect 29 1 31 0;
-#X connect 30 0 29 1;
-#X connect 31 0 57 0;
-#X connect 34 0 61 0;
-#X connect 35 0 34 1;
-#X connect 37 0 34 0;
-#X connect 39 0 38 0;
-#X connect 39 1 37 0;
-#X connect 40 0 39 1;
-#X connect 41 1 42 0;
-#X connect 41 1 43 0;
-#X connect 44 0 47 1;
-#X connect 46 0 44 0;
-#X connect 47 0 68 0;
-#X connect 47 0 62 0;
-#X connect 48 0 23 0;
-#X connect 48 0 54 0;
-#X connect 48 0 29 0;
-#X connect 49 0 48 0;
-#X connect 50 0 39 0;
-#X connect 51 0 36 0;
-#X connect 52 0 39 0;
-#X connect 52 1 50 0;
-#X connect 53 0 52 1;
-#X connect 54 0 55 0;
-#X connect 56 0 48 0;
-#X connect 57 0 75 0;
-#X connect 59 0 34 3;
-#X connect 60 0 34 2;
-#X connect 62 4 64 0;
-#X connect 63 4 65 0;
-#X connect 68 0 3 0;
-#X connect 68 1 70 0;
-#X connect 69 0 68 1;
-#X connect 70 0 3 0;
-#X connect 74 0 47 1;
-#X connect 75 0 47 1;
-#X connect 75 1 74 0;
-#X connect 76 0 75 1;
+#X connect 25 0 75 0;
+#X connect 26 0 75 0;
+#X connect 27 0 75 0;
+#X connect 28 0 45 1;
+#X connect 28 1 30 0;
+#X connect 29 0 28 1;
+#X connect 30 0 54 0;
+#X connect 32 0 57 0;
+#X connect 33 0 32 1;
+#X connect 35 0 32 0;
+#X connect 37 0 36 0;
+#X connect 37 1 35 0;
+#X connect 38 0 37 1;
+#X connect 39 1 40 0;
+#X connect 39 1 41 0;
+#X connect 39 1 78 0;
+#X connect 39 1 79 0;
+#X connect 39 1 80 0;
+#X connect 39 1 81 0;
+#X connect 42 0 45 1;
+#X connect 44 0 42 0;
+#X connect 45 0 64 0;
+#X connect 45 0 58 0;
+#X connect 46 0 75 0;
+#X connect 47 0 37 0;
+#X connect 48 0 34 0;
+#X connect 49 0 37 0;
+#X connect 49 1 47 0;
+#X connect 50 0 49 1;
+#X connect 51 0 52 0;
+#X connect 53 0 75 0;
+#X connect 54 0 71 0;
+#X connect 55 0 32 3;
+#X connect 56 0 32 2;
+#X connect 58 4 60 0;
+#X connect 59 4 61 0;
+#X connect 64 0 3 0;
+#X connect 64 1 66 0;
+#X connect 65 0 64 1;
+#X connect 66 0 3 0;
+#X connect 70 0 45 1;
+#X connect 71 0 45 1;
+#X connect 71 1 70 0;
+#X connect 72 0 71 1;
+#X connect 75 0 22 0;
+#X connect 75 0 51 0;
+#X connect 75 0 28 0;
