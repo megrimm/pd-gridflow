@@ -262,7 +262,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listflatten",1,1);}
 
 // does not do recursive comparison of lists.
-static bool atom_eq (const t_atom &a, const t_atom &b) {
+static bool atom_eq (const t_atom2 &a, const t_atom2 &b) {
 	if (a.a_type!=b.a_type) return false;
 	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
 	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
@@ -983,14 +983,12 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 
 size_t properties_offset;
 
-//int propertiesfn_offset;
 \end class {
 	install("gf/lol",1,1);
 	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
 	unsigned long *lol = (unsigned long *)text_class;
 	int i=0;
 	while (lol[i]!=0xDECAFFED) i++;
-	//propertiesfn_offset = i*sizeof(unsigned long);
 	*((char *)(lol+i+1) + 6) = 1;
 	properties_offset = i;
 	class_setpropertiesfn(text_class,0);
