@@ -540,7 +540,7 @@ GRID_INLET(0) {
 	\grin 1 int
 	\grin 2 int
 	\constructor (Grid *dl=0, Grid *dr=0) {
-		t_atom a[2]; SETFLOAT(a+0,1); SETFLOAT(a+1,1); SETFLOAT(a+2,0);
+		t_atom2 a[3] = {1,1,0};
 		diml_grid=dl?dl:new Grid(3,a,int32_e);
 		dimr_grid=dr?dr:new Grid(3,a,int32_e);
 		diml = diml_grid->to_dim();
@@ -731,7 +731,7 @@ static void expect_scale_factor (const Dim &dim) {
 	int scalex;
 	\constructor (Grid *factor=0) {
 		scale.constrain(expect_scale_factor);
-		t_atom a[1]; SETFLOAT(a,2);
+		t_atom2 a[1] = {2};
 		scale = factor?factor:new Grid(1,a,int32_e);
 		prepare_scale_factor();
 	}
@@ -785,7 +785,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 	PtrGrid temp;
 	\constructor (Grid *factor=0, t_symbol *option=0) {
 		scale.constrain(expect_scale_factor);
-		t_atom a[1]; SETFLOAT(a,2);
+		t_atom2 a[1] = {2};
 		scale = factor?factor:new Grid(1,a,int32_e);
 		prepare_scale_factor();
 		smoothly = option==gensym("smoothly");
@@ -1385,7 +1385,7 @@ GRID_INLET(0) {
 	if (in.dim.n<2) RAISE("at least 2 dimensions");
 	int w = which_dim; if (w<0) w+=in.dim.n;
 	if (w<0 || w>=in.dim.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in.dim.n);
-	if (!r) {t_atom a[1]; SETFLOAT(a,256); r=new Grid(1,a);}
+	if (!r) {t_atom2 a[1] = {256.f}; r=new Grid(1,(t_atom *)a);}
 	SAME_TYPE(in,r);
 	go = new GridOut(this,0,in.dim,in.nt);
 	in.set_chunk(w);

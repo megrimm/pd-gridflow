@@ -119,7 +119,7 @@ struct GemCache {
 	\grin 1 int
 	\decl 0 gem_state (...) {
 		if (argc==2) render((GemState *)(void *)argv[1]); else startRendering();
-		outlet_anything(bself->te_outlet,gensym("gem_state"),argc,argv);
+		out[0](gensym("gem_state"),argc,argv);
 	}
 };
 

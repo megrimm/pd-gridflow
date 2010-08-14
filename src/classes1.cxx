@@ -224,8 +224,8 @@ GRID_INLET(0) {
 		if (!dest) post("%s",s);
 		else {
 			int n = strlen(s);
-			t_atom a[n];
-			for (int i=0; i<n; i++) SETFLOAT(a+i,s[i]);
+			t_atom2 a[n];
+			for (int i=0; i<n; i++) a[i]=s[i];
 			//fprintf(stderr,"dest=%p\n",dest);
 			//fprintf(stderr,"*dest={%08x,%08x,%08x,%08x,...}\n",dest[0],dest[1],dest[2],dest[3]);
 			pd_typedmess(dest,gensym("very_long_name_that_nobody_uses"),n,a);
@@ -371,12 +371,7 @@ GRID_INLET(0) {
 		DELBUF(fromb);
 		DELBUF(to2);
 	}
-	\decl 0 bang () {
-		t_atom a[2];
-		SETFLOAT(a+0,0);
-		SETSYMBOL(a+1,gensym("#"));
-		pd_list((t_pd *)bself,&s_list,2,a);
-	}
+	\decl 0 bang () {t_atom2 a[2] = {0,gensym("#")}; pd_list((t_pd *)bself,&s_list,2,a);}
 	\decl 1 reassign () {put_at=0;}
 	\decl 1 put_at (...) {
 		if (argv[0].a_type==A_LIST) put_at=TO(Grid *,argv[0]);
