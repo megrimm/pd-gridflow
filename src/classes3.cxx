@@ -77,7 +77,7 @@ GRID_INLET(0) {
 		COPY((T *)*blah+i,data,chans);
 		data+=chans; n-=chans; size++;
 	}
-	if (n>0) post("[#to~] buffer full: dropped %d samples",n/chans);
+	if (n>0) post("[#to~] buffer full: dropped %ld samples",long(n/chans));
 } GRID_FINISH {
 	//post("[#to~] buffer size : %d out of 16384",size);
 } GRID_END
