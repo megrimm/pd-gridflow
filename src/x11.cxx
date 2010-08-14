@@ -441,10 +441,8 @@ void FormatX11_call(FormatX11 *p) {p->call();}
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
-	post("XErrorEvent: type=0x%08x display=0x%08x xid=0x%08x",
-		xee->type, xee->display, xee->resourceid);
-	post("... serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
-		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
+	post("XErrorEvent: type=0x%08x display=%p xid=0x%08lx\n... serial=0x%08lx error=0x%08x request=0x%08x minor=0x%08x",
+		xee->type, xee->display, long(xee->resourceid), xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	if (current_x11->shared_memory==1) {
 		post("(note: turning shm off)");
 		current_x11->shared_memory = 0;
