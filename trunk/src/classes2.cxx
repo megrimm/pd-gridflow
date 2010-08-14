@@ -20,17 +20,11 @@
 */
 
 #include "gridflow.hxx.fcs"
-#ifdef DESIRE
-//#warning Bleuet
-#include "desire.h"
-#else
-//#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"
 extern t_class *text_class;
 };
-#endif
 #include <algorithm>
 #include <errno.h>
 #include <sys/time.h>
@@ -39,7 +33,6 @@ extern t_class *text_class;
 
 typedef int (*comparator_t)(const void *, const void *);
 
-#ifndef HAVE_DESIREDATA
 struct _outconnect {
     struct _outconnect *next;
     t_pd *to;
@@ -50,7 +43,6 @@ struct _outlet {
     t_outconnect *connections;
     t_symbol *sym;
 };
-#endif
 
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
@@ -61,10 +53,6 @@ string join (int argc, t_atom *argv, string sep=" ", string term="") {
 }
 
 /* get the owner of the result of canvas_getenv */
-#ifdef HAVE_DESIREDATA
-#define gl_env env
-#define gl_owner owner
-#endif
 static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
@@ -772,13 +760,9 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 		((t_text *)m)->te_ypix = argv[1];
 		t_canvas *granny = m->gl_owner;
 		if (!granny) RAISE("chosen canvas is not in any canvas");
-	    #ifdef DESIRE
-		gobj_changed(m);
-	    #else
 		gobj_vis((t_gobj *)m,granny,0);
 		gobj_vis((t_gobj *)m,granny,1);
 		canvas_fixlinesfor(glist_getcanvas(granny), (t_text *)m);
-	    #endif
 	}
 };
 \end class {install("gf/canvas_setpos",1,0);}
@@ -889,79 +873,48 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \end class {install("gf/canvas_loadbang",1,0);};
 
-\class GFLOL : FObject {
-	int n;
-	\constructor (int n) {this->n=n;}
-	\decl 0 wire_dotted  (int r, int g, int b);
-	\decl 0 wire_bracket (int r, int g, int b);
-	\decl 0 wire_hide ();
-	\decl 0  box_dotted (int r, int g, int b);
-	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);
-};
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)mom)->te_outlet; \
 	t_canvas *can = mom->gl_owner; \
 	if (!can) RAISE("no such canvas"); \
 	for (int i=0; i<n; i++) {ouch = ouch->next; if (!ouch) {RAISE("no such outlet");}}
+
 #define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
-\def 0 wire_dotted (int r, int g, int b) {
-#ifndef DESIRE
-	BEGIN
-	wire_each(wire,ouch) {
-		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
-	}
-#else
-	post("doesn't work with DesireData");
-#endif
-}
-\def 0 wire_bracket (int r, int g, int b) {
-#ifndef DESIRE
-	BEGIN
-/*	wire_each(wire,ouch) {
-		t_linetraverser lt; linetraverser_start(&lt,can);
-		lt.tr_ob = (t_object *)mom;
-		lt.tr_nextoc = wire;
-		linetraverser_next(&lt);
-		int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
-		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n",long(can),long(wire),r,g,b);
-		sys_vgui(".x%lx.c coords l%lx %d %d %d %d %d %d\n",long(can),long(wire),x1,y1,x1,y2,x2,y2);
-	}*/
-	t_linetraverser lt; linetraverser_start(&lt,can);
-	t_outconnect *wire;
-	while ((wire = linetraverser_next(&lt))) if (lt.tr_outlet==ouch) {
-		int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
-		sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n; "
-			 ".x%lx.c coords l%lx %d %d %d %d %d %d %d %d %d %d\n",
-			long(can),long(wire),r,g,b,
-			long(can),long(wire), x1,y1, x1,y1+3, x1+7,y1+3, x1+7,y2+8, x2-2,y2+8);
-	}
-#else
-	post("doesn't work with DesireData");
-#endif
-}
-\def 0 wire_hide () {
-#ifndef DESIRE
-	BEGIN
-	wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
-#else
-	post("doesn't work with DesireData");
-#endif
-}
-\def 0 box_dotted (int r, int g, int b) {
-#ifndef DESIRE
-	BEGIN
-	wire_each(wire,ouch) {
-		t_object *t = (t_object *)wire->to;
-		int x1,y1,x2,y2;
-		gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
-		// was #00aa66 {3 5 3 5}
-		sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
-			long(can),long(t),long(can),x1,y1,x2,y2,long(t));
+
+\class GFLOL : FObject {
+	int n;
+	\constructor (int n) {this->n=n;}
+	\decl 0 wire_dotted  (int r, int g, int b) {BEGIN
+		wire_each(wire,ouch) {
+			sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
 		}
-#else
-	post("doesn't work with DesireData");
-#endif
-}
+	}
+	\decl 0 wire_bracket (int r, int g, int b) {BEGIN
+		t_outconnect *wire; t_linetraverser lt; linetraverser_start(&lt,can);
+		// lt.tr_ob = (t_object *)mom; lt.tr_nextoc = wire; // would like this shortcut but can't use it
+		while ((wire = linetraverser_next(&lt))) if (lt.tr_outlet==ouch) {
+			int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
+			sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n; "
+				".x%lx.c coords l%lx %d %d %d %d %d %d %d %d %d %d\n",
+				long(can),long(wire),r,g,b,
+				long(can),long(wire), x1,y1, x1,y1+3, x1+7,y1+3, x1+7,y2+8, x2-2,y2+8);
+		}
+	}
+	\decl 0 wire_hide () {BEGIN
+		wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
+	}
+	\decl 0  box_dotted (int r, int g, int b) {BEGIN
+		wire_each(wire,ouch) {
+			t_object *t = (t_object *)wire->to;
+			int x1,y1,x2,y2;
+			gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
+			// was #00aa66 {3 5 3 5}
+			sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
+				long(can),long(t),long(can),x1,y1,x2,y2,long(t));
+			}
+	}
+	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);
+};
 bool comment_sort_y_lt(t_object * const &a, t_object * const &b) /* is a StrictWeakOrdering */ {
 	return a->te_ypix < b->te_ypix;
 }
@@ -983,7 +936,6 @@ struct _inlet {
 	bool horiz;
 	if (dir==&s_x) horiz=false; else
 	if (dir==&s_y) horiz=true;  else RAISE("$1 must be x or y");
-#ifndef DESIRE
 	vector<t_object *> v;
 	BEGIN
 	wire_each(wire,ouch) {
@@ -1008,12 +960,8 @@ struct _inlet {
 	}
 	if (horiz) out[0](x-x_start);
 	else       out[0](y-y_start);
-#else
-	post("doesn't work with DesireData");
-#endif
 }
 
-#ifndef DESIRE
 extern t_widgetbehavior text_widgetbehavior;
 t_widgetbehavior text_widgetbehavi0r;
 
@@ -1032,14 +980,12 @@ static void text_visfn_hax0r (t_gobj *o, t_canvas *can, int vis) {
 	t_rtext *y = glist_findrtext(can,(t_text *)o);
 	if (text_chou_de_vis((t_text *)o,can)) glist_eraseiofor(can,(t_object *)o,rtext_gettag(y));
 }
-#endif
 
 size_t properties_offset;
 
 //int propertiesfn_offset;
 \end class {
 	install("gf/lol",1,1);
-#ifndef DESIRE
 	class_setpropertiesfn(text_class,(t_propertiesfn)0xDECAFFED);
 	unsigned long *lol = (unsigned long *)text_class;
 	int i=0;
@@ -1056,7 +1002,6 @@ size_t properties_offset;
 	memcpy(&text_widgetbehavi0r,&text_widgetbehavior,sizeof(t_widgetbehavior));
 	text_widgetbehavi0r.w_visfn = text_visfn_hax0r;
 	class_setwidget(text_class,&text_widgetbehavi0r);
-#endif
 }
 
 bool canvas_contains (t_canvas *x, t_gobj *y) {for (t_gobj *g=x->gl_list; g; g=g->g_next) if (g==y) return true; return false;}

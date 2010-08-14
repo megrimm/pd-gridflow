@@ -27,17 +27,7 @@
 #include <iomanip>
 #include <errno.h>
 #include "gridflow.hxx.fcs"
-//#ifdef DESIRE
-//#include "desire.h"
-//#else
-//extern "C" {
-//#include "bundled/g_canvas.h"
-//};
-//extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
-//#endif
-
 //using namespace std; // can't
-
 //#undef GRID_INPUT
 //#define GRID_INPUT(I,V) GRID_INLET(I) {in.buf=V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FINISH
 

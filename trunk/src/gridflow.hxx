@@ -68,9 +68,7 @@ using std::ostringstream;
 #endif
 #define DEF_OUT
 
-#ifndef DESIREDATA
 #define A_LIST    t_atomtype(13) /* (t_binbuf *) */
-#endif
 #define A_GRID    t_atomtype(14) /* (Grid *)    */
 #define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
@@ -930,8 +928,7 @@ static inline int vasprintf(char **buf, const char *s, va_list args) {
 }
 #endif
 
-/* both oprintf are copied from desiredata */
-
+/* all those three printf are copied from desiredata */
 static inline int voprintf(ostream &buf, const char *s, va_list args) {
     char *b;
     int n = vasprintf(&b,s,args);
@@ -946,9 +943,6 @@ static inline int oprintf(ostream &buf, const char *s, ...) {
     va_end(args);
     return n;
 }
-
-/* this function was copied from desiredata */
-#ifndef DESIRE
 inline t_symbol *symprintf(const char *s, ...) {
     char *buf;
     va_list args;
@@ -959,21 +953,15 @@ inline t_symbol *symprintf(const char *s, ...) {
     free(buf);
     return r;
 }
-#endif
 
 ostream &operator << (ostream &self, const t_atom &a);
 
 // from pd/src/g_canvas.c
-#ifdef DESIRE
-#define ce_argc argc
-#define ce_argv argv
-#else
 struct _canvasenvironment {
     t_symbol *ce_dir;   /* directory patch lives in */
     int ce_argc;        /* number of "$" arguments */
     t_atom *ce_argv;    /* array of "$" arguments */
     int ce_dollarzero;  /* value of "$0" */
 };
-#endif
 
-#endif // __GF_GRID_H
+#endif // __GF_GRIDFLOW_H
