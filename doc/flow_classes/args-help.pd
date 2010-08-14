@@ -4,22 +4,22 @@
 #X text 308 257 demo missing args;
 #X text 308 237 demo comma args;
 #X obj 0 0 doc_h;
-#X obj 3 485 doc_i 1;
-#X obj 3 283 doc_c n;
-#X obj 14 515 doc_ii 0;
-#X obj 3 673 doc_o 1..;
-#X obj 14 313 doc_cc any;
-#X obj 97 313 doc_m cany symbol;
-#X text 232 313 "*" represents the rest of arguments;
-#X text 232 335 other symbols represent mandatory arguments;
-#X obj 0 777 doc_f;
-#X obj 14 703 doc_oo any;
-#X obj 97 703 doc_m oany <atom>;
-#X text 232 703 output of single argument;
-#X text 232 725 output of rest of arguments \, if last arg of [args]
+#X obj 3 508 doc_i 1;
+#X obj 3 306 doc_c n;
+#X obj 14 538 doc_ii 0;
+#X obj 3 696 doc_o 1..;
+#X obj 14 336 doc_cc any;
+#X obj 97 336 doc_m cany symbol;
+#X text 232 336 "*" represents the rest of arguments;
+#X text 232 358 other symbols represent mandatory arguments;
+#X obj 0 800 doc_f;
+#X obj 14 726 doc_oo any;
+#X obj 97 726 doc_m oany <atom>;
+#X text 232 726 output of single argument;
+#X text 232 748 output of rest of arguments \, if last arg of [args]
 is a "*".;
-#X obj 97 725 doc_m oany <list>;
-#X text 232 537 sends one message per outlet right-to-left. if there
+#X obj 97 748 doc_m oany <list>;
+#X text 232 560 sends one message per outlet right-to-left. if there
 is a wildcard (*) as the last argument \, any extra arguments go there
 as a list message. Then for any missing arguments that have default
 values \, the default values are sent \, right to left. Then for each
@@ -27,44 +27,46 @@ present argument that is not extra \, that argument will be sent on
 its own outlet. Finally \, each init-message (comma-separated) is parsed
 from the arguments and sent (magically) to the first inlet of the abstraction
 itself.;
-#X text 232 392 represent optional arguments as nested-lists;
-#X text 232 414 inside the nested-list \, \$1 must be the name of the
+#X text 232 415 represent optional arguments as nested-lists;
+#X text 232 437 inside the nested-list \, \$1 must be the name of the
 argument \, \$2 must be "a" (the single letter) \, and \$3 must be
 the default value. the "a" is actually for future use (type-checking).
 ;
-#X text 232 357 the star can only occur once and at the end \, and
+#X text 232 380 the star can only occur once and at the end \, and
 all optionals must follow all mandatories.;
-#X obj 12 216 args-demo pommes poires ananas biscuits-soda;
 #X obj 12 37 cnv 15 100 25 empty empty Warning: 0 8 0 14 -262144 -258113
 0;
-#X obj 97 537 doc_m i0 loadbang;
-#X obj 97 515 doc_m i0 bang;
-#X text 232 515 Same as loadbang.;
+#X obj 97 560 doc_m i0 loadbang;
+#X obj 97 538 doc_m i0 bang;
+#X text 232 538 Same as loadbang.;
 #X text 103 37 When using [args] inside a patch that also uses a [loadbang]
 for stuff that depends on those arguments \, you need to make sure
 that the [loadbang] in question is created AFTER [args]. This is the
 same problem as what happens with the order of multiple [loadbang]
 objects \, because [args] is implicitly a [loadbang] too.;
-#X obj 97 392 doc_m cany <list>;
-#X obj 12 256 args-demo;
-#X obj 12 196 args-demo blah;
-#X obj 12 236 args-demo dorval \, temperature -18 \, pression 99.5
-;
-#X obj 3 757 doc_also;
+#X obj 97 415 doc_m cany <list>;
+#X obj 3 780 doc_also;
 #X text 105 121 If you don't want to deal with it \, you can connect
 an explicit [loadbang] to [args] \, but be warned that everything will
 be sent twice (once by the implicit loadbang \, once by your explicit
 [loadbang]).;
-#X obj 103 757 setargs;
-#X obj 157 757 gf/propertybang;
+#X obj 103 780 setargs;
+#X obj 157 780 gf/propertybang;
+#X text 309 276 demo nested lists;
+#X obj 12 276 args-demo (1 2 3) (4 5) (6) () (7 8 9 10 11);
+#X obj 12 216 args-demo pommes poires ananas biscuits-soda;
+#X obj 12 256 args-demo;
+#X obj 12 196 args-demo blah;
+#X obj 12 236 args-demo dorval \, temperature -18 \, pression 99.5
+;
 #X connect 10 1 11 0;
 #X connect 10 1 12 0;
 #X connect 10 1 22 0;
 #X connect 15 1 16 0;
 #X connect 18 1 17 0;
-#X connect 25 1 19 0;
-#X connect 26 1 27 0;
-#X connect 29 1 20 0;
-#X connect 29 1 21 0;
-#X connect 33 1 35 0;
-#X connect 33 1 36 0;
+#X connect 24 1 19 0;
+#X connect 25 1 26 0;
+#X connect 28 1 20 0;
+#X connect 28 1 21 0;
+#X connect 29 1 31 0;
+#X connect 29 1 32 0;

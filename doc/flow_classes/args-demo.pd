@@ -20,9 +20,20 @@
 #X text 34 70 mandatory left-inlet;
 #X text 33 84 for using [args] with;
 #X text 33 96 a comma;
+#X obj 412 107 list length;
+#X floatatom 412 126 5 0 0 0 - - -;
+#X obj 409 157 listflatten;
+#X obj 409 197 list length;
+#X floatatom 409 216 5 0 0 0 - - -;
+#X obj 415 177 display;
+#X text 344 33 WARNING: nested lists can be troublesome !;
+#X text 123 319 a nested list argument becomes a normal list when coming
+out of an [args] outlet;
 #X connect 0 0 11 0;
 #X connect 0 1 6 0;
 #X connect 0 2 5 0;
+#X connect 0 2 20 0;
+#X connect 0 2 22 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 3 0 1 0;
@@ -30,3 +41,7 @@
 #X connect 4 1 13 0;
 #X connect 4 3 9 0;
 #X connect 9 0 16 0;
+#X connect 20 0 21 0;
+#X connect 22 0 23 0;
+#X connect 22 0 25 0;
+#X connect 23 0 24 0;
