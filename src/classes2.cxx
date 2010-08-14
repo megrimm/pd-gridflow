@@ -98,7 +98,7 @@ struct ArgSpec {
 		sargv = new ArgSpec[argc];
 		for (int i=0; i<argc; i++) {
 			if (argv[i].a_type==A_LIST) {
-				t_binbuf *b = (t_binbuf *)argv[i].a_gpointer;
+				t_binbuf *b = argv[i];
 				int bac = binbuf_getnatom(b);
 				t_atom *bat = binbuf_getvec(b);
 				sargv[i].name = atom_getsymbolarg(0,bac,bat);
@@ -269,6 +269,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 		out[0](contents.size(),&contents[0]);
 		contents.clear();
 	}
+	\decl 0 bang () {out[0]();} // really should change gridflow.cxx soon because this is getting annoying.
 };
 \end class {install("listflatten",1,1);}
 
