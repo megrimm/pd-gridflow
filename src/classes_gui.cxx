@@ -20,17 +20,12 @@
 */
 
 #include "gridflow.hxx.fcs"
-#ifdef DESIRE
-//#warning Bleuet
-#include "desire.h"
-#else
-//#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"
 extern t_class *text_class;
+int sys_hostfontsize(int fontsize);
 };
-#endif
 #include <algorithm>
 #include <errno.h>
 #include <sys/time.h>
@@ -39,7 +34,6 @@ extern t_class *text_class;
 
 typedef int (*comparator_t)(const void *, const void *);
 
-#ifndef HAVE_DESIREDATA
 struct _outconnect {
     struct _outconnect *next;
     t_pd *to;
@@ -50,7 +44,6 @@ struct _outlet {
     t_outconnect *connections;
     t_symbol *sym;
 };
-#endif
 
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
@@ -135,14 +128,6 @@ public:
 
 //****************************************************************
 
-#ifdef DESIRE
-t_glist *glist_getcanvas(t_glist *foo) {return foo;}//dummy
-void canvas_fixlinesfor(t_glist *foo,t_text *) {}//dummy
-#else
-extern "C" int sys_hostfontsize(int fontsize);
-#endif
-
-//#ifdef DESIRE
 \class Display : GUI_FObject {
 	int y,x;
 	ostringstream text;
@@ -216,9 +201,6 @@ extern "C" int sys_hostfontsize(int fontsize);
 	}
 };
 \end class {
-#ifdef DESIRE
-	install("gf/display",1,0);
-#else
 	install("display",1,0);
 	class_setwidget(fclass->bfclass,Display::newwb());
 	sys_gui("proc display_update {self c x y fg bg outline font text} { \n"
@@ -234,9 +216,7 @@ extern "C" int sys_hostfontsize(int fontsize);
 		"$c lower ${self}R ${self}TEXT\n"
 		"pd \"$self set_size $sy $sx;\" \n"
 	"}\n");
-#endif
 }
-//#endif // ndef DESIRE
 
 //****************************************************************
 

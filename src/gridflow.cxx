@@ -39,21 +39,11 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#ifdef HAVE_DESIREDATA
-//#warning Bleuet
-#include "desire.h"
-#else
-//#warning Vanille
 extern "C" {
 #include "bundled/g_canvas.h"
 #include "bundled/m_imp.h"
 extern t_class *text_class;
 };
-#endif
-
-//#ifndef HAVE_DESIREDATA
-//#include "bundled/g_canvas.h"
-//#endif
 
 /* for exception-handling in 0.9.x and 9.x... Linux-only */
 #if !defined(MACOSX) && !defined(__WIN32__)
@@ -690,17 +680,14 @@ static void BFObject_delete (BFObject *bself) {
 //****************************************************************
 
 static void BFObject_undrawio (BFObject *bself) {
-#ifndef HAVE_DESIREDATA
 	t_canvas *mom = bself->self->mom;
 	if (!mom || !glist_isvisible(mom)) return;
 	t_rtext *rt = glist_findrtext(mom,bself);
 	if (!rt) return;
 	glist_eraseiofor(mom,bself,rtext_gettag(rt));
-#endif
 }
 
 static void BFObject_redraw (BFObject *bself) {
-#ifndef HAVE_DESIREDATA
 	t_canvas *mom = bself->self->mom;
 	if (!mom || !glist_isvisible(mom)) return;
 	t_rtext *rt = glist_findrtext(mom,bself);
@@ -708,7 +695,6 @@ static void BFObject_redraw (BFObject *bself) {
 	gobj_vis((t_gobj *)bself,mom,0);
 	gobj_vis((t_gobj *)bself,mom,1);
 	canvas_fixlinesfor(mom,(t_text *)bself);
-#endif
 }
 
 /* warning: deleting inlets that are connected will cause pd to crash */
@@ -770,10 +756,6 @@ void add_creator2(FClass *fclass, const char *name) {
 	class_addcreator((t_newmethod)BFObject_new,gensym((char *)name),A_GIMME,0);
 }
 
-#ifdef DESIRE
-#define c_nmethod nmethod
-#define c_methods methods
-#endif
 void add_creator3(FClass *fclass, const char *name) {
 	fclasses[string(name)] = fclass;
 	t_class *c = pd_objectmaker;
@@ -795,11 +777,9 @@ void add_creator3(FClass *fclass, const char *name) {
 
 //****************************************************************
 
-#ifndef DESIRE
 struct t_namelist;
 extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" t_namelist *namelist_append_files(t_namelist *, char *);
-#endif
 static void add_to_path(char *dir) {
 	static bool debug = false;
 	char bof[1024];
@@ -975,20 +955,10 @@ char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 #endif
 
 static t_gobj *canvas_last (t_canvas *self) {
-#ifdef DESIRE
-	t_gobj *g = canvas_first(self);
-	while (gobj_next(g)) g=gobj_next(g);
-#else
 	t_gobj *g = self->gl_list;
 	while (g->g_next) g=g->g_next;
-#endif
 	return g;
 }
-
-#ifdef DESIRE
-extern "C" void canvas_delete(t_canvas *, t_gobj *);
-#define glist_delete canvas_delete
-#endif
 
 static void canvas_else (t_canvas *self, t_symbol *s, int argc, t_atom2 *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas else: there is no last object"); return;}
