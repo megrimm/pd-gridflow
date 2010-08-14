@@ -78,7 +78,7 @@ GRID_INLET(0) {
 
 \def 0 bang () {
 	uint8 sig[8];
-	if (!fread(sig, 1, 8, f)) {outlet_bang(bself->te_outlet); return;}
+	if (!fread(sig, 1, 8, f)) {out[0](); return;}
 	if (png_sig_cmp(sig,0,8)) RAISE("bad signature");
 	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) RAISE("!png");

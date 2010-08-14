@@ -829,7 +829,7 @@ struct PtrOutlet {
 	void operator () (t_symbol *s, int argc, t_atom *argv) {outlet_anything(p,s,  argc,argv);}
 	void operator () (t_atom *a);
 };
-void outlet_atom2 (t_outlet *self, t_atom *av);
+void outlet_atom2 (PtrOutlet self, t_atom *av);
 
 // represents objects that have inlets/outlets
 \class FObject {

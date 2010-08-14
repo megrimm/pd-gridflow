@@ -204,30 +204,22 @@ typedef nodeid_t NID;
 	//\attr uint16 contrast();
 	//\attr uint16 whiteness();
 	void setup ();
-	\decl 0 get (t_symbol *s=0);
-	\decl 0 size (int height, int width);
-};
-
-\def 0 get (t_symbol *s=0) {
-	FObject::_0_get(s);
-	t_atom a[2];
-	if (!s) {
-		SETFLOAT(a+0,camera.frame_height);
-		SETFLOAT(a+1,camera.frame_width);
-		outlet_anything(outlets[0],gensym("size"),2,a); // abnormal (does not use nested list)
-		unsigned int width,height;
-		IO(dc1394_query_format7_max_image_size,MODE_FORMAT7_0,&width,&height);
-		SETFLOAT(a+0,height);
-		SETFLOAT(a+1,width);
-		outlet_anything(outlets[0],gensym("maxsize"),2,a); // abnormal (does not use nested list)
+	\decl 0 get (t_symbol *s=0) {
+		FObject::_0_get(s);
+		if (!s) {
+			{t_atom2 a[2] = {camera.frame_height,camera.frame_width}; out[0](gensym("size"),2,a);} // abnormal (does not use nested list)
+			unsigned int width,height;
+			IO(dc1394_query_format7_max_image_size,MODE_FORMAT7_0,&width,&height);
+			{t_atom2 a[2] = {height,width}; out[0](gensym("maxsize"),2,a);} // abnormal (does not use nested list)
+		}
 	}
-}
-\def 0 size (int height, int width) {
-	IO(dc1394_set_format7_image_size,MODE_FORMAT7_0,width,height);
-	this->height = height;
-	this->width = width;
-	setup();
-}
+	\decl 0 size (int height, int width) {
+		IO(dc1394_set_format7_image_size,MODE_FORMAT7_0,width,height);
+		this->height = height;
+		this->width = width;
+		setup();
+	}
+};
 
 \def unsigned brightness () {unsigned value;  dc1394_get_brightness(rh,usenode,&value); return value;}
 \def 0        brightness    (unsigned value) {dc1394_set_brightness(rh,usenode, value);}
