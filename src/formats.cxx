@@ -186,13 +186,13 @@ struct GridHeader {
 \def 0 bang () {
 	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
 	Dim dim;
-	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
+	if (feof(f)) {out[0](); return;}
 	//post("#in grid bang: offset %ld",ftell(f));
 	if (headerless) {
 		dim = this->dim;
 	} else {
 		int r = fread(&head,1,8,f);
-		if (feof(f)) {outlet_bang(bself->te_outlet); return;} /* damn */
+		if (feof(f)) {out[0](); return;} /* damn */
 		if (r<8) RAISE("can't read header: got %d bytes instead of 8",r);
 		uint8 *m = (uint8 *)head.magic;
 		if (strncmp((char *)m,"\x7fgrid",5)==0) endian=1; else

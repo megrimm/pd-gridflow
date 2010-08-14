@@ -175,14 +175,14 @@ const char *oserr_find(long err)
 	GetMovieBox(movie,&r);
 	PixMapHandle pixmap = GetGWorldPixMap(gw);
 	short flags = nextTimeStep;
-	if (nframe>=nframes) {outlet_bang(bself->te_outlet); return;}
+	if (nframe>=nframes) {out[0](); return;}
 	if (nframe==0) flags |= nextTimeEdgeOK;
 	TimeValue duration;
 	OSType mediaType = VisualMediaCharacteristic;
 	GetMovieNextInterestingTime(movie,flags,1,&mediaType,time,0,&time,&duration);
 	if (time<0) {
 		time=0;
-		outlet_bang(bself->te_outlet);
+		out[0]();
 		return;
 	}
 //	post("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
