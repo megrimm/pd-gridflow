@@ -67,26 +67,15 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
 Barf::Barf(const char *s, ...) {
-    ostringstream os;
-    va_list ap;
-    va_start(ap,s);
-    voprintf(os,s,ap);
-    va_end(ap);
-    text = os.str();
-}
+    ostringstream os; va_list ap; va_start(ap,s  ); voprintf(os,s  ,ap);
+    va_end(ap); text = os.str();}
 Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
-    ostringstream os;
-    va_list ap;
-    va_start(ap,fmt);
-    voprintf(os,fmt,ap);
-    //oprintf(os,"\n%s:%d:in `%s'",file,line,func);
-    va_end(ap);
-    text = os.str();
-}
+    ostringstream os; va_list ap; va_start(ap,fmt); voprintf(os,fmt,ap); //oprintf(os,"\n%s:%d:in `%s'",file,line,func);
+    va_end(ap); text = os.str();}
 
-void Barf::error(BFObject *bself, int winlet, const char *selector) {
-	if (!bself) ::error("[???] inlet %d method %s: %s"                              ,winlet,selector?selector:"(???)",text.data());
-	else    pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,selector?selector:"(???)",text.data());
+void Barf::error(BFObject *bself, int winlet, t_symbol *sel) {
+	if (!bself) ::error("[???] inlet %d method %s: %s"                              ,winlet,sel?sel->s_name:"(???)",text.data());
+	else    pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,sel?sel->s_name:"(???)",text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 	ostringstream os; os << s->s_name;
@@ -530,16 +519,21 @@ string gf_find_file (string x) {
 #define pd_class(x) (*(t_pd *)x)
 #define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
 
-static FMethod method_lookup (FClass *fclass, const char *sel) {
-	string s = sel;
+// when winlet==0  : the message came to the receiver of the object (by left inlet or by receive-symbol)
+// when winlet>0   : the message came through a proxy (non-left inlet)
+// when winlet==-1 : \decl n ... for multi-inlet methods
+// when winlet==-2 : \decl void anything : matches anything in all inlets (as a fallback)
+//		     \decl ___get : attribute lister defined by source_filter
+//                   other : attribute readers
+static FMethod method_lookup (FClass *fclass, int winlet, t_symbol *sel) {
 	typeof(fclass->methods) &m = fclass->methods;
-	typeof(m.begin()) it = m.find(s);
+	typeof(m.begin()) it = m.find(insel(winlet,sel));
 	if (it!=m.end()) return it->second;
-	if (fclass->super) return method_lookup(fclass->super,sel);
+	if (fclass->super) return method_lookup(fclass->super,winlet,sel);
 	return 0;
 }
-static FMethod method_lookup (BFObject *bself, const char *sel) {
-	return method_lookup(fclasses_pd[pd_class(bself)],sel);
+static FMethod method_lookup (BFObject *bself, int winlet, t_symbol *sel) {
+	return method_lookup(fclasses_pd[pd_class(bself)],winlet,sel);
 }
 
 void call_super(int argc, t_atom *argv) {/* unimplemented */}
@@ -554,28 +548,25 @@ struct BFProxy : t_object {
 };
 
 static t_class *BFProxy_class;
+static t_symbol *s_loadbang;
 
 static void BFObject_loadbang (BFObject *bself) {
-    try {
-	FMethod m = method_lookup(bself,"_0_loadbang");
-	m(bself->self,0,0);
-    } catch (Barf &oozy) {oozy.error(bself,0,"loadbang");}
+    try {FMethod m = method_lookup(bself,0,s_loadbang); m(bself->self,0,0);}
+    catch (Barf &oozy) {oozy.error(bself,0,s_loadbang);}
 }
 
-static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom2 *at) {
+static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac, t_atom2 *at) {
     #ifdef DES_BUGS
 	post("BFObject_anything bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
     #endif
-    const char *s = selector->s_name;
     try {
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
 	int argc = handle_braces(ac,argv+2);
 	FMethod m;
-	char buf[64], bof[64];
-	sprintf(buf,"_%d_%s",winlet,s); m=method_lookup(bself,buf);                 if (m) {m(bself->self,argc+0,argv+2); return;}
-	sprintf(bof,"_n_%s",        s); m=method_lookup(bself,bof); argv[1]=winlet; if (m) {m(bself->self,argc+1,argv+1); return;}
-	m = method_lookup(bself,"anything");      if (m) {argv[0]=winlet; argv[1]=selector; m(bself->self,argc+2,argv+0); return;}
-	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s,winlet,pd_classname(bself));
+	m=method_lookup(bself,winlet,s);                                    if (m) {m(bself->self,argc+0,argv+2); return;}
+	m=method_lookup(bself,-1,s); argv[1]=winlet;                        if (m) {m(bself->self,argc+1,argv+1); return;}
+	m = method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
+	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
@@ -640,7 +631,7 @@ static void BFObject_delete (BFObject *bself) {
 	try {
 	     delete bself->self;
 	     bself->self = (FObject *)0xdeadbeef;
-	} catch (Barf &oozy) {oozy.error(bself,-1,"destructor");}
+	} catch (Barf &oozy) {oozy.error(bself,-1,gensym("destructor"));}
 }
 
 //****************************************************************
@@ -786,9 +777,9 @@ void install2(FClass *fclass, const char *name, int ninlets, int noutlets, int f
 	fclasses_pd[fclass->bfclass] = fclass;
 	t_class *b = fclass->bfclass;
 	class_addanything(b,t_method(BFObject_anything0));
-	FMethod m = method_lookup(fclass,"_0_loadbang");
+	FMethod m = method_lookup(fclass,0,s_loadbang);
 	//post("class %s loadbang %08x",name,long(m));
-	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
+	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),s_loadbang,A_NULL);
 }
 
 //static inline const t_atom &convert(const t_atom &x, const t_atom *foo) {return x;}
@@ -851,11 +842,11 @@ int handle_braces(int ac, t_atom *av_) {
 	FClass *fc = fclasses_pd[pd_class(bself)];
 	if (!s) {
 		foreach(attr,fc->attrs) {
-			t_atom2 a[1] = {gensym((char *)attr->second->name.data())};
+			t_atom2 a[1] = {gensym((char *)attr->second->name->s_name)};
 			pd_typedmess((t_pd *)bself,gensym("get"),1,a);
 		}
 	} else {
-		FMethod m = method_lookup(bself,"___get");
+		FMethod m = method_lookup(bself,-2,gensym("___get"));
 		if (!m) RAISE("missing ___get");
 		t_atom2 a[1] = {s}; m(this,1,a);
 	}
@@ -863,10 +854,10 @@ int handle_braces(int ac, t_atom *av_) {
 \def 0 help () {
 	FClass *fc = fclasses_pd[pd_class(bself)];
 	post("attributes (");
-	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name.data());
+	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name->s_name);
 	post(")");
 	post("methods (");
-	foreach(meth,fc->methods) post("    %s",meth->first.data());
+	foreach(meth,fc->methods) post("    %d %s",meth->first.first,meth->first.second->s_name);
 	post(")");
 }
 \classinfo {}
@@ -1018,6 +1009,7 @@ static void try_loading_gem () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
+    s_loadbang = gensym("loadbang");
     post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
@@ -1100,7 +1092,7 @@ BUILTIN_SYMBOLS(FOO)
 		);
 	delete[] dirresult;
 	delete[] dirname;
-    } catch (Barf &oozy) {oozy.error(0,-1,(char *)0);}
+    } catch (Barf &oozy) {oozy.error(0,-3,(t_symbol *)0);}
     signal(SIGSEGV,SIG_DFL);
     signal(SIGABRT,SIG_DFL);
     signal(SIGILL,SIG_DFL);

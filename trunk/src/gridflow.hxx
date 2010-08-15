@@ -50,6 +50,8 @@ using std::map;
 using std::vector;
 using std::ostream;
 using std::ostringstream;
+using std::pair;
+typedef pair<int,t_symbol *> insel; // inlet-selector compound
 
 #ifndef a_float
 #define a_float    a_w.w_float
@@ -192,8 +194,8 @@ struct BFObject;
 struct Barf {
   string text;
   Barf(const char *s, ...);
-  Barf(const char *file, int line, const char *func, const char *s, ...);
-  void error(BFObject *self, int winlet, const char *selector);
+  Barf(const char *file, int line, const char *func, const char *fmt, ...);
+  void error(BFObject *self, int winlet, t_symbol *selector);
   void error(t_symbol *s, int argc, t_atom *argv);
   ~Barf() {}
 };
@@ -729,9 +731,9 @@ private:
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
 struct MethodDecl {const char *selector; FMethod method;};
 struct AttrDecl {
-	string name;
+	t_symbol *name;
 	string type;
-	AttrDecl(string name_, string type_) {name=name_; type=type_;}
+	AttrDecl(t_symbol *name_, string type_) {name=name_; type=type_;}
 };
 typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
 struct FClass {
@@ -742,8 +744,8 @@ struct FClass {
 	int noutlets;
 	t_class *bfclass;
 	string name;
-	map<string,FMethod> methods;
-	map<string,AttrDecl *> attrs;
+	map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method
+	map<t_symbol *,AttrDecl *> attrs;
 };
 
 void fclass_install(FClass *fc, FClass *super);
