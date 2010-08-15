@@ -526,35 +526,18 @@ string gf_find_file (string x) {
 // when winlet==-2 : \decl void anything : matches anything in all inlets (as a fallback)
 //		     \decl ___get : attribute lister defined by source_filter
 //                   other : attribute readers
-static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel, int argc, t_atom2 *argv) {
+static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel) {
+    for (; fc; fc=fc->super) {
 	typeof(fc->methods) &m = fc->methods;
 	typeof(m.begin()) it = m.find(insel(winlet,sel)); if (it!=m.end()) return it->second;
 	if (sel==&s_bang || sel==&s_float || sel==&s_symbol || sel==&s_pointer) {
 		it = m.find(insel(winlet,&s_list)); if (it!=m.end()) return it->second;
 	}
-	// this code is sketchy. it shouldn't check that in that manner. doesn't work with super.
-	if (sel==&s_list) {
-	    if (argc==0) {
-		it = m.find(insel(winlet,&s_bang)); if (it!=m.end()) return it->second;
-	    } else if (argc==1) {
-		if (argv[0].a_type==A_FLOAT)   {it = m.find(insel(winlet,&s_float  )); if (it!=m.end()) return it->second;}
-		if (argv[0].a_type==A_SYMBOL)  {it = m.find(insel(winlet,&s_symbol )); if (it!=m.end()) return it->second;}
-		if (argv[0].a_type==A_POINTER) {it = m.find(insel(winlet,&s_pointer)); if (it!=m.end()) return it->second;}
-	    } else {
-		it = m.find(insel(-2,&s_anything)); if (it==m.end()) {
-			for (int i=argc-1; i>=0; i--) { // not exactly same order as pd...
-				// would send atom argv[i] to inlet i, method ???
-				//if (argv[i].a_type==A_FLOAT)   ... send float   in inlet i
-				//if (argv[i].a_type==A_SYMBOL)  ... send symbol  in inlet i
-				//if (argv[i].a_type==A_POINTER) ... send pointer in inlet i
-			}
-		}
-	    }
-	}
-	return fc->super ? method_lookup(fc->super,winlet,sel,argc,argv) : 0;
+    }
+    return 0;
 }
-static FMethod method_lookup (BFObject *bself, int winlet, t_symbol *sel, int argc, t_atom2 *argv) {
-	return method_lookup(fclasses_pd[pd_class(bself)],winlet,sel,argc,argv);
+static FMethod method_lookup (BFObject *bself, int winlet, t_symbol *sel) {
+	return method_lookup(fclasses_pd[pd_class(bself)],winlet,sel);
 }
 
 void call_super(int argc, t_atom *argv) {/* unimplemented */}
@@ -572,7 +555,7 @@ static t_class *BFProxy_class;
 static t_symbol *s_loadbang;
 
 static void BFObject_loadbang (BFObject *bself) {
-    try {FMethod m = method_lookup(bself,0,s_loadbang,0,0); m(bself->self,0,0);}
+    try {FMethod m = method_lookup(bself,0,s_loadbang); m(bself->self,0,0);}
     catch (Barf &oozy) {oozy.error(bself,0,s_loadbang);}
 }
 
@@ -584,9 +567,29 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
 	int argc = handle_parens(ac,argv+2); // ought to be removed
 	FMethod m;
-	m=method_lookup(bself,winlet,      s,argc,argv+2); if (m) {                           m(bself->self,argc+0,argv+2); return;}
-	m=method_lookup(bself,-1,          s,argc,argv+2); if (m) {argv[1]=winlet;            m(bself->self,argc+1,argv+1); return;}
-	m=method_lookup(bself,-2,&s_anything,argc,argv+2); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
+	m=method_lookup(bself,winlet,      s); if (m) {                           m(bself->self,argc+0,argv+2); return;}
+	m=method_lookup(bself,-1,          s); if (m) {argv[1]=winlet;            m(bself->self,argc+1,argv+1); return;}
+	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
+
+	// this code is sketchy. it shouldn't check that in that manner. doesn't work with super.
+	if (s==&s_list) {
+	    if (argc==0) {
+						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(bself->self,argc,argv+2); return;}
+	    } else if (argc==1) {
+		if (argv[2].a_type==A_FLOAT)   {m=method_lookup(bself,winlet,&s_float  ); if(m){m(bself->self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_SYMBOL)  {m=method_lookup(bself,winlet,&s_symbol ); if(m){m(bself->self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_POINTER) {m=method_lookup(bself,winlet,&s_pointer); if(m){m(bself->self,argc,argv+2); return;}}
+	    } else {
+		//it = m.find(insel(-2,&s_anything)); if (it==m.end()) {
+		//	for (int i=argc-1; i>=0; i--) { // not exactly same order as pd...
+				// would send atom argv[i] to inlet i, method ???
+				//if (argv[i].a_type==A_FLOAT)   ... send float   in inlet i
+				//if (argv[i].a_type==A_SYMBOL)  ... send symbol  in inlet i
+				//if (argv[i].a_type==A_POINTER) ... send pointer in inlet i
+		//	}
+		//}
+	    }
+	}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
@@ -804,7 +807,7 @@ void install2(FClass *fc, const char *name, int ninlets, int noutlets, int flags
 // blob has to be explicitly registered, because it has a default method, and isn't caught by 'anything'.
 	//class_addblob(bc,t_method(BFObject_blob0));
 // loadbang has to be explicitly registered, because it is called by zgetfn.
-	FMethod m = method_lookup(fc,0,s_loadbang,0,0);
+	FMethod m = method_lookup(fc,0,s_loadbang);
 	if (m) class_addmethod(bc,t_method(BFObject_loadbang),s_loadbang,A_NULL);
 }
 
@@ -873,7 +876,7 @@ int handle_parens(int ac, t_atom *av_) {
 		}
 	} else {
 		t_atom2 a[1] = {s};
-		FMethod m = method_lookup(bself,-2,gensym("___get"),1,a);
+		FMethod m = method_lookup(bself,-2,gensym("___get"));
 		if (!m) RAISE("missing ___get");
 		m(this,1,a);
 	}
