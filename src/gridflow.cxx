@@ -526,12 +526,13 @@ string gf_find_file (string x) {
 // when winlet==-2 : \decl void anything : matches anything in all inlets (as a fallback)
 //		     \decl ___get : attribute lister defined by source_filter
 //                   other : attribute readers
-static FMethod method_lookup (FClass *fclass, int winlet, t_symbol *sel) {
-	typeof(fclass->methods) &m = fclass->methods;
+static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel) {
+	typeof(fc->methods) &m = fc->methods;
 	typeof(m.begin()) it = m.find(insel(winlet,sel));
 	if (it!=m.end()) return it->second;
-	if (fclass->super) return method_lookup(fclass->super,winlet,sel);
-	return 0;
+	// this works only if there is no float/symbol/pointer defined in superclasses...
+	if (sel==&s_float || sel==&s_symbol || sel==&s_pointer) return method_lookup(fc,winlet,&s_list);
+	return fc->super ? method_lookup(fc->super,winlet,sel) : 0;
 }
 static FMethod method_lookup (BFObject *bself, int winlet, t_symbol *sel) {
 	return method_lookup(fclasses_pd[pd_class(bself)],winlet,sel);
@@ -562,11 +563,11 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
     #endif
     try {
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
-	int argc = handle_parens(ac,argv+2);
+	int argc = handle_parens(ac,argv+2); // ought to be removed
 	FMethod m;
-	m=method_lookup(bself,winlet,s);                                    if (m) {m(bself->self,argc+0,argv+2); return;}
-	m=method_lookup(bself,-1,s); argv[1]=winlet;                        if (m) {m(bself->self,argc+1,argv+1); return;}
-	m = method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
+	m=method_lookup(bself,winlet,s);       if (m) {                           m(bself->self,argc+0,argv+2); return;}
+	m=method_lookup(bself,-1,s);           if (m) {argv[1]=winlet;            m(bself->self,argc+1,argv+1); return;}
+	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
@@ -857,8 +858,7 @@ int handle_parens(int ac, t_atom *av_) {
 		t_atom2 a[1] = {s}; m(this,1,a);
 	}
 }
-\classinfo {}
-\end class
+\end class {fclass->name = gensym("<FObject>");}
 
 void startup_number();
 void startup_classes1();
