@@ -248,6 +248,9 @@ struct Pointer;
 
 // trick to be able to define methods in t_atom
 struct t_atom2 : t_atom {
+	// does not do recursive comparison of lists.
+	bool operator == (const t_atom2 &b);
+	bool operator != (const t_atom2 &b) {return !(*this==b);}
 	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
 	operator float32 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return a_float;}
@@ -825,7 +828,7 @@ struct PtrOutlet {
 	void operator () (t_gpointer *g) {outlet_pointer(p,g);}
 	void operator () (             int argc, t_atom *argv) {outlet_list(p,&s_list,argc,argv);}
 	void operator () (t_symbol *s, int argc, t_atom *argv) {outlet_anything(p,s,  argc,argv);}
-	void operator () (t_atom *a);
+	void operator () (t_atom &a);
 };
 void outlet_atom2 (PtrOutlet self, t_atom *av);
 

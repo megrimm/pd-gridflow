@@ -189,11 +189,11 @@ ostream &operator << (ostream &self, const t_atom &a) {
 }
 
 // adapted from desiredata/src/kernel.c
-void PtrOutlet::operator () (t_atom *a) {
-    if      (a->a_type==A_FLOAT  ) (*this)(a->a_float);
-    else if (a->a_type==A_SYMBOL ) (*this)(a->a_symbol);
-    else if (a->a_type==A_POINTER) (*this)(a->a_gpointer);
-    else error("can't send atom whose type is %d",a->a_type);
+void PtrOutlet::operator () (t_atom &a) {
+    if      (a.a_type==A_FLOAT  ) (*this)(a.a_float);
+    else if (a.a_type==A_SYMBOL ) (*this)(a.a_symbol);
+    else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
+    else error("can't send atom whose type is %d",a.a_type);
 }
 void outlet_atom2 (PtrOutlet self, t_atom *av) {
 	if (av->a_type==A_FLOAT)   self(av->a_float);    else
@@ -202,6 +202,15 @@ void outlet_atom2 (PtrOutlet self, t_atom *av) {
 	self(1,av);
 }
 
+bool t_atom2::operator == (const t_atom2 &b) {
+	const t_atom2 &a = *this;
+	if (a.a_type!=b.a_type) return false;
+	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
+	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
+	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer;
+	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer;
+	RAISE("don't know how to compare elements of type %d",a.a_type);
+}
 //----------------------------------------------------------------
 // Dim
 
@@ -598,19 +607,17 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
     #ifdef DES_BUGS
 	post("BFObject_anything bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
     #endif
+    const char *s = selector->s_name;
     try {
-	t_atom2 argv[ac+1];
-	for (int i=0; i<ac; i++) argv[i+1] = at[i];
-	int argc = handle_braces(ac,argv+1);
-	argv[0]=winlet;
+	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
+	int argc = handle_braces(ac,argv+2);
 	FMethod m;
 	char buf[64], bof[64];
-
-	sprintf(buf,"_%d_%s",winlet,selector->s_name); m=funcall_lookup(bself,buf); if (m) {m(bself->self,argc  ,argv+1); return;}
-	sprintf(bof,"_n_%s",        selector->s_name); m=funcall_lookup(bself,bof); if (m) {m(bself->self,argc+1,argv  ); return;}
-	m = funcall_lookup(bself,"anything");                  if (m) {argv[0]=gensym(buf); m(bself->self,argc+1,argv  ); return;}
-	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",selector->s_name,winlet,pd_classname(bself));
-    } catch (Barf &oozy) {oozy.error(bself,winlet,selector->s_name);}
+	sprintf(buf,"_%d_%s",winlet,s); m=funcall_lookup(bself,buf);                 if (m) {m(bself->self,argc+0,argv+2); return;}
+	sprintf(bof,"_n_%s",        s); m=funcall_lookup(bself,bof); argv[1]=winlet; if (m) {m(bself->self,argc+1,argv+1); return;}
+	m = funcall_lookup(bself,"anything");      if (m) {argv[0]=winlet; argv[1]=selector; m(bself->self,argc+2,argv+0); return;}
+	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s,winlet,pd_classname(bself));
+    } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
 static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
 	BFObject_anything(self,0,s,argc,argv);

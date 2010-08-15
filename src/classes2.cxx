@@ -144,7 +144,7 @@ void Args::process_args (int argc, t_atom *argv) {
 			if (v->a_type==A_LIST) {
 				t_binbuf *b = *v;
 				out[i](binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) out[i](v);
+			} else if (v->a_type==A_SYMBOL) out[i](*v);
 			else outlet_anything2(out[i],1,v);
 		}
 	}
@@ -221,9 +221,9 @@ const char *atomtype_to_s (t_atomtype t) {
 	}
 	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
 	\decl void anything (...) {
-		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
+		t_symbol *sel = argv[1];
 		table[sel].clear();
-		for (int i=1; i<argc; i++) table[sel].push_back(argv[i]);
+		for (int i=2; i<argc; i++) table[sel].push_back(argv[i]);
 	}
 };
 \end class {install("attr",1,1);}
@@ -261,37 +261,27 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 };
 \end class {install("listflatten",1,1);}
 
-// does not do recursive comparison of lists.
-static bool atom_eq (const t_atom2 &a, const t_atom2 &b) {
-	if (a.a_type!=b.a_type) return false;
-	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
-	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
-	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer;
-	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer;
-	RAISE("don't know how to compare elements of type %d",a.a_type);
-}
-
 \class ListFind : FObject {
 	int ac;
-	t_atom *at;
+	t_atom2 *at;
 	~ListFind() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
 	\decl 0 list(...) {if (argc<1) RAISE("empty input"); else find(*argv);}
 	\decl 1 list(...) {
 		if (at) delete[] at;
 		ac = argc;
-		at = new t_atom[argc];
+		at = new t_atom2[argc];
 		for (int i=0; i<argc; i++) at[i] = argv[i];
 	}
 	\decl 0 float (t_atom2 a) {find(a);}
 	\decl 0 symbol(t_atom2 a) {find(a);}
-	void find (const t_atom2 &a) {int i=0; for (; i<ac; i++) if (atom_eq(at[i],a)) break; out[0](i==ac?-1:i);}
+	void find (const t_atom2 &a) {int i=0; for (; i<ac; i++) if (at[i]==a) break; out[0](i==ac?-1:i);}
 };
 \end class {install("listfind",2,1);}
 
 \class ListRead : FObject { /* sounds like tabread */
 	int ac;
-	t_atom *at;
+	t_atom2 *at;
 	~ListRead() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
 	\decl 0 float(float f) {
@@ -303,7 +293,7 @@ static bool atom_eq (const t_atom2 &a, const t_atom2 &b) {
 	\decl 1 list(...) {
 		if (at) delete[] at;
 		ac = argc;
-		at = new t_atom[argc];
+		at = new t_atom2[argc];
 		for (int i=0; i<argc; i++) at[i] = argv[i];
 	}
 };
@@ -362,14 +352,12 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 	\decl void anything (...) {
 		ostringstream text;
 		text << prefix << ":";
-		t_symbol *l = gensym("_0_list");
-		t_symbol *f = gensym("_0_float");
-		if      (argv[0]==f && argc==2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[0]==l && argc>=2 && argv[1].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[0]==l && argc==2 && argv[1].a_type==A_SYMBOL ) {text << " symbol" ;}
-		else if (argv[0]==l && argc==2 && argv[1].a_type==A_POINTER) {text << " pointer";}
-		else if (argv[0]==l && argc==1) {text << " bang";}
-		else {text << " " << argv[0].a_symbol->s_name+3; /* as is */}
+		if      (argv[1]==&s_float && argc==3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[1]==&s_list  && argc>=3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_SYMBOL ) {text << " symbol" ;}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << " pointer";}
+		else if (argv[1]==&s_list  && argc==2) {text << " bang";}
+		else {text << " " << argv[1];}
 		for (int i=1; i<argc; i++) {text << " " << argv[i];}
 		post("%s",text.str().data());
 	}
@@ -484,9 +472,9 @@ void ParallelPort::call() {
 	~Route2() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...) {
-		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
+		t_symbol *sel = argv[1];
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-		out[i](sel,argc-1,argv+1);
+		out[i](sel,argc-2,argv+2);
 	}
 	\decl 1 list(...) { // in the future, this could be a one-liner, right ?
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -502,10 +490,10 @@ void ParallelPort::call() {
 	~Route3() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...) {
-		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
+		t_symbol *sel = argv[1];
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
-		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list;
-		out[i](sel,argc-1,argv+1);
+		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list; // what about grid,blob ?
+		out[i](sel,argc-2,argv+2);
 	}
 	\decl 1 list(...) {
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
@@ -521,20 +509,15 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	int n;
 	\attr int index;
 	\attr int mode;
-	\attr int hi;
 	\attr int lo;
+	\attr int hi;
 	\constructor (int n=2, int i=0) {
-		this->n=n;
-		this->hi=n-1;
-		this->lo=0;
-		this->mode=0;
-		this->index=i;
+		this->n=n; index=i; mode=0; lo=0; hi=n-1;
 		noutlets_set(n);
 	}
 	\decl 1 float(int i) {index = mod(i,n);}
 	\decl void anything(...) {
-		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3);
-		out[index](sel,argc-1,argv+1);
+		out[index](argv[1],argc-2,argv+2);
 		if (mode) {
 			index += sgn(mode);
 			if (index<lo || index>hi) {
@@ -611,7 +594,7 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	\decl 0 list (...)  {
 		if (binbuf_getnatom(list) != argc) {out[0](0); return;}
 		t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
-		for (int i=0; i<argc; i++) if (!atom_eq(at[i],argv[i])) {out[0](0); return;}
+		for (int i=0; i<argc; i++) if (at[i]!=argv[i]) {out[0](0); return;}
 		out[0](1);
 	}
 };
@@ -725,7 +708,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class ForEach : FObject {
 	\constructor () {}
-	\decl 0 list (...) {for (int i=0; i<argc; i++) out[0](argv+i);}
+	\decl 0 list (...) {for (int i=0; i<argc; i++) out[0](argv[i]);}
 };
 \end class {install("foreach",1,1);}
 
@@ -1083,7 +1066,7 @@ string string_replace (string victim, string from, string to) {
 
 \class GFSelector : FObject {
 	\constructor () {}
-	\decl void anything (...) {out[0](gensym(argv[0].a_symbol->s_name+3));}
+	\decl void anything (...) {out[0](argv[1]);}
 };
 \end class {install("gf/selector",1,1);}
 
