@@ -53,11 +53,17 @@ using std::ostringstream;
 using std::pair;
 typedef pair<int,t_symbol *> insel; // inlet-selector compound
 
-#ifndef a_float
 #define a_float    a_w.w_float
 #define a_symbol   a_w.w_symbol
 #define a_gpointer a_w.w_gpointer
+
+#ifndef PD_BLOBS
+#define A_BLOB    t_atomtype(12) /* t_blob * */
+typedef struct _blob t_blob;
 #endif
+#define A_LIST    t_atomtype(13) /* (t_binbuf *) */
+#define A_GRID    t_atomtype(14) /* (Grid *)    */
+#define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 
 #define gensym(s) gensym(const_cast<char *>(s))
 #define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
@@ -70,18 +76,9 @@ typedef pair<int,t_symbol *> insel; // inlet-selector compound
 #endif
 #define DEF_OUT
 
-#define A_LIST    t_atomtype(13) /* (t_binbuf *) */
-#define A_GRID    t_atomtype(14) /* (Grid *)    */
-#define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
-// the use of w_gpointer here is fake, just because there's no suitable member in the union
+typedef t_binbuf t_list;
 struct Grid;
 struct GridOut;
-static inline void SETLIST(   t_atom *a, t_binbuf *b) {a->a_type = A_LIST;    a->a_gpointer = (t_gpointer *)b;}
-static inline void SETGRID(   t_atom *a, Grid *g)     {a->a_type = A_GRID;    a->a_gpointer = (t_gpointer *)g;}
-static inline void SETGRIDOUT(t_atom *a, GridOut *g)  {a->a_type = A_GRIDOUT; a->a_gpointer = (t_gpointer *)g;}
-static inline void SETNULL(   t_atom *a)              {a->a_type = A_NULL;    a->a_gpointer = 0;}
-
-typedef t_binbuf t_list;
 
 t_list *list_new (int argc, t_atom *argv);
 void list_free (t_list *self);
@@ -818,6 +815,25 @@ struct BFObject : t_object {
     //void send () {outlet_bang(
 };*/
 
+// the use of w_gpointer here is fake for non-A_POINTER, just because there's no suitable member in the union
+static inline void set_atom (t_atom *a, uint8       v) {SETFLOAT(a,(float)v);}
+static inline void set_atom (t_atom *a, int16       v) {SETFLOAT(a,(float)v);}
+static inline void set_atom (t_atom *a, int32       v) {SETFLOAT(a,(float)v);}
+static inline void set_atom (t_atom *a, uint32      v) {SETFLOAT(a,(float)v);}
+static inline void set_atom (t_atom *a, long        v) {SETFLOAT(a,(float)v);}
+static inline void set_atom (t_atom *a, float32     v) {SETFLOAT(a,v);}
+static inline void set_atom (t_atom *a, float64     v) {SETFLOAT(a,v);}
+static inline void set_atom (t_atom *a, string      v) {SETSYMBOL(a,gensym(v.data()));}
+static inline void set_atom (t_atom *a, t_symbol   *v) {SETSYMBOL(a,v);}
+static inline void set_atom (t_atom *a, Numop      *v) {SETSYMBOL(a,v->sym);}
+static inline void set_atom (t_atom *a, t_gpointer *v) {SETPOINTER(a,v);}
+static inline void set_atom (t_atom *a, t_blob     *b) {a->a_type = A_BLOB;    a->a_gpointer = (t_gpointer *)b;}
+static inline void set_atom (t_atom *a, t_binbuf   *b) {a->a_type = A_LIST;    a->a_gpointer = (t_gpointer *)b;}
+//static inline void set_atom (t_atom *a, Grid     *g) {a->a_type = A_GRID;    a->a_gpointer = (t_gpointer *)g;} // future use
+static inline void set_atom (t_atom *a, GridOut    *g) {a->a_type = A_GRIDOUT; a->a_gpointer = (t_gpointer *)g;}
+static inline void set_atom (t_atom *a)              {a->a_type = A_NULL;    a->a_gpointer = 0;}
+static inline void set_atom (t_atom *a, const t_atom &v) {*a=v;}
+
 struct PtrOutlet {
 	t_outlet *p;
 	operator t_outlet * () {return p;}
@@ -829,6 +845,8 @@ struct PtrOutlet {
 	void operator () (double f)      {outlet_float(  p,f);}
 	void operator () (t_symbol *s)   {outlet_symbol( p,s);}
 	void operator () (t_gpointer *g) {outlet_pointer(p,g);}
+//	void operator () (t_blob *g)     {outlet_blob   (p,g);} // can't use this with vanille
+	void operator () (t_blob *g)     {t_atom2 a[] = {g}; outlet_anything(p,gensym("blob"),1,a);}
 	void operator () (             int argc, t_atom *argv) {outlet_list(p,&s_list,argc,argv);}
 	void operator () (t_symbol *s, int argc, t_atom *argv) {outlet_anything(p,s,  argc,argv);}
 	void operator () (t_atom &a);
@@ -903,21 +921,6 @@ string gf_find_file (string x);
 void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv);
 void pd_oprint (ostream &o, int argc, t_atom *argv);
 void pd_post (const char *s, int argc, t_atom *argv);
-
-inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
-inline void set_atom (t_atom *a, int16     v) {SETFLOAT(a,(float)v);}
-inline void set_atom (t_atom *a, int32     v) {SETFLOAT(a,(float)v);}
-inline void set_atom (t_atom *a, uint32    v) {SETFLOAT(a,(float)v);}
-inline void set_atom (t_atom *a, long      v) {SETFLOAT(a,(float)v);}
-inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
-inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
-inline void set_atom (t_atom *a, string    v) {SETSYMBOL(a,gensym(v.data()));}
-inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
-inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
-inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
-inline void set_atom (t_atom *a, t_gpointer *v) {SETPOINTER(a,v);}
-inline void set_atom (t_atom *a, GridOut  *v) {SETGRIDOUT(a,v);}
-inline void set_atom (t_atom *a, const t_atom &v) {*a=v;}
 
 extern map<t_symbol *,FClass *> fclasses;
 int handle_parens(int ac, t_atom *av);

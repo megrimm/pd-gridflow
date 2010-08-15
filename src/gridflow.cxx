@@ -182,7 +182,7 @@ void PtrOutlet::operator () (t_atom &a) {
     if      (a.a_type==A_FLOAT  ) (*this)(a.a_float);
     else if (a.a_type==A_SYMBOL ) (*this)(a.a_symbol);
     else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
-    //else if (a.a_type==A_BLOB   ) (*this)(a.a_blob);
+    else if (a.a_type==A_BLOB   ) (*this)((t_blob *)a.a_gpointer);
     else error("can't send atom whose type is %d",a.a_type);
 }
 void outlet_atom2 (PtrOutlet self, t_atom *av) {
@@ -570,12 +570,15 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s->s_name,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
-static void BFObject_anything0 (BFObject *self, t_symbol *s, int argc, t_atom2 *argv) {
-	BFObject_anything(self,0,s,argc,argv);
+static void BFObject_blob (BFObject *bself, int winlet, t_blob *b) {
+	t_atom2 a[] = {b};
+	BFObject_anything(bself,winlet,gensym("blob"),1,a);
 }
-static void BFProxy_anything   (BFProxy *self,  t_symbol *s, int argc, t_atom2 *argv) {
-	BFObject_anything(self->parent,self->id,s,argc,argv);
-}
+
+static void BFObject_anything0 (BFObject *self, MESSAGE)   {BFObject_anything(self        ,0       ,MESSAGE2);}
+static void  BFProxy_anything  ( BFProxy *self, MESSAGE)   {BFObject_anything(self->parent,self->id,MESSAGE2);}
+static void BFObject_blob0     (BFObject *self, t_blob *b) {BFObject_blob(    self        ,0       ,b);}
+static void  BFProxy_blob      ( BFProxy *self, t_blob *b) {BFObject_blob(    self->parent,self->id,b);}
 
 FObject::FObject (BFObject *bself, MESSAGE) {
 	this->bself = bself;
@@ -778,6 +781,8 @@ void install2(FClass *fc, const char *name, int ninlets, int noutlets, int flags
 		sizeof(BFObject), flags, A_GIMME,0);
 	fclasses[gensym(name)] = fclasses_pd[bc] = fc;
 	class_addanything(bc,t_method(BFObject_anything0));
+// blob has to be explicitly registered, because it has a default method, and isn't caught by 'anything'.
+	//class_addblob(bc,t_method(BFObject_blob0));
 // loadbang has to be explicitly registered, because it is called by zgetfn.
 	FMethod m = method_lookup(fc,0,s_loadbang);
 	if (m) class_addmethod(bc,t_method(BFObject_loadbang),s_loadbang,A_NULL);
@@ -1019,8 +1024,14 @@ extern "C" void gridflow_setup () {
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
 	gridflow_folder = gensym(dirresult);
 	add_to_path(dirresult);
+
 	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_anything);
+	//void **fumble = (void **)BFProxy_class;
+	//while (*fumble != (void *)BFProxy_anything) fumble++;
+	//post("BFProxy_blob = %p",BFProxy_blob);        post("fumble[-2] = %p",fumble[-2]);
+	//class_addblob(    BFProxy_class,BFProxy_blob); post("fumble[-2] = %p",fumble[-2]);
+	//fumble[-2] = (void *)BFProxy_blob;
 	#ifndef __WIN32__
         srandom(rdtsc());
     #endif
