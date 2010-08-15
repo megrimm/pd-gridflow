@@ -261,25 +261,17 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 \class ListFind : FObject {
 	int ac;
-	t_atom2 *at;
+	t_atom2 *at; //! try vector<t_atom2>
 	~ListFind() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
-	\decl 0 list(...) {if (argc<1) RAISE("empty input"); else find(*argv);}
-	\decl 1 list(...) {
-		if (at) delete[] at;
-		ac = argc;
-		at = new t_atom2[argc];
-		for (int i=0; i<argc; i++) at[i] = argv[i];
-	}
-	\decl 0 float (t_atom2 a) {find(a);}
-	\decl 0 symbol(t_atom2 a) {find(a);}
-	void find (const t_atom2 &a) {int i=0; for (; i<ac; i++) if (at[i]==a) break; out[0](i==ac?-1:i);}
+	\decl 0 list(t_atom a) {int i=0; for (; i<ac; i++) if (at[i]==a) break; out[0](i==ac?-1:i);}
+	\decl 1 list(...) {if (at) delete[] at; ac=argc; at=new t_atom2[argc]; for (int i=0; i<argc; i++) at[i]=argv[i];}
 };
 \end class {install("listfind",2,1);}
 
 \class ListRead : FObject { /* sounds like tabread */
 	int ac;
-	t_atom2 *at;
+	t_atom2 *at; //! try vector<t_atom2>
 	~ListRead() {if (at) delete[] at;}
 	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
 	\decl 0 float(float f) {
@@ -288,17 +280,12 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 		if (i<0 || i>=ac) {out[0](); return;} /* out-of-range */
 		outlet_atom2(out[0],&at[i]);
 	}
-	\decl 1 list(...) {
-		if (at) delete[] at;
-		ac = argc;
-		at = new t_atom2[argc];
-		for (int i=0; i<argc; i++) at[i] = argv[i];
-	}
+	\decl 1 list(...) {if (at) delete[] at; ac=argc; at=new t_atom2[argc]; for (int i=0; i<argc; i++) at[i]=argv[i];}
 };
 \end class {install("listread",2,1);}
 
 \class Range : FObject {
-	t_float *mosusses;
+	t_float *mosusses; // use vector<float> ?
 	int nmosusses;
 	\constructor (...) {
 		nmosusses = argc;
@@ -309,13 +296,12 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 		noutlets_set(1+nmosusses);
 	}
 	~Range () {delete[] mosusses;}
-	\decl 0 float(float f) {
-		int i; for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
+	\decl 0 float (float f) {
+		int i;
+		for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
 		out[i](f);
 	}
-	\decl 0 list(float f) {_0_float(f);}
-	// precedence problem in dispatcher... does this problem still exist?
-	\decl void _n_float(int i, float f) {if (!i) _0_float(f); else mosusses[i-1] = f;}
+	\decl n float(int i, float f) {mosusses[i-1] = f;}
 };
 \end class {install("range",1,1); add_creator("gf/range");}
 
@@ -335,7 +321,7 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 		gp = pd_newest();
 	}
 	~GFPrint () {pd_free(gp);}
-	\decl 0 grid(...) {pd_typedmess(gp,gensym("grid"),argc,argv);}
+	\decl 0 grid(...) {pd_typedmess(gp,s_grid,argc,argv);}
 	\decl void anything (...) {
 		ostringstream text;
 		text << prefix << ":";
@@ -453,9 +439,15 @@ void ParallelPort::call() {
 
 //****************************************************************
 
+void setsels (int &nsels, t_symbol **&sels, int argc, t_atom2 *argv) {
+	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+	if (sels) delete[] sels;
+	nsels = argc; sels = new t_symbol*[argc];
+	for (int i=0; i<argc; i++) sels[i] = argv[i];
+}
+
 \class Route2 : FObject {
-	int nsels;
-	t_symbol **sels;
+	int nsels; t_symbol **sels; // use vector<t_symbol *>
 	~Route2() {if (sels) delete[] sels;}
 	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
 	\decl void anything(...) {
@@ -463,11 +455,7 @@ void ParallelPort::call() {
 		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
 		out[i](sel,argc-2,argv+2);
 	}
-	\decl 1 list(...) { // in the future, this could be a one-liner, right ?
-		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-		if (sels) delete[] sels; nsels = argc; sels = new t_symbol*[argc];
-		for (int i=0; i<argc; i++) sels[i] = argv[i];
-	}
+	\decl 1 list(...) {setsels(nsels,sels,argc,argv);}
 };
 \end class {install("route2",1,1);}
 
@@ -482,11 +470,7 @@ void ParallelPort::call() {
 		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list; // what about grid,blob ?
 		out[i](sel,argc-2,argv+2);
 	}
-	\decl 1 list(...) {
-		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-		if (sels) delete[] sels; nsels = argc; sels = new t_symbol*[argc];
-		for (int i=0; i<argc; i++) sels[i] = argv[i];
-	}
+	\decl 1 list(...) {setsels(nsels,sels,argc,argv);}
 };
 \end class {install("route3",1,1);}
 
@@ -641,9 +625,6 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFError : FObject {
 	string format;
 	\constructor (...) {format = join(argc,argv);}
-	\decl 0 bang   ()          {_0_list(0,0);}
-	\decl 0 float  (t_atom2 a) {_0_list(1,&a);}
-	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);}
 	\decl 0 list (...) {
 		t_binbuf *b = mom->gl_obj.te_binbuf;
 		t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
@@ -664,9 +645,6 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	string format;
 	\constructor (...) {format = join(argc,argv);}
 	\decl 1 list (...) {format = join(argc,argv);}
-	\decl 0 bang   ()          {_0_list(0,0);}  // ought to be redundant
-	\decl 0 float  (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
-	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		out[0](gensym(s.data()));
@@ -678,9 +656,6 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	\attr NumberTypeE cast;
 	\constructor (...) {format = join(argc,argv); cast = int32_e;}
 	\decl 1 list (...) {format = join(argc,argv);}
-	\decl 0 bang   ()          {_0_list(0,0);}  // ought to be redundant
-	\decl 0 float  (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
-	\decl 0 symbol (t_atom2 a) {_0_list(1,&a);} // ought to be redundant
 	\decl 0 list (...) {
 		ostringstream o; pd_oprintf(o,format.data(),argc,argv); string s = o.str();
 		GridOut out(this,0,Dim(s.size()),cast); out.send(s.size(),(uint8 *)s.data());
@@ -1124,7 +1099,7 @@ string string_replace (string victim, string from, string to) {
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a)          {           out[0](b-a);}
 	\decl 0 list  (float a, float b) {this->b=b; out[0](b-a);}
-	\decl 1 float (float b) {this->b=b;}
+	\decl 1 float (float b) {this->b=b;} //!
 	\decl 1 list  (float b) {this->b=b;}};
 \end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
 \class InvTimes : FObject {
@@ -1132,7 +1107,7 @@ string string_replace (string victim, string from, string to) {
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a)          {           out[0](b/a);}
 	\decl 0 list  (float a, float b) {this->b=b; out[0](b/a);}
-	\decl 1 float (float b) {this->b=b;}
+	\decl 1 float (float b) {this->b=b;} //!
 	\decl 1 list  (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
