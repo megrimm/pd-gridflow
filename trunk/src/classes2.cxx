@@ -1179,9 +1179,8 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 	\decl 0 symbol (t_symbol *s) {
 		if (fclasses.find(s)==fclasses.end()) {out[0](); return;}
 		FClass *c = fclasses[s];
-		foreach(m,c->methods) {
-			t_atom2 a[] = {m->first.first,m->first.second}; out[0](gensym("method"),2,a);
-		}
+		foreach(m,c->methods) {t_atom2 a[] = {m->first.first,m->first.second}; out[0](gensym("method"),2,a);}
+		foreach(m,c->attrs)   {t_atom2 a[] = {m->first                      }; out[0](gensym("attr"  ),1,a);}
 		//t_class *qlass = c->bfclass;
 		
 	}

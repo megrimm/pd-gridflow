@@ -1,8 +1,8 @@
-#N canvas 0 0 632 642 10;
+#N canvas 0 0 632 704 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 824 doc_also;
-#X obj 0 844 doc_f;
-#X obj 103 824 class_exists;
+#X obj 3 1020 doc_also;
+#X obj 0 1040 doc_f;
+#X obj 103 1020 class_exists;
 #X obj 3 378 doc_o 1;
 #X obj 14 408 doc_oo 0;
 #X obj 3 290 doc_i 1;
@@ -18,27 +18,27 @@
 #X msg 543 47 help;
 #X text 232 408 if class or alias is not found in GridFlow's class
 database.;
-#X obj 97 430 doc_m o0 method;
-#X text 232 430 indicates that the class has a method named \$2 in
+#X obj 97 539 doc_m o0 method;
+#X text 232 539 indicates that the class has a method named \$2 in
 inlet \$1.;
-#X text 232 513 inlet -1 represents methods that exist in all inlets
+#X text 232 622 inlet -1 represents methods that exist in all inlets
 at once from a single definition. this occurs normally only when there
 is a variable number of inlets.;
-#X text 232 561 a grid method is listed three times : each grid method
+#X text 232 670 a grid method is listed three times : each grid method
 is accompanied by a float method and a list method. If any local float
 method or list method is hiding the default method(s) brought by the
 grid method \, you will not notice.;
-#X text 232 622 "method -2 anything" represents a method that catches
+#X text 232 731 "method -2 anything" represents a method that catches
 anything in any inlet at once.;
-#X text 232 657 there is currently no way to define a anything in a
+#X text 232 766 there is currently no way to define a anything in a
 single inlet at a time.;
-#X text 232 692 other methods in inlet -2 are for internal use ONLY.
+#X text 232 801 other methods in inlet -2 are for internal use ONLY.
 they are not directly reachable from pd.;
-#X text 232 452 the constructor (aka creator or new-method) and the
+#X text 232 561 the constructor (aka creator or new-method) and the
 destructor (free-method) are not listed. the dsp-method and perform-function
 (for ~ objects) are not listed. however \, the loadbang method is listed.
 ;
-#X text 232 727 inlet numbers don't correspond in some rare cases :
+#X text 232 836 inlet numbers don't correspond in some rare cases :
 when the CLASS_NOINLET option is in use \, GF inlet numbers don't match
 Pd inlet numbers \, the left inlet will be numbered 1 instead of 0
 \, and inlet 0 will be invisible. GF currently only uses this for [#from~]
@@ -59,6 +59,18 @@ coming out of it are not guaranteed to come out in any particular order.
 #X text 117 105 is weird because GF's framework doesn't support ~ inlets
 directly;
 #X msg 37 132 ...;
+#X obj 97 430 doc_m o0 attr;
+#X text 232 430 indicates that \$1 is a valid argument to the get-method
+\, and that the get-method will output something named like that when
+called without arguments.;
+#X text 232 478 some attributes are special in some ways that make
+them hidden from that list but still supported by 'get'. this coïncides
+with when 'get' exceptionally appears in the list of methods.;
+#X text 232 923 methods of superclasses are not listed. those are rare
+in GF. this mostly just means that 'get' is not listed \, because it
+is common to all classes. ('help' was also a common method like that
+\, but it was removed in 9.11). it can happen that 'get' is listed
+\, when the 'get' of a class has any special cases in it.;
 #X connect 1 1 3 0;
 #X connect 9 1 35 0;
 #X connect 10 1 17 0;
@@ -74,7 +86,10 @@ directly;
 #X connect 18 1 23 0;
 #X connect 18 1 24 0;
 #X connect 18 1 26 0;
+#X connect 18 1 42 0;
 #X connect 29 0 11 0;
 #X connect 31 0 11 0;
 #X connect 33 0 11 0;
 #X connect 36 0 11 0;
+#X connect 39 1 40 0;
+#X connect 39 1 41 0;
