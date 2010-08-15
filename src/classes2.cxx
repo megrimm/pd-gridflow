@@ -323,17 +323,6 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 //****************************************************************
 
-/*
-string ssprintf(const char *fmt, ...) {
-	ostringstream os;
-	va_list va;
-	va_start(va,fmt);
-	voprintf(os,fmt,va);
-	va_end(va);
-	return os.str();
-}
-*/
-
 static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {return &r;}
 
 \class GFPrint : FObject {
@@ -358,7 +347,7 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << " pointer";}
 		else if (argv[1]==&s_list  && argc==2) {text << " bang";}
 		else {text << " " << argv[1];}
-		for (int i=1; i<argc; i++) {text << " " << argv[i];}
+		for (int i=2; i<argc; i++) {text << " " << argv[i];}
 		post("%s",text.str().data());
 	}
 };
