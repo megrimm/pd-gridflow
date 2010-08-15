@@ -117,7 +117,7 @@ void set_atom (t_atom *a, CvTermCriteria &tc) {
 	t_binbuf *b = binbuf_new();
 	if (tc.type & CV_TERMCRIT_ITER) binbuf_addv(b,"f",tc.max_iter); else binbuf_addv(b,"s",gensym("nil"));
 	if (tc.type & CV_TERMCRIT_EPS ) binbuf_addv(b,"f",tc.epsilon ); else binbuf_addv(b,"s",gensym("nil"));
-	SETLIST(a,b);
+	set_atom(a,b);
 }
 
 CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
@@ -178,15 +178,15 @@ void cvMatSend(const CvMat *self, FObject *obj, int outno, Dim &dim) { // was de
 
 void set_atom (t_atom *a, CvPoint &v) {
 	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ii",v.y,v.x);
-	SETLIST(a,b);
+	set_atom(a,b);
 }
 void set_atom (t_atom *a, CvSize &v) {
 	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ii",v.height,v.width);
-	SETLIST(a,b);
+	set_atom(a,b);
 }
 void set_atom (t_atom *a, CvScalar &s) {
 	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ffff",s.val[0],s.val[1],s.val[2],s.val[3]);
-	SETLIST(a,b);
+	set_atom(a,b);
 }
 CvPoint  convert (const t_atom &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}
 CvSize   convert (const t_atom &a, CvSize *)    {USELIST; return cvSize(  GETI(0),GETI(1));}
