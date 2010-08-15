@@ -743,9 +743,10 @@ struct FClass {
 	int ninlets;
 	int noutlets;
 	t_class *bfclass;
-	string name;
+	t_symbol *name;
 	map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method
 	map<t_symbol *,AttrDecl *> attrs;
+	int flags; // flags: any of: CLASS_NOINLET; (yes, there's only one possibility)
 };
 
 void fclass_install(FClass *fc, FClass *super);
@@ -919,7 +920,7 @@ inline void set_atom (t_atom *a, GridOut  *v) {SETGRIDOUT(a,v);}
 inline void set_atom (t_atom *a, const t_atom &v) {*a=v;}
 
 extern map<t_symbol *,FClass *> fclasses;
-int handle_braces(int ac, t_atom *av);
+int handle_parens(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;
 

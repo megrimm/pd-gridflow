@@ -182,6 +182,7 @@ void PtrOutlet::operator () (t_atom &a) {
     if      (a.a_type==A_FLOAT  ) (*this)(a.a_float);
     else if (a.a_type==A_SYMBOL ) (*this)(a.a_symbol);
     else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
+    //else if (a.a_type==A_BLOB   ) (*this)(a.a_blob);
     else error("can't send atom whose type is %d",a.a_type);
 }
 void outlet_atom2 (PtrOutlet self, t_atom *av) {
@@ -517,7 +518,7 @@ string gf_find_file (string x) {
 
 #undef pd_class
 #define pd_class(x) (*(t_pd *)x)
-#define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
+#define pd_classname(x) (fclasses_pd[pd_class(x)]->name->s_name)
 
 // when winlet==0  : the message came to the receiver of the object (by left inlet or by receive-symbol)
 // when winlet>0   : the message came through a proxy (non-left inlet)
@@ -561,7 +562,7 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
     #endif
     try {
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
-	int argc = handle_braces(ac,argv+2);
+	int argc = handle_parens(ac,argv+2);
 	FMethod m;
 	m=method_lookup(bself,winlet,s);                                    if (m) {m(bself->self,argc+0,argv+2); return;}
 	m=method_lookup(bself,-1,s); argv[1]=winlet;                        if (m) {m(bself->self,argc+1,argv+1); return;}
@@ -604,7 +605,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	int argc = ac;
 	t_atom2 argv[argc];
 	for (int i=0; i<argc; i++) argv[i] = at[i];
-	argc = handle_braces(argc,argv);
+	argc = handle_parens(argc,argv);
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	bself->self = 0;
@@ -767,25 +768,25 @@ void fclass_install(FClass *fclass, FClass *super) {
 	if (fclass->startup) fclass->startup(fclass);
 }
 
-void install2(FClass *fclass, const char *name, int ninlets, int noutlets, int flags) {
-	fclass->ninlets = ninlets;
-	fclass->noutlets = noutlets;
-	fclass->name = string(name);
-	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
+void install2(FClass *fc, const char *name, int ninlets, int noutlets, int flags) {
+	fc->ninlets = ninlets;
+	fc->noutlets = noutlets;
+	fc->name = gensym(name);
+	fc->flags = flags;
+	// we _have_ to use A_GIMME if we want to check for too many args.
+	t_class *bc = fc->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
 		sizeof(BFObject), flags, A_GIMME,0);
-	fclasses[gensym(name)] = fclass;
-	fclasses_pd[fclass->bfclass] = fclass;
-	t_class *b = fclass->bfclass;
-	class_addanything(b,t_method(BFObject_anything0));
-	FMethod m = method_lookup(fclass,0,s_loadbang);
-	//post("class %s loadbang %08x",name,long(m));
-	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),s_loadbang,A_NULL);
+	fclasses[gensym(name)] = fclasses_pd[bc] = fc;
+	class_addanything(bc,t_method(BFObject_anything0));
+// loadbang has to be explicitly registered, because it is called by zgetfn.
+	FMethod m = method_lookup(fc,0,s_loadbang);
+	if (m) class_addmethod(bc,t_method(BFObject_loadbang),s_loadbang,A_NULL);
 }
 
 //static inline const t_atom &convert(const t_atom &x, const t_atom *foo) {return x;}
 
 /* This code handles nested lists because PureData doesn't do it */
-int handle_braces(int ac, t_atom *av_) {
+int handle_parens(int ac, t_atom *av_) {
 	t_atom2 *av = (t_atom2 *)av_;
 	int stack[16];
 	int stackn=0;
