@@ -532,6 +532,7 @@ static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel, int argc, t
 	if (sel==&s_bang || sel==&s_float || sel==&s_symbol || sel==&s_pointer) {
 		it = m.find(insel(winlet,&s_list)); if (it!=m.end()) return it->second;
 	}
+	// this code is sketchy. it shouldn't check that in that manner. doesn't work with super.
 	if (sel==&s_list) {
 	    if (argc==0) {
 		it = m.find(insel(winlet,&s_bang)); if (it!=m.end()) return it->second;
@@ -540,9 +541,14 @@ static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel, int argc, t
 		if (argv[0].a_type==A_SYMBOL)  {it = m.find(insel(winlet,&s_symbol )); if (it!=m.end()) return it->second;}
 		if (argv[0].a_type==A_POINTER) {it = m.find(insel(winlet,&s_pointer)); if (it!=m.end()) return it->second;}
 	    } else {
-		//if ((*x)->c_anymethod != pd_defaultanything) (*(*x)->c_anymethod)(x, &s_list, argc, argv);
-		//else if ((*x)->c_patchable) obj_list((t_object *)x, s, argc, argv);
-		//else pd_defaultanything(x, &s_list, argc, argv);
+		it = m.find(insel(-2,&s_anything)); if (it==m.end()) {
+			for (int i=argc-1; i>=0; i--) { // not exactly same order as pd...
+				// would send atom argv[i] to inlet i, method ???
+				//if (argv[i].a_type==A_FLOAT)   ... send float   in inlet i
+				//if (argv[i].a_type==A_SYMBOL)  ... send symbol  in inlet i
+				//if (argv[i].a_type==A_POINTER) ... send pointer in inlet i
+			}
+		}
 	    }
 	}
 	return fc->super ? method_lookup(fc->super,winlet,sel,argc,argv) : 0;
