@@ -567,7 +567,7 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 /* this can't report on bang,float,symbol,pointer,blob,list because zgetfn can't either */
 \class ClassExists : FObject {
 	\constructor () {}
-	\decl void _0_symbol(t_symbol *s) {out[0](!!zgetfn(&pd_objectmaker,s));}
+	\decl 0 symbol(t_symbol *s) {out[0](!!zgetfn(&pd_objectmaker,s));}
 };
 \end class {install("class_exists",1,1);}
 
