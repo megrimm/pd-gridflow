@@ -56,7 +56,7 @@ extern t_class *text_class;
 #include <cxxabi.h>
 #endif
 
-map<string,FClass *> fclasses;
+map<t_symbol *,FClass *> fclasses;
 map<t_class *,FClass *> fclasses_pd;
 t_symbol *gridflow_folder;
 
@@ -395,44 +395,16 @@ static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	out = (uint8 *)o32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
-/*
-template <>
-static void pack3_888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
-	uint32 *o32 = uint32 *((uint32 *)out.p,n*3/4);
-	uint32 *i32 = uint32 *((uint32 *)in.p,n*3/4);
-	while (n>=4) {
-#define Z(w,i) ((word##w>>(i*8))&255)
-		uint32 word0 = i32[0];
-		uint32 word1 = i32[1];
-		uint32 word2 = i32[2];
-		o32[0] = (Z(1,1)<<24) | (Z(0,0)<<16) | (Z(0,1)<<8) | Z(0,2);
-		o32[1] = (Z(1,3)<<24) | (Z(2,0)<<16) | (Z(0,3)<<8) | Z(1,0);
-		o32[2] = (Z(2,1)<<24) | (Z(2,2)<<16) | (Z(2,3)<<8) | Z(1,2);
-		o32+=3; i32+=3;
-		n-=4;
-	}
-#undef Z
-	out = (uint8 *)o32;
-	in  = (uint8 *)i32;
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
-}
-*/
-
 template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2];           out+=3; in+=3; )
-}
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2];           out+=3; in+=3; )}
 template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )
-}
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )}
 template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )
-}
+	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )}
 template <class T> static void unpack3_888d(BitPacking *self, long n, uint8 *in, T *out) {TRACE
-	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2];           out+=3; in+=4; )
-}
+	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2];           out+=3; in+=4; )}
 template <class T> static void   pack3_bgrn8888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )
-}
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )}
 
 template <class T>
 static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
@@ -518,11 +490,7 @@ BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask, Packer *pa
 	this->bytes = bytes;
 	this->size = size;
 	for (int i=0; i<size; i++) this->mask[i] = mask[i];
-	if (packer) {
-		this->packer = packer;
-		this->unpacker = unpacker;
-		return;
-	}
+	if (packer) {this->packer = packer; this->unpacker = unpacker; return;}
 	int packeri=-1;
 	this->packer = &bp_packers[0];
 	this->unpacker = &bp_unpackers[0];
@@ -571,16 +539,16 @@ string gf_find_file (string x) {
 #define pd_class(x) (*(t_pd *)x)
 #define pd_classname(x) (fclasses_pd[pd_class(x)]->name.data())
 
-static FMethod funcall_lookup (FClass *fclass, const char *sel) {
+static FMethod method_lookup (FClass *fclass, const char *sel) {
 	string s = sel;
 	typeof(fclass->methods) &m = fclass->methods;
 	typeof(m.begin()) it = m.find(s);
 	if (it!=m.end()) return it->second;
-	if (fclass->super) return funcall_lookup(fclass->super,sel);
+	if (fclass->super) return method_lookup(fclass->super,sel);
 	return 0;
 }
-static FMethod funcall_lookup (BFObject *bself, const char *sel) {
-	return funcall_lookup(fclasses_pd[pd_class(bself)],sel);
+static FMethod method_lookup (BFObject *bself, const char *sel) {
+	return method_lookup(fclasses_pd[pd_class(bself)],sel);
 }
 
 void call_super(int argc, t_atom *argv) {/* unimplemented */}
@@ -598,7 +566,7 @@ static t_class *BFProxy_class;
 
 static void BFObject_loadbang (BFObject *bself) {
     try {
-	FMethod m = funcall_lookup(bself,"_0_loadbang");
+	FMethod m = method_lookup(bself,"_0_loadbang");
 	m(bself->self,0,0);
     } catch (Barf &oozy) {oozy.error(bself,0,"loadbang");}
 }
@@ -613,9 +581,9 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *selector, 
 	int argc = handle_braces(ac,argv+2);
 	FMethod m;
 	char buf[64], bof[64];
-	sprintf(buf,"_%d_%s",winlet,s); m=funcall_lookup(bself,buf);                 if (m) {m(bself->self,argc+0,argv+2); return;}
-	sprintf(bof,"_n_%s",        s); m=funcall_lookup(bself,bof); argv[1]=winlet; if (m) {m(bself->self,argc+1,argv+1); return;}
-	m = funcall_lookup(bself,"anything");      if (m) {argv[0]=winlet; argv[1]=selector; m(bself->self,argc+2,argv+0); return;}
+	sprintf(buf,"_%d_%s",winlet,s); m=method_lookup(bself,buf);                 if (m) {m(bself->self,argc+0,argv+2); return;}
+	sprintf(bof,"_n_%s",        s); m=method_lookup(bself,bof); argv[1]=winlet; if (m) {m(bself->self,argc+1,argv+1); return;}
+	m = method_lookup(bself,"anything");      if (m) {argv[0]=winlet; argv[1]=selector; m(bself->self,argc+2,argv+0); return;}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s,winlet,pd_classname(bself));
     } catch (Barf &oozy) {oozy.error(bself,winlet,s);}
 }
@@ -635,7 +603,7 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 	noutlets = 0;
 	inlets = new  BFProxy*[1];
 	out    = new PtrOutlet[1];
-	FClass *fc = fclasses[name];
+	FClass *fc = fclasses[sel];
 	inlets[0] = 0; // inlet 0 of this table is not in use
 	ninlets_set( fc->ninlets ,false);
 	noutlets_set(fc->noutlets,false);
@@ -647,8 +615,8 @@ FObject::~FObject () {
 }
 static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
-    if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
-    t_class *qlass = fclasses[name]->bfclass;
+    if (fclasses.find(classsym)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
+    t_class *qlass = fclasses[classsym]->bfclass;
     BFObject *bself = (BFObject *)pd_new(qlass);
     try {
 	int argc = ac;
@@ -658,7 +626,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	bself->self = 0;
-	t_allocator alloc = fclasses[string(classsym->s_name)]->allocator;
+	t_allocator alloc = fclasses[classsym]->allocator;
 	bself->te_binbuf = 0; //HACK: supposed to be 0
 	#ifdef DES_BUGS
 		bself->magic = 0x66666600;
@@ -759,12 +727,12 @@ string BFObject::binbuf_string () {
 }
 
 void add_creator2(FClass *fclass, const char *name) {
-	fclasses[string(name)] = fclass;
+	fclasses[gensym(name)] = fclass;
 	class_addcreator((t_newmethod)BFObject_new,gensym((char *)name),A_GIMME,0);
 }
 
 void add_creator3(FClass *fclass, const char *name) {
-	fclasses[string(name)] = fclass;
+	fclasses[gensym(name)] = fclass;
 	t_class *c = pd_objectmaker;
 	t_symbol *want = gensym(name);
 	t_gotfn old;
@@ -823,11 +791,11 @@ void install2(FClass *fclass, const char *name, int ninlets, int noutlets, int f
 	fclass->name = string(name);
 	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_new, (t_method)BFObject_delete,
 		sizeof(BFObject), flags, A_GIMME,0);
-	fclasses[string(name)] = fclass;
+	fclasses[gensym(name)] = fclass;
 	fclasses_pd[fclass->bfclass] = fclass;
 	t_class *b = fclass->bfclass;
 	class_addanything(b,t_method(BFObject_anything0));
-	FMethod m = funcall_lookup(fclass,"_0_loadbang");
+	FMethod m = method_lookup(fclass,"_0_loadbang");
 	//post("class %s loadbang %08x",name,long(m));
 	if (m) class_addmethod(fclass->bfclass,t_method(BFObject_loadbang),gensym("loadbang"),A_NULL);
 }
@@ -896,7 +864,7 @@ int handle_braces(int ac, t_atom *av_) {
 			pd_typedmess((t_pd *)bself,gensym("get"),1,a);
 		}
 	} else {
-		FMethod m = funcall_lookup(bself,"___get");
+		FMethod m = method_lookup(bself,"___get");
 		if (!m) RAISE("missing ___get");
 		t_atom2 a[1] = {s}; m(this,1,a);
 	}
