@@ -91,11 +91,11 @@ struct ArgSpec {
 				t_atom *bat = binbuf_getvec(b);
 				sargv[i].name = atom_getsymbolarg(0,bac,bat);
 				sargv[i].type = atom_getsymbolarg(1,bac,bat);
-				if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
+				if (bac<3) set_atom(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
 			} else if (argv[i].a_type==A_SYMBOL) {
 				sargv[i].name = argv[i];
 				sargv[i].type = gensym("a");
-				SETNULL(&sargv[i].defaultv);
+				set_atom(&sargv[i].defaultv);
 			} else RAISE("expected symbol or nested list");
 		}
 		noutlets_set(sargc);
