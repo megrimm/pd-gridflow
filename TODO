@@ -1,16 +1,25 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
-[ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 --------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
+[ ] PLEASE make it so that bang/float/list/etc work more like pd's class_add !!! use class_add !!!
+[ ] should clean the -path thing because /abstractions/ gets saved in the path
 [ ] bundle m_pd.h ?
-[ ] remove black border that just appeared in [#see, margins 0 0 0 0] ([doc_link])
+[ ] turn atom_eq into t_atom2::operator==
+[ ] in "void anything", separate inlet number and real selector
+[ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
+    and is_base_sel(symbol) also would include bang and list.
+[ ] is outlet_anything2 and pd_anything2 really something we want as a behaviour of [args] ???
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
 [ ] change description of GridFlow on gridflow.ca and puredata.info
+[ ] [#many]: add support for non-i grids
+[ ] [#many]: add support for 'floatatom' objects
+[ ] [#many]: add support for [hsl] and [vsl]
 [ ] figure out domain name transfer problem
+[ ] weird patchcord disappearance involving [gf/canvas_getpos] and [display]... never seen this before 2010.08.14
 [ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
-[ ] [gf/error] doesn't report the source of the error like RAISE() does.
-[ ] [gf/error] and [sprintf]: support the rest of args that make sense
+[ ] [doc_link]: add http support
+[ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
@@ -179,8 +188,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
 [ ] look into -ftree-vectorize
-[ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
-[ ] some proper equivalent of [rubysprintf]... see also: [gf/error]
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
