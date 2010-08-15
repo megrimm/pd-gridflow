@@ -1242,13 +1242,13 @@ GRID_INLET(0) {
 		ninlets_set(this->n);
 	}
 	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
-	\decl void _n_set   (int inlet, float f) {
+	\decl n set   (int inlet, float f) {
 		#define FOO(T) ((T *)*a)[inlet] = T(f);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
-	\decl void _n_float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
-	\decl void _n_list  (int inlet, float f) {_n_set(inlet,f); _0_bang();}
+	\decl n float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
+	\decl n list  (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl 0 bang () {
 		go=new GridOut(this,0,a->dim,a->nt);
 		#define FOO(T) go->send(n,(T *)*a);

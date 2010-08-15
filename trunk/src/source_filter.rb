@@ -77,7 +77,7 @@ def parse_methoddecl(line,term)
 		raise "syntax error #{where} #{line}"
 	rettype,selector,args,continue = $1,$2,$3,$4,$6
 	if /^\d+$/ =~ rettype then inlet = rettype; rettype = "void"
-	elsif    rettype=="n" then inlet = -1 else inlet = -2 end
+	elsif    rettype=="n" then inlet = -1     ; rettype = "void" else inlet = -2 end
 	args,minargs,maxargs = parse_args args
 	MethodDecl.new(rettype,inlet,selector,args,minargs,maxargs,where,continue)
 end
