@@ -110,11 +110,11 @@ struct ArgSpec {
 	int ac = env->ce_argc;
 	t_atom2 av[ac];
 	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
-	//ac = handle_braces(ac,av);
+	//ac = handle_parens(ac,av);
 	t_symbol *comma = gensym(",");
 	int j;
 	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==comma) break;
-	int jj = handle_braces(j,av);
+	int jj = handle_parens(j,av);
 	process_args(jj,av);
 	while (j<ac) {
 		j++;
@@ -141,11 +141,9 @@ void Args::process_args (int argc, t_atom *argv) {
 		if (sargv[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
 		} else {
-			if (v->a_type==A_LIST) {
-				t_binbuf *b = *v;
-				out[i](binbuf_getnatom(b),binbuf_getvec(b));
-			} else if (v->a_type==A_SYMBOL) out[i](*v);
-			else outlet_anything2(out[i],1,v);
+			if      (v->a_type==A_LIST)   {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
+			else if (v->a_type==A_SYMBOL) out[i](*v);
+			else                          outlet_anything2(out[i],1,v);
 		}
 	}
 	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
@@ -1142,12 +1140,18 @@ extern t_symbol *gridflow_folder;
 \class GridFlowClass : FObject {
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
-		if (!s) {
-			_0_get(gensym("version"));
-			_0_get(gensym("folder"));
-		}
+		if (!s) {_0_get(gensym("version"));_0_get(gensym("folder"));_0_get(gensym("os"));}
 		if (s==gensym("version")) {t_atom2 a[3] = {GF_VERSION_A,GF_VERSION_B,GF_VERSION_C}; out[0](s,3,a);}
-		if (s==gensym("folder")) {t_atom2 a[1] = {gridflow_folder}; out[0](s,1,a);}
+		if (s==gensym("folder"))  {t_atom2 a[1] = {gridflow_folder}; out[0](s,1,a);}
+		#ifdef __WIN32__
+		if (s==gensym("os")) {t_atom2 a[1] = {"win32"};  out[0](s,1,a);}
+		#else
+		#ifdef MACOSX
+		if (s==gensym("os")) {t_atom2 a[1] = {"darwin"}; out[0](s,1,a);}
+		#else
+		if (s==gensym("os")) {t_atom2 a[1] = {"linux"}; out[0](s,1,a);} // or other
+		#endif
+		#endif
 	}
 };
 \end class {install("gridflow",1,1);}
