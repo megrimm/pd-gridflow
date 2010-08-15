@@ -571,7 +571,6 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	m=method_lookup(bself,-1,          s); if (m) {argv[1]=winlet;            m(bself->self,argc+1,argv+1); return;}
 	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
 
-	// this code is sketchy. it shouldn't check that in that manner. doesn't work with super.
 	if (s==&s_list) {
 	    if (argc==0) {
 						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(bself->self,argc,argv+2); return;}
@@ -580,14 +579,19 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 		if (argv[2].a_type==A_SYMBOL)  {m=method_lookup(bself,winlet,&s_symbol ); if(m){m(bself->self,argc,argv+2); return;}}
 		if (argv[2].a_type==A_POINTER) {m=method_lookup(bself,winlet,&s_pointer); if(m){m(bself->self,argc,argv+2); return;}}
 	    } else {
-		//it = m.find(insel(-2,&s_anything)); if (it==m.end()) {
-		//	for (int i=argc-1; i>=0; i--) { // not exactly same order as pd...
-				// would send atom argv[i] to inlet i, method ???
-				//if (argv[i].a_type==A_FLOAT)   ... send float   in inlet i
-				//if (argv[i].a_type==A_SYMBOL)  ... send symbol  in inlet i
-				//if (argv[i].a_type==A_POINTER) ... send pointer in inlet i
-		//	}
-		//}
+		for (int i=argc-1; i>=0; i--) { // not exactly same order as pd's obj_list...
+		    ostringstream o;
+		    o << "will send "<<argv[2+i]<<" into inlet "<<i;
+		    //post("%s",o.str().data());
+		    // would send atom argv[i] to inlet i, method ???
+		    //if (argv[i].a_type==A_FLOAT)   {m=method_lookup(bself,i,&s_float  ); if(m){m(bself->self,1,argv+2+i); return;}}
+		    //if (argv[i].a_type==A_SYMBOL)  {m=method_lookup(bself,i,&s_symbol ); if(m){m(bself->self,1,argv+2+i); return;}}
+		    //if (argv[i].a_type==A_POINTER) {m=method_lookup(bself,i,&s_pointer); if(m){m(bself->self,1,argv+2+i); return;}}
+		    if (argv[2+i].a_type==A_FLOAT)   BFObject_anything(bself,i,&s_float  ,1,argv+2+i);
+		    if (argv[2+i].a_type==A_SYMBOL)  BFObject_anything(bself,i,&s_symbol ,1,argv+2+i);
+		    if (argv[2+i].a_type==A_POINTER) BFObject_anything(bself,i,&s_pointer,1,argv+2+i);
+		}
+		return;
 	    }
 	}
 	pd_error((t_pd *)bself, "method '%s' not found for inlet %d in class '%s'",s->s_name,winlet,pd_classname(bself));
