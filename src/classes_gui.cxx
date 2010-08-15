@@ -128,6 +128,8 @@ public:
 
 //****************************************************************
 
+ostream &operator << (ostream &self, t_symbol *s) {self << s->s_name; return self;}
+
 \class Display : GUI_FObject {
 	int y,x;
 	ostringstream text;
