@@ -917,7 +917,7 @@ inline void set_atom (t_atom *a, t_gpointer *v) {SETPOINTER(a,v);}
 inline void set_atom (t_atom *a, GridOut  *v) {SETGRIDOUT(a,v);}
 inline void set_atom (t_atom *a, const t_atom &v) {*a=v;}
 
-extern map<string,FClass *> fclasses;
+extern map<t_symbol *,FClass *> fclasses;
 int handle_braces(int ac, t_atom *av);
 
 extern FClass ciFObject, ciFormat;

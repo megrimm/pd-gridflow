@@ -511,19 +511,14 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	\attr int mode;
 	\attr int lo;
 	\attr int hi;
-	\constructor (int n=2, int i=0) {
-		this->n=n; index=i; mode=0; lo=0; hi=n-1;
-		noutlets_set(n);
-	}
+	\constructor (int n=2, int i=0) {this->n=n; index=i; mode=0; lo=0; hi=n-1; noutlets_set(n);}
 	\decl 1 float(int i) {index = mod(i,n);}
 	\decl void anything(...) {
 		out[index](argv[1],argc-2,argv+2);
 		if (mode) {
 			index += sgn(mode);
 			if (index<lo || index>hi) {
-				int k = max(hi-lo+1,0);
-				int m = gf_abs(mode);
-				if (m==1) index = mod(index-lo,k)+lo; else {mode=-mode; index+=mode;}
+				if (gf_abs(mode)==1) index = mod(index-lo,max(hi-lo+1,0))+lo; else {mode=-mode; index+=mode;}
 			}
 		}
 	}
@@ -580,7 +575,7 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 	class_addanything(ReceivesProxy_class,(t_method)ReceivesProxy_anything);
 }
 
-/* this can't report on bang,float,symbol,pointer,list because zgetfn can't either */
+/* this can't report on bang,float,symbol,pointer,blob,list because zgetfn can't either */
 \class ClassExists : FObject {
 	\constructor () {}
 	\decl void _0_symbol(t_symbol *s) {out[0](!!zgetfn(&pd_objectmaker,s));}
@@ -1189,6 +1184,15 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 	install("gf/propertybang",1,1);
 	class_setpropertiesfn(canvas_class,canvas_properties2);
 }
+
+\class GFClassInfo : FObject {
+	\constructor () {}
+	\decl 0 symbol (t_symbol *s) {
+		if (fclasses.find(s)==fclasses.end()) {out[0](); return;}
+		t_class *qlass = fclasses[s]->bfclass;
+	}
+};
+\end class {install("gf/class_info",1,1);}
 
 void startup_classes2 () {
 	\startall
