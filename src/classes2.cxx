@@ -1178,7 +1178,12 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 	\constructor () {}
 	\decl 0 symbol (t_symbol *s) {
 		if (fclasses.find(s)==fclasses.end()) {out[0](); return;}
-		t_class *qlass = fclasses[s]->bfclass;
+		FClass *c = fclasses[s];
+		foreach(m,c->methods) {
+			t_atom2 a[] = {m->first.first,m->first.second}; out[0](gensym("method"),2,a);
+		}
+		//t_class *qlass = c->bfclass;
+		
 	}
 };
 \end class {install("gf/class_info",1,1);}
