@@ -1,0 +1,80 @@
+#N canvas 0 0 632 642 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 824 doc_also;
+#X obj 0 844 doc_f;
+#X obj 103 824 class_exists;
+#X obj 3 378 doc_o 1;
+#X obj 14 408 doc_oo 0;
+#X obj 3 290 doc_i 1;
+#X obj 14 320 doc_ii 0;
+#X obj 3 250 doc_c 0;
+#X obj 97 320 doc_m i0 symbol;
+#X obj 97 408 doc_m o0 bang;
+#X obj 10 201 gf/class_info;
+#X msg 29 177 symbol +;
+#X msg 10 31 symbol #;
+#X obj 10 220 print;
+#X obj 543 73 #pack 4;
+#X msg 543 47 help;
+#X text 232 408 if class or alias is not found in GridFlow's class
+database.;
+#X obj 97 430 doc_m o0 method;
+#X text 232 430 indicates that the class has a method named \$2 in
+inlet \$1.;
+#X text 232 513 inlet -1 represents methods that exist in all inlets
+at once from a single definition. this occurs normally only when there
+is a variable number of inlets.;
+#X text 232 561 a grid method is listed three times : each grid method
+is accompanied by a float method and a list method. If any local float
+method or list method is hiding the default method(s) brought by the
+grid method \, you will not notice.;
+#X text 232 622 "method -2 anything" represents a method that catches
+anything in any inlet at once.;
+#X text 232 657 there is currently no way to define a anything in a
+single inlet at a time.;
+#X text 232 692 other methods in inlet -2 are for internal use ONLY.
+they are not directly reachable from pd.;
+#X text 232 452 the constructor (aka creator or new-method) and the
+destructor (free-method) are not listed. the dsp-method and perform-function
+(for ~ objects) are not listed. however \, the loadbang method is listed.
+;
+#X text 232 727 inlet numbers don't correspond in some rare cases :
+when the CLASS_NOINLET option is in use \, GF inlet numbers don't match
+Pd inlet numbers \, the left inlet will be numbered 1 instead of 0
+\, and inlet 0 will be invisible. GF currently only uses this for [#from~]
+\, but may come to use it for [shunt] \, [route2] \, [route3] and some
+more.;
+#X text 86 176 is not part of GF;
+#X text 65 30 has two grid methods;
+#X msg 16 51 symbol #pack;
+#X text 96 51 has variable number of inlets;
+#X msg 22 71 symbol cv/#Ellipse;
+#X text 139 70 has many methods;
+#X msg 27 91 symbol gf/gl;
+#X text 108 90 has extremely many methods;
+#X text 232 320 name of class (or class alias) to look up. messages
+coming out of it are not guaranteed to come out in any particular order.
+;
+#X msg 32 112 symbol #from~;
+#X text 117 105 is weird because GF's framework doesn't support ~ inlets
+directly;
+#X msg 37 132 ...;
+#X connect 1 1 3 0;
+#X connect 9 1 35 0;
+#X connect 10 1 17 0;
+#X connect 11 0 14 0;
+#X connect 12 0 11 0;
+#X connect 13 0 11 0;
+#X connect 16 0 15 0;
+#X connect 18 1 19 0;
+#X connect 18 1 25 0;
+#X connect 18 1 20 0;
+#X connect 18 1 21 0;
+#X connect 18 1 22 0;
+#X connect 18 1 23 0;
+#X connect 18 1 24 0;
+#X connect 18 1 26 0;
+#X connect 29 0 11 0;
+#X connect 31 0 11 0;
+#X connect 33 0 11 0;
+#X connect 36 0 11 0;
