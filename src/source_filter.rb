@@ -25,7 +25,7 @@ $classes = []
 $exit = 0
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
-MethodDecl = Struct.new(:rettype,:selector,:args,:minargs,:maxargs,:where,:continue)
+MethodDecl = Struct.new(:rettype,:inlet,:selector,:args,:minargs,:maxargs,:where,:continue)
 Arg  = Struct.new(:type,:name,:default)
 Attr = Struct.new(:type,:name,:default,:virtual)
 
@@ -41,6 +41,7 @@ class MethodDecl
 		return true
 	end
 	attr_accessor :done
+	def selector2; if inlet==-2 then selector elsif inlet==-1 then "_n_#{selector}" else "_#{inlet}_#{selector}" end end
 end
 
 class Arg
@@ -75,12 +76,10 @@ def parse_methoddecl(line,term)
 	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*(#{term})/.match line or
 		raise "syntax error #{where} #{line}"
 	rettype,selector,args,continue = $1,$2,$3,$4,$6
-	if /^\d+$/ =~ rettype then
-		selector = "_"+rettype+"_"+selector
-		rettype = "void"
-	end
+	if /^\d+$/ =~ rettype then inlet = rettype; rettype = "void"
+	elsif    rettype=="n" then inlet = -1 else inlet = -2 end
 	args,minargs,maxargs = parse_args args
-	MethodDecl.new(rettype,selector,args,minargs,maxargs,where,continue)
+	MethodDecl.new(rettype,inlet,selector,args,minargs,maxargs,where,continue)
 end
 
 def parse_args(args)
@@ -132,14 +131,14 @@ def handle_decl(line)
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
 	m = parse_methoddecl(line,"(;\s*|\\{?.*)$")
-	qlass.methods[m.selector] = m
+	qlass.methods[m.selector2] = m
 	if /^\{/ =~ m.continue
 	  handle_def(line,true)
 	else
-	  Out.print "#{m.rettype} #{m.selector}("
+	  Out.print "#{m.rettype} #{m.selector2}("
 	  Out.print "VA" if m.maxargs<0
 	  Out.print unparse_args m.args if m.args.length>0
-	  Out.print "); static void #{m.selector}_wrap(#{classname} *self, VA);"
+	  Out.print "); static void #{m.selector2}_wrap(#{classname} *self, VA);"
 	end
 end
 
@@ -166,8 +165,8 @@ def handle_def(line,in_class_block=false)
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
 	n = m
-	if qlass.methods[m.selector]
-		m = qlass.methods[m.selector]
+	if qlass.methods[m.selector2]
+		m = qlass.methods[m.selector2]
 		if !m===n then
 			STDERR.puts "ERROR: def does not match decl:"
 			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
@@ -175,24 +174,24 @@ def handle_def(line,in_class_block=false)
 			$exit = 1
 		end
 	else
-		qlass.methods[m.selector] = m
+		qlass.methods[m.selector2] = m
 	end
 	if in_class_block then Out.print "static void " else Out.print "void #{classname}::" end
-	Out.print "#{m.selector}_wrap(#{classname} *self, VA) {"
-	if /^_(\d+)_(\w+)$/ =~ m.selector then context = "inlet #{$1} method #{$2}" else context = m.selector end
-	Out.print "DEF_IN(\"method #{m.selector}\");"
+	Out.print "#{m.selector2}_wrap(#{classname} *self, VA) {"
+	if /^_(\d+)_(\w+)$/ =~ m.selector2 then context = "inlet #{$1} method #{$2}" else context = m.selector2 end
+	Out.print "DEF_IN(\"method #{m.selector2}\");"
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	check_argc m
 	Out.print "foo = " if m.rettype!="void"
-	Out.print " self->#{m.selector}("
+	Out.print " self->#{m.selector2}("
 	pass_args m
 	Out.print m.rettype+" "
-	Out.print "#{classname}::" unless in_class_block
-	Out.print m.selector+"("
+	Out.print classname+"::" unless in_class_block
+	Out.print m.selector2+"("
 	Out.print "VA" if m.maxargs<0
 	Out.print unparse_args(n.args,false) if m.args.length>0
-	Out.print ")#{term} "
-	qlass.methods[m.selector].done=true
+	Out.print ")"+term+" "
+	qlass.methods[m.selector2].done=true
 end
 
 def handle_constructor(line)
@@ -229,8 +228,9 @@ def handle_classinfo(line)
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(out[noutlets-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
 	Out.print "void #{frame.name}_startup (FClass *fclass) {"
-	frame.methods.each {|name,method| Out.print "fclass->methods[\"#{name}\"] = FMethod(#{frame.name}::#{method.selector}_wrap);" }
-	frame.attrs.each   {|name,attr|   Out.print "fclass->  attrs[\"#{name}\"] = new AttrDecl(\"#{name}\",\"#{attr.type}\");" }
+	frame.methods.each {|name,method|
+	 Out.print "fclass->methods[insel(#{method.inlet},gensym(\"#{method.selector}\"))] = FMethod(#{frame.name}::#{method.selector2}_wrap);" }
+	frame.attrs.each   {|name,attr|   Out.print "fclass->  attrs[gensym(\"#{name}\")] = new AttrDecl(gensym(\"#{name}\"),\"#{attr.type}\");" }
 	Out.print line.chomp
 end
 
