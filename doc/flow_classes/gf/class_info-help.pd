@@ -1,8 +1,8 @@
-#N canvas 0 0 632 704 10;
+#N canvas 596 0 632 685 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 1342 doc_also;
-#X obj 0 1362 doc_f;
-#X obj 103 1342 class_exists;
+#X obj 3 1578 doc_also;
+#X obj 0 1598 doc_f;
+#X obj 103 1578 class_exists;
 #X obj 3 378 doc_o 1;
 #X obj 14 408 doc_oo 0;
 #X obj 3 290 doc_i 1;
@@ -16,27 +16,27 @@
 #X obj 10 220 print;
 #X obj 543 73 #pack 4;
 #X msg 543 47 help;
-#X obj 97 726 doc_m o0 method;
-#X text 232 726 indicates that the class has a method named \$2 in
+#X obj 97 774 doc_m o0 method;
+#X text 232 774 indicates that the class has a method named \$2 in
 inlet \$1.;
-#X text 232 809 inlet -1 represents methods that exist in all inlets
+#X text 232 857 inlet -1 represents methods that exist in all inlets
 at once from a single definition. this occurs normally only when there
 is a variable number of inlets.;
-#X text 232 857 a grid method is listed three times : each grid method
+#X text 232 905 a grid method is listed three times : each grid method
 is accompanied by a float method and a list method. If any local float
 method or list method is hiding the default method(s) brought by the
 grid method \, you will not notice.;
-#X text 232 918 "method -2 anything" represents a method that catches
+#X text 232 966 "method -2 anything" represents a method that catches
 anything in any inlet at once.;
-#X text 232 953 there is currently no way to define a anything in a
-single inlet at a time.;
-#X text 232 988 other methods in inlet -2 are for internal use ONLY.
+#X text 232 1001 there is currently no way to define a anything in
+a single inlet at a time.;
+#X text 232 1036 other methods in inlet -2 are for internal use ONLY.
 they are not directly reachable from pd.;
-#X text 232 748 the constructor (aka creator or new-method) and the
+#X text 232 796 the constructor (aka creator or new-method) and the
 destructor (free-method) are not listed. the dsp-method and perform-function
 (for ~ objects) are not listed. however \, the loadbang method is listed.
 ;
-#X text 232 1023 inlet numbers don't correspond in some rare cases
+#X text 232 1071 inlet numbers don't correspond in some rare cases
 : when the CLASS_NOINLET option is in use \, GF inlet numbers don't
 match Pd inlet numbers \, the left inlet will be numbered 1 instead
 of 0 \, and inlet 0 will be invisible. GF currently only uses this
@@ -55,7 +55,6 @@ coming out of it are not guaranteed to come out in any particular order.
 #X msg 32 112 symbol #from~;
 #X text 117 105 is weird because GF's framework doesn't support ~ inlets
 directly;
-#X msg 37 132 ...;
 #X obj 97 456 doc_m o0 attr;
 #X text 232 456 indicates that \$1 is a valid argument to the get-method
 \, and that the get-method will output something named like that when
@@ -63,7 +62,7 @@ called without arguments.;
 #X text 232 504 some attributes are special in some ways that make
 them hidden from that list but still supported by 'get'. this coïncides
 with when 'get' exceptionally appears in the list of methods.;
-#X text 232 1110 methods of superclasses are not listed. those are
+#X text 232 1158 methods of superclasses are not listed. those are
 rare in GF. this mostly just means that 'get' is not listed \, because
 it is common to all classes. ('help' was also a common method like
 that \, but it was removed in 9.11). it can happen that 'get' is listed
@@ -72,30 +71,49 @@ that \, but it was removed in 9.11). it can happen that 'get' is listed
 database. this only covers the C++/source_filter.rb interface \, and
 NOT the abstractions.;
 #X text 96 51 has variable number of inlets (and doesn't say it);
-#X obj 97 565 doc_m o0 inlets;
-#X obj 97 1197 doc_m o0 outlets;
-#X text 232 565 number of inlets of objects of that class. if the class
+#X obj 97 613 doc_m o0 inlets;
+#X obj 97 1293 doc_m o0 outlets;
+#X text 232 613 number of inlets of objects of that class. if the class
 has variable number of inlets \, this is the "initial" number of inlets
 \, which normally means the minimum possible number of inlets \, even
 though that case may not be the most useful nor the default.;
-#X text 232 1197 number of outlets of objects of that class. if the
+#X text 232 1293 number of outlets of objects of that class. if the
 class has variable number of outlets \, this is the "initial" number
 of outlets \, which normally means the minimum possible number of outlets
 \, even though that case may not be the most useful nor the default.
 ;
-#X text 232 639 if there CLASS_NOINLET \, GF's inlet 0 will not be
+#X text 232 687 if there CLASS_NOINLET \, GF's inlet 0 will not be
 visible in Pd \, therefore this number will be one more than reported.
 Furthermore \, signal inlets will never be reported because they are
 not supported by GF's C++ interface. Anything created using inlet_new
 will not be reported (but this only happens in [#from~] at the moment)
 ;
-#X text 232 1271 signal outlets will never be reported because they
+#X text 232 1367 signal outlets will never be reported because they
 are not supported by GF's C++ interface. Anything created using outlet_new
 will not be reported (but this only happens in [#to~] at the moment)
 ;
+#X msg 37 132 symbol #to_l;
+#X text 116 131 is an alias;
+#X obj 97 1245 doc_m o0 name;
+#X text 232 1245 the real name of the class. This may be different
+from the symbol being input in case of alias. There is no way to look
+up a list of aliases.;
+#X obj 97 565 doc_m o0 flags;
+#X obj 97 1428 doc_m o0 super;
+#X text 232 565 8 means CLASS_NOINLET. This would be a sum of values
+\, but currently only CLASS_NOINLET is ever used. Thus 0 means no option
+is used.;
+#X text 232 1450 the name of the superclass. this usually means an
+abstract class that is not registered in pd at all.;
+#X text 232 1485 GUI_FObject means that this is a class that has a
+t_widgetbehavior. Those are for objects that don't look like objectboxes.
+;
+#X text 232 1533 FObject is for anything else ever made with the C++/source_filter.rb
+framework.;
+#X text 232 1428 THIS FEATURE IS CURRENTLY DISABLED.;
 #X connect 1 1 3 0;
 #X connect 9 1 33 0;
-#X connect 10 1 41 0;
+#X connect 10 1 40 0;
 #X connect 11 0 14 0;
 #X connect 12 0 11 0;
 #X connect 13 0 11 0;
@@ -108,14 +126,21 @@ will not be reported (but this only happens in [#to~] at the moment)
 #X connect 17 1 22 0;
 #X connect 17 1 23 0;
 #X connect 17 1 25 0;
-#X connect 17 1 40 0;
+#X connect 17 1 39 0;
 #X connect 28 0 11 0;
 #X connect 29 0 11 0;
 #X connect 31 0 11 0;
 #X connect 34 0 11 0;
-#X connect 37 1 38 0;
-#X connect 37 1 39 0;
+#X connect 36 1 37 0;
+#X connect 36 1 38 0;
+#X connect 42 1 44 0;
+#X connect 42 1 46 0;
 #X connect 43 1 45 0;
 #X connect 43 1 47 0;
-#X connect 44 1 46 0;
-#X connect 44 1 48 0;
+#X connect 48 0 11 0;
+#X connect 50 1 51 0;
+#X connect 52 1 54 0;
+#X connect 53 1 55 0;
+#X connect 53 1 56 0;
+#X connect 53 1 57 0;
+#X connect 53 1 58 0;
