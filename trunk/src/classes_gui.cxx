@@ -128,8 +128,6 @@ public:
 
 //****************************************************************
 
-ostream &operator << (ostream &self, t_symbol *s) {self << s->s_name; return self;}
-
 \class Display : GUI_FObject {
 	int y,x;
 	ostringstream text;
@@ -151,9 +149,9 @@ ostream &operator << (ostream &self, t_symbol *s) {self << s->s_name; return sel
 		pd_typedmess(gp,gensym("grid"),argc,argv);
 		changed();
 	}
-	\decl 0 very_long_name_that_nobody_uses (...) {
+	\decl 0 very_long_name_that_nobody_uses (...) { // for magic use by [#print]
 		if (text.str().length()) text << "\n";
-		for (int i=0; i<argc; i++) text << char(TO(int32,argv[i]));
+		for (int i=0; i<argc; i++) text << char(int32(argv[i]));
 	}
  	void show() { /* or hide */
 		ostringstream quoted;

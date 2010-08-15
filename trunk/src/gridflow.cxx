@@ -851,15 +851,6 @@ int handle_braces(int ac, t_atom *av_) {
 		t_atom2 a[1] = {s}; m(this,1,a);
 	}
 }
-\def 0 help () {
-	FClass *fc = fclasses_pd[pd_class(bself)];
-	post("attributes (");
-	foreach(attr,fc->attrs) post("    %s %s;",attr->second->type.data(),attr->second->name->s_name);
-	post(")");
-	post("methods (");
-	foreach(meth,fc->methods) post("    %d %s",meth->first.first,meth->first.second->s_name);
-	post(")");
-}
 \classinfo {}
 \end class
 

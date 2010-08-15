@@ -47,7 +47,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 		if (a[i] == s_sharp) {
 			int32 v[i];
 			if (i!=0 && a[i-1].a_type==A_SYMBOL) nt=NumberTypeE_find(a[--i]);
-			for (int j=0; j<i; j++) v[j] = TO(int32,a[j]);
+			for (int j=0; j<i; j++) v[j] = (int32)a[j];
 			init(Dim(i,v),nt);
 			CHECK_ALIGN(data,nt);
 			if (a[i] != s_sharp) i++;

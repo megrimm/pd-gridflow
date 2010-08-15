@@ -854,7 +854,6 @@ void outlet_atom2 (PtrOutlet self, t_atom *av);
 		outlet_list(out[outlet],&s_list,argc,foo);
 	}
 	\decl 0 get (t_symbol *s=0);
-	\decl 0 help ();
 };
 \end class
 
@@ -959,7 +958,8 @@ inline t_symbol *symprintf(const char *s, ...) {
     return r;
 }
 
-ostream &operator << (ostream &self, const t_atom &a);
+              ostream &operator << (ostream &self, const t_atom &a);
+static inline ostream &operator << (ostream &self, t_symbol *s) {self << s->s_name; return self;}
 
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
