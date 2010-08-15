@@ -10,6 +10,7 @@ version 9.11 (2010......):
  * added classes [gf/sprintf] and [#sprintf], the best sprintf() wrappers in
    the pd world
  * added OpenGL interface class [gf/gl]
+ * added class [gf/class_info] (for introspection of GF's classes only)
  * fixed some rendering bugs in [display] and [#see]
  * [#draw_polygon]: ignore value of "omit" when "draw fill" (to avoid nonsense)
  * fixed detection of png support
@@ -17,7 +18,7 @@ version 9.11 (2010......):
  * [#reverse]: fixed buffer copy bug
  * [#]: fixed problem with 0-sized right input
  * [gf/error]: method 'list': also print info about the object box where it is
- * [gf/error]: supports the same options that [gf/sprintf] does.
+ * [gf/error]: now supports the same options that [gf/sprintf] does.
 
 version 9.10 (2010.08.04):
 
