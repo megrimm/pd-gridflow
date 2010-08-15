@@ -173,7 +173,7 @@ typedef struct {
 					const char *winspec2 = string(winspec).data();
 					if (strncmp(winspec2,"0x",2)==0) window = strtol(winspec2+2,0,16);
 					else 				 window = atoi(winspec2); // huh?
-				} else window = TO(int32,winspec);
+				} else window = int32(winspec);
 				is_owner = false;
 				sy = sx = pos[0] = pos[1] = 0;
 			}

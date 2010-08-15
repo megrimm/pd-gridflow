@@ -364,11 +364,11 @@ GRID_INLET(0) {
 	\decl 0 bang () {t_atom2 a[2] = {0,gensym("#")}; pd_list((t_pd *)bself,&s_list,2,a);}
 	\decl 1 reassign () {put_at=0;}
 	\decl 1 put_at (...) {
-		if (argv[0].a_type==A_LIST) put_at=TO(Grid *,argv[0]);
+		if (argv[0].a_type==A_LIST) put_at=(Grid *)argv[0];
 		else {
 			put_at=new Grid(Dim(argc),int32_e);
 			int32 *v = (int32 *)*put_at;
-			for (int i=0; i<argc; i++) v[i]=TO(int32,argv[i]);
+			for (int i=0; i<argc; i++) v[i]=argv[i];
 		}
 	}
 	\grin 0 int
