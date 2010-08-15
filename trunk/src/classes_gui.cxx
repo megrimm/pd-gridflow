@@ -183,13 +183,13 @@ public:
 		sys_vgui(".x%x.c itemconfigure %sTEXT -fill %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 	\decl void anything (...) {
-		string sel = string(argv[0]).data()+3;
+		t_symbol *sel = argv[1];
 		text.str("");
-		if (sel=="float") {}
-		else if (sel=="list" && argc>=2 && argv[1].a_type==A_FLOAT) {}
-		else {text << sel; if (argc>1) text << " ";}
+		if (sel==&s_float) {}
+		else if (sel==&s_list && argc>=3 && argv[2].a_type==A_FLOAT) {}
+		else {text << sel; if (argc>2) text << " ";}
 		long nl=0;
-		for (int i=1; i<argc; i++) {
+		for (int i=2; i<argc; i++) {
 			text << argv[i];
 			if (i!=argc-1) {
 				text << " ";
@@ -248,10 +248,7 @@ static t_symbol *s_empty;
 		rcv = r==s_empty?0:r;
 		if (rcv) pd_bind((t_pd *)bself,rcv);
 	}
-	\decl void anything (...) {
-		t_symbol *sel = argv[0]; sel = gensym(sel->s_name+3); // this is getting tiring
-		if (snd) pd_anything(snd,sel,argc-1,argv+1);
-	}
+	\decl void anything (...) {if (snd) pd_anything(snd,argv[1],argc-2,argv+2);}
 	void set_rcv (t_symbol *rcv_=0) {
 		if (rcv) pd_unbind((t_pd *)bself,rcv);
 		rcv=rcv_;
