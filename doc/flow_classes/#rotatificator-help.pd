@@ -1,71 +1,78 @@
-#N canvas 604 0 632 602 10;
+#N canvas 596 0 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 0 568 doc_f;
-#X text 191 138 named in honour of Laszlo Zlotz (a character from Achille
+#X obj 0 640 doc_f;
+#X text 232 128 named in honour of Laszlo Zlotz (a character from Achille
 Talon);
-#X obj 3 548 doc_also;
-#X obj 103 548 #rotate;
-#X obj 3 298 doc_i 2;
-#X obj 3 434 doc_o 1;
-#X obj 14 464 doc_oo 0;
-#X obj 14 330 doc_ii 0;
-#X obj 14 402 doc_ii 1;
-#X obj 97 330 doc_m i0 float;
-#X obj 97 352 doc_m i0 axis;
-#X obj 3 186 doc_c 3;
-#X obj 14 218 doc_cc 0;
-#X obj 14 242 doc_cc 1;
-#X obj 14 266 doc_cc 2;
-#X obj 97 464 doc_m o0 grid;
-#X obj 97 402 doc_m i1;
-#X obj 97 218 doc_m c0 float/int;
-#X obj 97 242 doc_m c1 float/int;
-#X obj 97 266 doc_m c2 float/int;
-#X text 232 218 from;
-#X text 232 242 to;
-#X text 232 266 n;
-#X text 232 352 \$1=from (default:0) \; \$2=to (default: 1) \; \$3=n
+#X obj 3 620 doc_also;
+#X obj 103 620 #rotate;
+#X obj 3 352 doc_i 2;
+#X obj 3 506 doc_o 1;
+#X obj 14 536 doc_oo 0;
+#X obj 14 382 doc_ii 0;
+#X obj 14 474 doc_ii 1;
+#X obj 97 382 doc_m i0 float;
+#X obj 97 404 doc_m i0 axis;
+#X obj 3 246 doc_c 3;
+#X obj 14 276 doc_cc 0;
+#X obj 14 298 doc_cc 1;
+#X obj 14 320 doc_cc 2;
+#X obj 97 536 doc_m o0 grid;
+#X obj 97 276 doc_m c0 float/int;
+#X obj 97 298 doc_m c1 float/int;
+#X obj 97 320 doc_m c2 float/int;
+#X text 232 276 from;
+#X text 232 298 to;
+#X text 232 320 n;
+#X text 232 404 \$1=from (default:0) \; \$2=to (default: 1) \; \$3=n
 (default: 2);
-#X text 232 402 angle;
-#X text 232 330 scale;
-#X text 192 44 generates a N by N rotation matrix that rotates through
+#X text 232 474 angle;
+#X text 232 382 scale;
+#X text 233 34 generates a N by N rotation matrix that rotates through
 two dimensions of your choice (from \, to) by a certain angle (in centidegrees).
 values produced are integers. the rotation matrix is multiplied by
 the given scale factor such that after an eventual [#inner] \, a division
 by the same amount would be performed. greater scale factors are more
 precise.;
-#X text 232 464 rotation matrix such that if rows 'from' and 'to' were
+#X text 232 536 rotation matrix such that if rows 'from' and 'to' were
 deleted and columns 'from' and 'to' were deleted \, you'd have an identity
 matrix. in other words \, the rotation happens in a plane space made
 of the two dimensions represented by those two rows and two columns.
 ;
-#X obj 14 330 doc_ii 0;
-#X obj 14 402 doc_ii 1;
-#X obj 14 464 doc_oo 0;
-#X obj 14 218 doc_cc 0;
-#X obj 14 242 doc_cc 1;
-#X obj 14 266 doc_cc 2;
-#X obj 14 124 display;
-#X obj 14 105 #rotatificator 1 2 3;
-#X msg 14 68 256;
-#X msg 131 66 3000;
-#X floatatom 131 85 5 0 0 0 - - -;
-#X floatatom 14 87 5 0 0 0 - - -;
-#X obj 14 49 t b b;
-#X obj 14 30 loadbang;
+#X obj 14 382 doc_ii 0;
+#X obj 14 474 doc_ii 1;
+#X obj 14 536 doc_oo 0;
+#X obj 14 276 doc_cc 0;
+#X obj 14 298 doc_cc 1;
+#X obj 14 320 doc_cc 2;
+#X obj 14 184 display;
+#X obj 14 165 #rotatificator 1 2 3;
+#X msg 14 128 256;
+#X msg 131 126 3000;
+#X floatatom 131 145 5 0 0 0 - - -;
+#X floatatom 14 147 5 0 0 0 - - -;
+#X obj 14 109 t b b;
+#X obj 14 90 loadbang;
+#X obj 97 452 doc_m i0 cast;
+#X text 232 452 numtype of the output;
+#X obj 97 474 doc_m i1 float;
+#X obj 68 31 #type-gui \, vertical;
+#X msg 68 138 cast \$1;
 #X connect 3 1 4 0;
-#X connect 10 1 26 0;
-#X connect 11 1 24 0;
-#X connect 16 1 28 0;
-#X connect 17 1 25 0;
+#X connect 10 1 25 0;
+#X connect 11 1 23 0;
+#X connect 16 1 27 0;
+#X connect 17 1 20 0;
 #X connect 18 1 21 0;
 #X connect 19 1 22 0;
-#X connect 20 1 23 0;
-#X connect 36 0 35 0;
-#X connect 37 0 40 0;
-#X connect 38 0 39 0;
-#X connect 39 0 36 1;
+#X connect 35 0 34 0;
+#X connect 36 0 39 0;
+#X connect 37 0 38 0;
+#X connect 38 0 35 1;
+#X connect 39 0 35 0;
 #X connect 40 0 36 0;
-#X connect 41 0 37 0;
-#X connect 41 1 38 0;
-#X connect 42 0 41 0;
+#X connect 40 1 37 0;
+#X connect 41 0 40 0;
+#X connect 42 1 43 0;
+#X connect 44 1 24 0;
+#X connect 45 0 46 0;
+#X connect 46 0 35 0;
