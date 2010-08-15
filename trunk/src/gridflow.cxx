@@ -567,26 +567,20 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
 	int argc = handle_parens(ac,argv+2); // ought to be removed
 	FMethod m;
-	m=method_lookup(bself,winlet,      s); if (m) {                           m(bself->self,argc+0,argv+2); return;}
-	m=method_lookup(bself,-1,          s); if (m) {argv[1]=winlet;            m(bself->self,argc+1,argv+1); return;}
-	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(bself->self,argc+2,argv+0); return;}
+	FObject *self = bself->self;
+	m=method_lookup(bself,winlet,      s); if (m) {                           m(self,argc+0,argv+2); return;}
+	m=method_lookup(bself,-1,          s); if (m) {argv[1]=winlet;            m(self,argc+1,argv+1); return;}
+	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(self,argc+2,argv+0); return;}
 
 	if (s==&s_list) {
 	    if (argc==0) {
-						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(bself->self,argc,argv+2); return;}
+						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(self,argc,argv+2); return;}
 	    } else if (argc==1) {
-		if (argv[2].a_type==A_FLOAT)   {m=method_lookup(bself,winlet,&s_float  ); if(m){m(bself->self,argc,argv+2); return;}}
-		if (argv[2].a_type==A_SYMBOL)  {m=method_lookup(bself,winlet,&s_symbol ); if(m){m(bself->self,argc,argv+2); return;}}
-		if (argv[2].a_type==A_POINTER) {m=method_lookup(bself,winlet,&s_pointer); if(m){m(bself->self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_FLOAT)   {m=method_lookup(bself,winlet,&s_float  ); if(m){m(self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_SYMBOL)  {m=method_lookup(bself,winlet,&s_symbol ); if(m){m(self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_POINTER) {m=method_lookup(bself,winlet,&s_pointer); if(m){m(self,argc,argv+2); return;}}
 	    } else {
 		for (int i=argc-1; i>=0; i--) { // not exactly same order as pd's obj_list...
-		    ostringstream o;
-		    o << "will send "<<argv[2+i]<<" into inlet "<<i;
-		    //post("%s",o.str().data());
-		    // would send atom argv[i] to inlet i, method ???
-		    //if (argv[i].a_type==A_FLOAT)   {m=method_lookup(bself,i,&s_float  ); if(m){m(bself->self,1,argv+2+i); return;}}
-		    //if (argv[i].a_type==A_SYMBOL)  {m=method_lookup(bself,i,&s_symbol ); if(m){m(bself->self,1,argv+2+i); return;}}
-		    //if (argv[i].a_type==A_POINTER) {m=method_lookup(bself,i,&s_pointer); if(m){m(bself->self,1,argv+2+i); return;}}
 		    if (argv[2+i].a_type==A_FLOAT)   BFObject_anything(bself,i,&s_float  ,1,argv+2+i);
 		    if (argv[2+i].a_type==A_SYMBOL)  BFObject_anything(bself,i,&s_symbol ,1,argv+2+i);
 		    if (argv[2+i].a_type==A_POINTER) BFObject_anything(bself,i,&s_pointer,1,argv+2+i);
