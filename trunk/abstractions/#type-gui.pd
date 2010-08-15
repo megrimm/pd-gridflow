@@ -7,7 +7,7 @@
 #X obj 8 51 cnv 15 67 28 empty \$0-rect2 empty 20 12 0 14 -233017 -66577
 0;
 #X obj 2 54 hradio 12 1 0 6 \$0-s_type \$0-type empty 0 -8 0 10 -262144
--1 -1 0;
+-1 -1 2;
 #X text 3 63 b s i l f d;
 #X obj 93 185 r \$0-s_type;
 #X obj 201 1 args;
@@ -28,14 +28,12 @@
 #X msg 364 200 1;
 #X msg 347 259 coords 0 -1 1 1 64 80 2 0 100;
 #X msg 328 240 coords 0 -1 1 1 76 30 2 0 50;
-#X obj 231 254 print vertical;
-#X obj 346 346 print vertical2;
 #X obj 1 103 cnv 15 62 74 empty \$0-rect4 empty 20 12 0 14 -233017
 -66577 0;
 #X obj 8 101 cnv 15 55 78 empty \$0-rect3 empty 20 12 0 14 -233017
 -66577 0;
 #X obj 2 104 vradio 12 1 0 6 \$0-s_type \$0-type empty 0 -8 0 10 -262144
--1 -1 0;
+-1 -1 2;
 #X text 16 101 uint8;
 #X text 16 113 int16;
 #X text 16 125 int32;
@@ -51,6 +49,9 @@ i l f d;
 #X obj 286 115 symbol;
 #X obj 286 39 t s s;
 #X obj 322 77 mod 6;
+#X msg 88 36 vertical 0;
+#X obj 382 77 loadbang;
+#X msg 382 96 set 2;
 #X connect 0 0 17 0;
 #X connect 7 0 9 0;
 #X connect 9 0 13 0;
@@ -64,8 +65,7 @@ i l f d;
 #X connect 16 0 9 1;
 #X connect 17 0 14 0;
 #X connect 17 1 20 0;
-#X connect 17 1 26 0;
-#X connect 17 2 37 0;
+#X connect 17 2 35 0;
 #X connect 20 0 21 0;
 #X connect 20 2 23 0;
 #X connect 21 0 22 0;
@@ -73,17 +73,18 @@ i l f d;
 #X connect 22 1 24 0;
 #X connect 23 0 22 0;
 #X connect 24 0 19 0;
-#X connect 24 0 27 0;
 #X connect 25 0 19 0;
-#X connect 25 0 27 0;
-#X connect 37 0 43 0;
-#X connect 37 1 11 0;
-#X connect 38 0 41 0;
-#X connect 40 0 42 0;
-#X connect 41 0 40 0;
-#X connect 41 1 44 0;
-#X connect 42 0 39 0;
-#X connect 43 0 38 0;
-#X connect 43 1 42 1;
-#X connect 44 0 2 0;
-#X coords 0 -1 1 1 76 30 2 0 50;
+#X connect 35 0 41 0;
+#X connect 35 1 11 0;
+#X connect 36 0 39 0;
+#X connect 38 0 40 0;
+#X connect 39 0 38 0;
+#X connect 39 1 42 0;
+#X connect 40 0 37 0;
+#X connect 41 0 36 0;
+#X connect 41 1 40 1;
+#X connect 42 0 2 0;
+#X connect 43 0 17 0;
+#X connect 44 0 45 0;
+#X connect 45 0 2 0;
+#X coords 0 -1 1 1 64 80 2 0 100;
