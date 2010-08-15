@@ -7,7 +7,8 @@ version 9.11 (2010......):
  * [#type]: [#type, abbr] gives single-letter type names: b s i l f d
  * added classes [route3] [#type-gui] [#tabread] [#tabwrite] [#from~]
  * added classes [gf/tk_button] [gf/sys_gui] [gf/wrap] [gf/l2s] [gf/s2l]
- * added classes [gf/sprintf] supporting nearly all options of sprintf()
+ * added classes [gf/sprintf] and [#sprintf], the best sprintf() wrappers in
+   the pd world
  * added OpenGL interface class [gf/gl]
  * fixed some rendering bugs in [display] and [#see]
  * [#draw_polygon]: ignore value of "omit" when "draw fill" (to avoid nonsense)
