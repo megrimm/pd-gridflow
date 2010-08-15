@@ -530,8 +530,8 @@ static FMethod method_lookup (FClass *fc, int winlet, t_symbol *sel) {
 	typeof(fc->methods) &m = fc->methods;
 	typeof(m.begin()) it = m.find(insel(winlet,sel));
 	if (it!=m.end()) return it->second;
-	// this works only if there is no float/symbol/pointer defined in superclasses...
-	if (sel==&s_float || sel==&s_symbol || sel==&s_pointer) return method_lookup(fc,winlet,&s_list);
+	// this works only if there is no bang/float/symbol/pointer defined in superclasses...
+	if (sel==&s_bang || sel==&s_float || sel==&s_symbol || sel==&s_pointer) return method_lookup(fc,winlet,&s_list);
 	return fc->super ? method_lookup(fc->super,winlet,sel) : 0;
 }
 static FMethod method_lookup (BFObject *bself, int winlet, t_symbol *sel) {
