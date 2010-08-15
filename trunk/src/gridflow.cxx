@@ -319,8 +319,10 @@ void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) 
 #define TRACE
 #endif
 
-template <class T>
-static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+#define   PACKER(NAME) template <class T> static void NAME (BitPacking *self, long n, T *in, uint8 *out)
+#define UNPACKER(NAME) template <class T> static void NAME (BitPacking *self, long n, uint8 *in, T *out)
+
+PACKER(default_pack) {TRACE
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -357,8 +359,7 @@ static void default_pack(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 			uint32 t=temp&self->mask[i]; \
 			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7));}}
 
-template <class T>
-static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {TRACE
+UNPACKER(default_unpack) {TRACE
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	if (is_le()) { // smallest byte first
@@ -374,16 +375,14 @@ static void default_unpack(BitPacking *self, long n, uint8 *in, T *out) {TRACE
 
 /* **************************************************************** */
 
-template <class T>
-static void pack2_565(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+PACKER(pack2_565) {TRACE
 	uint32 chop[3] = {3,2,3};
 	uint32 slide[3] = {11,5,0};
 	uint32 t;
 	NTIMES(CONVERT1; *((short *)out)=t; out+=2; in+=3;)
 }
 
-template <class T>
-static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+PACKER(pack3_888) {TRACE
 	int32 *o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
@@ -395,19 +394,13 @@ static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 	out = (uint8 *)o32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
-template <class T> static void unpack3_888 (BitPacking *self, long n, uint8 *in, T *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2];           out+=3; in+=3; )}
-template <class T> static void   pack3_888c(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )}
-template <class T> static void   pack3_888d(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )}
-template <class T> static void unpack3_888d(BitPacking *self, long n, uint8 *in, T *out) {TRACE
-	NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2];           out+=3; in+=4; )}
-template <class T> static void   pack3_bgrn8888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
-	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )}
+UNPACKER(  unpack3_888) {TRACE NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2];           out+=3; in+=3; )}
+  PACKER(   pack3_888c) {TRACE NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=3; )}
+  PACKER(   pack3_888d) {TRACE NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2]; out[3]=0; out+=4; in+=3; )}
+UNPACKER( unpack3_888d) {TRACE NTIMES( out[0]=in[0]; out[1]=in[1]; out[2]=in[2];           out+=3; in+=4; )}
+PACKER(pack3_bgrn8888b) {TRACE NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out[3]=0; out+=4; in+=4; )}
 
-template <class T>
-static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
+PACKER(pack3_888b) {TRACE
 	int32 *o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in [1]<<8) | in [2];
@@ -421,10 +414,8 @@ static void pack3_888b(BitPacking *self, long n, T *in, uint8 *out) {TRACE
 }
 
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
-static void pack3_bgrn8888(BitPacking *self, long n, uint8 *in, uint8 *out) {TRACE
-/* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
-	uint32 *i32 = (uint32 *)in;
-	uint32 *o32 = (uint32 *)out;
+PACKER(pack3_bgrn8888) {TRACE /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
+	uint32 *i32 = (uint32 *)in, *o32 = (uint32 *)out;
 	while (n>=4) {
 		o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff);
 		o32[1] = ((i32[1]&0xff)<<16) | (i32[1]&0xff00) | ((i32[1]>>16)&0xff);
