@@ -45,14 +45,11 @@ class MethodDecl
 end
 
 class Arg
-  def canon(type)
-    type="Grid *" if type=="PtrGrid"
-    type
-  end
+  def canon(type) if type=="PtrGrid" then type="Grid *" else type end end
   def ==(o) canon(type)==canon(o.type) && name==o.name end
 end
 
-In = File.open ARGV[0], "r"
+In  = File.open ARGV[0], "r"
 Out = File.open ARGV[1], "w"
 
 def handle_class(line)
@@ -73,8 +70,7 @@ def handle_class(line)
 end
 
 def parse_methoddecl(line,term)
-	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*(#{term})/.match line or
-		raise "syntax error #{where} #{line}"
+	/^(\w+(?:\s*\*)?)\s+(\w+)\s*\(([^\)]*)\)\s*(#{term})/.match line or raise "syntax error #{where}"
 	rettype,selector,args,continue = $1,$2,$3,$4,$6
 	if /^\d+$/ =~ rettype then inlet = rettype; rettype = "void"
 	elsif    rettype=="n" then inlet = -1     ; rettype = "void" else inlet = -2 end
@@ -87,8 +83,7 @@ def parse_args(args)
 	maxargs = args.length
 	args = args.map {|arg|
 		if /^\s*\.\.\.\s*$/.match arg then maxargs=-1; next end
-		/^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/.match arg or
-			raise "syntax error in \"#{arg}\" #{where}"
+		/^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/.match arg or raise "syntax error in \"#{arg}\" #{where}"
 		type,name,default=$1,$2,$3
 		Arg.new(type.sub(/\s+$/,""),name,default)
 	}.compact
@@ -115,11 +110,8 @@ def handle_attr(line)
 	name = type.slice!(/\w+$/)
 	handle_decl "void ___get(t_symbol *s);" if frame.attrs.size==0
 	frame.attrs[name]=Attr.new(type,name,nil,virtual)
-	if virtual then
-		handle_decl "#{type} #{name}();"
-	else
-		Out.print line
-	end
+	if virtual then handle_decl "#{type} #{name}();"
+	else		Out.print line end
 	type.gsub!(/\s+$/,"")
 	type.gsub!(/^\s+/,"")
 	if type=="bool" then handle_decl "0 #{name} (#{type} #{name}=true);"
@@ -204,7 +196,6 @@ def handle_constructor(line)
 	Out.print "#{m.selector}(sel"
 	Out.print "," if m.maxargs!=0
 	pass_args m
-	#Out.print "/* m.maxargs = #{m.maxargs} */"
 	Out.print "#{m.rettype} #{m.selector}(t_symbol *sel"
 	Out.print ", VA" if m.maxargs<0
 	Out.print ", #{unparse_args m.args}" if m.args.length>0
