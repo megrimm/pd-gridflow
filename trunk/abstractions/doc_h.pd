@@ -1,5 +1,5 @@
 #N canvas 286 66 694 522 10;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect gf/sprintf 2 9 1 13 -1 -262144
+#X obj 3 3 cnv 15 608 18 empty \$0-rect gridflow 2 9 1 13 -1 -262144
 0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -83,7 +83,7 @@
 #X obj 495 156 loadbang;
 #X obj 495 194 gridflow;
 #X msg 495 175 get version;
-#X obj 522 301 s \$0-rect2;
+#X obj 522 330 s \$0-rect2;
 #X msg 522 251 label GridFlow \$1.\$2;
 #X msg 531 213 \$3;
 #X obj 495 232 shunt;
@@ -112,7 +112,7 @@
 #X msg 203 262 obj 0 0 doc_\$1;
 #X obj 175 121 t b b b;
 #X msg 193 140 c \, i \, o \, also \, f;
-#N canvas 20 0 488 687 screenshots 1;
+#N canvas 20 0 488 687 screenshots 0;
 #X obj 12 543 #in;
 #X msg 12 524 open x11 here \$1 \, bang;
 #X obj 48 630 #out;
@@ -272,6 +272,8 @@
 7 0 8 -159808 -1 -191407;
 #X obj 203 205 doc_exist 2;
 #X obj 6 330 metro 200;
+#X obj 529 290 doc_iemfont 1 12;
+#X obj 532 310 s \$0-rect;
 #X connect 1 0 4 0;
 #X connect 2 0 4 0;
 #X connect 4 0 5 0;
@@ -354,4 +356,6 @@
 #X connect 84 0 79 0;
 #X connect 87 0 80 0;
 #X connect 88 0 42 0;
+#X connect 89 0 58 0;
+#X connect 89 0 90 0;
 #X coords 0 -1 1 1 614 24 2 0 0;

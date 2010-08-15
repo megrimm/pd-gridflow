@@ -1,6 +1,6 @@
 #N canvas 301 61 916 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect float 4 9 1 9 -261615
--1 0;
+#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect get 4 9 1 9 -261615 -1
+0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
 #X obj 9 214 gf/string_replace o o/;
@@ -96,6 +96,8 @@
 #X obj 317 411 max 22;
 #X obj 11 58 inlet;
 #X text 49 57 needed because we use [args];
+#X obj 109 413 s \$0-rect;
+#X obj 109 394 doc_iemfont 1 9;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
@@ -167,4 +169,5 @@
 #X connect 60 2 6 0;
 #X connect 60 2 55 0;
 #X connect 62 0 16 0;
+#X connect 66 0 65 0;
 #X coords 0 -1 1 1 126 17 2 0 0;
