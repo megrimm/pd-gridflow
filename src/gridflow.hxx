@@ -586,7 +586,8 @@ struct Grid : CObject {
 		if (clear) CLEAR((char *)data,bytes());
 	}
 	Grid(const t_atom &x) {data=0; state=1; init_from_atom(x);}
-	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
+	Grid(int n, t_atom2 *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
+	Grid(int n, t_atom  *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
 	template <class T> Grid(const Dim &dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T *)0);
@@ -617,21 +618,21 @@ EACH_NUMBER_TYPE(FOO)
 };
 static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
 
-// DimConstraint interface:
-// return if d is acceptable
-// else RAISE with proper descriptive message
-typedef void (*DimConstraint)(const Dim &d);
+// GridConstraint interface: (only a GRID_BEGIN time constraint)
+// return if d and nt are acceptable, else RAISE with proper descriptive message
+#define CONSTRAINT(NAME) void NAME (const Dim &d, NumberTypeE nt)
+typedef CONSTRAINT((*GridConstraint));
 
 struct PtrGrid : public P<Grid> {
-	DimConstraint dc;
-	void constrain(DimConstraint dc_) { dc=dc_; }
+	GridConstraint dc;
+	void constrain(GridConstraint dc_) {dc=dc_;}
 	P<Grid> next;
 	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
 	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {            p=_p; INCR;}
-	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
-	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
-	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
+	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p;   INCR; return *this;}
+	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
+	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
 };
 #undef INCR
 #undef DECR

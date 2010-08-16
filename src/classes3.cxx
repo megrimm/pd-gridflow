@@ -18,8 +18,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "gridflow.hxx.fcs"
-static void expect_max_one_dim (const Dim &d) {if (d.n>1)  RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
-static void     expect_one_dim (const Dim &d) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
+static CONSTRAINT(expect_max_one_dim) {if (d.n>1)  RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
+static CONSTRAINT(expect_one_dim)     {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
@@ -348,7 +348,7 @@ GRID_INLET(0) {
 \end class {install("#centroid",1,3);}
 
 //****************************************************************
-static void expect_pair (const Dim &dim) {if (dim.prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
+static CONSTRAINT(expect_pair) {if (d.prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
 
 \class GridMoment : FObject {
 	\constructor (int order=1) {
@@ -579,14 +579,14 @@ GRID_INPUT(2,dimr_grid) {dimr = dimr_grid->to_dim();} GRID_END
 
 \end class {install("#border",3,1);}
 
-static void expect_picture (const Dim &d) {if (d.n!=3) RAISE("(height,width,chans) dimensions please");}
-static void expect_rgb_picture  (const Dim &d) {expect_picture(d); if (d[2]!=3) RAISE("(red,green,blue) channels please");}
-static void expect_rgba_picture (const Dim &d) {expect_picture(d); if (d[2]!=4) RAISE("(red,green,blue,alpha) channels please");}
+static CONSTRAINT(expect_picture) {if (d.n!=3) RAISE("(height,width,chans) dimensions please");}
+static CONSTRAINT(expect_rgb_picture)  {expect_picture(d,nt); if (d[2]!=3) RAISE("(red,green,blue) channels please");}
+static CONSTRAINT(expect_rgba_picture) {expect_picture(d,nt); if (d[2]!=4) RAISE("(red,green,blue,alpha) channels please");}
 
 //****************************************************************
 //{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }
 
-static void expect_convolution_matrix (const Dim &d) {
+static CONSTRAINT(expect_convolution_matrix) {
 	if (d.n!=2) RAISE("only exactly two dimensions allowed for now (got %d)",d.n);
 }
 
@@ -721,9 +721,9 @@ GRID_INPUT(1,b) {} GRID_END
 /* "#scale_by" does quick scaling of pictures by integer factors */
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
-static void expect_scale_factor (const Dim &dim) {
-	if (dim.n>1) RAISE("expecting no more than one dimension");
-	if (dim.prod()!=1 && dim.prod()!=2) RAISE("expecting only one or two numbers");
+static CONSTRAINT(expect_scale_factor) {
+	if (d.n>1) RAISE("expecting no more than one dimension");
+	if (d.prod()!=1 && d.prod()!=2) RAISE("expecting only one or two numbers");
 }
 
 \class GridScaleBy : FObject {
@@ -746,7 +746,7 @@ static void expect_scale_factor (const Dim &dim) {
 
 GRID_INLET(0) {
 	Dim &a = in.dim;
-	expect_picture(a);
+	expect_picture(a,in.nt);
 	go=new GridOut(this,0,Dim(a[0]*scaley,a[1]*scalex,a[2]),in.nt);
 	in.set_chunk(1);
 } GRID_FLOW {
@@ -872,7 +872,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
 	Dim &a = in.dim;
-	expect_rgba_picture(a);
+	expect_rgba_picture(a,in.nt);
 	if (a[1]!=r->dim[1]) RAISE("same width please");
 	if (a[0]!=r->dim[0]) RAISE("same height please");
 	in.set_chunk(2);
@@ -899,7 +899,7 @@ GRID_INPUT(1,r) {} GRID_END
 // pad1,pad2 only are there for 32-byte alignment
 struct Line {int32 y1,x1,y2,x2,x,m,ox,pad2;};
 
-static void expect_polygon (const Dim &d) {if (d.n!=2 || d[1]!=2) RAISE("expecting Dim[n,2] polygon");}
+static CONSTRAINT(expect_polygon) {if (d.n!=2 || d[1]!=2) RAISE("expecting Dim[n,2] polygon");}
 
 enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
@@ -1053,7 +1053,7 @@ GRID_INPUT(2,polygon) {init_lines();} GRID_END
 \end class {install("#draw_polygon",3,1); add_creator("@draw_polygon");}
 
 //****************************************************************
-static void expect_position(const Dim &d) {
+static CONSTRAINT(expect_position) {
 	if (d.n!=1) RAISE("position should have 1 dimension, not %d", d.n);
 	if (d[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d[0]);
 }
@@ -1304,7 +1304,7 @@ GRID_INLET(0) {
 };
 \end class {install("#rotatificator",2,1);}
 
-static void expect_min_one_dim (const Dim &d) {
+static CONSTRAINT(expect_min_one_dim) {
 	if (d.n<1) RAISE("expecting at least one dimension, got %s",d.to_s());}
 
 #define OP(x) op_dict[string(#x)]
