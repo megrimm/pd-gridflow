@@ -33,11 +33,11 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 //****************************************************************
 \class GridToTilde : FObject {
 	PtrGrid blah;
-	t_outlet **sigout;
+	t_outlet **sigout; //! vector
 	int chans; /* number of channels */
 	int start;
 	int size;
-	t_sample **sam;
+	t_sample **sam; //! vector
 	\constructor (int chans=1) {
 		if (chans<0) RAISE("need nonnegative number of channels");
 		sigout = new t_outlet *[chans];
@@ -88,9 +88,9 @@ GRID_INLET(0) {
 //****************************************************************
 \class GridFromTilde : FObject {
 	PtrGrid blah;
-	t_inlet **sigin;
+	t_inlet **sigin; //! vector
 	int chans; /* number of channels */
-	t_sample **sam;
+	t_sample **sam; //! vector
 	t_clock *clock;
 	\constructor (int chans=1) {
 		sigin = new t_inlet *[chans];
@@ -157,7 +157,7 @@ GRID_INLET(0) {
 	go=new GridOut(this,0,Dim(d.n,v),in.nt);
 	in.set_chunk(w);
 } GRID_FLOW {
-	int w = which_dim;
+	int w = which_dim; //! make macro NEGDIM
 	if (w<0) w+=in.dim.n;
 	long a = in.dim.prod(w);
 	long b = r->dim.prod(w);
@@ -602,7 +602,7 @@ struct PlanEntry {long y,x; bool neutral;};
 	\attr bool anti;
 	PtrGrid a;
 	int plann;
-	PlanEntry *plan;
+	PlanEntry *plan; //! use vector<>
 	int margx,margy; // margins
 	\constructor (Grid *r=0) {
 		plan=0;
@@ -639,7 +639,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	long dby = db[0];
 	long dbx = db[1];
 	if (plan) delete[] plan;
-	plan = new PlanEntry[dbx*dby];
+	plan = new PlanEntry[dbx*dby]; //! waste
 	long i=0;
 	for (long y=0; y<dby; y++) {
 		for (long x=0; x<dbx; x++) {
@@ -1432,9 +1432,7 @@ GRID_INLET(0) {
 	
 	if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
 	for (int i=0; i<n; i++) {
-		int index = data[i];
-		if (index < 0) index = 0;
-		else if (index >= npoints) index = npoints - 1;
+		int index = clip(int(data[i]),0,npoints-1);
 		tada[i] = (npoints ? vec[index].w_float : 0);
 	}
 	go->send(n,tada);
@@ -1466,12 +1464,9 @@ GRID_INLET(0) {
 
 	if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
 	for (int i=0; i<nidx; i++) {
-		int n = rdata[i];
-		if (n < 0)
-			n = 0;
-		else if (n >= npoints)
-			n = npoints-1;
-		// if there are less values than there are indexes, we loop over the value list
+		int n = clip(int(rdata[i]),0,npoints-1);
+		// if there are less values than there are indices, we loop over the value list
+		// % is correct because i>=0 and it's faster than mod().
 		vec[n].w_float = data[i%nval];
 	}
 	garray_redraw(a);
