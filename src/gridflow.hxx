@@ -752,7 +752,7 @@ void fclass_install(FClass *fc, FClass *super);
 //****************************************************************
 // GridOut represents a grid transmission from the perspective of the sender
 struct GridOut : CObject {
-	// number of (minimum,maximum) BYTES to send at once
+	// number of (minimum,maximum) BYTES to send at once (probably shouldn't be in the .h at all...?)
 	static const long MIN_PACKET_SIZE = 1<<8;
 	static const long MAX_PACKET_SIZE = 1<<12;
 
@@ -767,7 +767,7 @@ struct GridOut : CObject {
 	bool fresh; /* 0 = buf was inited */
 
 	GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_=int32_e);
-	~GridOut() {}
+	~GridOut();
 	void callback(GridInlet &in);
 
 	// send/send_direct: data belongs to caller, may be stack-allocated,
