@@ -144,11 +144,7 @@ public:
 	}
 	~Display () {pd_free(gp);}
 	\decl 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
-	\decl 0 grid(...) {
-		text.str("");
-		pd_typedmess(gp,gensym("grid"),argc,argv);
-		changed();
-	}
+	\decl 0 grid(...) {text.str(""); pd_typedmess(gp,s_grid,argc,argv); changed();}
 	\decl 0 very_long_name_that_nobody_uses (...) { // for magic use by [#print]
 		if (text.str().length()) text << "\n";
 		for (int i=0; i<argc; i++) text << char(int32(argv[i]));

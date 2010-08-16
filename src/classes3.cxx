@@ -33,11 +33,11 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 //****************************************************************
 \class GridToTilde : FObject {
 	PtrGrid blah;
-	t_outlet **sigout; //! vector ?
+	t_outlet **sigout;
 	int chans; /* number of channels */
 	int start;
 	int size;
-	t_sample **sam; //! vector ?
+	t_sample **sam;
 	\constructor (int chans=1) {
 		if (chans<0) RAISE("need nonnegative number of channels");
 		sigout = new t_outlet *[chans];
@@ -88,9 +88,9 @@ GRID_INLET(0) {
 //****************************************************************
 \class GridFromTilde : FObject {
 	PtrGrid blah;
-	t_inlet **sigin; //! vector ?
+	t_inlet **sigin;
 	int chans; /* number of channels */
-	t_sample **sam; //! vector ?
+	t_sample **sam;
 	t_clock *clock;
 	\constructor (int chans=1) {
 		sigin = new t_inlet *[chans];
