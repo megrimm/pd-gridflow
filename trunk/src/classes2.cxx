@@ -255,7 +255,6 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 		out[0](contents.size(),&contents[0]);
 		contents.clear();
 	}
-	\decl 0 bang () {out[0]();} // really should change gridflow.cxx soon because this is getting annoying.
 };
 \end class {install("listflatten",1,1);}
 
@@ -1098,17 +1097,13 @@ string string_replace (string victim, string from, string to) {
 	float b;
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a)          {           out[0](b-a);}
-	\decl 0 list  (float a, float b) {this->b=b; out[0](b-a);}
-	\decl 1 float (float b) {this->b=b;} //!
-	\decl 1 list  (float b) {this->b=b;}};
+	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
 \class InvTimes : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a)          {           out[0](b/a);}
-	\decl 0 list  (float a, float b) {this->b=b; out[0](b/a);}
-	\decl 1 float (float b) {this->b=b;} //!
-	\decl 1 list  (float b) {this->b=b;}};
+	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
 extern t_symbol *gridflow_folder; 
