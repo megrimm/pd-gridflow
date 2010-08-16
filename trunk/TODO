@@ -2,16 +2,17 @@ x = done
 L = much later (whenever we get to know how to do it...)
 
 --------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
-[ ] PLEASE make it so that bang/float/list/etc work more like pd's class_add !!! use class_add !!!
+[ ] default 'list' method should work like pd_defaultlist.
+[ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ?
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
 [ ] bundle m_pd.h ?
-[ ] document methods 'get' and 'help' somewhere.
+[ ] make a clean GridOut::~GridOut
+[ ] document method 'get' somewhere.
 [ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe)
 [ ] merge outlet_atom2 into PtrOutlet::operator()(t_atom2 &) or ditch one of them.
-[ ] in "void anything", separate inlet number and real selector
+[ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
     and is_base_sel(symbol) also would include bang and list.
-[ ] can we get rid of the TO() macro now ?
 [ ] is outlet_anything2 and pd_anything2 really something we want as a behaviour of [args] ???
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
 [ ] change description of GridFlow on gridflow.ca and puredata.info
@@ -26,7 +27,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
-[ ] [display] bug : see qbert.pd 
 [ ] répondre à re:[#spigot]
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite...
 [ ] lqtgavl
@@ -122,6 +122,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#dim_append] [#dim_prepend] (pas si utiles que ça...?)
 [ ] [#nothing]
 [ ] unparse_args, pass_args could be doing more common work, and use a.join(",").
+[ ] big bug in rendering of [#type-gui, vertical] (leaves trace of horiz [#type-gui] behind) when not loaded directly from file.
+[ ] int64, float64 should be rejected from NumberTypeE \attr and arguments when in --lite mode
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -195,10 +197,8 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
-[ ] osx: [#store] crash instead of raising
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] when file not found, mpeg error messages are wrong, they say the filename is "".
-[ ] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
 [ ] "unsupported codec" bogus errors.
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [ ] some seeds aren't typechecked
@@ -210,13 +210,12 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] it's possible to crash by sending data in two inlets of a same object at once
 
 Installation
-[ ] cross-compile: http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
+[ ] cross-compile ? http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
 
 Documentation
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
-[ ] describe indexmap (and such types/shapes/uses/roles) in doc
 [ ] architecture: class->type/shape->use->role
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] and [pdp_help_output] ?
@@ -252,6 +251,7 @@ Computation Objects
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
 [ ] #matrix_solve (CV), #replace_if, #random_select, #markov_chain, #splice, full-featured #slice (in c++)
+[ ] add 2D markov example
 [ ] #draw_polygon smoothly
 [ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
