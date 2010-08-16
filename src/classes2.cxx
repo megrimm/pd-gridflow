@@ -79,28 +79,25 @@ struct ArgSpec {
 };
 
 \class Args : FObject {
-	ArgSpec *sargv;
-	int sargc;
+	vector<ArgSpec> sargs;
 	\constructor (...) {
-		sargc = argc;
-		sargv = new ArgSpec[argc];
+		sargs.resize(argc);
 		for (int i=0; i<argc; i++) {
 			if (argv[i].a_type==A_LIST) {
 				t_binbuf *b = argv[i];
 				int bac = binbuf_getnatom(b);
 				t_atom *bat = binbuf_getvec(b);
-				sargv[i].name = atom_getsymbolarg(0,bac,bat);
-				sargv[i].type = atom_getsymbolarg(1,bac,bat);
-				if (bac<3) set_atom(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
+				sargs[i].name = atom_getsymbolarg(0,bac,bat);
+				sargs[i].type = atom_getsymbolarg(1,bac,bat);
+				if (bac<3) set_atom(&sargs[i].defaultv); else sargs[i].defaultv = bat[2];
 			} else if (argv[i].a_type==A_SYMBOL) {
-				sargv[i].name = argv[i];
-				sargv[i].type = gensym("a");
-				set_atom(&sargv[i].defaultv);
+				sargs[i].name = argv[i];
+				sargs[i].type = gensym("a");
+				set_atom(&sargs[i].defaultv);
 			} else RAISE("expected symbol or nested list");
 		}
-		noutlets_set(sargc);
+		noutlets_set(argc);
 	}
-	~Args () {delete[] sargv;}
 	\decl 0 bang () {_0_loadbang();}
 	\decl 0 loadbang ();
 	void process_args (int argc, t_atom *argv);
@@ -128,17 +125,17 @@ struct ArgSpec {
 void Args::process_args (int argc, t_atom *argv) {
 	t_canvas *canvas = canvas_getrootfor(mom);
 	t_symbol *wildcard = gensym("*");
-	for (int i=sargc-1; i>=0; i--) {
+	for (int i=sargs.size()-1; i>=0; i--) {
 		t_atom2 *v;
 		if (i>=argc) {
-			if (sargv[i].defaultv.a_type != A_NULL) {
-				v = &sargv[i].defaultv;
-			} else if (sargv[i].name!=wildcard) {
-				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
+			if (sargs[i].defaultv.a_type != A_NULL) {
+				v = &sargs[i].defaultv;
+			} else if (sargs[i].name!=wildcard) {
+				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargs[i].name->s_name);
 				continue;
 			}
 		} else v = (t_atom2 *)&argv[i];
-		if (sargv[i].name==wildcard) {
+		if (sargs[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
 		} else {
 			if      (v->a_type==A_LIST)   {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
@@ -146,7 +143,8 @@ void Args::process_args (int argc, t_atom *argv) {
 			else                          outlet_anything2(out[i],1,v);
 		}
 	}
-	if (argc>sargc && sargv[sargc-1].name!=wildcard) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargc);
+	if (argc>int(sargs.size()) && sargs[sargs.size()-1].name!=wildcard)
+		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargs.size());
 }
 \end class {install("args",1,1);}
 
@@ -204,11 +202,11 @@ const char *atomtype_to_s (t_atomtype t) {
 \end class {install("setargs",1,1);}
 
 \class GFAttr : FObject {
-	typedef map<t_symbol *,vector<t_atom2> > table_t;
-	table_t table;
+	typedef map<t_symbol *,vector<t_atom2> > t_table;
+	t_table table;
 	\constructor () {}
 	//void outlet_entry(const typeof(table.begin()) &f) // can't use this in gcc<4.4
-	void outlet_entry(const table_t::iterator &f) {out[0](f->first,f->second.size(),&*f->second.begin());}
+	void outlet_entry(const t_table::iterator &f) {out[0](f->first,f->second.size(),&*f->second.begin());}
 	\decl 0 get (t_symbol *s=0) {
 		if (s) {
 			typeof(table.begin()) f = table.find(s);
@@ -220,8 +218,8 @@ const char *atomtype_to_s (t_atomtype t) {
 	\decl 0 remove (t_symbol *s=0) {if (s) table.erase(s); else table.clear();}
 	\decl void anything (...) {
 		t_symbol *sel = argv[1];
-		table[sel].clear();
-		for (int i=2; i<argc; i++) table[sel].push_back(argv[i]);
+		table[sel].resize(argc-2);
+		for (int i=2; i<argc; i++) table[sel][i-2]=argv[i];
 	}
 };
 \end class {install("attr",1,1);}
@@ -259,45 +257,41 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listflatten",1,1);}
 
 \class ListFind : FObject {
-	int ac;
-	t_atom2 *at; //! try vector<t_atom2>
-	~ListFind() {if (at) delete[] at;}
-	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
-	\decl 0 list(t_atom a) {int i=0; for (; i<ac; i++) if (at[i]==a) break; out[0](i==ac?-1:i);}
-	\decl 1 list(...) {if (at) delete[] at; ac=argc; at=new t_atom2[argc]; for (int i=0; i<argc; i++) at[i]=argv[i];}
+	vector<t_atom2> r;
+	\constructor (...) {_1_list(argc,argv);}
+	\decl 0 list(t_atom a) {
+		for (size_t i; i<r.size(); i++) if (r[i]==a) {out[0](i); return;}
+		out[0](-1);
+	}
+	\decl 1 list(...) {r.resize(argc); for (int i=0; i<argc; i++) r[i]=argv[i];}
 };
 \end class {install("listfind",2,1);}
 
 \class ListRead : FObject { /* sounds like tabread */
-	int ac;
-	t_atom2 *at; //! try vector<t_atom2>
-	~ListRead() {if (at) delete[] at;}
-	\constructor (...) {ac=0; at=0; _1_list(argc,argv);}
+	vector<t_atom2> r;
+	\constructor (...) {_1_list(argc,argv);}
 	\decl 0 float(float f) {
 		int i = int(f);
-		if (i<0) i+=ac;
-		if (i<0 || i>=ac) {out[0](); return;} /* out-of-range */
-		outlet_atom2(out[0],&at[i]);
+		if (i<0) i+=r.size();
+		if (i<0 || i>=int(r.size())) {out[0](); return;} /* out-of-range */
+		outlet_atom2(out[0],&r[i]);
 	}
-	\decl 1 list(...) {if (at) delete[] at; ac=argc; at=new t_atom2[argc]; for (int i=0; i<argc; i++) at[i]=argv[i];}
+	\decl 1 list(...) {r.resize(argc); for (int i=0; i<argc; i++) r[i]=argv[i];}
 };
 \end class {install("listread",2,1);}
 
 \class Range : FObject {
-	t_float *mosusses; // use vector<float> ?
-	int nmosusses;
+	vector<float> mosusses; // use vector<float> ?
 	\constructor (...) {
-		nmosusses = argc;
+		mosusses.resize(argc);
 		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
-		mosusses = new t_float[argc];
 		for (int i=0; i<argc; i++) mosusses[i]=argv[i];
-		 ninlets_set(1+nmosusses);
-		noutlets_set(1+nmosusses);
+		 ninlets_set(1+argc);
+		noutlets_set(1+argc);
 	}
-	~Range () {delete[] mosusses;}
 	\decl 0 float (float f) {
-		int i;
-		for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
+		size_t i;
+		for (i=0; i<mosusses.size(); i++) if (f<mosusses[i]) break;
 		out[i](f);
 	}
 	\decl n float(int i, float f) {mosusses[i-1] = f;}
@@ -438,38 +432,33 @@ void ParallelPort::call() {
 
 //****************************************************************
 
-void setsels (int &nsels, t_symbol **&sels, int argc, t_atom2 *argv) {
-	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
-	if (sels) delete[] sels;
-	nsels = argc; sels = new t_symbol*[argc];
-	for (int i=0; i<argc; i++) sels[i] = argv[i];
+void setsels (vector<t_symbol *> &sels, int argc, t_atom2 *argv) {
+	for (int i=0; i<argc; i++) if (argv[i].a_type!=A_SYMBOL) RAISE("$%d: expected symbol",i+1);
+	sels.resize(argc); for (int i=0; i<argc; i++) sels[i]=argv[i];
 }
 
 \class Route2 : FObject {
-	int nsels; t_symbol **sels; // use vector<t_symbol *>
-	~Route2() {if (sels) delete[] sels;}
-	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
+	vector<t_symbol *> sels;
+	\constructor (...) {_1_list(argc,argv); noutlets_set(1+argc);}
 	\decl void anything(...) {
 		t_symbol *sel = argv[1];
-		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+		int i=0; for (i=0; i<int(sels.size()); i++) if (sel==sels[i]) break;
 		out[i](sel,argc-2,argv+2);
 	}
-	\decl 1 list(...) {setsels(nsels,sels,argc,argv);}
+	\decl 1 list(...) {setsels(sels,argc,argv);}
 };
 \end class {install("route2",1,1);}
 
 \class Route3 : FObject {
-	int nsels;
-	t_symbol **sels;
-	~Route3() {if (sels) delete[] sels;}
-	\constructor (...) {nsels=0; sels=0; _1_list(argc,argv); noutlets_set(1+nsels);}
+	vector<t_symbol *> sels;
+	\constructor (...) {_1_list(argc,argv); noutlets_set(1+argc);}
 	\decl void anything(...) {
 		t_symbol *sel = argv[1];
-		int i=0; for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+		int i=0; for (i=0; i<int(sels.size()); i++) if (sel==sels[i]) break;
 		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list; // what about grid,blob ?
 		out[i](sel,argc-2,argv+2);
 	}
-	\decl 1 list(...) {setsels(nsels,sels,argc,argv);}
+	\decl 1 list(...) {setsels(sels,argc,argv);}
 };
 \end class {install("route3",1,1);}
 
@@ -503,35 +492,31 @@ struct ReceivesProxy {
 };
 t_class *ReceivesProxy_class;
 
-\class Receives : FObject {
-	int ac;
-	ReceivesProxy **av;
+\class Receives : FObject { //! could also be done without using pd_new/pd_free
+	vector<ReceivesProxy *> rp;
 	t_symbol *prefix;
-	t_symbol *local (t_symbol *suffix) {return gensym((string(prefix->s_name) + string(suffix->s_name)).data());}
+	t_symbol *local (t_symbol *suffix) {return symprintf("%s%s",prefix->s_name,suffix->s_name);}
 	\constructor (t_symbol *prefix=&s_, ...) {
 		this->prefix = prefix==gensym("empty") ? &s_ : prefix;
 		int n = min(1,argc);
 		do_bind(argc-n,argv+n);
 	}
-	\decl 0 bang () {_0_list(0,0);}
 	\decl 0 symbol (t_symbol *s) {t_atom2 a[1] = {s}; _0_list(1,a);}
 	\decl 0 list (...) {do_unbind(); do_bind(argc,argv);}
 	void do_bind (int argc, t_atom2 *argv) {
-		ac = argc;
-		av = new ReceivesProxy *[argc];
-		for (int i=0; i<ac; i++) {
-			av[i] = (ReceivesProxy *)pd_new(ReceivesProxy_class);
-			av[i]->parent = this;
-			av[i]->suffix = argv[i];
-			pd_bind(  (t_pd *)av[i],local(av[i]->suffix));
+		rp.resize(argc);
+		for (int i=0; i<argc; i++) {
+			rp[i]=(ReceivesProxy *)pd_new(ReceivesProxy_class);
+			rp[i]->parent = this;
+			rp[i]->suffix = argv[i];
+			pd_bind(  (t_pd *)rp[i],local(rp[i]->suffix));
 		}
 	}
 	void do_unbind () {
-		for (int i=0; i<ac; i++) {
-			pd_unbind((t_pd *)av[i],local(av[i]->suffix));
-			pd_free((t_pd *)av[i]);
+		for (int i=0; i<int(rp.size()); i++) {
+			pd_unbind((t_pd *)rp[i],local(rp[i]->suffix));
+			pd_free((t_pd *)rp[i]);
 		}
-		delete[] av;
 	}
 	~Receives () {do_unbind();}
 };
@@ -553,13 +538,12 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 \end class {install("class_exists",1,1);}
 
 \class ListEqual : FObject {
-	t_list *list;
-	\constructor (...) {list=0; _1_list(argc,argv);}
-	\decl 1 list (...) {if (list) list_free(list); list = list_new(argc,argv);}
+	vector<t_atom2> list;
+	\constructor (...) { _1_list(argc,argv);}
+	\decl 1 list (...) {list.resize(argc); for (int i=0; i<argc; i++) list[i]=argv[i];}
 	\decl 0 list (...)  {
-		if (binbuf_getnatom(list) != argc) {out[0](0); return;}
-		t_atom2 *at = (t_atom2 *)binbuf_getvec(list);
-		for (int i=0; i<argc; i++) if (at[i]!=argv[i]) {out[0](0); return;}
+		if (int(list.size()) != argc) {out[0](0); return;}
+		for (int i=0; i<argc; i++) if (list[i]!=argv[i]) {out[0](0); return;}
 		out[0](1);
 	}
 };
