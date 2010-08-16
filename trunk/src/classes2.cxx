@@ -1079,13 +1079,13 @@ string string_replace (string victim, string from, string to) {
 \class InvPlus : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
-	\decl 0 float (float a)          {           out[0](b-a);}
+	\decl 0 float (float a) {out[0](b-a);}
 	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
 \class InvTimes : FObject {
 	float b;
 	\constructor (float b=1) {this->b=b;}
-	\decl 0 float (float a)          {           out[0](b/a);}
+	\decl 0 float (float a) {out[0](b/a);}
 	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
