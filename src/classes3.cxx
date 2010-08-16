@@ -1243,25 +1243,18 @@ GRID_INLET(0) {
 	}
 	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
 	\decl n set   (int inlet, float f) {
+		if (inlet>=n) RAISE("what???");
 		#define FOO(T) ((T *)*a)[inlet] = T(f);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
 	\decl n float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
-	\decl n list  (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl 0 bang () {
 		go=new GridOut(this,0,a->dim,a->nt);
 		#define FOO(T) go->send(n,(T *)*a);
 		TYPESWITCH(a->nt,FOO,);
 		#undef FOO
 	}
-	\decl 0 list (...) {
-		//post("YOUHOU, de %s", short_backtrace(0,4));
-		if (argc>n) argc=n;
-		for (int i=0; i<argc; i++) _n_set(i,argv[i]);
-		_0_bang();
-	}
-	//\grin 0
 };
 \end class {install("#pack",1,1); add_creator("@pack");}
 
