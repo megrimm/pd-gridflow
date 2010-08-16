@@ -27,7 +27,7 @@
 #define GF_VERSION_B 11
 #define GF_VERSION_C  0
 
-#include "m_pd.h"
+#include "bundled/m_pd.h"
 #include "config.h"
 #include <vector>
 #include <string>
