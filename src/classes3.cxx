@@ -33,11 +33,11 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 //****************************************************************
 \class GridToTilde : FObject {
 	PtrGrid blah;
-	t_outlet **sigout; //! vector
+	t_outlet **sigout; //! vector ?
 	int chans; /* number of channels */
 	int start;
 	int size;
-	t_sample **sam; //! vector
+	t_sample **sam; //! vector ?
 	\constructor (int chans=1) {
 		if (chans<0) RAISE("need nonnegative number of channels");
 		sigout = new t_outlet *[chans];
@@ -88,9 +88,9 @@ GRID_INLET(0) {
 //****************************************************************
 \class GridFromTilde : FObject {
 	PtrGrid blah;
-	t_inlet **sigin; //! vector
+	t_inlet **sigin; //! vector ?
 	int chans; /* number of channels */
-	t_sample **sam; //! vector
+	t_sample **sam; //! vector ?
 	t_clock *clock;
 	\constructor (int chans=1) {
 		sigin = new t_inlet *[chans];
@@ -590,10 +590,12 @@ static CONSTRAINT(expect_convolution_matrix) {
 	if (d.n!=2) RAISE("only exactly two dimensions allowed for now (got %d)",d.n);
 }
 
-// entry in a compiled convolution kernel
-struct PlanEntry {long y,x; bool neutral;};
 
 \class GridConvolve : FObject {
+	// entry in a compiled convolution kernel
+	struct  PlanEntry {long y; long x; bool neutral;
+		PlanEntry (long y, long x, bool neutral) : y(y), x(x), neutral(neutral) {}
+	};
 	\attr Numop *op;
 	\attr Numop *fold;
 	\attr PtrGrid seed;
@@ -601,12 +603,10 @@ struct PlanEntry {long y,x; bool neutral;};
 	\attr bool wrap;
 	\attr bool anti;
 	PtrGrid a;
-	int plann;
-	PlanEntry *plan; //! use vector<>
+	vector<PlanEntry> plan;
 	int margx,margy; // margins
 	\constructor (Grid *r=0) {
-		plan=0;
-		b.constrain(expect_convolution_matrix); plan=0;
+		b.constrain(expect_convolution_matrix);
 		this->op = op_mul;
 		this->fold = op_add;
 		this->seed = new Grid(Dim(),int32_e,true);
@@ -618,7 +618,6 @@ struct PlanEntry {long y,x; bool neutral;};
 	\grin 1
 	template <class T> void copy_row (T *buf, long sx, long y, long x);
 	template <class T> void make_plan (T bogus);
-	~GridConvolve () {if (plan) delete[] plan;}
 };
 
 template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x) {
@@ -638,28 +637,22 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	Dim &db = b->dim;
 	long dby = db[0];
 	long dbx = db[1];
-	if (plan) delete[] plan;
-	plan = new PlanEntry[dbx*dby]; //! waste
-	long i=0;
+	plan.clear();
 	for (long y=0; y<dby; y++) {
 		for (long x=0; x<dbx; x++) {
 			long k = anti ? y*dbx+x : (dby-1-y)*dbx+(dbx-1-x);
 			T rh = ((T *)*b)[k];
 			bool neutral   = op->on(rh)->is_neutral(  rh,at_right);
 			bool absorbent = op->on(rh)->is_absorbent(rh,at_right);
-			T foo[1]={0};
+			T foo[1]={0}; // how does this work, again ?
 			if (absorbent) {
 				op->map(1,foo,rh);
 				absorbent = fold->on(rh)->is_neutral(foo[0],at_right);
 			}
 			if (absorbent) continue;
-			plan[i].y = y;
-			plan[i].x = x;
-			plan[i].neutral = neutral;
-			i++;
+			plan.push_back(PlanEntry(y,x,neutral));
 		}
 	}
-	plann = i;
 }
 
 GRID_INLET(0) {
@@ -674,9 +667,7 @@ GRID_INLET(0) {
 	if (da[1] < db[1]) RAISE("grid too small (x): %d < %d", da[1], db[1]);
 	margy = (db[0]-1)/2;
 	margx = (db[1]-1)/2;
-	//if (a) post("for %p, a->dim=%s da=%s",this,a->dim.to_s(),da->to_s());
 	if (!a || a->dim != da) a=new Grid(da,in.nt); // with this condition it's 2% faster on Linux but takes more RAM.
-	//a=new Grid(da,in.nt); // with this condition it's 2% faster but takes more RAM.
 	int v[da.n]; COPY(v,da.v,da.n);
 	if (!wrap) {v[0]-=db[0]-1; v[1]-=db[1]-1;}
 	go=new GridOut(this,0,Dim(da.n,v),in.nt);
@@ -695,7 +686,7 @@ GRID_INLET(0) {
 	T orh=0;
 	for (long ay=0; ay<day; ay++) {
 		op_put->map(n,buf,*(T *)*seed);
-		for (long i=0; i<plann; i++) {
+		for (size_t i=0; i<plan.size(); i++) {
 			long by = plan[i].y;
 			long bx = plan[i].x;
 			long k = anti ? by*dbx+bx : (dby-1-by)*dbx+(dbx-1-bx);
@@ -809,7 +800,7 @@ GRID_INLET(0) {
 } GRID_FLOW {
 	int rowsize = in.dim.prod(1);
 	int rowsize2 = temp->dim.prod(1);
-	T *buf = (T *)*temp; //!@#$ maybe should be something else than T ?
+	T *buf = (T *)*temp; //!@#$ maybe should be something else than T, to avoid overflow ?
 	int xinc = in.dim[2]*scalex;
 	int y = in.dex / rowsize;
 	int chans=in.dim[2];
