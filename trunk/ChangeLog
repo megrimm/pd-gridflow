@@ -24,6 +24,7 @@ version 9.11 (2010......):
  * [#rotatificator]: added attr 'cast'
  * support default bang/float/symbol/pointer/list methods wherever applicable
    (just like pd does in first inlet; but GF also does it in non-first inlets)
+ * [print]/[display]: fixed stupid bug in printing nested lists (A_LIST)
 
 version 9.10 (2010.08.04):
 

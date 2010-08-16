@@ -1,15 +1,14 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
---------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
-[ ] default 'list' method should work like pd_defaultlist.
-[ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ?
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
+--------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
 [ ] bundle m_pd.h ?
 [ ] make a clean GridOut::~GridOut
 [ ] document method 'get' somewhere.
 [ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe)
 [ ] merge outlet_atom2 into PtrOutlet::operator()(t_atom2 &) or ditch one of them.
+[ ] in n-methods, "got 5 args instead of 2" is wrong because of int winlet.
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
     and is_base_sel(symbol) also would include bang and list.
@@ -53,7 +52,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] isn't .str().data() evil ?
 [ ] [#remap_image, cache]
 [ ] [#import (...) f] converts floats to int to float (wtf)
-[ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm
+[ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm (easy to do in #scale_by-help.pd)
 [ ] bug: see #fft*-test.pd
 [ ] merge threshold.pd, simple_mask.pd, color_detect.pd
 [ ] on which classes do we add an attr-outlet ?
@@ -61,7 +60,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
-[ ] [#draw_polygon]: ignore 'omit' when it shouldn't apply ?
 [ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
@@ -124,6 +122,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] unparse_args, pass_args could be doing more common work, and use a.join(",").
 [ ] big bug in rendering of [#type-gui, vertical] (leaves trace of horiz [#type-gui] behind) when not loaded directly from file.
 [ ] int64, float64 should be rejected from NumberTypeE \attr and arguments when in --lite mode
+[ ] add ro attr support
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -145,6 +144,10 @@ while running #to~-help.pd :
 [L] fix SDL modifiers
 [ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
+[ ] DimConstraint could become a lot better than just the current CONSTRAINT() thing.
+[ ] [#out x11]: add 'rootsize' ro attr
+[ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
+    a value in million cycles or something.
 
 // was for 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
