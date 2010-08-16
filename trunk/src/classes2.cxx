@@ -492,8 +492,8 @@ struct ReceivesProxy {
 };
 t_class *ReceivesProxy_class;
 
-\class Receives : FObject { //! could also be done without using pd_new/pd_free
-	vector<ReceivesProxy *> rp;
+\class Receives : FObject {
+	vector<ReceivesProxy> rp;
 	t_symbol *prefix;
 	t_symbol *local (t_symbol *suffix) {return symprintf("%s%s",prefix->s_name,suffix->s_name);}
 	\constructor (t_symbol *prefix=&s_, ...) {
@@ -506,16 +506,15 @@ t_class *ReceivesProxy_class;
 	void do_bind (int argc, t_atom2 *argv) {
 		rp.resize(argc);
 		for (int i=0; i<argc; i++) {
-			rp[i]=(ReceivesProxy *)pd_new(ReceivesProxy_class);
-			rp[i]->parent = this;
-			rp[i]->suffix = argv[i];
-			pd_bind(  (t_pd *)rp[i],local(rp[i]->suffix));
+			rp[i].x_pd = ReceivesProxy_class;
+			rp[i].parent = this;
+			rp[i].suffix = argv[i];
+			pd_bind(  (t_pd *)&rp[i],local(rp[i].suffix));
 		}
 	}
 	void do_unbind () {
 		for (int i=0; i<int(rp.size()); i++) {
-			pd_unbind((t_pd *)rp[i],local(rp[i]->suffix));
-			pd_free((t_pd *)rp[i]);
+			pd_unbind((t_pd *)&rp[i],local(rp[i].suffix));
 		}
 	}
 	~Receives () {do_unbind();}
