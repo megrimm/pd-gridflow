@@ -104,8 +104,8 @@ CvMode convert (const t_atom2 &x, CvMode *foo) {
 
 CvTermCriteria convert (const t_atom2 &a, CvTermCriteria *foo) {
 	USELIST;
-	CvTermCriteria tc;
-	tc.type = 0;
+	CvTermCriteria tc; tc.type = 0;
+	tc.max_iter = 0; tc.epsilon = 0; // avoid gcc warning
 	if (argc>0 && argv[0]!=gensym("nil")) {tc.type |= CV_TERMCRIT_ITER; tc.max_iter = GETI(0);}
 	if (argc>1 && argv[1]!=gensym("nil")) {tc.type |= CV_TERMCRIT_EPS ; tc.epsilon  = GETF(1);}
 	if (argc>2) RAISE("invalid CvTermCriteria (too many args)");
