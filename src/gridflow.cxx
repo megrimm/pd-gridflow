@@ -169,7 +169,8 @@ ostream &operator << (ostream &self, const t_atom &a) {
 			int argc = binbuf_getnatom(b);
 			t_atom *argv = binbuf_getvec(b);
 			self << "(";
-			for (int i=0; i<argc; i++) self << argv[i] << " )"[i==argc-1];
+			for (int i=0; i<argc; i++) {self << argv[i]; if (i<argc-1) self << " ";}
+			self << ")";
 			break;
 		}
 		default: self << "\\a(" << a.a_type << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
