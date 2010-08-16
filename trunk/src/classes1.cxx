@@ -52,10 +52,10 @@ public: template <class T>
 
 Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
 
-static void   expect_dim_dim_list    (const Dim &d) {if (d.n!=1) RAISE("dimension list should be Dim[n], not %s",d.to_s());}
-//static void expect_min_one_dim     (const Dim &d) {if (d.n<1 ) RAISE("minimum 1 dimension");}
-static void   expect_max_one_dim     (const Dim &d) {if (d.n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
-//static void expect_exactly_one_dim (const Dim &d) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
+static CONSTRAINT(expect_dim_dim_list) {if (d.n!=1) RAISE("dimension list should be Dim[n], not %s",d.to_s());}
+//static CONSTRAINT(expect_min_one_dim) {if (d.n<1 ) RAISE("minimum 1 dimension");}
+static CONSTRAINT(expect_max_one_dim) {if (d.n>1 ) RAISE("expecting Dim[] or Dim[n], got %s",d.to_s());}
+//static CONSTRAINT(expect_exactly_one_dim) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
 
 //****************************************************************
 \class GridCast : FObject {
@@ -342,9 +342,9 @@ GRID_INLET(0) {
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
-	int32 *wdex ; // temporary buffer, copy of put_at
-	int32 *fromb;
-	int32 *to2  ;
+	int32 *wdex ; // temporary buffer, copy of put_at //! vector<>
+	int32 *fromb; //! vector<>
+	int32 *to2  ; //! vector<>
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
 	long cs; // chunksize used in put_at
@@ -851,7 +851,6 @@ GRID_INPUT(1,r) {} GRID_END
 		this->to  =to;
 		this->step=step;
 	}
-	//\decl 0 set (Grid *l=0) {from=new Grid(argv[0]);}
 	\decl 0 set (Grid *l=0) {from=l;}
 	\decl 0 bang () {
 		SAME_TYPE(*from,to);
