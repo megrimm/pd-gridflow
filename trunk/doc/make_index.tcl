@@ -8,6 +8,7 @@ puts "#X obj 3 $y doc_section General Topics;"; incr y 32
 
 foreach {k v} {
   about {about GridFlow (credits, etc)}
+  attr {attributes, the 'get' method, etc}
   intro {the main goal of this library (but not the only one)}
   grid  {what is a grid ?}
   image {an image of pixels is just one way to use a grid}

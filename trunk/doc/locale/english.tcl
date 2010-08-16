@@ -285,8 +285,25 @@ say gf/selector          "report the true selector of the incoming message"
 say gf/string_<          "compare two strings"
 say gf/string_replace    "search and replace substrings in a symbol"
 say gf/string_length     "measure the length of a string (in bytes)"
-say gridflow             "get GridFlow's version number..."
+say gridflow             "get GridFlow's version number, folder, and the name of the OS"
 if 0 {
 say memstat
 say setargs
 }
+
+# 9.11
+say route3        "like route, but the selector is only replaced by 'list' instead of \$1"
+say #type-gui     "a hradio or vradio for selecting a type for use by 'cast' methods"
+say #tabread      "for doing many tabreads at once, from a grid to a grid"
+say #tabwrite     "for doing many tabwrites at once, from two grids"
+say #from~        "turn several signals into a sequence of multichannel grids"
+say gf/tk_button  "Tcl/Tk button available on the canvas"
+say gf/sys_gui    "send internal Tcl/Tk commands from pd server to pd client"
+say gf/wrap       "another wrap like pd's wrap and zexy's wrap"
+say gf/l2s        "another list-to-symbol converter"
+say gf/s2l        "another symbol-to-list converter"
+say gf/sprintf    "the most complete wrapper of sprintf"
+say #sprintf      "a version of gf/sprintf that directly produces a grid"
+say gf/gl         "OpenGL interface as simpler alternative to many of GEM's classes"
+say gf/class_info "query info from GF's external classes (not abstractions)"
+say doc_iemfont   "figure out correct font size to use with IEMGUI widgets"
