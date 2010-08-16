@@ -752,11 +752,11 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	t_canvas *last;
 	\constructor (int n) {this->n=n; last=0;}
 	~GFCanvasHoHoHo () {_0_hide();}
-	\decl 0 hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),bself);}
+	\decl 0 hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),long(bself));}
 	\decl 0 list (int x1, int y1, int x2, int y2) {MOM;
 		_0_hide();
 		last = m;
-		sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,bself);
+		sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,long(bself));
 	}
 };
 \end class {install("gf/canvas_hohoho",1,0);}
