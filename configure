@@ -532,23 +532,6 @@ Feature.add {
 		); return quicktime_open==0; }
 		`}}
 Feature.add {
-	tag :puredata
-	name "PureData"
-	options ["HAVE_PUREDATA"]
-	uses_h ["m_pd.h"]
-	test proc {
-		c_test %`
-			#include#
-			#include <stdio.h>
-			int main () {
-			printf("#define PD_VERSION_INT %d\\n", (int)(
-			#ifdef PD_VERSION
-				PD_VERSION*100
-			#else
-				PD_MAJOR_VERSION*100+PD_MINOR_VERSION
-			#endif
-			)); return 0;}`}}
-Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
 	produces_o ["src/opencv.o"]
@@ -587,7 +570,7 @@ Feature.add {
 Feature.add {
 	tag :gem
 	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
-	uses_feature [:puredata,:opengl]
+	uses_feature [:opengl]
 	uses_pdlib ["gridflow_gem9292$(PDSUF)",
 		    "gridflow_gem9293$(PDSUF)",
 		    "gridflow_gem9393$(PDSUF)"]
@@ -752,7 +735,6 @@ puts Light
 $conf[:LDSOFLAGS].uniq!
 
 if not $conf[:FEATURES][:gcc3] then puts "You should install gcc 4 (or gcc 3 if you can't get gcc 4)"; exit 1 end
-if not $conf[:FEATURES][:puredata] then puts "PureData support is required"; exit 1 end
 
 #--------------------------------#
 
