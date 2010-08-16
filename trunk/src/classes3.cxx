@@ -722,6 +722,7 @@ GRID_INPUT(1,b) {} GRID_END
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
 static void expect_scale_factor (const Dim &dim) {
+	if (dim.n>1) RAISE("expecting no more than one dimension");
 	if (dim.prod()!=1 && dim.prod()!=2) RAISE("expecting only one or two numbers");
 }
 
@@ -732,16 +733,14 @@ static void expect_scale_factor (const Dim &dim) {
 	\constructor (Grid *factor=0) {
 		scale.constrain(expect_scale_factor);
 		t_atom2 a[1] = {2};
-		scale = factor?factor:new Grid(1,a,int32_e);
+		scale = factor?factor:new Grid(1,a);
 		prepare_scale_factor();
 	}
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
-		scaley = ((int32 *)*scale)[0];
-		scalex = ((int32 *)*scale)[scale->dim.prod()==1 ? 0 : 1];
-		if (scaley<1) scaley=2;
-		if (scalex<1) scalex=2;
+		scaley = max(1,((int32 *)*scale)[0]);
+		scalex = max(1,((int32 *)*scale)[scale->dim.prod()-1]);
 	}
 };
 
