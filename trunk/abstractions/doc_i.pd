@@ -13,7 +13,7 @@
 #X obj 205 77 loadbang;
 #X obj 205 115 doc_make i \$1;
 #X obj 205 96 delay;
-#X obj 6 97 doc_iemfont 1 9;
+#X obj 6 97 doc_iemfont 1 10;
 #X connect 1 0 4 0;
 #X connect 3 0 7 0;
 #X connect 4 0 5 0;
