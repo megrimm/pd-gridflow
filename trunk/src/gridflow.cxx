@@ -134,8 +134,8 @@ void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 			else if (*s=='*') {s++; n++;}
 		}
 		if (strchr("hlLqjzt",*s)) RAISE("can't use length modifier '%c' in the context of pd",*s);
-		char form[t-s+2]; sprintf(form,"%.*s",s-t+1,t);
-		int k[2];
+		char form[t-s+2]; sprintf(form,"%.*s",int(s-t+1),t);
+		int k[2]={0,0}; // fake initialisation just to shut up gcc warning
 		if (n>0) k[0]=int(EATFLOAT);
 		if (n>1) k[1]=int(EATFLOAT);
 		if (strchr("cdiouxX",*s)) {switch (n) {
@@ -463,7 +463,7 @@ bool BitPacking::eq(BitPacking *o) {
 
 void post_BitPacking(BitPacking *b) {
 	::post("Bitpacking: endian=%d bytes=%d size=%d packer=%d unpacker=%d",
-		b->endian,b->bytes,b->size,b->packer-bp_packers,b->unpacker-bp_unpackers);
+		b->endian,b->bytes,b->size,int(b->packer-bp_packers),int(b->unpacker-bp_unpackers));
 	::post("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",b->mask[0],b->mask[1],b->mask[2],b->mask[3]);
 }
 

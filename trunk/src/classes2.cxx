@@ -144,7 +144,7 @@ void Args::process_args (int argc, t_atom *argv) {
 		}
 	}
 	if (argc>int(sargs.size()) && sargs[sargs.size()-1].name!=wildcard)
-		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, sargs.size());
+		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
 }
 \end class {install("args",1,1);}
 
