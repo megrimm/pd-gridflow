@@ -1,14 +1,14 @@
-#N canvas 565 34 632 642 10;
-#X obj 60 177 #color;
-#X floatatom 85 77 5 0 0 0 - - -;
-#X floatatom 107 96 5 0 0 0 - - -;
-#X floatatom 129 115 5 0 0 0 - - -;
-#X text 162 90 <--click and drag to place numbers in the grid.;
+#N canvas 565 24 632 642 10;
+#X obj 60 197 #color;
+#X floatatom 85 101 5 0 0 0 - - -;
+#X floatatom 110 119 5 0 0 0 - - -;
+#X floatatom 136 137 5 0 0 0 - - -;
+#X text 165 113 <--click and drag to place numbers in the grid.;
 #X text 232 567 Outputs values from each individual inlet into a grid.
 ;
 #X obj 0 0 doc_h;
-#X obj 3 339 doc_i n;
-#X obj 3 242 doc_c 0..2;
+#X obj 3 359 doc_i n;
+#X obj 3 262 doc_c 0..2;
 #X text 14 28 Creates a one-dimensional grid (a Dim(N) vector) from
 individual integers.;
 #X text 232 439 every inlet is hot.;
@@ -16,32 +16,35 @@ individual integers.;
 ;
 #X obj 3 537 doc_o 1;
 #X obj 14 567 doc_oo 0;
-#X obj 14 272 doc_cc 0;
-#X obj 14 307 doc_cc 1;
-#X obj 97 272 doc_m c0 float/int;
-#X obj 97 307 doc_m c1 numtype;
+#X obj 14 292 doc_cc 0;
+#X obj 14 327 doc_cc 1;
+#X obj 97 292 doc_m c0 float/int;
+#X obj 97 327 doc_m c1 numtype;
 #X obj 97 567 doc_m o0 grid[n];
 #X obj 0 619 doc_f;
-#X text 232 307 number type (default: int32);
-#X obj 85 135 #pack 3 f;
+#X text 232 327 number type (default: int32);
+#X obj 85 155 #pack 3 f;
 #X obj 3 599 doc_also;
 #X obj 103 599 pack;
 #X obj 139 599 #unpack;
-#X obj 85 156 display;
-#X text 232 272 number of elements in the vector to be built (aka number
+#X obj 85 176 display;
+#X text 232 292 number of elements in the vector to be built (aka number
 of dimensions in the vector space) (default: 2);
 #X text 232 483 float \$1 is like set \$1 then bang.;
 #X text 232 505 only set value \, don't send.;
-#X obj 14 369 doc_ii 0;
-#X obj 97 369 doc_m i0 bang;
-#X text 232 369 output existing contents;
-#X obj 97 391 doc_m i0 list;
+#X obj 14 389 doc_ii 0;
+#X obj 97 389 doc_m i0 bang;
+#X text 232 389 output existing contents;
+#X obj 97 411 doc_m i0 list;
 #X obj 97 439 doc_m iany float;
 #X obj 97 505 doc_m iany set;
 #X obj 14 439 doc_ii any;
-#X text 232 391 set several inlets at once and output only once. if
+#X text 232 411 set several inlets at once and output only once. if
 the list is too short \, some inlets will be left untouched. if the
 list is too long \, excess arguments will be ignored.;
+#X msg 70 68 60 120 180 240;
+#X text 164 67 <--set several values at once;
+#X text 165 78 (\$4 gets ignored in this example);
 #X connect 1 0 21 0;
 #X connect 2 0 21 1;
 #X connect 3 0 21 2;
@@ -58,3 +61,4 @@ list is too long \, excess arguments will be ignored.;
 #X connect 33 1 11 0;
 #X connect 33 1 27 0;
 #X connect 34 1 28 0;
+#X connect 37 0 21 0;
