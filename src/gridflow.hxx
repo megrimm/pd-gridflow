@@ -841,7 +841,8 @@ struct PtrOutlet {
 	void operator () ()              {outlet_bang(   p  );}
 	void operator () (int f)         {outlet_float(  p,f);}
 	void operator () (long f)        {outlet_float(  p,f);}
-	void operator () (size_t f)      {outlet_float(  p,f);}
+	void operator () (uint32 f)      {outlet_float(  p,f);} // is also size_t in 32-bit mode
+	void operator () (uint64 f)      {outlet_float(  p,f);} // is also size_t in 64-bit mode
 	void operator () (float f)       {outlet_float(  p,f);}
 	void operator () (double f)      {outlet_float(  p,f);}
 	void operator () (t_symbol *s)   {outlet_symbol( p,s);}
