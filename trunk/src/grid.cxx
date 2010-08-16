@@ -272,6 +272,10 @@ void GridOut::finish () {
 	sender=0;
 }
 
+GridOut::~GridOut () {
+	if (dex!=long(dim.prod())) post("~GridOut(): dex=%ld prod=%ld",dex,long(dim.prod()));
+}
+
 // never call this. this is a hack to make some things work.
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
