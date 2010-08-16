@@ -10,7 +10,8 @@ version 9.11 (2010......):
  * added classes [gf/sprintf] and [#sprintf], the best sprintf() wrappers in
    the pd world
  * added OpenGL interface class [gf/gl]
- * added class [gf/class_info] (for introspection of GF's classes only)
+ * added [gf/class_info] (for introspection of GF's classes only)
+ * added [doc_iemfont] to fix the font size problem in help files (osx/win)
  * fixed some rendering bugs in [display] and [#see]
  * [#draw_polygon]: ignore value of "omit" when "draw fill" (to avoid nonsense)
  * fixed detection of png support
@@ -19,6 +20,10 @@ version 9.11 (2010......):
  * [#]: fixed problem with 0-sized right input
  * [gf/error]: method 'list': also print info about the object box where it is
  * [gf/error]: now supports the same options that [gf/sprintf] does.
+ * [gridflow]: added 'os' to allow patches to detect operating system
+ * [#rotatificator]: added attr 'cast'
+ * support default bang/float/symbol/pointer/list methods wherever applicable
+   (just like pd does in first inlet; but GF also does it in non-first inlets)
 
 version 9.10 (2010.08.04):
 
