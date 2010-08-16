@@ -465,10 +465,10 @@ GRID_INLET(0) {
 
 \class GFTkButton : GUI_FObject {
 	t_symbol *text;
-	\constructor (t_symbol *text) {
+	\constructor (t_symbol *text=0) {
 		sy=32;
 		sx=64;
-		this->text = text;
+		this->text = text?text:gensym("OK");
 		outline = "#eeeeee";
 	}
 	\decl 0 bang () {out[0]();}
