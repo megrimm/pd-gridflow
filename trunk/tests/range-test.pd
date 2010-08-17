@@ -1,14 +1,13 @@
 #N canvas 553 253 452 370 10;
-#X obj 136 153 range 20 50 100;
 #X obj 83 25 vsl 15 128 0 127 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 12700 1;
+-1 -1 0 1;
 #X obj 157 71 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 10
 -262144 -1 -1 0 256;
 #X floatatom 138 48 5 0 0 0 - - -;
-#X obj 236 179 print d;
-#X obj 202 199 print c;
-#X obj 169 220 print b;
-#X obj 136 240 print a;
+#X obj 241 209 print d;
+#X obj 206 229 print c;
+#X obj 171 249 print b;
+#X obj 136 269 print a;
 #X msg 125 27 -1000 \, -1 \, 0 \, 19 \, 20 \, 49 \, 50 \, 99 \, 100
 \, 1000;
 #X obj 125 8 loadbang;
@@ -22,18 +21,27 @@
 #X text 17 276 c: 99;
 #X text 17 290 d: 100;
 #X text 17 303 d: 1000;
-#X msg 236 72 500;
+#X msg 250 183 500;
 #X obj 136 95 t a;
-#X msg 133 127 list \$1 42;
-#X connect 0 0 7 0;
-#X connect 0 1 6 0;
-#X connect 0 2 5 0;
-#X connect 0 3 4 0;
-#X connect 1 0 21 0;
-#X connect 2 0 21 0;
-#X connect 3 0 21 0;
-#X connect 8 0 21 0;
-#X connect 9 0 8 0;
-#X connect 20 0 0 3;
-#X connect 21 0 22 0;
-#X connect 22 0 0 0;
+#X obj 136 183 gf/range 20 50 100;
+#X msg 136 156 float \$1;
+#X obj 136 121 shunt;
+#X msg 197 156 list \$1 42;
+#X obj 172 122 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X connect 0 0 20 0;
+#X connect 1 0 20 0;
+#X connect 2 0 20 0;
+#X connect 7 0 20 0;
+#X connect 8 0 7 0;
+#X connect 19 0 21 3;
+#X connect 20 0 23 0;
+#X connect 21 0 6 0;
+#X connect 21 1 5 0;
+#X connect 21 2 4 0;
+#X connect 21 3 3 0;
+#X connect 22 0 21 0;
+#X connect 23 0 22 0;
+#X connect 23 1 24 0;
+#X connect 24 0 21 0;
+#X connect 25 0 23 1;
