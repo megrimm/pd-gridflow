@@ -1075,7 +1075,7 @@ string string_replace (string victim, string from, string to) {
 	\decl 1 float (float f)  {b=f;}
 	\decl 0 float (float f) {out[0](f-floor(f/b)*b);}
 };
-\end class {install("gf/wrap",1,1);}
+\end class {install("gf/wrap",2,1);}
 
 /* hack because hexloader is a myth */
 \class InvPlus : FObject {

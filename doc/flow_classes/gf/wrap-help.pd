@@ -1,31 +1,35 @@
-#N canvas 0 0 632 370 10;
+#N canvas 0 0 632 437 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 316 doc_also;
-#X obj 0 336 doc_f;
-#X obj 3 34 doc_c 1;
-#X obj 14 64 doc_cc 0;
-#X obj 14 126 doc_ii 0;
-#X obj 3 96 doc_i 2;
-#X obj 14 183 doc_ii 1;
-#X obj 3 215 doc_o 1;
-#X obj 14 245 doc_oo 0;
-#X obj 97 64 doc_m c0 float;
-#X text 232 64 granularity (default: 1);
-#X obj 97 183 doc_m i1 float;
-#X obj 232 183 doc_same 0;
-#X obj 97 126 doc_m i0 float;
-#X text 232 126 will compute left - floor(left/right)*right;
-#X obj 97 245 doc_m o0 float;
-#X text 232 245 if the granularity is nonnegative \, the output will
+#X obj 3 383 doc_also;
+#X obj 0 403 doc_f;
+#X obj 3 101 doc_c 1;
+#X obj 14 131 doc_cc 0;
+#X obj 14 193 doc_ii 0;
+#X obj 3 163 doc_i 2;
+#X obj 14 250 doc_ii 1;
+#X obj 3 282 doc_o 1;
+#X obj 14 312 doc_oo 0;
+#X obj 97 131 doc_m c0 float;
+#X text 232 131 granularity (default: 1);
+#X obj 97 250 doc_m i1 float;
+#X obj 232 250 doc_same 0;
+#X obj 97 193 doc_m i0 float;
+#X text 232 193 will compute left - floor(left/right)*right;
+#X obj 97 312 doc_m o0 float;
+#X text 232 312 if the granularity is nonnegative \, the output will
 be any value between 0 and granularity (including 0 but excluding granularity)
 which is the remainder of the division of a float by float whose quotient
 is whole.;
-#X obj 103 316 mod;
-#X obj 133 316 wrap;
-#X obj 169 316 zexy/wrap;
-#X obj 235 316 div;
-#X text 232 148 this is essentially a float version of modulo : the
+#X obj 103 383 mod;
+#X obj 133 383 wrap;
+#X obj 169 383 zexy/wrap;
+#X obj 235 383 div;
+#X text 232 215 this is essentially a float version of modulo : the
 remainder can be fractional.;
+#X floatatom 165 40 5 0 0 0 - - -;
+#X floatatom 165 77 5 0 0 0 - - -;
+#X floatatom 216 40 5 0 0 0 - - -;
+#X obj 165 58 gf/wrap 5;
 #X connect 1 1 18 0;
 #X connect 1 1 19 0;
 #X connect 1 1 20 0;
@@ -35,3 +39,6 @@ remainder can be fractional.;
 #X connect 14 1 15 0;
 #X connect 14 1 22 0;
 #X connect 16 1 17 0;
+#X connect 23 0 26 0;
+#X connect 25 0 26 1;
+#X connect 26 0 24 0;
