@@ -117,7 +117,10 @@ GridHandler *stromgol; // remove this asap
 		if (in.size()<=0) in.resize(1);
 		if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 		while (n) {
-			if (!go || !go->sender) go = new GridOut(this,0,per_message?in[0]->dim:dim,cast);
+			if (!go || !go->sender) {
+				if (per_message) go = new GridOut(this,0,in[0]->dim,in[0]->nt);
+				else             go = new GridOut(this,0,       dim,     cast);
+			}
 			long n2 = min((long)n,go->dim.prod()-go->dex);
 			go->send(n2,data);
 			n-=n2; data+=n2;
