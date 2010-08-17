@@ -56,12 +56,6 @@ string join (int argc, t_atom *argv, string sep=" ", string term="") {
 static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
-} 
-void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
-	if (!argc) pd_bang(o);
-	else if (argv[0].a_type==A_SYMBOL)       pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) pd_float(o,argv[0].a_float);
-	else pd_typedmess(o,&s_list,argc,argv);
 }
 
 //****************************************************************
@@ -96,6 +90,12 @@ struct ArgSpec {
 	\decl 0 loadbang ();
 	void process_args (int argc, t_atom *argv);
 };
+/* this is not shared with the comma-args handling of externs ! */
+static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
+	if (argv[0].a_type==A_FLOAT && argc==1) {pd_float(o,argv[0].a_float); return;}
+	if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
+	else                          pd_typedmess(o,&s_list         ,argc  ,argv  );
+}
 \def 0 loadbang () {
 	t_canvasenvironment *env = canvas_getenv(mom);
 	int ac = env->ce_argc;
