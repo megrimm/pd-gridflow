@@ -2,21 +2,22 @@ x = done
 L = much later (whenever we get to know how to do it...)
 
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
---------------------------------------------------vous-êtes-ici----------------------------------------------------- 9.11
-[ ] bundle m_pd.h ?
-[ ] make a clean GridOut::~GridOut
-[ ] document method 'get' somewhere.
-[ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe)
-[ ] merge outlet_atom2 into PtrOutlet::operator()(t_atom2 &) or ditch one of them.
-[ ] in n-methods, "got 5 args instead of 2" is wrong because of int winlet.
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
-[ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
-    and is_base_sel(symbol) also would include bang and list.
+[ ] make a clean GridOut::~GridOut. can't make one because ~GridOut often happens after the next GridOut construction.
+[ ] replace Card by...?
+[ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe)
+[ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
 [ ] is outlet_anything2 and pd_anything2 really something we want as a behaviour of [args] ???
-[ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
-[ ] change description of GridFlow on gridflow.ca and puredata.info
 [ ] [#many]: add support for non-i grids
-[ ] [#many]: add support for 'floatatom' objects
+    [ ] should the internal grid always stored as float, and then a [#cast] would change it to the user's favourite type ?
+[ ] [#many]: add support for abstraction components
+    [ ] abstraction component location lookup doesn't uplevel.
+    [ ] [gf/object_bbox] doesn't support looking up a [receives] inside the abstraction because it is 'not patchable'
+        and because it's not in the same canvas either
+    [ ] [gf/object_bbox] doesn't have a float index feature.
+    [ ] [gf/object_bbox] can't look in a separate canvas (and it would be better if it could)
+        and I want to use a 2nd order GOP to make things easier (avoid mistakes when saving abstraction)
+[ ] [#many]: save spacing setting ([attr] [setargs])
 [ ] [#many]: add support for [hsl] and [vsl]
 [ ] figure out domain name transfer problem
 [ ] weird patchcord disappearance involving [gf/canvas_getpos] and [display]... never seen this before 2010.08.14
@@ -38,7 +39,6 @@ L = much later (whenever we get to know how to do it...)
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
 [ ] alias numops so that they are more pd-like
-[ ] [#pack, cast] ?
 [ ] make a rounding [# *>>8] ?
 [ ] [#fft] sign crash
 [ ] [#import] bug (see atelier)
@@ -50,6 +50,7 @@ L = much later (whenever we get to know how to do it...)
 [ ] [#many] margins $1 $2 $3 $4, ...
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
+[ ] turtle.pd
 [ ] [#remap_image, cache]
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm (easy to do in #scale_by-help.pd)
@@ -99,13 +100,13 @@ L = much later (whenever we get to know how to do it...)
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
 [ ] [#io.videodev] takes a lot of CPU doing nothing at all (or what ?)
-[ ] visfn: if (self->vis & !flag) sys_vgui(".x%x.c delete %s\n",c,self->rsym->s_name,self->rsym->s_name);
+[ ] visfn: if (self->vis & !flag) sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
 [ ] add default values in docs
-[!] use sand.pd as basis for introducing those features :
-    [!] seedless #convolve
-    [!] seedless #inner
-    [!] automatic type conversion
-[!] [route] - 1[shunt] sends a message (bug)
+[ ] use sand.pd as basis for introducing those features :
+    [ ] seedless #convolve
+    [ ] seedless #inner
+    [ ] automatic type conversion
+[ ] [route] - 1[shunt] sends a message (bug)
 [ ] [args, noloadbang]
 [ ] [args, noparens]
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
@@ -118,11 +119,30 @@ L = much later (whenever we get to know how to do it...)
 [ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
 [ ] revoir le système de paquetage pour linux.
 [ ] [#dim_append] [#dim_prepend] (pas si utiles que ça...?)
-[ ] [#nothing]
 [ ] unparse_args, pass_args could be doing more common work, and use a.join(",").
 [ ] big bug in rendering of [#type-gui, vertical] (leaves trace of horiz [#type-gui] behind) when not loaded directly from file.
 [ ] int64, float64 should be rejected from NumberTypeE \attr and arguments when in --lite mode
 [ ] add ro attr support
+[ ] fix [#fastblur] wrong size bug
+[ ] change description of GridFlow on gridflow.ca and puredata.info
+[ ] gem: support greyscale conversions
+[ ] creating a [pd~] while -lib Gem -lib gridflow are loaded
+
+Program received signal SIGSEGV, Segmentation fault.
+
+with gdb:
+canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
+dirresult=0xbfffb634 "", nameresult=0xbfffb630, size=4096, bin=1)
+    at g_canvas.c:160
+  
+with valgrind:
+==12453== Invalid read of size 4
+==12453==    at 0x80739AB: canvas_open (g_canvas.c:160)
+==12453==    by 0x64705F76: ???
+==12453==  Address 0x9c is not stack'd, malloc'd or (recently) free'd
+
+with no further info
+
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -148,6 +168,10 @@ while running #to~-help.pd :
 [ ] [#out x11]: add 'rootsize' ro attr
 [ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
     a value in million cycles or something.
+
+Not Important
+[ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
+    and is_base_sel(symbol) also would include bang and list.
 
 // was for 9.9
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
@@ -181,6 +205,7 @@ ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accep
 interpolates using 4-point interpolation, eg, right inlet -> (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5)
 outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
 
+[ ] add Minesweeper example based on [#many]
 [ ] OpenCL
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
@@ -264,7 +289,6 @@ Computation Objects
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it #chroma_key though)
 	maybe #mask...
-[ ] turtle (logo style)
 [ ] effectv
 [ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] multilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
@@ -316,6 +340,14 @@ OSX:
      vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
+
+Peines Perdues:
+[ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
+[ ] [#many]: add support for 'floatatom' objects ?
+    (no: we require method 'pos'. apart from that we could work around the lack of 'send', 'receive')
+
+----------------------------------------------------------------------------------------------------------------
+Autres notes
 
 -mfpmath=sse2
 
