@@ -115,7 +115,7 @@ void FormatQuartz_call(FormatQuartz *self);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 hidecursor ();
 	\decl 0 setcursor (int c);
-	\decl 0 loadbang () {outlet_anything(outlets[0],gensym("nogrey"),0,0);}
+	\decl 0 loadbang () {out[0](gensym("nogrey"),0,0);}
 	\grin 0
 };
 
@@ -200,17 +200,12 @@ void FormatQuartz_call(FormatQuartz *self);
 #define INSIDE_WINDOW  ((p.y >= 0 && p.y <= [this->widget imageHeight]) && (p.x >= 0 && p.x <= [this->widget imageWidth]))
 
 void FormatQuartz::report_pointer(BOOL check_bounds) {
-	NSPoint p;
-	p = [this->window mouseLocationOutsideOfEventStream];
-	p.y = [this->widget imageHeight] - p.y;
-	
-	t_atom a[3];
-	SETFLOAT(a+0,p.y);
-	SETFLOAT(a+1,p.x);
-	SETFLOAT(a+2,this->mouse_state);
-
-	if (!check_bounds || INSIDE_WINDOW)
-		outlet_anything(outlets[0],gensym("position"),COUNT(a),a);
+	NSPoint p = [window mouseLocationOutsideOfEventStream];
+	p.y = [widget imageHeight] - p.y;
+	if (!check_bounds || INSIDE_WINDOW) {
+		t_atom2 a[3] = {p.y, p.x, mouse_state};
+		out[0](gensym("position"),COUNT(a),a);
+	}
 }
 
 // TODO: Use KEYS_ARE from SDL...
@@ -278,13 +273,9 @@ void FormatQuartz::report_key(NSEvent * e) {
 		strcpy(buf,keysym);
 	}
 
-	t_symbol *sel = gensym(const_cast<char *>([e type] == NSKeyDown ? "keypress" : "keyrelease"));
-	t_atom a[4];
-	SETFLOAT(a+0,p.y);
-	SETFLOAT(a+1,p.x);
-	SETFLOAT(a+2,this->mouse_state);
-	SETSYMBOL(a+3,gensym(buf));
-	outlet_anything(outlets[0],sel,4,a);
+	t_symbol *sel = gensym([e type] == NSKeyDown ? "keypress" : "keyrelease");
+	t_atom2 a[4] = {p.y, p.x, this->mouse_state, gensym(buf)};
+	out[0](sel,4,a);
 }
 
 static NSDate *distantFuture, *distantPast;
