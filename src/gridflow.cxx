@@ -574,9 +574,9 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	    if (argc==0) {
 						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(self,argc,argv+2); return;}
 	    } else if (argc==1) {
-		if (argv[2].a_type==A_FLOAT)   {m=method_lookup(bself,winlet,&s_float  ); if(m){m(self,argc,argv+2); return;}}
-		if (argv[2].a_type==A_SYMBOL)  {m=method_lookup(bself,winlet,&s_symbol ); if(m){m(self,argc,argv+2); return;}}
-		if (argv[2].a_type==A_POINTER) {m=method_lookup(bself,winlet,&s_pointer); if(m){m(self,argc,argv+2); return;}}
+		if (argv[2].a_type==A_FLOAT)   {BFObject_anything(bself,winlet,&s_float  ,argc,argv+2); return;}
+		if (argv[2].a_type==A_SYMBOL)  {BFObject_anything(bself,winlet,&s_symbol ,argc,argv+2); return;}
+		if (argv[2].a_type==A_POINTER) {BFObject_anything(bself,winlet,&s_pointer,argc,argv+2); return;}
 	    } else if (winlet==0) {
 		for (int i=min(argc,self->ninlets)-1; i>=0; i--) { // not exactly same order as pd's obj_list...
 		    if (argv[2+i].a_type==A_FLOAT)   BFObject_anything(bself,i,&s_float  ,1,argv+2+i);
