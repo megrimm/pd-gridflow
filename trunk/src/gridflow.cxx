@@ -642,6 +642,7 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 		int k=j;
 		for (; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 		if (argv[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,argv[k],j-k-1,argv+k+1);
+		else post("oupse");
 	}
         #ifdef DES_BUGS
 	    post("BFObject_new..... bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
@@ -1130,5 +1131,4 @@ BUILTIN_SYMBOLS(FOO)
     class_addmethod(canvas_class,(t_method)canvas_tolast,       gensym("last")         ,A_GIMME,0);
     class_addmethod(canvas_class,(t_method)canvas_last_activate,gensym("last_activate"),A_GIMME,0);
     class_addmethod(canvas_class,(t_method)canvas_iemguis,      gensym("put"),          A_SYMBOL,0);
-//    canvas_startmotion(glist_getcanvas(gl));
 }
