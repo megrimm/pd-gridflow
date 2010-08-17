@@ -1224,26 +1224,24 @@ GRID_INLET(0) {
 \class GridPack : FObject {
 	int n;
 	PtrGrid a;
+	\attr NumberTypeE cast;
 	\constructor (int n=2, NumberTypeE nt=int32_e) {
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
-		a = new Grid(Dim(n),nt,true);
+		a = new Grid(Dim(n),float32_e,true);
 		this->n=n;
 		ninlets_set(this->n);
+		cast = int32_e;
 	}
 	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
 	\decl n set   (int inlet, float f) {
 		if (inlet>=n) RAISE("what???");
-		#define FOO(T) ((T *)*a)[inlet] = T(f);
-		TYPESWITCH(a->nt,FOO,);
-		#undef FOO
+		((float *)*a)[inlet] = f;
 	}
 	\decl n float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
 	\decl 0 bang () {
-		go=new GridOut(this,0,a->dim,a->nt);
-		#define FOO(T) go->send(n,(T *)*a);
-		TYPESWITCH(a->nt,FOO,);
-		#undef FOO
+		go=new GridOut(this,0,a->dim,cast);
+		go->send(n,(float *)*a);
 	}
 };
 \end class {install("#pack",1,1); add_creator("@pack");}
