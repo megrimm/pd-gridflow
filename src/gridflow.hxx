@@ -849,11 +849,11 @@ struct PtrOutlet {
 	void operator () (t_gpointer *g) {outlet_pointer(p,g);}
 //	void operator () (t_blob *g)     {outlet_blob   (p,g);} // can't use this with vanille
 	void operator () (t_blob *g)     {t_atom2 a[] = {g}; outlet_anything(p,gensym("blob"),1,a);}
+	void operator () (t_binbuf *g)   {t_atom2 a[] = {g}; outlet_anything(p,gensym("binbuf"),1,a);}
 	void operator () (             int argc, t_atom *argv) {outlet_list(p,&s_list,argc,argv);}
 	void operator () (t_symbol *s, int argc, t_atom *argv) {outlet_anything(p,s,  argc,argv);}
 	void operator () (t_atom &a);
 };
-void outlet_atom2 (PtrOutlet self, t_atom *av);
 
 // represents objects that have inlets/outlets
 \class FObject {

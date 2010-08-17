@@ -183,14 +183,10 @@ void PtrOutlet::operator () (t_atom &a) {
     if      (a.a_type==A_FLOAT  ) (*this)(a.a_float);
     else if (a.a_type==A_SYMBOL ) (*this)(a.a_symbol);
     else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
+    else if (a.a_type==A_LIST   ) (*this)((t_list *)a.a_gpointer);
     else if (a.a_type==A_BLOB   ) (*this)((t_blob *)a.a_gpointer);
     else error("can't send atom whose type is %d",a.a_type);
-}
-void outlet_atom2 (PtrOutlet self, t_atom *av) {
-	if (av->a_type==A_FLOAT)   self(av->a_float);    else
-	if (av->a_type==A_SYMBOL)  self(av->a_symbol);   else
-	if (av->a_type==A_POINTER) self(av->a_gpointer); else
-	self(1,av);
+    //self(1,av);
 }
 
 bool t_atom2::operator == (const t_atom2 &b) {
@@ -198,8 +194,9 @@ bool t_atom2::operator == (const t_atom2 &b) {
 	if (a.a_type!=b.a_type) return false;
 	if (a.a_type==A_FLOAT)   return a.a_float   ==b.a_float;
 	if (a.a_type==A_SYMBOL)  return a.a_symbol  ==b.a_symbol;
-	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer;
-	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer;
+	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer; // not deep
+	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer; // not deep
+	if (a.a_type==A_BLOB)    return a.a_gpointer==b.a_gpointer; // not deep
 	RAISE("don't know how to compare elements of type %d",a.a_type);
 }
 //----------------------------------------------------------------

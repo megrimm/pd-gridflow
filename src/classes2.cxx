@@ -274,7 +274,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 		int i = int(f);
 		if (i<0) i+=r.size();
 		if (i<0 || i>=int(r.size())) {out[0](); return;} /* out-of-range */
-		outlet_atom2(out[0],&r[i]);
+		out[0](r[i]);
 	}
 	\decl 1 list(...) {r.resize(argc); for (int i=0; i<argc; i++) r[i]=argv[i];}
 };
