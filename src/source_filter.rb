@@ -135,9 +135,12 @@ def handle_decl(line)
 end
 
 def check_argc(m)
-	if    m.maxargs==m.minargs then Out.print  "EXACTARGS(#{m.minargs})"
-	elsif m.maxargs==-1        then Out.print    "MINARGS(#{m.minargs})"
-	else                            Out.print "MINMAXARGS(#{m.minargs},#{m.maxargs})" end
+	fudge=0
+	fudge=1 if m.inlet==-1
+	fudge=2 if m.selector2=="_0_anything"
+	if    m.maxargs==m.minargs then Out.print  "EXACTARGS(#{fudge},#{m.minargs})"
+	elsif m.maxargs==-1        then Out.print    "MINARGS(#{fudge},#{m.minargs})"
+	else                            Out.print "MINMAXARGS(#{fudge},#{m.minargs},#{m.maxargs})" end
 end
 
 def pass_args(m)
