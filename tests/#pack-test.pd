@@ -1,4 +1,4 @@
-#N canvas 627 85 450 376 10;
+#N canvas 627 85 483 376 10;
 #X obj 203 93 #pack;
 #X obj 254 93 #pack 5;
 #X obj 203 112 #print;
@@ -12,7 +12,7 @@
 #X floatatom 68 264 5 0 0 0 - - -;
 #X floatatom 51 282 5 0 0 0 - - -;
 #X obj 324 112 #print;
-#X floatatom 346 63 5 0 0 0 - - -;
+#X floatatom 349 65 5 0 0 0 - - -;
 #X obj 324 93 #pack 5 f;
 #X msg 254 36 4 5;
 #X msg 225 36 4;
@@ -22,6 +22,11 @@
 #X msg 272 272 patate;
 #X msg 266 253 op + *;
 #X msg 259 234 op 42;
+#X msg 126 60 1 2 3;
+#X msg 294 23 list 42;
+#X msg 221 148 set 42 55;
+#X text 283 148 says got 3 args instead of 2;
+#X text 248 162 should say got 2 args instead of 1;
 #X connect 0 0 2 0;
 #X connect 1 0 3 0;
 #X connect 4 0 0 1;
@@ -44,3 +49,6 @@
 #X connect 20 0 19 0;
 #X connect 21 0 19 0;
 #X connect 22 0 19 0;
+#X connect 23 0 0 0;
+#X connect 24 0 0 1;
+#X connect 25 0 0 0;
