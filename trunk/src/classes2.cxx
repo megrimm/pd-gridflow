@@ -57,12 +57,6 @@ static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
 } 
-void outlet_anything2 (PtrOutlet o, int argc, t_atom *argv) {
-	if (!argc) o();
-	else if (argv[0].a_type==A_SYMBOL)           o(argv[0].a_symbol,argc-1,argv+1);
-	else if (argv[0].a_type==A_FLOAT && argc==1) o(argv[0].a_float);
-	else o(argc,argv);
-}
 void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	if (!argc) pd_bang(o);
 	else if (argv[0].a_type==A_SYMBOL)       pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
@@ -138,9 +132,8 @@ void Args::process_args (int argc, t_atom *argv) {
 		if (sargs[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
 		} else {
-			if      (v->a_type==A_LIST)   {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
-			else if (v->a_type==A_SYMBOL) out[i](*v);
-			else                          outlet_anything2(out[i],1,v);
+			if (v->a_type==A_LIST) {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
+			else                                      out[i](*v);
 		}
 	}
 	if (argc>int(sargs.size()) && sargs[sargs.size()-1].name!=wildcard)
