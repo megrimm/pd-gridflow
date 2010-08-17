@@ -1070,8 +1070,10 @@ string string_replace (string victim, string from, string to) {
 \end class {install("gf/sys_gui",1,0);}
 
 \class GFWrap : FObject {
-	\constructor () {}
-	\decl 0 float (float f) {out[0](f-floor(f));}
+	float b;
+	\constructor (float f=1) {b=f;}
+	\decl 1 float (float f)  {b=f;}
+	\decl 0 float (float f) {out[0](f-floor(f/b)*b);}
 };
 \end class {install("gf/wrap",1,1);}
 
