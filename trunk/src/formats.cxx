@@ -160,6 +160,7 @@ struct GridHeader {
 	bool headerless;
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
+		headerless = false;
 		nt = int32_e;
 		endian = is_le();
 		_0_open(mode,filename);
