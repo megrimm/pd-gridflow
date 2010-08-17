@@ -220,9 +220,9 @@ struct Barf {
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
 
-#define  EXACTARGS(N      ) if (argc!=(N)             ) RAISE("got %d args instead of %d"                     ,argc,(N));
-#define    MINARGS(MIN    ) if (argc<(MIN)            ) RAISE("got %d args instead of at least %d"            ,argc,(MIN));
-#define MINMAXARGS(MIN,MAX) if (argc<(MIN)||argc>(MAX)) RAISE("got %d args instead of at least %d, at most %d",argc,(MIN),(MAX));
+#define  EXACTARGS(FUDGE,N      ) if (argc!=(N)             ) RAISE("got %d args instead of %d"                     ,argc-(FUDGE),(N)-(FUDGE));
+#define    MINARGS(FUDGE,MIN    ) if (argc<(MIN)            ) RAISE("got %d args instead of at least %d"            ,argc-(FUDGE),(MIN)-(FUDGE));
+#define MINMAXARGS(FUDGE,MIN,MAX) if (argc<(MIN)||argc>(MAX)) RAISE("got %d args instead of at least %d, at most %d",argc-(FUDGE),(MIN)-(FUDGE),(MAX)-(FUDGE));
 
 #define CLASSINFO(THISCLASS) \
 	static void THISCLASS##_startup (FClass *fclass); \
