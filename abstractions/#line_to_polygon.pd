@@ -17,7 +17,7 @@
 #X obj 45 145 t a b;
 #X msg 75 197 -1 -1 1 1;
 #X obj 170 74 #fold inv+ \, seed (2 #);
-#X obj 282 159 args linewidth;
+#X obj 282 159 args (linewidth a 4);
 #X connect 0 0 12 0;
 #X connect 2 0 1 0;
 #X connect 3 0 6 0;
