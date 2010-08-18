@@ -438,7 +438,7 @@
 #X text 180 7201 find the objectclass corresponding ;
 #X obj 96 7233 gf/sys_gui;
 #X text 180 7233 send internal Tcl/Tk commands from pd server to pd client;
-#X obj 84 7265 gf/tk_button;
+#X obj 66 7265 doc_link gf/tk_button;
 #X text 180 7265 Tcl/Tk button available on the canvas;
 #X obj 114 7297 gf/wrap;
 #X text 180 7297 another wrap like pd's wrap and zexy's wrap;
@@ -448,7 +448,7 @@
 #X text 180 7361 find the bounding box of a sequence of hpgl commands;
 #X obj 60 7393 hpgl_font_render;
 #X text 180 7393 include hpgl files from disk for drawing text;
-#X obj 114 7425 hpgl_op;
+#X obj 102 7425 hpgl_op +;
 #X text 180 7425 use [#] on hpgl commands;
 #X obj 42 7457 hpgl_track_position;
 #X text 180 7457 remember last mentioned hpgl coordinate;
