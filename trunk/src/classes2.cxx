@@ -917,23 +917,39 @@ size_t properties_offset;
 	class_setwidget(text_class,&text_widgetbehavi0r);
 }
 
-bool canvas_contains (t_canvas *x, t_gobj *y) {for (t_gobj *g=x->gl_list; g; g=g->g_next) if (g==y) return true; return false;}
+static t_gobj *canvas_index (t_canvas *x, int n) {
+	int i=0; for (t_gobj *g=x->gl_list; g; g=g->g_next, i++) if (i==n) return g;
+	return 0;
+}
+static int canvas_find_index (t_canvas *x, t_gobj *y) {
+	int i=0; for (t_gobj *g=x->gl_list; g; g=g->g_next, i++) if (g==y) return i;
+	return -1;
+}
+static bool canvas_contains  (t_canvas *x, t_gobj *y) {return canvas_find_index(x,y)>=0;}
+
 t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((long *)x)[properties_offset-3];}
 \class GFObjectBBox : FObject {
 	\constructor () {}
-	\decl 0 symbol (t_symbol *s) {
-		if (!s->s_thing) RAISE("no such object");
-		t_class *c = pd_class(s->s_thing);
-		if (c->c_name==gensym("bindlist")) RAISE("multiple such objects");
-		t_widgetbehavior *wb = class_getwidget(c);
+	void look_at (t_gobj *o) {
+		t_widgetbehavior *wb = class_getwidget(pd_class((t_pd *)o));
 		if (!wb) RAISE("not a patchable object");
-		if (!canvas_contains(mom,(t_gobj *)s->s_thing)) RAISE("object is not in this canvas");
+		if (!canvas_contains(mom,o)) RAISE("object is not in this canvas");
 		int x1,y1,x2,y2;
-		wb->w_getrectfn((t_gobj *)s->s_thing,mom,&x1,&y1,&x2,&y2);
+		wb->w_getrectfn(o,mom,&x1,&y1,&x2,&y2);
 		t_atom2 a[4] = {x1,y1,x2,y2}; out[0](4,a);
 	}
+	\decl 0 symbol (t_symbol *s) {
+		if (!s->s_thing) RAISE("no such object");
+		if (pd_class(s->s_thing)->c_name==gensym("bindlist")) RAISE("multiple such objects");
+		look_at((t_gobj *)s->s_thing);
+	}
+	\decl 0 float (int i) {
+		if (i<0) RAISE("can't use a negative index");
+		t_gobj *g = canvas_index(mom,i);
+		if (!g) RAISE("past the end of the list of objects of this canvas");
+		look_at(g);
+	}
 };
-
 \end class {install("gf/object_bbox",1,1);}
 
 // pas vite vite
@@ -1123,7 +1139,7 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 }
 \end class {
 	install("gf/propertybang",1,1);
-	class_setpropertiesfn(canvas_class,canvas_properties2);
+	class_setpropertiesfn(canvas_class,canvas_properties2); // phoque
 }
 
 \class GFClassInfo : FObject {
