@@ -1,22 +1,22 @@
-#N canvas 527 153 632 513 10;
+#N canvas 527 153 632 626 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 459 doc_also;
-#X obj 0 479 doc_f;
-#X obj 103 459 gf/canvas_hohoho 0;
+#X obj 3 572 doc_also;
+#X obj 0 592 doc_f;
+#X obj 103 572 gf/canvas_hohoho 0;
 #X obj 3 208 doc_c 0;
 #X obj 3 248 doc_i 1;
 #X obj 14 278 doc_ii 0;
-#X obj 14 392 doc_oo 0;
+#X obj 14 505 doc_oo 0;
 #X obj 103 93 gf/object_bbox;
 #X obj 109 113 display;
 #X obj 103 74 symbol \$0-test;
-#X obj 97 278 doc_m i0 symbol;
-#X obj 97 392 doc_m o0 list;
-#X text 232 392 \$1=x1 \$2=y1 \$3=x2 \$4=y2;
-#X obj 3 362 doc_o 2;
-#X obj 14 414 doc_oo 1;
-#X obj 97 414 doc_m o1 bang;
-#X text 232 414 oops: if there are several objects identified by this
+#X obj 97 391 doc_m i0 symbol;
+#X obj 97 505 doc_m o0 list;
+#X text 232 505 \$1=x1 \$2=y1 \$3=x2 \$4=y2;
+#X obj 3 475 doc_o 2;
+#X obj 14 527 doc_oo 1;
+#X obj 97 527 doc_m o1 bang;
+#X text 232 527 oops: if there are several objects identified by this
 receive-symbol \, a bang will be sent to the right.;
 #X obj 103 55 metro 100;
 #X obj 103 38 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0
@@ -29,11 +29,22 @@ receive-symbol \, a bang will be sent to the right.;
 #X text 194 112 position of the main part of the object;
 #X text 188 171 size of the main part of the object;
 #X text 206 125 (label is normally not counted in);
-#X obj 223 459 doc_link #many;
-#X text 232 278 find the bounding box of an object identified by this
+#X obj 223 572 doc_link #many;
+#X text 232 391 find the bounding box of an object identified by this
 receive-symbol. it must be a patchable object (not a DS item) \, must
 be contained in the same canvas as gf/object_bbox \, and must be the
 only object identified by this receive-symbol.;
+#X obj 461 105 gf/object_bbox;
+#X floatatom 461 87 5 0 0 0 - - -;
+#X obj 461 124 display;
+#X obj 97 278 doc_m i0 float;
+#X text 232 278 find the bounding box of an object in this canvas \,
+identified by its index. this is the same kind of index as used in
+[gf/canvas_loadbang] \, and when dynamically patching you can get it
+with [gf/canvas_count] \, which is the number of objects currently
+existing \, which means that it's also the index of the upcoming new
+object (because numbering starts at 0). this is also the same numbering
+as used in the .pd file format for storing wires (#X connect).;
 #X connect 1 1 3 0;
 #X connect 1 1 27 0;
 #X connect 8 0 9 0;
@@ -46,3 +57,6 @@ only object identified by this receive-symbol.;
 #X connect 19 0 18 0;
 #X connect 21 0 23 0;
 #X connect 23 0 22 0;
+#X connect 29 0 31 0;
+#X connect 30 0 29 0;
+#X connect 32 1 33 0;
