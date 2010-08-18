@@ -540,7 +540,7 @@ GRID_INLET(0) {
 	\grin 1 int
 	\grin 2 int
 	\constructor (Grid *dl=0, Grid *dr=0) {
-		t_atom2 a[3] = {1,1,0};
+		t_atom2 a[3] = {1,1};
 		diml_grid=dl?dl:new Grid(3,a,int32_e);
 		dimr_grid=dr?dr:new Grid(3,a,int32_e);
 		diml = diml_grid->to_dim();
@@ -550,18 +550,18 @@ GRID_INLET(0) {
 
 GRID_INLET(0) {
 	int n = in.dim.n;
-	if (n!=3) RAISE("only 3 dims supported for now");
-	if (diml.n != n) RAISE("diml mismatch");
-	if (dimr.n != n) RAISE("dimr mismatch");
-	if (diml[2] || dimr[2]) RAISE("can't augment channels (todo)");
+	if (n<2 || n>3) RAISE("only 2 or 3 dims supported for now");
+	if (diml.n<2 || diml.n>n) RAISE("diml mismatch");
+	if (dimr.n<2 || dimr.n>n) RAISE("dimr mismatch");
+	if ((diml.n>2 && diml[2]) || (diml.n>2 && dimr[2])) RAISE("can't augment channels (todo)");
 	int32 v[n];
-	for (int i=0; i<n; i++) v[i]=in.dim[i]+diml[i]+dimr[i];
+	for (int i=0; i<n; i++) v[i]=in.dim[i] + (i<diml.n?diml[i]:0) + (i<dimr.n?dimr[i]:0);
 	in.set_chunk(0);
 	go=new GridOut(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
 	int sy = in.dim[0];
-	int sx = in.dim[1]; int zx = sx+diml[1]+dimr[1];
-	int sc = in.dim[2]; int zc = sc+diml[2]+dimr[2];
+	int sx = in.dim[1];      int zx = sx+diml[1]     +dimr[1];
+	int sc = in.dim.prod(2); int zc = sc+(2<diml.n?diml[2]:0) + (2<dimr.n?dimr[2]:0);
 	int sxc = sx*sc; int zxc = zx*zc;
 	int32 duh[zxc];
 	for (int x=0; x<zxc; x++) duh[x]=0;
