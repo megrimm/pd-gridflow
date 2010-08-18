@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.11 (2010......):
+version 9.11 (2010.08...):
 
  * now officially requires Pd 41
  * [#cast] $1 defaults to int32 (i)
@@ -30,10 +30,13 @@ version 9.11 (2010......):
  * 64-bit fixes in [display] and [#see] and some more
  * [hpgl_font_render] [for] [#slice] [#scale_to]: made args optional
  * [#line_to_polygon] [#fastblur]: made args optional
- * [#pack]: add method 'cast'
+ * [#pack]: add method 'cast' and allow dimension-list like [#redim]'s
  * [#in grid] [#out grid]: fix problem with incorrect 'headerless' flag
  * [#import] without arguments now does the same as a plain grid-inlet does.
  * major improvements to the internal API of GridFlow (shortcuts, etc)
+ * qbert.pd: now in 2-D, and added a title screen
+ * [#border]: allow 2-dimensional input, and border sizes of 2 elements each.
+ * [#text_to_image]: add 2-dimensional input on the left
 
 version 9.10 (2010.08.04):
 
