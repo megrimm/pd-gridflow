@@ -5,56 +5,68 @@
 #X floatatom 136 137 5 0 0 0 - - -;
 #X text 165 113 <--click and drag to place numbers in the grid.;
 #X obj 0 0 doc_h;
-#X obj 3 359 doc_i n;
+#X obj 3 438 doc_i n;
 #X obj 3 262 doc_c 0..2;
 #X text 14 28 Creates a one-dimensional grid (a Dim(N) vector) from
 individual integers.;
-#X text 232 534 every inlet is hot.;
-#X text 232 556 inlet order corresponds to value order in the grid.
+#X text 232 603 every inlet is hot.;
+#X text 232 625 inlet order corresponds to value order in the grid.
 ;
-#X obj 3 632 doc_o 1;
-#X obj 14 662 doc_oo 0;
+#X obj 3 701 doc_o 1;
+#X obj 14 731 doc_oo 0;
 #X obj 14 292 doc_cc 0;
-#X obj 14 327 doc_cc 1;
-#X obj 97 327 doc_m c1 numtype;
-#X obj 97 662 doc_m o0 grid[n];
-#X obj 0 727 doc_f;
-#X text 232 327 number type (default: int32);
+#X obj 14 406 doc_cc 1;
+#X obj 97 406 doc_m c1 numtype;
+#X obj 97 731 doc_m o0 grid[n];
+#X obj 0 796 doc_f;
+#X text 232 406 number type (default: int32);
 #X obj 85 155 #pack 3 f;
-#X obj 3 707 doc_also;
-#X obj 103 707 pack;
-#X obj 139 707 #unpack;
+#X obj 3 776 doc_also;
+#X obj 103 776 pack;
+#X obj 139 776 #unpack;
 #X obj 85 176 display;
 #X text 232 292 number of elements in the vector to be built (aka number
 of dimensions in the vector space) (default: 2);
-#X text 232 578 float \$1 is like set \$1 then bang.;
-#X text 232 600 only set value \, don't send.;
-#X obj 14 389 doc_ii 0;
-#X obj 97 391 doc_m i0 bang;
-#X text 232 391 output existing contents;
-#X obj 97 429 doc_m i0 list;
-#X obj 97 534 doc_m iany float;
-#X obj 97 600 doc_m iany set;
-#X obj 14 534 doc_ii any;
-#X text 232 429 set several inlets at once and output only once. if
+#X text 232 647 float \$1 is like set \$1 then bang.;
+#X text 232 669 only set value \, don't send.;
+#X obj 14 468 doc_ii 0;
+#X obj 97 475 doc_m i0 bang;
+#X text 232 475 output existing contents;
+#X obj 97 497 doc_m i0 list;
+#X obj 97 603 doc_m iany float;
+#X obj 97 669 doc_m iany set;
+#X obj 14 603 doc_ii any;
+#X text 232 497 set several inlets at once and output only once. if
 the list is too short \, some inlets will be left untouched. if the
 list is too long \, excess arguments will be ignored.;
 #X msg 70 68 60 120 180 240;
 #X text 164 67 <--set several values at once;
 #X text 165 78 (\$4 gets ignored in this example);
-#X obj 97 477 doc_m i0 cast;
-#X obj 232 512 doc_link numtype 1;
-#X text 232 477 choose number type conversion. this is the numtype
+#X obj 97 545 doc_m i0 cast;
+#X obj 232 580 doc_link numtype 1;
+#X text 232 545 choose number type conversion. this is the numtype
 of the output grid.;
 #X msg 30 110 cast s;
-#X obj 97 292 doc_m c0 float;
-#X text 232 662 Puts together the values stored in each inlet \, and
+#X text 232 731 Puts together the values stored in each inlet \, and
 outputs the grid made from them.;
+#X text 232 362 [#pack (8)] is the same as [#pack 8];
+#X text 232 384 [#pack (3 3)] is the same as [#pack 9]-[#redim (3 3)]
+;
+#X text 232 327 or (since 9.11) a list of dimensions like #import and
+#redim have:;
+#X obj 97 292 doc_m c0 float;
+#X obj 97 327 doc_m c0 list;
+#X obj 409 205 display;
+#X floatatom 464 156 5 0 0 0 - - -;
+#X floatatom 419 152 5 0 0 0 - - -;
+#X floatatom 458 137 5 0 0 0 - - -;
+#X floatatom 414 134 5 0 0 0 - - -;
+#X obj 409 179 #pack (2 2) f;
 #X connect 1 0 19 0;
 #X connect 2 0 19 1;
 #X connect 3 0 19 2;
 #X connect 15 1 18 0;
-#X connect 16 1 43 0;
+#X connect 16 1 42 0;
 #X connect 19 0 23 0;
 #X connect 19 0 0 0;
 #X connect 20 1 21 0;
@@ -69,4 +81,12 @@ outputs the grid made from them.;
 #X connect 38 1 39 0;
 #X connect 38 1 40 0;
 #X connect 41 0 19 0;
-#X connect 42 1 24 0;
+#X connect 46 1 24 0;
+#X connect 47 1 45 0;
+#X connect 47 1 43 0;
+#X connect 47 1 44 0;
+#X connect 49 0 53 3;
+#X connect 50 0 53 2;
+#X connect 51 0 53 1;
+#X connect 52 0 53 0;
+#X connect 53 0 48 0;
