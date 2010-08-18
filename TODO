@@ -1,6 +1,10 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
+[ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
+
+[ ] [#import] does the same rounding bullshit again, when we want a float grid
+[ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] make a clean GridOut::~GridOut. can't make one because ~GridOut often happens after the next GridOut construction.
@@ -38,6 +42,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11
+[ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
+[ ] [propertybang] won't work on pd-vanilla (crash?)
 [ ] alias numops so that they are more pd-like
 [ ] make a rounding [# *>>8] ?
 [ ] [#fft] sign crash
