@@ -1225,15 +1225,21 @@ GRID_INLET(0) {
 	int n;
 	PtrGrid a;
 	\attr NumberTypeE cast;
-	\constructor (int n=2, NumberTypeE nt=int32_e) {
-		if (n<1) RAISE("n=%d must be at least 1",n);
-		if (n>32) RAISE("n=%d is too many?",n);
-		a = new Grid(Dim(n),float32_e,true);
-		this->n=n;
-		ninlets_set(this->n);
+	\constructor (t_atom2 d=2, NumberTypeE nt=int32_e) {
+		Dim dim;
+		if (d.a_type==A_LIST) {
+			int dn = binbuf_getnatom(d);
+			t_atom2 *da = (t_atom2 *)binbuf_getvec(d);
+			int dv[dn];
+			for (int i=0; i<dn; i++) {dv[i]=da[i]; if (dv[i]<1) RAISE("size is not positive ??");}
+			dim = Dim(dn,dv);
+		} else dim = Dim(int(d));
+		n = dim.prod();
+		if (n>64) RAISE("don't you think that %d is too many inlets?",n);
+		a = new Grid(dim,float32_e,true);
+		ninlets_set(n);
 		cast = int32_e;
 	}
-	//\decl 0 cast (NumberTypeE nt) {a = new Grid(a->dim,nt);}
 	\decl n set   (int inlet, float f) {
 		if (inlet>=n) RAISE("what???");
 		((float *)*a)[inlet] = f;
