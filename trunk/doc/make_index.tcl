@@ -41,6 +41,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$k == "#fold"}      {set k "$k +"}
 	if {$k == "#scan"}      {set k "$k +"}
 	if {$k == "#outer"}     {set k "$k +"}
+	if {$k == "hpgl_op"}    {set k "$k +"}
 	if {$k == "#for"}       {set k "$k 0 4 1"}
 	if {$k == "#redim"}     {set k "$k ()"}
 	if {$k == "receives"}   {set k "$k \$0-"}
@@ -57,6 +58,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$k == "gf/nbxhsl"}     {set k "doc_link $k"}
 	if {$k == "#to~"}          {set k "doc_link $k"} ;# until crash gets fixed
 	if {$k == "#in~"}          {set k "doc_link $k"} ;# until crash in [#to~] gets fixed
+	if {$k == "gf/tk_button"}  {set k "doc_link $k"}
 
 	set w [string length $k]
 	regsub "\\$" $k "\\$" k
