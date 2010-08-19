@@ -7,47 +7,64 @@ I/O format that can hold nearly anything that the [#store] object can.
 #X obj 3 92 doc_c ...;
 #X msg 98 127 open foo.grid;
 #X obj 14 190 doc_ii 0;
-#X obj 97 492 doc_m i0 headerful;
-#X obj 97 540 doc_m i0 headerless;
-#X obj 97 239 doc_m i0 endian;
-#X text 232 239 When writing "raw" data \, a file may be considered
+#X obj 97 518 doc_m i0 headerful;
+#X obj 97 566 doc_m i0 headerless;
+#X obj 97 265 doc_m i0 endian;
+#X text 232 265 When writing "raw" data \, a file may be considered
 a long string of base 256 digits (called bytes) \, but different computers
 have different conventions for dealing with them:;
-#X text 232 383 same: A number will be written in whichever way is
+#X text 232 409 same: A number will be written in whichever way is
 more natural on this computer. The natural way is slightly faster to
 handle. This is the default setting.;
-#X obj 0 693 doc_f;
-#X obj 3 633 doc_o 1;
-#X obj 14 663 doc_oo 0;
-#X obj 97 601 doc_m i0 seek_byte;
-#X text 232 601 seek a particular position specified in bytes;
+#X obj 0 876 doc_f;
+#X obj 3 781 doc_o 1;
+#X obj 14 811 doc_oo 0;
+#X obj 97 627 doc_m i0 seek_byte;
+#X text 232 627 seek a particular position specified in bytes;
 #X obj 97 191 doc_m i0 cast;
-#X text 232 191 supports b \, s \, i.;
-#X obj 232 213 doc_link numtype 1;
-#X text 232 540 instead of reading .grid files with header \, will
+#X text 232 566 instead of reading .grid files with header \, will
 read raw data \, faking a .grid header to itself. It will use the hereby
 specified dimension list \, as well as two other settings: cast and
 endian.;
-#X text 232 287 big: A number will be written starting with the biggest
+#X text 232 313 big: A number will be written starting with the biggest
 digit. This is the natural way on the Macintosh-PPC \, Sun \, Amiga
 \, and so on.;
-#X text 232 335 little: A number will be written starting with the
+#X text 232 361 little: A number will be written starting with the
 smallest digit. This is the natural way on the AMD and on the Intel
 386/Pentium/"Core" including Mac-Intel.;
-#X text 232 431 various file formats use one convention or the other
+#X text 232 457 various file formats use one convention or the other
 \, regardless of the convention of the computer the format is used
 on. some file formats have an endian option that can be read from the
 header.;
-#X text 232 492 cancels "headerless" (and back to reading the real
+#X text 232 518 cancels "headerless" (and back to reading the real
 .grid format). this also will overwrite the "cast" and "endian" settings
 with what is being read from the file.;
-#X connect 6 1 23 0;
-#X connect 7 1 19 0;
+#X obj 3 856 doc_also;
+#X obj 97 649 doc_m i0 type;
+#X text 232 649 this sets the type of the data of the next headerless
+grid that you are going to read. the 'headerful' mode changes this
+attribute automatically : thus you can use 'get type' to find the attribute
+of the last grid you read in the same file.;
+#X obj 232 745 doc_link numtype 1;
+#X obj 232 239 doc_link numtype 1;
+#X text 232 191 any of the six number types. this is the type of the
+grid being output from [#in] \, regardless of the type of the data
+in the file (data will be converted as needed).;
+#X text 232 723 supports the types b \, s \, i.;
+#X obj 97 811 doc_m o0 grid;
+#X text 232 811 grid data read from the file \, converted to the type
+listed by the cast attribute.;
+#X connect 6 1 21 0;
+#X connect 7 1 17 0;
 #X connect 8 1 9 0;
-#X connect 8 1 20 0;
-#X connect 8 1 21 0;
+#X connect 8 1 18 0;
+#X connect 8 1 19 0;
 #X connect 8 1 10 0;
-#X connect 8 1 22 0;
+#X connect 8 1 20 0;
 #X connect 14 1 15 0;
-#X connect 16 1 17 0;
-#X connect 16 1 18 0;
+#X connect 16 1 27 0;
+#X connect 16 1 26 0;
+#X connect 23 1 24 0;
+#X connect 23 1 28 0;
+#X connect 23 1 25 0;
+#X connect 29 1 30 0;

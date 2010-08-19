@@ -155,13 +155,13 @@ struct GridHeader {
 \class FormatGrid : Format {
 	GridHeader head;
 	int endian;
-	NumberTypeE nt;
+	\decl NumberTypeE type;
 	Dim dim; // it is the assumed dimensions of received grids
 	bool headerless;
 	\grin 0
 	\constructor (t_symbol *mode, string filename) {
 		headerless = false;
-		nt = int32_e;
+		type = int32_e;
 		endian = is_le();
 		_0_open(mode,filename);
 	}
@@ -202,10 +202,10 @@ struct GridHeader {
 			"%02x %02x %02x %02x %02x %02x %02x %02x",
 			m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7]);
 		switch (head.type) {
-		case 8: nt=uint8_e; break; // sorry, was supposed to be signed.
-		case 9: nt=uint8_e; break;
-		case 16: nt=int16_e; break;
-		case 32: nt=int32_e; break;
+		case 8: type=uint8_e; break; // sorry, was supposed to be signed.
+		case 9: type=uint8_e; break;
+		case 16: type=int16_e; break;
+		case 32: type=int32_e; break;
 		default: RAISE("unsupported grid type %d in file",head.type);
 		}
 		// apparently, head.type 8 and 16 worked too.
@@ -216,14 +216,14 @@ struct GridHeader {
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
 		dim = Dim(head.dimn,dimv);
 	}
-	GridOut out(this,0,dim,nt);
+	GridOut out(this,0,dim,cast);
 	long nn = dim.prod();
 	
 #define FOO(T) {T data[nn]; size_t nnn = fread(data,1,nn*sizeof(T),f); \
 	if (nnn<nn*sizeof(T)) pd_error(bself,"can't read grid data (body): %s", feof(f) ? "end of file" : strerror(ferror(f))); \
 	CLEAR(data+nnn/sizeof(T),nn-nnn/sizeof(T)); \
 	out.send(nn,(T *)data);}
-TYPESWITCH(nt,FOO,)
+TYPESWITCH(type,FOO,)
 #undef FOO
 	call_super(0,0);
 }
