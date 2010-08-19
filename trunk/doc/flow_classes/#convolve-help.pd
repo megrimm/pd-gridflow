@@ -1,118 +1,94 @@
-#N canvas 596 0 632 665 10;
-#X obj 103 1627 #contrast;
-#X obj 169 1627 #posterize;
-#X obj 241 1627 #solarize;
-#X obj 307 1627 #layer;
+#N canvas 596 0 632 642 10;
+#X obj 103 3173 #contrast;
+#X obj 169 3173 #posterize;
+#X obj 241 3173 #solarize;
+#X obj 307 3173 #layer;
 #X text 4 28 [#convolve] is used to perform various transformations
 on images such as blurring \, sharpening \, finding edges \, embossing
 \, cellular automata and many others.;
-#X text 232 1214 This is the convolution grid and it gets stored in
-the other object. If rows2 and/or columns 2 are odd numbers \, then
-the centre of convolution is the middle of the convolution grid. If
-they are even numbers \, then the chosen centre will be slightly more
-to the left and/or to the top \, because the actual middle is between
-celle of the grid.;
-#X obj 3 1627 doc_also;
-#X obj 14 1595 doc_oo 0;
-#X obj 14 1341 doc_ii 0;
-#X obj 14 1533 doc_ii 1;
-#X obj 14 1214 doc_cc 0;
-#X text 232 1595 Resulting image.;
-#X obj 232 1533 doc_same 0;
+#X obj 3 3173 doc_also;
+#X obj 14 3141 doc_oo 0;
+#X obj 14 2934 doc_ii 0;
+#X obj 14 3079 doc_ii 1;
+#X obj 14 2637 doc_cc 0;
+#X obj 232 3079 doc_same 0;
 #X obj 0 0 doc_h;
-#X obj 0 1647 doc_f;
-#X obj 3 1184 doc_c 0..1;
-#X obj 3 1311 doc_i 2;
-#X obj 3 1565 doc_o 1;
-#X obj 97 1341 doc_m i0 grid;
-#X obj 97 1533 doc_m i1 grid;
-#X obj 97 1595 doc_m o0 grid;
-#X obj 97 1489 doc_m i0 op numop;
-#X obj 97 1467 doc_m i0 fold numop;
-#X obj 97 1511 doc_m i0 seed grid;
-#X obj 97 1214 doc_m c0 grid;
-#X text 232 1341 Splits the incoming grid into dim(rest...) parts \,
-for each of those parts at (y \, x). A rectangle of such parts \, centered
-around (y \, x) is combined with the convolution grid like a [#] (see
-operation 'op' below). Then each such result is folded like [#fold]
-(see 'fold' and 'seed' below). The results are assembled into a grid
-that is sent to the outlet. Near the borders of the grid \, coordinates
-wrap around. this means the whole grid has to be received before production
-of the next grid starts.;
-#X text 232 1467 numop used as in [#fold];
-#X text 232 1489 numop used as in [#];
-#X text 232 1511 seed used as in [#fold];
-#X obj 9 97 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
-#X obj 9 137 #convolve (1 3 # 1 2 1);
-#X msg 446 154 1 2 1;
-#X obj 9 156 #convolve (3 1 # 1 2 1);
-#X obj 446 173 #outer * (1 2 1);
-#X text 153 138 this is a separated convolution : first a x-convolution
+#X obj 0 3193 doc_f;
+#X obj 3 2607 doc_c 0..1;
+#X obj 3 2904 doc_i 2;
+#X obj 3 3111 doc_o 1;
+#X obj 97 2934 doc_m i0 grid;
+#X obj 97 3079 doc_m i1 grid;
+#X obj 97 3141 doc_m o0 grid;
+#X obj 97 3013 doc_m i0 op numop;
+#X obj 97 2991 doc_m i0 fold numop;
+#X obj 97 3035 doc_m i0 seed grid;
+#X obj 97 2637 doc_m c0 grid;
+#X obj 9 134 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
+#X obj 9 227 #convolve (1 3 # 1 2 1);
+#X msg 443 369 1 2 1;
+#X obj 9 246 #convolve (3 1 # 1 2 1);
+#X obj 443 388 #outer * (1 2 1);
+#X text 153 228 this is a separated convolution : first a x-convolution
 and then a y-convolution. it works because of this :;
-#X obj 446 252 #to_literal;
-#X obj 446 271 display;
-#X obj 452 193 display;
-#X msg 9 525 1 2 1;
-#X obj 9 544 #reverse;
-#X obj 9 563 display;
-#X text 48 524 is its own mirror image;
-#X obj 355 1627 pix_convolve;
-#X text 8 579 Therefore the convolution will be symmetric. This means
+#X obj 443 467 #to_literal;
+#X obj 443 486 display;
+#X obj 449 408 display;
+#X msg 9 705 1 2 1;
+#X obj 9 724 #reverse;
+#X obj 9 743 display;
+#X text 48 704 is its own mirror image;
+#X obj 355 3173 pix_convolve;
+#X text 8 759 Therefore the convolution will be symmetric. This means
 that it will not give the impression that it's shifting more on one
 side than the other. Any non-symmetric convolution will appear to move
 towards one side by a (usually fractional) number of pixels. For example
 \, the result using 0 1 1 will appear like it's a half-pixel on the
 left of the result using 0 2 0;
-#X text 8 694 NORMALISATION;
-#X text 226 90 is a blur (times a constant) because it has no negative
-values and because it has several positive values. it is called "separable"
-because you can split it.;
-#X text 7 707 you are responsible for dividing the image by a suitable
+#X text 8 874 NORMALISATION;
+#X text 7 887 you are responsible for dividing the image by a suitable
 number. for example \, (3 3 # 1 2 1 2 4 2 1 2 1) is a blur multiplied
 by 16 \, because the sum of its elements is 16 :;
-#X msg 369 676 3 3 # 1 2 1 2 4 2 1 2 1;
-#X obj 369 695 #ravel;
-#X obj 369 714 #fold +;
-#X obj 369 733 display;
-#X text 6 755 UNIT-SUM CONVOLUTION;
-#X text 5 71 The argument of [#convolve] will be called a "kernel".
-;
-#X text 7 768 a unit-sum convolution is one in which the sum of the
+#X msg 369 866 3 3 # 1 2 1 2 4 2 1 2 1;
+#X obj 369 885 #ravel;
+#X obj 369 904 #fold +;
+#X obj 369 923 display;
+#X text 6 935 UNIT-SUM CONVOLUTION;
+#X text 7 948 a unit-sum convolution is one in which the sum of the
 kernel is one \, or \, alternately \, one in which the sum of the kernel
 is the value you divide by just after convolving :;
-#X obj 370 771 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
-#X obj 370 790 # / 16;
-#X text 7 812 Thus \, this is a combination of a convolution of sum
+#X obj 370 995 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
+#X obj 370 1014 # / 16;
+#X text 7 992 Thus \, this is a combination of a convolution of sum
 16 \, with a division by 16 \, which as a whole acts as a convolution
 of sum 1;
-#X obj 371 856 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
-#X obj 371 894 # >> 4;
-#X obj 371 875 # + 8;
-#X text 8 939 Where 8 is the half the sum of the #convolve kernel.
+#X obj 371 1096 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
+#X obj 371 1134 # >> 4;
+#X obj 371 1115 # + 8;
+#X text 8 1129 Where 8 is the half the sum of the #convolve kernel.
 ;
-#X text 7 954 This may be needed because [# >>] and [# div] are biased
+#X text 7 1144 This may be needed because [# >>] and [# div] are biased
 : for random inputs \, it tends to make the image a tiny bit darker
 ([# /] is biased in a slightly different way \, which is as bad). Most
 of the time you don't care about that \, so you don't need the [# +]
 \, but if you have a feedback loop \, it can make a big difference.
 ;
-#X text 8 855 Remember that when dividing by a power of two \, [# >>]
-is a lot faster than [# /] \, except that it's actually more like [#
-div] (different kind of rounding).;
-#X text 7 914 Speaking of rounding \, if you want a rather balanced
+#X text 8 1035 Remember that when dividing by a power of two \, [#
+>>] is a lot faster than [# /] \, except that it's actually more like
+[# div] (different kind of rounding).;
+#X text 7 1104 Speaking of rounding \, if you want a rather balanced
 rounding \, do it more like :;
-#X text 8 900 ROUNDING TO NEAREST;
-#X text 6 1037 ZERO-SUM CONVOLUTION;
-#X obj 370 1027 #ravel;
-#X obj 370 1046 #fold +;
-#X obj 370 1065 display;
-#X msg 370 1008 3 3 # 1 4 1 4 -20 4 1 4 1;
-#X obj 370 1094 #convolve (3 3 # 1 4 1 4 -20 4 1 4 1);
-#X obj 370 1132 # + 128;
-#X obj 370 1151 #clip;
-#X text 416 1133 half-range is usually best because;
-#X text 405 1150 is from 0 to 255 : (255-0+1)/2 = 128;
-#X text 7 1054 Edge detectors have kernels whose values add up to 0
+#X text 8 1090 ROUNDING TO NEAREST;
+#X obj 370 1247 #ravel;
+#X obj 370 1266 #fold +;
+#X obj 370 1285 display;
+#X msg 370 1228 3 3 # 1 4 1 4 -20 4 1 4 1;
+#X obj 370 1314 #convolve (3 3 # 1 4 1 4 -20 4 1 4 1);
+#X obj 370 1352 # + 128;
+#X obj 370 1371 #clip;
+#X text 416 1353 half-range is usually best because;
+#X text 405 1370 is from 0 to 255 : (255-0+1)/2 = 128;
+#X text 7 1244 Edge detectors have kernels whose values add up to 0
 \, and in such a case \, you can't normalise. You can divide by any
 number you like \, even negative \, but doing so only gives you another
 zero-sum convolution. The sum of the pixels in any image after a zero-convolution
@@ -120,70 +96,229 @@ is zero. This means that if the image isn't all plain black \, it will
 contain a lot of negative values that get clipped to black by [#clip]
 later. If you want to see those negative values \, add a suitable constant.
 ;
-#X text 409 1113 divide by whatever you like (nonzero);
-#X obj 370 1113 # / -5;
-#X text 6 367 SAME-AXIS SEPARATION;
-#X text 8 383 note that;
-#X text 7 401 is the same as;
-#X obj 67 383 #convolve (1 3 # 1 2 1);
-#X obj 98 402 #convolve (1 3 # 0 1 1);
-#X obj 98 421 #convolve (1 3 # 1 1 0);
-#X text 10 437 or (because of the commutative property);
-#X obj 98 455 #convolve (1 3 # 1 1 0);
-#X obj 98 474 #convolve (1 3 # 0 1 1);
-#X obj 11 278 #convolve (3 3 # 0 1 0 0 2 0 0 1 0);
-#X obj 11 259 #store (3 3 # 0 0 0 1 2 1 0 0 0);
-#X obj 11 297 display;
-#X obj 11 242 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X text 7 507 SYMMETRIC CONVOLUTION;
-#X obj 227 278 #convolve (3 3 # 0 1 0 0 2 0 0 1 0);
-#X obj 227 259 #store (3 3 # 0 0 0 1 2 1 0 0 0);
-#X obj 227 297 display;
-#X obj 227 242 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
--1 -1;
-#X obj 9 209 #convolve (1 3 # 1 2 1);
-#X obj 9 190 #convolve (3 1 # 1 2 1);
-#X text 7 172 and this too \, because of the commutative property :
+#X text 409 1333 divide by whatever you like (nonzero);
+#X obj 370 1333 # / -5;
+#X text 6 511 SAME-AXIS SEPARATION;
+#X text 8 537 note that;
+#X text 7 565 is the same as;
+#X obj 67 537 #convolve (1 3 # 1 2 1);
+#X obj 98 566 #convolve (1 3 # 0 1 1);
+#X obj 98 585 #convolve (1 3 # 1 1 0);
+#X text 10 601 or (because of the commutative property);
+#X obj 98 619 #convolve (1 3 # 1 1 0);
+#X obj 98 638 #convolve (1 3 # 0 1 1);
+#X obj 11 407 display;
+#X text 7 667 SYMMETRIC CONVOLUTION;
+#X obj 227 388 #convolve (3 3 # 0 1 0 0 2 0 0 1 0);
+#X obj 227 407 display;
+#X obj 9 299 #convolve (1 3 # 1 2 1);
+#X obj 9 280 #convolve (3 1 # 1 2 1);
+#X text 7 262 and this too \, because of the commutative property :
 ;
-#X text 28 240 another proof of separability;
-#X text 245 240 another proof \, x before y;
-#X connect 6 1 0 0;
-#X connect 6 1 1 0;
-#X connect 6 1 2 0;
-#X connect 6 1 3 0;
-#X connect 6 1 42 0;
-#X connect 18 1 25 0;
-#X connect 19 1 12 0;
-#X connect 20 1 11 0;
-#X connect 21 1 27 0;
-#X connect 22 1 26 0;
-#X connect 23 1 28 0;
-#X connect 24 1 5 0;
-#X connect 30 0 32 0;
-#X connect 31 0 33 0;
-#X connect 33 0 35 0;
-#X connect 33 0 37 0;
-#X connect 35 0 36 0;
-#X connect 38 0 39 0;
-#X connect 39 0 40 0;
-#X connect 47 0 48 0;
-#X connect 48 0 49 0;
-#X connect 49 0 50 0;
-#X connect 54 0 55 0;
-#X connect 57 0 59 0;
-#X connect 59 0 58 0;
-#X connect 66 0 67 0;
-#X connect 67 0 68 0;
-#X connect 69 0 66 0;
-#X connect 70 0 77 0;
-#X connect 71 0 72 0;
-#X connect 77 0 71 0;
-#X connect 82 0 83 0;
-#X connect 87 0 89 0;
-#X connect 88 0 87 0;
-#X connect 90 0 88 0;
-#X connect 92 0 94 0;
-#X connect 93 0 92 0;
-#X connect 95 0 93 0;
-#X connect 97 0 96 0;
+#X text 231 330 another proof \, x before y;
+#X text 11 330 proof of separability \, y before x;
+#X msg 227 369 3 3 # 0 0 0 1 2 1 0 0 0;
+#X text 442 330 by another means;
+#X msg 11 369 3 3 # 0 1 0 0 2 0 0 1 0;
+#X obj 11 388 #convolve (3 3 # 0 0 0 1 2 1 0 0 0);
+#X text 9 459 note that there has to be enough 0-padding in the grid
+for this demonstration to work. This is why both grids are 3 3 instead
+of 1 3 and 3 1;
+#X text 8 1748 WRAP AROUND;
+#X text 6 1836 CONVOLUTION THEOREM;
+#X text 6 2102 ISOTROPIC CONVOLUTION;
+#X text 6 1227 ZERO-SUM CONVOLUTION (EDGE DETECTORS);
+#X text 7 1668 SHARPENERS;
+#X text 7 1535 ADDITION OF KERNELS;
+#X text 7 1379 IDENTITY KERNEL;
+#X text 226 127 is a blur (times a constant) because it has no negative
+values and because it has several positive values.;
+#X text 9 173 This blur is called "separable" because you can split
+it like the following. Very few blurs are separable \, but most of
+the most common ones are.;
+#X text 7 115 BLUR;
+#X text 7 156 SEPARABILITY;
+#X obj 11 350 loadbang;
+#X obj 227 350 loadbang;
+#X obj 443 350 loadbang;
+#X obj 9 686 loadbang;
+#X text 343 502 remember that this is how you write down a grid;
+#X text 347 525 not column by column);
+#X text 341 514 (and remember that you have to do it row by row \,
+;
+#X text 8 1394 The kernel that does nothing is the one that has a single
+one in the middle of an all-zero kernel. It's very much like multiplying
+by one. There are also multiples of that kernel \, with a single non-zero
+value of your choice instead \, and in that case \, they're just like
+using [# *] with a single constant.;
+#X text 7 1477 ZERO KERNEL;
+#X text 7 1495 But there's also the zero kernel \, which is all zero
+\, which is like [# * 0] \, and which means your data is gone.;
+#X text 8 1548 A sum of kernels does the same as the sum of the results
+of two convolutions :;
+#X obj 11 1585 #convolve (3 3 # 0 1 0 1 -4 1 0 1 0);
+#X text 236 1585 =;
+#X obj 250 1566 t a a;
+#X obj 250 1604 # +;
+#X obj 250 1585 #convolve (3 3 # 0 1 0 0 -2 0 0 1 0);
+#X obj 277 1604 #convolve (3 3 # 0 0 0 1 -2 1 0 0 0);
+#X text 10 1620 this provides you with another means of breaking down
+or consolidating convolutions \, apart from composition and decomposition.
+;
+#X obj 370 1209 loadbang;
+#X text 7 1684 Sharpeners of the "unsharp mask" kind are made by adding
+together an identity kernel and a zero-sum edge detector. This gives
+you a unit-sum edge detector \, which is not purely an edge detector
+anymore.;
+#X text 7 1761 pixels positions outside of the image corresponds to
+pixels of a tiling of that image. therefore \, left of its left edge
+\, you can reach the right edge of the image \, and similarly for the
+other sides. this behaviour is helpful in several ways (but ought to
+become an option);
+#X text 5 71 The argument of [#convolve] will be called a "kernel".
+The following theory mostly only applies when using the default values
+for options 'op' \, 'fold' and 'seed'.;
+#X text 7 1849 The [# *] of the [#fft] of two images of the same size
+\, is the same as the [#fft] of the [#convolve] of those two images
+(one of which is the convolution kernel). This provides you with a
+reasonably fast alternative to [#convolve] when your kernel is very
+large. This theorem only works with wrap-around mode.;
+#X text 7 1935 IMPULSE RESPONSE;
+#X obj 418 2095 loadbang;
+#X msg 418 2114 3 3 # 1 2 1 2 4 2 1 2 1;
+#X obj 382 2216 #transpose;
+#X obj 448 2216 #reverse 0;
+#X obj 514 2216 #reverse 1;
+#X obj 382 2235 display;
+#X obj 448 2235 display;
+#X obj 514 2235 display;
+#X text 471 2094 8-fold symmetry test;
+#X text 6 2217 Theoretically isotropic filters are impossible with
+grids of pixels \, but can be approximated pretty close. Use the operator
+spectrum patch to test your kernel : the level curves will look circular
+if the kernel is near-isotropic.;
+#X text 6 2280 GAUSSIAN BLUR;
+#X obj 514 2139 #import;
+#X obj 514 2158 display;
+#X text 444 2291 should be all the same;
+#X text 7 2117 Isotropy means that it behaves the same in all directions.
+A necessary but insufficient condition for that is that the kernel
+is its own transposition and its own x-reverse and its own y-reverse
+(an eightfold symmetry: its own mirror along x \, y and diagonals).
+But then this only guarantees that it will not favour up/down/left/right
+over diagonals or vice-versa..;
+#X text 7 2294 A gaussian kernel is theoretically one that was made
+by composing together an infinite number of small kernels. This can
+be approximated by using rows of the Pascal triangle or by using formulas
+of the exp(-$f1*$f1/$f2) family.;
+#X text 7 2361 Two-dimensional gaussian kernels are the only kernels
+to be both separable and isotropic at once \, but once it's approximated
+to work with a pixel grid \, it's a little bit off.;
+#X text 6 2423 POLYNOMIAL EQUIVALENCE;
+#X text 6 2437 A convolution is done in exactly the same way as a product
+of polynomials. It's easier to understand that with greyscale \, without
+wrap-around \, and with only one dimension at a time \, but even with
+all those features it's still true.;
+#X text 5 2491 Thus you can use [#convolve] to compute products of
+polynomials and powers of polynomials.;
+#X text 7 2023 It also works with things that are expressed as compositions
+of convolutions \, sum of convolutions \, etc. \, and also things that
+aren't expressed as convolutions at all \, but amount to the same thing
+(even when it would mean that the equivalent kernel is impossibly big...)
+;
+#X text 8 1948 examples/operator_spectrum.pd plots the impulse response
+of the convolution kernel of your choice using level curves with a
+x-frequency axis and a y-frequency axis. This shows how much various
+patterns of stripes of different sizes and directions will be dimmed
+by a kernel.;
+#X text 4 2524 NONSTANDARD CONVOLUTIONS;
+#X text 5 2538 It's possible to replace the usual operators + and *
+used inside a convolution \, by other operators of your choice. You
+do that at your own risk :) and note that for most of the possible
+combinations \, the above theory doesn't work.;
+#X text 232 2991 numop used as in [#fold]. (default: +);
+#X text 232 3035 seed used as in [#fold]. (default: 0);
+#X text 232 2637 The convolution kernel. This can be any 2-dimensional
+grid of non-zero size \, but be careful \, as large kernels are usually
+slow.;
+#X text 232 3013 numop used as in [#] and [#outer]. (default: *);
+#X text 232 2685 The * operator may be used as many times as with an
+[#outer *] with same input grids \, which is very many. But if the
+kernel contains zeroes or ones \, the multiplications may be skipped.
+(for a different choice of 'op' \, different constants apply...);
+#X text 232 2759 The + operator may be used as many times as a big
+[#fold +] on the result of [#outer] \, but when the kernel contains
+zeroes \, the additions may be skipped. (for a different choice of
+'fold' \, a different constant may apply...);
+#X text 232 2934 matrix or image to be convolved. convolution will
+happen on the first two dimensions.;
+#X text 232 2820 kernels are centered \, that is \, the identity kernel
+is a one surrounded by zeroes. for even-sized kernels \, this is a
+problem \, because the middle of the grid is between the cells. in
+that case \, the centre will be the cell above and/or to left of the
+centre.;
+#X text 232 3141 Resulting image \, of the exact same size.;
+#X obj 97 3057 doc_m i0 wrap;
+#X obj 97 2969 doc_m i0 anti;
+#X text 232 2969 undocumented option... may change soon;
+#X text 232 3057 undocumented option... may change soon;
+#X connect 5 1 0 0;
+#X connect 5 1 1 0;
+#X connect 5 1 2 0;
+#X connect 5 1 3 0;
+#X connect 5 1 36 0;
+#X connect 16 1 157 0;
+#X connect 17 1 10 0;
+#X connect 18 1 159 0;
+#X connect 19 1 154 0;
+#X connect 20 1 151 0;
+#X connect 21 1 152 0;
+#X connect 22 1 153 0;
+#X connect 22 1 155 0;
+#X connect 22 1 156 0;
+#X connect 22 1 158 0;
+#X connect 24 0 26 0;
+#X connect 25 0 27 0;
+#X connect 27 0 29 0;
+#X connect 27 0 31 0;
+#X connect 29 0 30 0;
+#X connect 32 0 33 0;
+#X connect 33 0 34 0;
+#X connect 40 0 41 0;
+#X connect 41 0 42 0;
+#X connect 42 0 43 0;
+#X connect 46 0 47 0;
+#X connect 49 0 51 0;
+#X connect 51 0 50 0;
+#X connect 57 0 58 0;
+#X connect 58 0 59 0;
+#X connect 60 0 57 0;
+#X connect 61 0 68 0;
+#X connect 62 0 63 0;
+#X connect 68 0 62 0;
+#X connect 73 0 74 0;
+#X connect 80 0 81 0;
+#X connect 83 0 82 0;
+#X connect 87 0 80 0;
+#X connect 89 0 90 0;
+#X connect 90 0 78 0;
+#X connect 103 0 89 0;
+#X connect 104 0 87 0;
+#X connect 105 0 25 0;
+#X connect 106 0 32 0;
+#X connect 116 0 118 0;
+#X connect 116 1 119 0;
+#X connect 118 0 117 0;
+#X connect 119 0 117 1;
+#X connect 121 0 60 0;
+#X connect 127 0 128 0;
+#X connect 128 0 129 0;
+#X connect 128 0 130 0;
+#X connect 128 0 131 0;
+#X connect 128 0 138 0;
+#X connect 129 0 132 0;
+#X connect 130 0 133 0;
+#X connect 131 0 134 0;
+#X connect 138 0 139 0;
+#X connect 160 1 163 0;
+#X connect 161 1 162 0;
