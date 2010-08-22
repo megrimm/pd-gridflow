@@ -155,7 +155,7 @@ struct GridHeader {
 \class FormatGrid : Format {
 	GridHeader head;
 	int endian;
-	\decl NumberTypeE type;
+	\attr NumberTypeE type;
 	Dim dim; // it is the assumed dimensions of received grids
 	bool headerless;
 	\grin 0
