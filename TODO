@@ -68,6 +68,8 @@ L = much later (whenever we get to know how to do it...)
 [ ] go back in all help files and fill in whatever is still missing
 [ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
+[ ] [#draw_polygon] : winding-rule, et multi-rule (ce dernier utile pour dessiner plusieurs polygones à la fois)
+[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -132,23 +134,14 @@ L = much later (whenever we get to know how to do it...)
 [ ] fix [#fastblur] wrong size bug
 [ ] change description of GridFlow on gridflow.ca and puredata.info
 [ ] gem: support greyscale conversions
-[ ] creating a [pd~] while -lib Gem -lib gridflow are loaded
-
-Program received signal SIGSEGV, Segmentation fault.
-
-with gdb:
-canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
-dirresult=0xbfffb634 "", nameresult=0xbfffb630, size=4096, bin=1)
-    at g_canvas.c:160
-  
-with valgrind:
-==12453== Invalid read of size 4
-==12453==    at 0x80739AB: canvas_open (g_canvas.c:160)
-==12453==    by 0x64705F76: ???
-==12453==  Address 0x9c is not stack'd, malloc'd or (recently) free'd
-
-with no further info
-
+[ ] commandline version of shoot.pd craps out, eating all RAM...
+[ ] [#in x11, cast...]
+[ ] [#out grid]: cast et type...?
+[ ] go through all examples again, to see whether everything works.
+[ ] [#in] [#out]: autoclose is currently not considered as an attribute.
+[ ] [doc_link] doesn't use [doc_iemfont]
+[ ] harmonise help files of [#in] [#out] [#io.*] and introduce help files for abstract 'standardised' interfaces such as
+    'window', 'movie', 'image', 'camera', talking about common options... (re)move superfluous parts of [#in].
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -174,6 +167,14 @@ while running #to~-help.pd :
 [ ] [#out x11]: add 'rootsize' ro attr
 [ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
     a value in million cycles or something.
+
+[ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
+    Program received signal SIGSEGV, Segmentation fault.
+    with gdb: canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
+	dirresult=0xbfffb634 "", nameresult=0xbfffb630, size=4096, bin=1) at g_canvas.c:160
+    with valgrind: Invalid read of size 4 at canvas_open (g_canvas.c:160) by 0x64705F76: ???
+	Address 0x9c is not stack'd, malloc'd or (recently) free'd
+    with no further info (2008.08.17)
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
@@ -289,8 +290,10 @@ Computation Objects
 [ ] #draw_polygon smoothly
 [ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
-[ ] implement the whole APL feature set
-[ ] #mosaic, #dither, #fire, #queue (#delay ?)
+[ ] implement the whole APL feature set :
+    compress, expand, laminate, take, drop, indexof, rotate, generalizedtranspose, deal, decode, encode,
+    membership, format, ...
+[ ] #mosaic, #dither, #queue (#delay ?)
 [ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it #chroma_key though)
