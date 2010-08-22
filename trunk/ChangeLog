@@ -37,6 +37,9 @@ version 9.11 (2010.08...):
  * qbert.pd: now in 2-D, and added a title screen
  * [#border]: allow 2-dimensional input, and border sizes of 2 elements each.
  * [#text_to_image]: add 2-dimensional input on the left
+ * [gf/object_bbox]: add method 'float' to look up by index in canvas
+ * removed soft dependencies on zexy, ggee
+ * rewrote [#convolve]'s help, now including a tutorial of convolution theory
 
 version 9.10 (2010.08.04):
 
@@ -423,6 +426,7 @@ version 0.8.3 (2006.04.02):
  * now autodetects the .gz suffix (goes with ppm/targa/grid formats)
  * moved the rest of pd_help/ to doc/flow_classes/
  * automatic attribute generator for Ruby
+ * [#io.grid]: fixed number type problems, added back method 'type'.
 
 version 0.8.2 (2006.03.17):
 
