@@ -1449,7 +1449,6 @@ GRID_INLET(0) {
 
 GRID_INLET(0) {	
 	if (!r) RAISE("need right-hand grid first !");
-	in.set_chunk(-1);
 } GRID_FLOW {
 	int32 *rdata = (int32 *)*r;
 	int npoints, nval=in.dim.prod(), nidx=r->dim.prod();
