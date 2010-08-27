@@ -1462,6 +1462,8 @@ GRID_INLET(0) {
 		// % is correct because i>=0 and it's faster than mod().
 		vec[n].w_float = data[i%nval];
 	}
+} GRID_FINISH {
+	t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
 	garray_redraw(a);
 } GRID_END
 
