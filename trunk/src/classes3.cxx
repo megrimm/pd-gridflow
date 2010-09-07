@@ -540,9 +540,9 @@ GRID_INLET(0) {
 	\grin 1 int
 	\grin 2 int
 	\constructor (Grid *dl=0, Grid *dr=0) {
-		t_atom2 a[3] = {1,1};
-		diml_grid=dl?dl:new Grid(3,a,int32_e);
-		dimr_grid=dr?dr:new Grid(3,a,int32_e);
+		t_atom2 a[2] = {1,1};
+		diml_grid=dl?dl:new Grid(2,a,int32_e);
+		dimr_grid=dr?dr:new Grid(2,a,int32_e);
 		diml = diml_grid->to_dim();
 		dimr = dimr_grid->to_dim();
 	}
