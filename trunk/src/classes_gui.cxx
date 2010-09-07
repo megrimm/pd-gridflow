@@ -98,7 +98,7 @@ public:
 	}
 	static void deletefn(BLAH) {INIT L
 		/* if (self->vis) */ sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
-		canvas_deletelinesfor(glist, (t_text *)x);
+		//canvas_deletelinesfor(glist, (t_text *)x);
 		sys_unqueuegui(x);
 	}
 	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
@@ -134,7 +134,6 @@ public:
 	t_pd *gp;
 	\constructor () {
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
-		ostringstream os;
 		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		{t_atom2 a[1] = {20}; pd_anything(gp,gensym("maxrows"),1,a);}
