@@ -7,15 +7,16 @@ puts "#X obj 0 $y doc_demo;"; incr y 32
 puts "#X obj 3 $y doc_section General Topics;"; incr y 32
 
 foreach {k v} {
-  about {about GridFlow (credits, etc)}
-  attr {attributes, the 'get' method, etc}
-  intro {the main goal of this library (but not the only one)}
-  grid  {what is a grid ?}
-  image {an image of pixels is just one way to use a grid}
+  about    {about GridFlow (credits, etc)}
+  intro    {the main goal of this library (but not the only one)}
+
+  attr     {attributes, the 'get' method, etc}
+  canvas   {methods added by GridFlow to pd's canvas class accessible through \[namecanvas\])}
+  grid     {what is a grid ?}
+  image    {an image of pixels is just one way to use a grid}
   indexmap {goes with \[#store\]}
-  numtype {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
-  numop {numops represent ways of combining two numbers (usually)}
-  canvas {methods added by GridFlow to pd's canvas class accessible through \[namecanvas\])}
+  numop    {numops represent ways of combining two numbers (usually)}
+  numtype  {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
 } {
   set k "doc_link $k 1"
   set w [string length $k]
