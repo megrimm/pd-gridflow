@@ -50,6 +50,7 @@ struct _outlet {
 //****************************************************************
 
 #define INIT1 BFObject *bself = (BFObject*)x; THISCLASS *self = (THISCLASS *)bself->self; self=self;
+	//if (long(self)==long(0xdeadbeef)) fprintf(stderr,"dead beef at bself=%lx\n",bself);
 #define INIT INIT1 t_canvas *c = glist_getcanvas(glist); c=c;
 #undef L
 #define L             if (0) post("%s",   __PRETTY_FUNCTION__);
@@ -80,7 +81,10 @@ public:
 	static void visfn(BLAH, int flag) {INIT LL(",%d",flag);
 		self->vis = !!flag;
 		if (flag) self->changed();
-		else deletefn(x,glist);
+		else { // can't call deletefn directly
+			sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
+			sys_unqueuegui(x);
+		}
 	}
 	static void getrectfn(BLAH, int *x1, int *y1, int *x2, int *y2) {INIT
 		*x1 = text_xpix(bself,glist); *x2 = *x1+self->sx;
@@ -98,7 +102,7 @@ public:
 	}
 	static void deletefn(BLAH) {INIT L
 		/* if (self->vis) */ sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
-		//canvas_deletelinesfor(glist, (t_text *)x);
+		canvas_deletelinesfor(glist,(t_object *)bself); // hein ?
 		sys_unqueuegui(x);
 	}
 	static int clickfn(BLAH, int xpix, int ypix, int shift, int alt, int dbl, int doit) {INIT
@@ -133,6 +137,7 @@ public:
 	ostringstream text;
 	t_pd *gp;
 	\constructor () {
+		fprintf(stderr,"bself=%lx this=%ld\n",bself,this);
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
@@ -256,7 +261,7 @@ static t_symbol *s_empty;
 	}
 	void delayed_free () {
 		snd = 0;
-		clock = clock_new(bself,(void(*)())MouseSpyProxy::bye);
+		clock = clock_new(bself,(void(*)())bye);
 		clock_delay(clock,0);
 	}
 };
