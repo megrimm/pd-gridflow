@@ -293,7 +293,7 @@ say setargs
 
 # 9.11
 say route3        "like route, but the selector is only replaced by 'list' instead of \$1"
-say #type-gui     "a hradio or vradio for selecting a type for use by 'cast' methods"
+say #type-gui     "\[#type-gui\]: a hradio or vradio for selecting a type for use by 'cast' methods"
 say #tabread      "for doing many tabreads at once, from a grid to a grid"
 say #tabwrite     "for doing many tabwrites at once, from two grids"
 say #from~        "turn several signals into a sequence of multichannel grids"

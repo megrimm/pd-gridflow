@@ -70,6 +70,7 @@ foreach k [lsort [array names ::say *]] {
 	if {$ok == "#see"}   {set w  69; set h 56}
 	if {$ok == "doremi"} {set w 105; set h 73}
 	if {$ok == "#color"} {set w 156; set h 55}
+	if {$ok == "#type-gui"} {set w 64; set h 80}
 	if {$ok == "display"} {set w 22}
 	if {[regexp ^doc_link $k]} {incr w -36}
 
