@@ -1,0 +1,39 @@
+#N canvas 407 78 649 560 10;
+#X obj 0 0 doc_demo;
+#X obj 3 27 doc_section Attribute;
+#X text 251 48 An attribute is some kind of setting inside of an object
+\, that you can access in one of the following ways. They are currently
+usually documented as methods of inlet 0;
+#X obj 3 96 doc_section Setter;
+#X obj 3 335 doc_section Getter;
+#X obj 0 528 doc_f;
+#X obj 3 508 doc_also;
+#X text 250 364 using the 'get' method you can query an attribute.
+The get method takes one argument \, which is the name of the attribute
+you want to get the value of. It will cause the object to send a message
+whose selector has the same name \, through the rightmost outlet of
+the object.;
+#X text 250 438 The 'get' method is present in most any class that
+has attributes \, even though it's rarely directly documented. Currently
+\, all 'external' classes of GF have a 'get' \, latent or not \, while
+abstraction classes of GF never do.;
+#X obj 103 508 attr;
+#X obj 139 508 args;
+#X text 251 119 of the same name as the attribute \, there is almost
+always a method of the same name in the leftmost inlet. Some attributes
+are read-only \, which may make them inaccessible this way \, but accessible
+through 'get'.;
+#X text 251 177 attributes in leftmost inlet \, as well as any other
+method in leftmost inlet \, is available at object creation time \,
+in the form of comma-messages.;
+#X text 251 220 [foo 1 2 3 \, bar 42] creates a [foo 1 2 3] object
+and sends it the message "bar 42" in its leftmost inlet. This allows
+you to initialise all attributes in a convenient way. This happens
+before the object is connected \, and when loading the patch from a
+file \, selection or clipboard \, it happens even before the rest of
+the objects of the patch are created. (But this is not a problem \,
+because real attribute setters are not allowed to send messages.;
+#X obj 175 508 gf/class_info;
+#X connect 6 1 9 0;
+#X connect 6 1 10 0;
+#X connect 6 1 14 0;

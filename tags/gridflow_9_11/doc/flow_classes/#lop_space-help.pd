@@ -1,0 +1,116 @@
+#N canvas 596 124 632 594 10;
+#X obj 0 0 doc_h;
+#X obj 0 560 doc_f;
+#X obj 3 149 doc_c 2;
+#X obj 3 478 doc_o 1;
+#X obj 14 508 doc_oo 0;
+#X obj 14 424 doc_ii 0;
+#X obj 14 179 doc_cc 0;
+#X obj 14 214 doc_cc 1;
+#X obj 97 508 doc_m o0 grid;
+#X obj 97 424 doc_m i0 grid;
+#X obj 3 394 doc_i 2;
+#X obj 14 446 doc_ii 1;
+#X obj 97 446 doc_m i1 grid;
+#X obj 97 214 doc_m c1 grid;
+#X obj 97 179 doc_m c0 float;
+#X obj 232 446 doc_same 1;
+#X text 232 424 grid to be low-passed;
+#X text 232 508 result;
+#X text 232 214 coefficients of the filter. 0 means the output will
+be all zeroes. 256 leaves picture unchanged. values inside that range
+will give a blur (low pass). negative values gives unstable results.
+values between 256 and 512 will give a kind of sharpening effect. values
+beyond that are unstable.;
+#X obj 395 41 lop~;
+#X text 269 41 apply something like;
+#X text 268 59 from row to row or column to column in the same image.
+;
+#N canvas 857 67 388 530 test-cutoff 1;
+#X obj 6 257 #fold +;
+#X obj 6 314 display;
+#X obj 6 43 #for 0 1024 1;
+#X obj 6 100 #redim (1 1024);
+#X obj 6 295 # sqrt;
+#X obj 6 24 metro 100;
+#X obj 6 7 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1 1;
+#X floatatom 108 119 5 0 0 0 - - -;
+#X obj 6 119 #lop_space 1 171;
+#X obj 110 276 #window;
+#X obj 110 143 spigot;
+#X obj 212 197 tgl 15 0 empty empty empty 17 7 0 10 -204800 -1 -1 1
+1;
+#X obj 110 257 # * 255;
+#X obj 110 181 t a a;
+#X obj 110 200 #finished;
+#X obj 110 238 #outer <;
+#X obj 110 162 #redim (1024 1);
+#X obj 6 219 # sq-;
+#X obj 6 238 # / 32;
+#X obj 6 276 # / 32;
+#X obj 110 219 #for -16384 16384 256;
+#X obj 6 81 # cos* 10000;
+#X text 3 332 rms @ 256 : 7070 = environ 10000/sqrt(2);
+#X text 3 345 rms @ cutoff : 3535;
+#X text 96 61 wavelength = 16 \, freq = 36000/16 = 2250 c⁰;
+#X obj 245 105 inv* 36000;
+#X floatatom 245 87 5 0 0 0 - - -;
+#X floatatom 245 124 5 0 0 0 - - -;
+#X obj 6 62 # * 1500;
+#X text 3 376 \$2=28... -> 32;
+#X text 3 361 \$2=50... -> cutoff wavelength 16;
+#X text 3 390 \$2=90... -> 8;
+#X text 3 404 \$2=134... -> 4;
+#X text 3 418 \$2=35... -> 24;
+#X connect 0 0 19 0;
+#X connect 2 0 28 0;
+#X connect 3 0 8 0;
+#X connect 4 0 1 0;
+#X connect 5 0 2 0;
+#X connect 6 0 5 0;
+#X connect 7 0 8 1;
+#X connect 8 0 10 0;
+#X connect 8 0 17 0;
+#X connect 10 0 16 0;
+#X connect 11 0 10 1;
+#X connect 11 0 9 1;
+#X connect 12 0 9 0;
+#X connect 13 0 14 0;
+#X connect 13 1 15 1;
+#X connect 14 0 20 0;
+#X connect 15 0 12 0;
+#X connect 16 0 13 0;
+#X connect 17 0 18 0;
+#X connect 18 0 0 0;
+#X connect 19 0 4 0;
+#X connect 20 0 15 0;
+#X connect 21 0 3 0;
+#X connect 25 0 27 0;
+#X connect 26 0 25 0;
+#X connect 28 0 21 0;
+#X restore 522 29 pd test-cutoff;
+#X text 232 349 generally \, [#lop_space d n] is closely related to
+[rpole~ n/256]---[*~ 1-n/256];
+#X obj 3 540 doc_also;
+#X obj 103 540 #convolve;
+#X obj 169 540 #fade;
+#X obj 211 540 rpole~;
+#X obj 259 540 lop~;
+#X text 232 179 number of the dimension to apply the low-pass filter
+on (default: 0);
+#X obj 43 78 #lop_space;
+#X text 232 288 for a coefficient \$2 \, the cutoff wavelength is about
+804/\$2 pixels \, for small enough values of \$2. This means the cutoff
+frequency is about 804/\$2 antipixels. The value 804 is actually 256
+times pi.;
+#X connect 8 1 17 0;
+#X connect 9 1 16 0;
+#X connect 12 1 15 0;
+#X connect 13 1 18 0;
+#X connect 13 1 31 0;
+#X connect 13 1 23 0;
+#X connect 14 1 29 0;
+#X connect 24 1 25 0;
+#X connect 24 1 26 1;
+#X connect 24 1 27 0;
+#X connect 24 1 28 0;

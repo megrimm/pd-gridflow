@@ -1,0 +1,36 @@
+#N canvas 0 0 632 382 10;
+#X obj 0 0 doc_h gf/;
+#X obj 0 348 doc_f;
+#X obj 3 129 doc_c 1;
+#X obj 3 191 doc_i 1;
+#X obj 3 253 doc_o 1;
+#X obj 14 159 doc_cc 0;
+#X obj 14 221 doc_ii 0;
+#X obj 14 283 doc_oo 0;
+#X text 232 159 canvas level;
+#X obj 100 54 gf/canvas_count 0;
+#X obj 78 33 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X floatatom 100 73 5 0 0 0 - - -;
+#X obj 97 159 doc_m c0 float;
+#X obj 97 221 doc_m i0 bang;
+#X text 232 221 query;
+#X obj 97 283 doc_m o0 float;
+#X obj 100 32 loadbang;
+#X obj 3 328 doc_also;
+#X obj 103 328 gf/canvas_index;
+#X text 232 283 number of objects in specified canvas (most useful
+with [gf/canvas_loadbang]);
+#X obj 205 328 gf/canvas_loadbang;
+#X text 136 71 [doc_h] + [doc_c] + [doc_i] + [doc_f] + [doc_o] + [doc_cc]
++ [doc_ii] + [doc_oo] + 3 [doc_m] + 4 comments + floatbox + bangbox
++ [loadbang] + [gf/canvas_count] + [doc_also] + [gf/canvas_index] +
+[gf/canvas_loadbang] = 21;
+#X connect 9 0 11 0;
+#X connect 10 0 9 0;
+#X connect 12 1 8 0;
+#X connect 13 1 14 0;
+#X connect 15 1 19 0;
+#X connect 16 0 9 0;
+#X connect 17 1 18 0;
+#X connect 17 1 20 0;

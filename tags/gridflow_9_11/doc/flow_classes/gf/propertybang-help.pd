@@ -1,0 +1,28 @@
+#N canvas 0 0 632 335 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 281 doc_also;
+#X obj 0 301 doc_f;
+#X obj 103 281 setargs;
+#X obj 157 281 args;
+#X obj 3 104 doc_c 0;
+#X obj 3 144 doc_i 1;
+#X obj 14 174 doc_ii 0;
+#X obj 97 174 doc_m i0 <none>;
+#X text 232 174 dummy inlet because GF objects can't have 0 inlets
+;
+#X obj 3 206 doc_o 1;
+#X obj 14 236 doc_oo 0;
+#X obj 97 236 doc_m o0 bang;
+#X text 232 236 sent when Right-Click Properties is done on the objectbox
+of the abstraction instance.;
+#X obj 148 43 propertybang-demo;
+#X text 262 42 do right-click properties on this box;
+#X obj 247 62 display;
+#X obj 148 62 display;
+#X text 285 79 and then right-click open to see how it's done.;
+#X connect 1 1 3 0;
+#X connect 1 1 4 0;
+#X connect 8 1 9 0;
+#X connect 12 1 13 0;
+#X connect 14 0 17 0;
+#X connect 14 1 16 0;

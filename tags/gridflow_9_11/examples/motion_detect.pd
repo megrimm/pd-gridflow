@@ -1,0 +1,37 @@
+#N canvas 459 156 671 502 10;
+#X obj 32 57 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
+#X obj 32 359 #out window;
+#X obj 32 132 t a a;
+#X obj 32 174 # * 8;
+#X obj 32 378 fps detailed;
+#X obj 32 398 print;
+#X obj 32 84 metro 33.3667;
+#X obj 32 108 #camera;
+#X obj 32 212 #clip;
+#X text 0 22 Copyright 2001 Mathieu Bouchard;
+#X obj 129 255 display;
+#X text 111 125 This patch demonstrates the basis of motion detection.
+The substraction of two subsequent frames after [t a a]. It then downscales
+and rescales the image \, breaking it down into larger regions that
+can be monitored for changes.;
+#X obj 0 0 doc_demo;
+#X obj 32 155 # abs-;
+#X floatatom 75 194 5 0 0 0 - - -;
+#X obj 32 193 # - 64;
+#X obj 32 327 #scale_by 32;
+#X obj 32 231 #downscale_by 32 smoothly;
+#X connect 0 0 6 0;
+#X connect 1 0 4 0;
+#X connect 2 0 13 1;
+#X connect 2 1 13 0;
+#X connect 3 0 15 0;
+#X connect 4 0 5 0;
+#X connect 6 0 7 0;
+#X connect 7 0 2 0;
+#X connect 8 0 17 0;
+#X connect 13 0 3 0;
+#X connect 14 0 15 1;
+#X connect 15 0 8 0;
+#X connect 16 0 1 0;
+#X connect 17 0 10 0;
+#X connect 17 0 16 0;

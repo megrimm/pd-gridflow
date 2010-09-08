@@ -1,0 +1,76 @@
+#N canvas 584 51 632 550 10;
+#X obj 259 179 #in;
+#X obj 295 202 tgl 15 0 empty empty empty 0 -6 0 8 -260818 -1 -1 0
+1;
+#X obj 259 122 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+;
+#X text 282 178 image loader;
+#X obj 259 141 metro 33.3667;
+#X text 402 254 Outputs negated image;
+#X text 125 214 Outputs initial image;
+#X obj 381 222 hsl 128 15 1000 65000 0 0 empty empty empty -2 -6 0
+8 -262144 -1 -1 0 1;
+#X obj 187 496 swap;
+#X floatatom 72 97 5 0 0 0 - - -;
+#X floatatom 74 199 5 0 0 0 - - -;
+#X floatatom 35 248 5 0 0 0 - - -;
+#X obj 35 217 inv* 10;
+#X obj 103 496 inv+;
+#X obj 139 496 # inv*;
+#X text 8 24 The [inv*] performs an inversion on the data passed to
+it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
+"b" \, [inv*] performs the operation "b/a" on the values passed to
+it.;
+#X text 232 464 Outputs the result of the operation "b/a".;
+#X obj 303 225 # inv* 4000;
+#X text 310 200 inversion;
+#X obj 0 0 doc_h;
+#X obj 3 350 doc_i 2;
+#X obj 3 434 doc_o 1;
+#X obj 3 288 doc_c 1;
+#X obj 3 496 doc_also;
+#X obj 14 380 doc_ii 0;
+#X obj 14 402 doc_ii 1;
+#X obj 14 464 doc_oo 0;
+#X obj 14 318 doc_cc 0;
+#X text 374 158 numerical operator of the Grid object;
+#X obj 97 318 doc_m c0 float;
+#X obj 97 380 doc_m i0 float;
+#X obj 97 402 doc_m i1 float;
+#X obj 97 464 doc_m o0 float;
+#X obj 0 516 doc_f;
+#X text 232 318 number that the left inlet values will be divided by.
+;
+#X msg 259 160 load r001.jpg;
+#X text 232 380 a: divisor;
+#X text 232 402 b: dividend;
+#X text 374 145 Another application: inv* as a;
+#X obj 259 201 shunt;
+#X obj 259 254 #out window \, title inv*;
+#X msg 72 118 list \$1;
+#X floatatom 74 145 5 0 0 0 - - -;
+#X msg 74 166 list \$1 210;
+#X floatatom 35 97 5 0 0 0 - - -;
+#X connect 0 0 39 0;
+#X connect 1 0 39 1;
+#X connect 2 0 4 0;
+#X connect 4 0 35 0;
+#X connect 7 0 17 1;
+#X connect 9 0 41 0;
+#X connect 10 0 12 1;
+#X connect 12 0 11 0;
+#X connect 17 0 40 0;
+#X connect 23 1 13 1;
+#X connect 23 1 14 0;
+#X connect 23 1 8 0;
+#X connect 29 1 34 0;
+#X connect 30 1 36 0;
+#X connect 31 1 37 0;
+#X connect 32 1 16 0;
+#X connect 35 0 0 0;
+#X connect 39 0 40 0;
+#X connect 39 1 17 0;
+#X connect 41 0 12 0;
+#X connect 42 0 43 0;
+#X connect 43 0 12 0;
+#X connect 44 0 12 0;

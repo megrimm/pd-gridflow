@@ -1,0 +1,92 @@
+#N canvas 255 219 373 318 10;
+#X obj 11 7 namecanvas \$1-propcanvas;
+#X obj 10 254 cnv 4 4 4 empty empty NOTE: 0 4 0 12 -262144 -258113
+0;
+#X text 8 262 changes to number of rows and columns will be only applied
+when the patch is reloaded (from saving) or delete/undo or cut/paste
+or duplicate (ctrl+d).;
+#N canvas 0 0 568 436 (subpatch) 0;
+#X obj 308 57 r \$1-propin;
+#X obj 392 389 s \$1-propout;
+#X obj 183 298 t b b;
+#X obj 273 310 list split 1;
+#X msg 398 369 cancel;
+#X obj 308 183 s \$0-element_class;
+#X obj 342 164 s \$0-rows;
+#X obj 296 202 r \$0-s_element_class;
+#X obj 319 221 r \$0-s_rows;
+#X obj 342 240 r \$0-s_columns;
+#X obj 377 145 s \$0-columns;
+#X obj 0 0 cnv 15 200 240 empty empty empty 20 12 0 14 -179192 -66577
+0;
+#X obj 11 79 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_spacing-x \$0-spacing-x
+spacing_horizontal 48 8 0 8 -262144 -1 -1 0 256;
+#X obj 11 63 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_spacing-y \$0-spacing-y
+spacing_vertical 48 8 0 8 -262144 -1 -1 0 256;
+#X obj 11 47 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_columns \$0-columns columns
+48 8 0 8 -261234 -1 -1 7 256;
+#X obj 11 31 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_rows \$0-rows rows 48
+8 0 8 -261234 -1 -1 13 256;
+#X symbolatom 11 13 15 0 0 1 element_class #0-element_class #0-s_element_class
+;
+#X obj 308 126 unpack s 0 0;
+#X obj 273 291 pack 0 s 0 0;
+#X obj 11 111 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-left \$0-margins-left
+margins_left 48 8 0 8 -228856 -191407 -228856 0 256;
+#X obj 11 95 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-top \$0-margins-top
+margins_top 48 8 0 8 -228856 -191407 -228856 0 256;
+#X text 69 165 should add bgcolor...;
+#X text 12 179 how to add delegate and such ?;
+#X obj 308 76 route2 list;
+#X obj 395 69 route spacing;
+#X obj 395 88 unpack 0 0;
+#X obj 392 283 #pack;
+#X obj 392 302 #to_l;
+#X msg 392 321 spacing \$1 \$2;
+#X obj 392 340 attr;
+#X obj 274 258 t b b;
+#X msg 356 333 get;
+#X obj 395 126 s \$0-spacing-y;
+#X obj 452 107 s \$0-spacing-x;
+#X obj 392 264 r \$0-s_spacing-y;
+#X obj 428 283 r \$0-s_spacing-x;
+#X obj 11 143 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-right \$0-margins-right
+margins_right 48 8 0 8 -228856 -191407 -228856 0 256;
+#X obj 11 127 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-bottom \$0-margins-bottom
+margins_bottom 48 8 0 8 -228856 -191407 -228856 0 256;
+#X obj 147 201 gf/tk_button OK;
+#X obj 83 202 gf/tk_button Apply;
+#X obj 14 202 gf/tk_button Cancel;
+#X obj 201 93 doc_accolade;
+#X text 213 116 FUTURE USE;
+#X connect 0 0 23 0;
+#X connect 2 0 4 0;
+#X connect 2 1 30 0;
+#X connect 3 1 1 0;
+#X connect 4 0 1 0;
+#X connect 7 0 18 1;
+#X connect 8 0 18 2;
+#X connect 9 0 18 3;
+#X connect 17 0 5 0;
+#X connect 17 1 6 0;
+#X connect 17 2 10 0;
+#X connect 18 0 3 0;
+#X connect 23 0 17 0;
+#X connect 23 1 24 0;
+#X connect 24 0 25 0;
+#X connect 25 0 32 0;
+#X connect 25 1 33 0;
+#X connect 26 0 27 0;
+#X connect 27 0 28 0;
+#X connect 28 0 29 0;
+#X connect 29 0 1 0;
+#X connect 30 0 31 0;
+#X connect 30 1 18 0;
+#X connect 31 0 29 0;
+#X connect 34 0 26 0;
+#X connect 35 0 26 1;
+#X connect 38 0 2 0;
+#X connect 39 0 30 0;
+#X connect 40 0 4 0;
+#X coords 0 -1 1 1 280 240 1 0 0;
+#X restore 11 7 pd;

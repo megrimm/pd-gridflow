@@ -1,0 +1,10 @@
+#N canvas 0 0 450 300 10;
+#X obj 73 64 #scale_by;
+#X obj 98 94 #greyscale_to_rgb;
+#X obj 73 137 #out window;
+#X obj 205 132 display;
+#X msg 80 36 32 32 4 # 128;
+#X connect 0 0 2 0;
+#X connect 1 0 2 0;
+#X connect 1 0 3 0;
+#X connect 4 0 0 0;

@@ -1,0 +1,69 @@
+#N canvas 335 118 632 543 10;
+#X obj 0 0 doc_h;
+#X obj 0 509 doc_f;
+#X obj 3 201 doc_c 0..;
+#X obj 14 231 doc_cc 0;
+#X obj 14 274 doc_cc other;
+#X obj 97 231 doc_m c0 symbol;
+#X obj 97 274 doc_m cother symbol;
+#X text 232 231 the prefix that is going to be common to all receive-symbols.
+if omitted \, the blank symbol will be used (thus no prefix).;
+#X text 232 274 the suffix of each receive symbol that will be registered.
+;
+#X obj 3 304 doc_i 1;
+#X obj 3 405 doc_o 2;
+#X obj 14 334 doc_ii 0;
+#X obj 14 435 doc_oo 0;
+#X obj 14 457 doc_oo 1;
+#X obj 97 334 doc_m i0 list;
+#X text 232 334 list of symbols to register receive-symbols for. they
+will be prefixed. sending such a message unregisters all previous receive-symbols
+registered by this box (which may be reregistered immediately... if
+this is what you're doing);
+#X text 232 435 the message received;
+#X obj 97 435 doc_m o0 <any>;
+#X obj 97 457 doc_m o1 symbol;
+#X text 232 457 the receive-symbol that this message was received as.
+;
+#X obj 45 33 receives \$0- a b c;
+#X text 166 32 =;
+#X obj 183 34 r \$0-a;
+#X obj 225 34 r \$0-b;
+#X obj 267 34 r \$0-c;
+#X obj 3 489 doc_also;
+#X msg 453 36 1212;
+#X obj 453 55 s \$0-a;
+#X obj 502 55 s \$0-b;
+#X obj 453 103 s \$0-c;
+#X msg 453 84 nananananana;
+#X obj 150 120 listfind a b c;
+#X obj 45 52 shunt 3;
+#X obj 267 53 display;
+#X obj 225 72 display;
+#X obj 183 91 display;
+#X obj 84 139 display;
+#X obj 64 158 display;
+#X obj 45 177 display;
+#X obj 205 489 r;
+#X obj 103 489 listfind;
+#X obj 163 489 shunt;
+#X msg 502 36 patate poil;
+#X connect 5 1 7 0;
+#X connect 6 1 8 0;
+#X connect 14 1 15 0;
+#X connect 17 1 16 0;
+#X connect 18 1 19 0;
+#X connect 20 0 32 0;
+#X connect 20 1 31 0;
+#X connect 22 0 35 0;
+#X connect 23 0 34 0;
+#X connect 24 0 33 0;
+#X connect 25 1 40 0;
+#X connect 25 1 41 0;
+#X connect 26 0 27 0;
+#X connect 30 0 29 0;
+#X connect 31 0 32 1;
+#X connect 32 0 38 0;
+#X connect 32 1 37 0;
+#X connect 32 2 36 0;
+#X connect 42 0 28 0;
