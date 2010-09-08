@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.11 (2010.08...):
+version 9.11 (2010.09.07):
 
  * now officially requires Pd 41
  * [#cast] $1 defaults to int32 (i)
@@ -40,6 +40,7 @@ version 9.11 (2010.08...):
  * [gf/object_bbox]: add method 'float' to look up by index in canvas
  * removed soft dependencies on zexy, ggee
  * rewrote [#convolve]'s help, now including a tutorial of convolution theory
+ * split away the UTF-8 hack as "gridflow_unicorn.pd_*"
 
 version 9.10 (2010.08.04):
 

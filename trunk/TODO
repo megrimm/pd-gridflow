@@ -1,8 +1,11 @@
 x = done
 L = much later (whenever we get to know how to do it...)
 
+[ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
+[ ] remove 'chunk' variable ?
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
-
+[ ] document "f 1 2 3" as a shortcut grid literal
+[ ] [#import]: empty list in per_message doesn't go through
 [ ] [#import] does the same rounding bullshit again, when we want a float grid
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
@@ -167,6 +170,12 @@ while running #to~-help.pd :
 [ ] [#out x11]: add 'rootsize' ro attr
 [ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
     a value in million cycles or something.
+[ ] look at [pdgst] and [pix_pix2gst]
+[ ] [gf/class_info]: add class-list, attr types, arg types, superclasses
+[ ] make a generic graph tool that can do efficient graphs using grids (?) and can be configured to do things like PMPD
+    but can also serve other purposes. And/or start from waves.pd's mask system to make a patch that recycles the wave data
+    to make a CHDH-like animations using [gf/gl].
+[ ] see [comment] from cyclone
 
 [ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
     Program received signal SIGSEGV, Segmentation fault.
@@ -261,7 +270,6 @@ Architecture
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
-[ ] add reflection (#global:classes, #global:methods, ...)
 [ ] dispatch on _#{i}_-named methods (any selector one inlet)
 [ ] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
@@ -276,6 +284,7 @@ Architecture
 [ ] SSE
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
+[ ] read http://en.wikipedia.org/wiki/Tacit_programming
 
 Computation Objects
 [ ] #counter (similar to #for)
