@@ -131,13 +131,13 @@ void Args::process_args (int argc, t_atom *argv) {
 		} else v = (t_atom2 *)&argv[i];
 		if (sargs[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
+			return;
 		} else {
 			if (v->a_type==A_LIST) {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
 			else                                      out[i](*v);
 		}
 	}
-	if (argc>int(sargs.size()) && sargs[sargs.size()-1].name!=wildcard)
-		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
+	if (argc>int(sargs.size())) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
 }
 \end class {install("args",1,1);}
 
