@@ -1,5 +1,5 @@
 ,-o----o----o----o-.
-|   GridFlow 9.10  |
+|   GridFlow 9.11  |
 `-o--------------o-'
   |
 .-o--------------------------------------------------------------
@@ -16,7 +16,7 @@ you do want to try to add support for that, try CygWin and/or MinGW.
 
 Required Software:
 	Ruby 1.8 or 1.9
-	PureData 0.40 or later, or DesireData
+	PureData 0.41 or later, or DesireData
 	GNU C++ Compiler (g++) version 3.x or 4.x
 	GNU Make
 	SVN
@@ -39,6 +39,7 @@ Multimedia Components (optional):
 	OpenCV
 	NetPBM
 	OpenGL (and GLEW)
+	GEM (if you have OpenGL)
 	Apple X11 (for 10.3: http://www.apple.com/support/downloads/x11formacosx.html
 		   for 10.4: http://www.apple.com/support/downloads/x11update2006113.html )
 
