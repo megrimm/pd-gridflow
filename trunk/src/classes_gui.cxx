@@ -137,7 +137,7 @@ public:
 	ostringstream text;
 	t_pd *gp;
 	\constructor () {
-		fprintf(stderr,"bself=%lx this=%ld\n",bself,this);
+		//fprintf(stderr,"bself=%lx this=%ld\n",bself,this);
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
 		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
