@@ -1238,7 +1238,7 @@ GRID_INLET(0) {
 		if (n>64) RAISE("don't you think that %d is too many inlets?",n);
 		a = new Grid(dim,float32_e,true);
 		ninlets_set(n);
-		cast = int32_e;
+		cast = nt;
 	}
 	\decl n set   (int inlet, float f) {
 		if (inlet>=n) RAISE("what???");
