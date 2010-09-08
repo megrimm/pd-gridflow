@@ -119,6 +119,7 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 void Args::process_args (int argc, t_atom *argv) {
 	t_canvas *canvas = canvas_getrootfor(mom);
 	t_symbol *wildcard = gensym("*");
+	bool have_rest = false;
 	for (int i=sargs.size()-1; i>=0; i--) {
 		t_atom2 *v;
 		if (i>=argc) {
@@ -131,13 +132,14 @@ void Args::process_args (int argc, t_atom *argv) {
 		} else v = (t_atom2 *)&argv[i];
 		if (sargs[i].name==wildcard) {
 			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
-			return;
+			have_rest = true;
 		} else {
 			if (v->a_type==A_LIST) {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
 			else                                      out[i](*v);
 		}
 	}
-	if (argc>int(sargs.size())) pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
+	if (argc>int(sargs.size()) && !have_rest)
+		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
 }
 \end class {install("args",1,1);}
 
