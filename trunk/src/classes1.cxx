@@ -93,7 +93,6 @@ GridHandler *stromgol; // remove this asap
 			if (!dim.prod()) RAISE("target grid size must not be zero");
 		}
 	}
-	~GridImport() {}
 	\decl 0 reset() {int32 foo[1]={0}; if (go) while (go->sender) go->send(1,foo);}
 	\decl 0 symbol(t_symbol *x) {
 		const char *name = x->s_name;
