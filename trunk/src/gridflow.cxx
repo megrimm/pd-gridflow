@@ -1069,15 +1069,10 @@ BUILTIN_SYMBOLS(FOO)
 #ifdef HAVE_GEM
 	try_loading_gem();
 #endif
-	sys_load_lib(0,"gridflow/gridflow_pdp"); // avoid linking directly to [gridflow/gridflow_pdp]
+	sys_load_lib(0,"gridflow/gridflow_pdp");     // avoid linking directly to [gridflow/gridflow_pdp]
+	sys_load_lib(0,"gridflow/gridflow_unicorn"); // avoid linking directly to [gridflow/gridflow_unicorn]
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
-	sys_gui("catch {rename pdtk_canvas_sendkey pdtk_canvas_sendqui\n"
-	  "proc pdtk_canvas_sendkey {name state key iso shift} {\n"
-	  "if {$iso != \"\" && [lsearch {BackSpace Tab Return Escape Space Delete KP_Delete} $iso]<0} {\n"
-	  "  binary scan [encoding convertto $iso] c* bytes\n"
-	  "  foreach byte $bytes {pd [canvastosym $name] key $state [expr {$byte & 255}] $shift \\;}\n"
-	  "} else {pdtk_canvas_sendqui $name $state $key $iso $shift}}}\n");
 #if 0
 	sys_gui("rename pdtk_text_new pdtk_text_nous\n"
 	        "proc pdtk_text_new {a b c d e f g} {pdtk_text_nous $a $b $c $d [encoding convertfrom $e] $f $g}\n"

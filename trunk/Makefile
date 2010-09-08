@@ -14,7 +14,7 @@ LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/classes_gui.o \
 src/number.1.o src/number.2.o src/number.3.o src/number.4.o \
 src/formats.o
-PDLIB += gridflow_pdp$(PDSUF)
+PDLIB += gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
 
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
@@ -91,14 +91,16 @@ PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
 
-gridflow_gem9292$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -xc++ src/gem.cxx.fcs -o $@
-gridflow_gem9293$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -xc++ src/gem.cxx.fcs -o $@
-gridflow_gem9393$(PDSUF): src/gem.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -xc++ src/gem.cxx.fcs -o $@
-gridflow_pdp$(PDSUF):     src/pdp.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -xc++ src/pdp.cxx.fcs -o $@
+gridflow_gem9292$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/gem.cxx.fcs
+gridflow_gem9293$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                  -o $@ -xc++ src/gem.cxx.fcs
+gridflow_gem9393$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93  -o $@ -xc++ src/gem.cxx.fcs
+gridflow_pdp$(PDSUF):     src/pdp.cxx.fcs     $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/pdp.cxx.fcs
+gridflow_unicorn$(PDSUF): src/unicorn.cxx.fcs $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/unicorn.cxx.fcs
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
