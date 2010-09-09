@@ -1,6 +1,6 @@
-#N canvas 0 53 622 365 10;
-#X obj 3 3 cnv 15 608 18 empty \$0-rect supercycloid.pd 2 9 1 13 -1
--262144 0;
+#N canvas 3 57 622 365 10;
+#X obj 3 3 cnv 15 608 18 empty \$0-rect index.pd 2 9 1 14 -1 -262144
+0;
 #X obj 6 28 loadbang;
 #X obj 61 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
@@ -30,6 +30,8 @@
 #X msg 463 236 symbol \$1-clock;
 #X obj 463 198 loadbang;
 #X obj 393 236 metro 1000;
+#X obj 78 226 doc_iemfont 1 19;
+#X obj 78 245 s \$0-rect2;
 #X connect 1 0 5 0;
 #X connect 2 0 5 0;
 #X connect 3 0 6 0;
@@ -54,4 +56,6 @@
 #X connect 24 0 23 1;
 #X connect 25 0 22 0;
 #X connect 26 0 21 0;
+#X connect 27 0 4 0;
+#X connect 27 0 28 0;
 #X coords 0 -1 1 1 614 24 2 0 0;
