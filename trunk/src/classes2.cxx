@@ -1102,22 +1102,38 @@ string string_replace (string victim, string from, string to) {
 	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv*",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2a"));}
 
-extern t_symbol *gridflow_folder; 
+#ifdef __WIN32__
+#define OSSTRING "win32"
+#else
+#ifdef MACOSX
+#define OSSTRING "darwin"
+#else
+#define OSSTRING "linux" /* or any other unix/x11, at this point */
+#endif
+#endif
+
+extern t_symbol *gridflow_folder;
+extern char *pd_version;
+
 \class GridFlowClass : FObject {
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
-		if (!s) {_0_get(gensym("version"));_0_get(gensym("folder"));_0_get(gensym("os"));}
-		if (s==gensym("version")) {t_atom2 a[3] = {GF_VERSION_A,GF_VERSION_B,GF_VERSION_C}; out[0](s,3,a);}
-		if (s==gensym("folder"))  {t_atom2 a[1] = {gridflow_folder}; out[0](s,1,a);}
-		#ifdef __WIN32__
-		if (s==gensym("os")) {t_atom2 a[1] = {"win32"};  out[0](s,1,a);}
-		#else
-		#ifdef MACOSX
-		if (s==gensym("os")) {t_atom2 a[1] = {"darwin"}; out[0](s,1,a);}
-		#else
-		if (s==gensym("os")) {t_atom2 a[1] = {"linux"}; out[0](s,1,a);} // or other
-		#endif
-		#endif
+		if (!s) {
+			_0_get(gensym("version"));
+			_0_get(gensym("folder"));
+			_0_get(gensym("os"));
+			_0_get(gensym("pd_version"));
+		}
+		else if (s==gensym("version")) {t_atom2 a[3] = {GF_VERSION_A,GF_VERSION_B,GF_VERSION_C}; out[0](s,3,a);}
+		else if (s==gensym("folder"))  {t_atom2 a[1] = {gridflow_folder}; out[0](s,1,a);}
+		else if (s==gensym("os")) {t_atom2 a[1] = {OSSTRING};  out[0](s,1,a);}
+		else if (s==gensym("pd_version")) {
+			int x,y,z;
+			if (pd_version) sscanf(pd_version,"Pd version %d.%d-%d",&x,&y,&z);
+			else {x=0; y=43; z=-1;}
+			t_atom2 a[3] = {x,y,z};
+			out[0](s,3,a);
+		} else RAISE("unknown attr '%s'",s->s_name);
 	}
 };
 \end class {install("gridflow",1,1);}
