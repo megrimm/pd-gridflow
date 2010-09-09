@@ -22,9 +22,9 @@
 #ifndef __GRIDFLOW_H
 #define __GRIDFLOW_H
 
-#define GF_VERSION "9.11"
+#define GF_VERSION "9.12"
 #define GF_VERSION_A  9
-#define GF_VERSION_B 11
+#define GF_VERSION_B 12
 #define GF_VERSION_C  0
 
 #include "bundled/m_pd.h"
@@ -681,14 +681,11 @@ struct GridInlet : CObject {
 	
 	// set once per transmission
 	GridOut *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
-private:
-	int chunk; 
-public:
 	// modified continually
 	long dex; PtrGrid buf; /* factor-chunk buffer */ long bufi; /* buffer index: how much of buf is filled */
 
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
-		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), chunk(-1), dex(0), bufi(0) {}
+		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), bufi(0) {}
 	~GridInlet() {}
 	void set_chunk(long whichdim);
 	int32 factor() {return buf?buf->dim.prod():1;} // which is usually not the same as this->dim->prod(chunk)
