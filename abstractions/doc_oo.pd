@@ -1,12 +1,12 @@
-#N canvas 113 292 560 242 10;
-#X obj 0 0 cnv 16 64 17 empty \$0-rect Outlet 0: 8 9 1 9 -175159 -1
-0;
+#N canvas 113 294 560 242 10;
+#X obj 0 0 cnv 16 64 17 empty \$0-rect Outlet 0: 8 9 1 11 -175159
+-1 0;
 #X obj 218 75 loadbang;
 #X obj 218 153 s \$0-rect;
 #X obj 218 94 list append \$1;
 #X msg 218 113 label Outlet \$1:;
 #X msg 218 0 14 \$2;
-#X obj 56 20 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
+#X obj 56 0 bng 8 250 50 0 \$0-create_s \$0-create empty 17 7 0 10
 -203904 -1 -1;
 #X obj 56 99 doc_add o\$1;
 #X obj 302 0 loadbang;
@@ -20,7 +20,7 @@
 #X obj 218 19 doc_below o 0;
 #X obj 302 19 list append \$1;
 #X obj 302 38 route float;
-#X obj 224 133 doc_iemfont 1 9;
+#X obj 224 133 doc_iemfont 1 12;
 #X connect 1 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 2 0;

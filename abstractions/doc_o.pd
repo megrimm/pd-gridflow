@@ -1,5 +1,5 @@
-#N canvas 110 0 614 243 10;
-#X obj 0 0 cnv 15 606 17 empty \$0-rect Outlets (1) 240 8 1 9 -88239
+#N canvas 110 55 614 243 10;
+#X obj 0 0 cnv 15 606 17 empty \$0-rect Outlets (1) 240 8 1 12 -88239
 -262144 0;
 #X obj 0 39 loadbang;
 #X obj 0 117 s \$0-rect;
@@ -13,7 +13,7 @@
 #X obj 213 115 doc_make o \$1;
 #X obj 213 77 loadbang;
 #X obj 213 96 delay;
-#X obj 6 97 doc_iemfont 1 10;
+#X obj 6 97 doc_iemfont 1 15;
 #X connect 1 0 4 0;
 #X connect 3 0 7 0;
 #X connect 4 0 6 0;
