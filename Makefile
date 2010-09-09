@@ -12,9 +12,9 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/classes_gui.o \
-src/number.1.o src/number.2.o src/number.3.o src/number.4.o \
-src/formats.o
-PDLIB += gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
+src/number.1.o src/number.2.o src/number.3.o src/number.4.o src/formats.o
+PDLIB += gridflow_gem_loader$(PDSUF) gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
+PDLIB += gridflow_gem9292$(PDSUF) gridflow_gem9293$(PDSUF) gridflow_gem9393$(PDSUF)
 
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
@@ -91,16 +91,18 @@ PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
 
-gridflow_gem9292$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/gem.cxx.fcs
-gridflow_gem9293$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                  -o $@ -xc++ src/gem.cxx.fcs
-gridflow_gem9393$(PDSUF): src/gem.cxx.fcs     $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93  -o $@ -xc++ src/gem.cxx.fcs
-gridflow_pdp$(PDSUF):     src/pdp.cxx.fcs     $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/pdp.cxx.fcs
-gridflow_unicorn$(PDSUF): src/unicorn.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                               -o $@ -xc++ src/unicorn.cxx.fcs
+gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem_loader.cxx.fcs
+gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem.cxx.fcs
+gridflow_gem9293$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs
+gridflow_gem9393$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs
+gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/pdp.cxx.fcs
+gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/unicorn.cxx.fcs
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
