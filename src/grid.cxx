@@ -91,7 +91,6 @@ void Grid::init_from_atom(const t_atom &x) {
 // afterwards. This is to allow some optimisations. Anyway there is no good reason
 // why this would be changed afterwards.
 void GridInlet::set_chunk(long whichdim) {
-	chunk = whichdim;
 	long n = dim.prod(whichdim);
 	if (!n) n=1;
 	if (n>1) {buf=new Grid(Dim(n), sender->nt); bufi=0;} else buf=0;
