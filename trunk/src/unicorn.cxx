@@ -28,4 +28,10 @@ extern "C" void gridflow_unicorn_setup () {
 	  "  binary scan [encoding convertto $iso] c* bytes\n"
 	  "  foreach byte $bytes {pd [canvastosym $name] key $state [expr {$byte & 255}] $shift \\;}\n"
 	  "} else {pdtk_canvas_sendqui $name $state $key $iso $shift}}}\n");
+#if 0
+	sys_gui("rename pdtk_text_new pdtk_text_nous\n"
+	        "proc pdtk_text_new {a b c d e f g} {pdtk_text_nous $a $b $c $d [encoding convertfrom $e] $f $g}\n"
+		"rename pdtk_text_set pdtk_text_sept\n"
+	        "proc pdtk_text_set {a b e        } {pdtk_text_sept $a $b       [encoding convertfrom $e]      }\n");
+#endif
 }
