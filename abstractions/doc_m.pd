@@ -1,5 +1,5 @@
-#N canvas 301 61 916 502 10;
-#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect get 4 9 1 9 -261615 -1
+#N canvas 301 65 916 502 10;
+#X obj 0 0 cnv 15 126 17 \$0-rect_s \$0-rect grid 4 9 1 8 -261615 -1
 0;
 #X obj 9 176 gf/string_replace c c/;
 #X obj 9 195 gf/string_replace i i/;
@@ -97,7 +97,7 @@
 #X obj 11 58 inlet;
 #X text 49 57 needed because we use [args];
 #X obj 109 413 s \$0-rect;
-#X obj 109 394 doc_iemfont 1 9;
+#X obj 109 394 doc_iemfont 1 12;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
