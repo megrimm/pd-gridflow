@@ -567,23 +567,6 @@ Feature.add {
                 `
         }
 }
-Feature.add {
-	tag :gem
-	name "GEM support (versions 91, 92, 93, 92/93 hybrid)"
-	uses_feature [:opengl]
-	uses_pdlib ["gridflow_gem9292$(PDSUF)",
-		    "gridflow_gem9293$(PDSUF)",
-		    "gridflow_gem9393$(PDSUF)"]
-        uses_so $LIBX11DIR+["-lGLEW"] if not WIN
-        uses_h ["GL/glew.h"]
-	options ["HAVE_GEM"]
-	test proc {
-		c_test %`
-                #include#
-                int main () {return (GLint)0;}
-                `
-        }
-}
 #--------------------------------#
 
 $features_h = {}
