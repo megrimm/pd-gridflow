@@ -1,5 +1,5 @@
 #N canvas 437 173 634 210 10;
-#X obj 0 0 cnv 15 606 17 empty \$0-rect Special 200 8 1 13 -88239 -262144
+#X obj 0 0 cnv 15 606 17 empty \$0-rect Special 200 8 1 11 -88239 -262144
 0;
 #X obj 1 158 s \$0-rect;
 #X msg 28 76 symbol  ;
@@ -9,7 +9,7 @@
 #X obj 1 99 gf/l2s;
 #X obj 1 38 t b b;
 #X obj 1 57 args *;
-#X obj 7 138 doc_iemfont 1 15;
+#X obj 7 138 doc_iemfont 1 13;
 #X connect 2 0 6 1;
 #X connect 4 0 1 0;
 #X connect 5 0 7 0;
