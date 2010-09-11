@@ -73,7 +73,6 @@ GRID_INLET(0) {
 //****************************************************************
 
 GridHandler *stromgol; // remove this asap
-
 //{ ?,Dim[B] -> Dim[*Cs] }
 // out0 nt to be specified explicitly
 \class GridImport : FObject {
@@ -126,23 +125,21 @@ GridHandler *stromgol; // remove this asap
 		}
 	}
 };
-
-GRID_INLET(0) {} GRID_FLOW {process(n,data);} GRID_END
+GRID_INLET(0) {} GRID_FLOW {process(n,data);} GRID_FINISH {
+	if (!in.dim.prod() && per_message) go = new GridOut(this,0,Dim(0),cast);
+} GRID_END
 GRID_INPUT(1,dim_grid) {
 	Dim d = dim_grid->to_dim();
 	if (!d.prod()) RAISE("target grid size must not be zero");
 	dim = d;
 	per_message=false;
 } GRID_END
-
 // needs to stay a \def because it's implicitly \decl'd in \grin 0
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
-	if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
+	if (!in[0]) {/*post("[#import] INIT INLET");*/ in[0]=new GridInlet((FObject *)this,stromgol);}
 	in[0]->from_list(argc,argv,cast);
-	if (!argc && per_message) go = new GridOut(this,0,Dim(0),cast);
 }
-
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
 
 //****************************************************************
@@ -174,12 +171,11 @@ GRID_INLET(0) {
 
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
-\class GridExportList : FObject {
+\class GridToList : FObject {
 	\constructor () {}
 	int n;
 	\grin 0
 };
-
 GRID_INLET(0) {
 	long n = in.dim.prod();
 	if (n>1000000) RAISE("list too big (%ld elements, max 1000000)", n);
@@ -190,7 +186,6 @@ GRID_INLET(0) {
 } GRID_FINISH {
 	if (in.dim.prod()==0) send_out(0,0,data);
 } GRID_END
-
 \end class {install("#to_list",1,1); add_creator("#to_l"); add_creator("#export_list"); add_creator("@export_list");}
 
 /* **************************************************************** */
