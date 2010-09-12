@@ -103,13 +103,13 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
 	//ac = handle_parens(ac,av);
 	int j;
-	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==s_comma) break; //////////////////////////////
+	for (j=0; j<ac; j++) if (av[j]==s_comma) break;
 	int jj = handle_parens(j,av);
 	process_args(jj,av);
 	while (j<ac) {
 		j++;
 		int k=j;
-		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==s_comma) break; //////////////////////////////
+		for (; j<ac; j++) if (av[j]==s_comma) break;
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
@@ -176,9 +176,8 @@ const char *atomtype_to_s (t_atomtype t) {
 		t_binbuf *d = binbuf_new();
 		binbuf_restore(d,argc,argv);
 		for (int i=0; i<argc; i++) {
-			ostringstream os; os<<atomtype_to_s(argv[i].a_type)<<" "<<argv[i]; post("%s",os.str().data());
-			if (argv[i].a_type==A_COMMA) {post(","); a[i]=s_comma;} else
-			if (argv[i].a_type==A_SEMI)  {post(";"); a[i]=s_semi ;} else
+			if (argv[i].a_type==A_COMMA) a[i]=s_comma; else
+			if (argv[i].a_type==A_SEMI)  a[i]=s_semi ; else
 			a[i]=argv[i];
 		}
 		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
