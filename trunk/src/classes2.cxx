@@ -202,7 +202,7 @@ const char *atomtype_to_s (t_atomtype t) {
 		binbuf_add(b,1,&a); mom_changed();
 	}
 };
-\end class {install("setargs",1,1);}
+\end class {install("setargs",1,0);}
 
 \class GFAttr : FObject {
 	typedef map<t_symbol *,vector<t_atom2> > t_table;
