@@ -107,7 +107,6 @@ GridHandler *stromgol; // remove this asap
 		if (per_message) go=new GridOut(this,0,Dim(n),cast);
 		process(n,(uint8 *)s.data());
 	}
-	\decl 0 bang() {_0_list(0,0);}
 	\decl 1 per_message() {per_message=true; dim_grid=0;}
 	\grin 0
 	\grin 1 int32
