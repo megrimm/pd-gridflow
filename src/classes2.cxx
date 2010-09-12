@@ -102,15 +102,14 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	t_atom2 av[ac];
 	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
 	//ac = handle_parens(ac,av);
-	t_symbol *comma = gensym(",");
 	int j;
-	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==comma) break;
+	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==s_comma) break; //////////////////////////////
 	int jj = handle_parens(j,av);
 	process_args(jj,av);
 	while (j<ac) {
 		j++;
 		int k=j;
-		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==comma) break;
+		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j]==s_comma) break; //////////////////////////////
 		t_text *t = (t_text *)canvas_getabstop(mom);
 		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
 		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
@@ -156,15 +155,16 @@ const char *atomtype_to_s (t_atomtype t) {
 	\constructor () {canvas = canvas_getrootfor(mom);}
 	void mom_changed () {
 		BOF;
-		t_binbuf *d = binbuf_new();
+		t_binbuf *d = binbuf_new(), *e = binbuf_new();
 		binbuf_addv(d,"s",gensym("args"));
 		binbuf_add(d,max(int(binbuf_getnatom(b))-1,0),binbuf_getvec(b)+1);
 		t_canvasenvironment *pce = canvas_getenv(canvas->gl_owner);
 		if (!pce) RAISE("no canvas environment for canvas containing canvas containing [setargs]");
 		pd_pushsym((t_pd *)canvas);
-		binbuf_eval(d,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
+		binbuf_addbinbuf(e,d);
+		binbuf_eval(e,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
 		pd_popsym((t_pd *)canvas);
-		binbuf_free(d);
+		binbuf_free(d); binbuf_free(e);
 		glist_retext(canvas->gl_owner,(t_object *)canvas);
 	}
 	\decl 0 args (...) {
@@ -172,8 +172,17 @@ const char *atomtype_to_s (t_atomtype t) {
 		free(ce->ce_argv);
 		ce->ce_argv = (t_atom *)malloc(argc*sizeof(t_atom));
 		ce->ce_argc = argc;
-		for (int i=0; i<argc; i++) ce->ce_argv[i]=argv[i];
+		t_atom2 *a = (t_atom2 *)ce->ce_argv;
+		t_binbuf *d = binbuf_new();
+		binbuf_restore(d,argc,argv);
+		for (int i=0; i<argc; i++) {
+			ostringstream os; os<<atomtype_to_s(argv[i].a_type)<<" "<<argv[i]; post("%s",os.str().data());
+			if (argv[i].a_type==A_COMMA) {post(","); a[i]=s_comma;} else
+			if (argv[i].a_type==A_SEMI)  {post(";"); a[i]=s_semi ;} else
+			a[i]=argv[i];
+		}
 		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
+		binbuf_free(d);
 	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
 	\decl 0 add2     (...) {BOF;                  binbuf_add(b,argc,argv);                     mom_changed();}
