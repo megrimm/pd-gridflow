@@ -235,7 +235,7 @@ struct FObject;
 struct t_atom2;
 typedef void (*FMethod)(FObject *, int, t_atom2 *);
 
-#define BUILTIN_SYMBOLS(MACRO) MACRO(grid,"grid") MACRO(sharp,"#") MACRO(comma,",")
+#define BUILTIN_SYMBOLS(MACRO) MACRO(grid,"grid") MACRO(sharp,"#") MACRO(comma,",") MACRO(semi,";")
 	
 #define FOO(_sym_,_str_) extern t_symbol *s_##_sym_;
 BUILTIN_SYMBOLS(FOO)
