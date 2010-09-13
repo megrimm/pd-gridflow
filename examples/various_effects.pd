@@ -1,11 +1,11 @@
 #N canvas 614 0 627 627 10;
 #X obj 64 508 tgl 15 0 empty empty crosshair_of_centroid 20 7 0 8 -261682
--1 -1 1 1;
+-1 -1 0 1;
 #X obj 54 361 # max 0;
 #X obj 54 231 #downscale_by 2 smoothly;
 #X obj 64 276 tgl 15 0 empty empty frame_difference 18 7 0 8 -261682
 -1 -1 0 1;
-#X obj 27 77 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
+#X obj 27 77 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 64 213 tgl 15 0 empty empty smaller_picture 18 7 0 8 -261682
 -1 -1 0 1;
 #X obj 82 343 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -261682
@@ -17,36 +17,34 @@
 #X obj 54 342 # -;
 #X obj 64 396 tgl 15 0 empty empty empty 0 -6 0 8 -261682 -1 -1 0 1
 ;
-#N canvas 372 198 399 273 motion 0;
-#X obj 15 113 # << 2;
+#N canvas 372 198 399 273 motion 1;
+#X obj 15 98 # << 2;
 #X obj 15 9 inlet;
-#X obj 18 80 # -;
-#X obj 70 174 # + 128;
-#X obj 15 245 outlet;
-#X obj 15 204 # min 255;
-#X obj 15 224 # max 0;
-#X obj 70 155 # << 2;
+#X obj 15 79 # -;
+#X obj 57 163 # + 128;
+#X obj 15 208 outlet;
+#X obj 57 144 # << 2;
 #X obj 15 35 t a a;
-#X obj 15 134 shunt 2;
-#X obj 70 133 inlet render;
-#X obj 155 54 inlet type;
-#X obj 15 54 shunt 2;
-#X obj 15 162 # abs-;
-#X connect 0 0 9 0;
-#X connect 1 0 8 0;
+#X obj 51 119 inlet render;
+#X obj 85 37 inlet type;
+#X obj 15 144 # abs-;
+#X obj 15 54 shunt;
+#X obj 15 119 shunt;
+#X obj 15 189 #clip;
+#X connect 0 0 11 0;
+#X connect 1 0 6 0;
 #X connect 2 0 0 0;
-#X connect 3 0 5 0;
-#X connect 5 0 6 0;
-#X connect 6 0 4 0;
-#X connect 7 0 3 0;
-#X connect 8 0 12 0;
-#X connect 8 1 2 0;
-#X connect 9 0 13 0;
-#X connect 9 1 7 0;
-#X connect 10 0 9 1;
-#X connect 11 0 12 1;
-#X connect 12 0 2 1;
-#X connect 13 0 5 0;
+#X connect 3 0 12 0;
+#X connect 5 0 3 0;
+#X connect 6 0 10 0;
+#X connect 6 1 2 0;
+#X connect 7 0 11 1;
+#X connect 8 0 10 1;
+#X connect 9 0 12 0;
+#X connect 10 0 2 1;
+#X connect 11 0 9 0;
+#X connect 11 1 5 0;
+#X connect 12 0 4 0;
 #X restore 54 323 pd motion detection;
 #X obj 100 456 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -261682 -1
 -1 0;
@@ -54,7 +52,7 @@
 -1 0;
 #X floatatom 157 600 5 0 0 0 - - -;
 #X floatatom 201 600 5 0 0 0 - - -;
-#N canvas 547 147 477 129 crosshair 1;
+#N canvas 547 147 477 129 crosshair 0;
 #X obj 12 84 outlet;
 #X obj 12 9 inlet;
 #X obj 159 27 #fade 8;
@@ -157,7 +155,7 @@
 #X text 0 27 Copyright 2001 \, 2002 Mathieu Bouchard;
 #X obj 27 113 shunt;
 #X obj 64 114 tgl 15 0 empty empty no_camera 18 7 0 8 -261682 -1 -1
-1 1;
+0 1;
 #X obj 54 189 #store;
 #X obj 96 189 #in pure-data.jpg;
 #X obj 352 578 fps detailed;
