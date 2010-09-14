@@ -37,6 +37,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
 #if defined(__APPLE__) || defined(__WIN32__)
