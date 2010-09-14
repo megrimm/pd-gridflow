@@ -65,6 +65,8 @@ typedef struct _blob t_blob;
 #define A_GRID    t_atomtype(14) /* (Grid *)    */
 #define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 
+const char *atomtype_to_s (t_atomtype t);
+
 #define gensym(s) gensym(const_cast<char *>(s))
 #define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
 #define sys_gui(s) sys_gui(const_cast<char *>(s))
@@ -678,7 +680,6 @@ struct FObject;
 struct GridInlet : CObject {
 	// set once ever
 	FObject *parent; const GridHandler *gh;
-	
 	// set once per transmission
 	GridOut *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
 	// modified continually

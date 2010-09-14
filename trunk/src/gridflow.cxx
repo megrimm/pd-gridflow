@@ -83,6 +83,12 @@ void Barf::error(t_symbol *s, int argc, t_atom *argv) {
         ::error("[%s]: %s",os.str().data(),text.data());
 }
 
+#define Z(T) case T: return #T; break;
+const char *atomtype_to_s (t_atomtype t) {
+  switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
+  default: return "unknown type";}}
+#undef Z
+
 void pd_oprint (ostream &o, int argc, t_atom *argv) {
 	for (int i=0; i<argc; i++) {
 		t_atomtype t = argv[i].a_type;
@@ -96,7 +102,7 @@ void pd_oprint (ostream &o, int argc, t_atom *argv) {
 			o << "[";
 			pd_oprint(o,binbuf_getnatom(b),binbuf_getvec(b));
 			o << "]";
-		} else o << "(atom of type " << t << ")";
+		} else o << "(atom of type " << atomtype_to_s(t) << ")";
 		if (i!=argc-1) o << " ";
 	}
 }
@@ -185,7 +191,7 @@ void PtrOutlet::operator () (t_atom &a) {
     else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
     else if (a.a_type==A_LIST   ) (*this)((t_list *)a.a_gpointer);
     else if (a.a_type==A_BLOB   ) (*this)((t_blob *)a.a_gpointer);
-    else error("can't send atom whose type is %d",a.a_type);
+    else error("can't send atom whose type is %s",atomtype_to_s(a.a_type));
     //self(1,av);
 }
 
@@ -197,7 +203,7 @@ bool t_atom2::operator == (const t_atom2 &b) {
 	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer; // not deep
 	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer; // not deep
 	if (a.a_type==A_BLOB)    return a.a_gpointer==b.a_gpointer; // not deep
-	RAISE("don't know how to compare elements of type %d",a.a_type);
+	RAISE("don't know how to compare elements of type %s",atomtype_to_s(a.a_type));
 }
 //----------------------------------------------------------------
 // Dim
