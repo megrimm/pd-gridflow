@@ -144,7 +144,7 @@ GRID_INLET(0) {
 	if (d.n != r->dim.n) RAISE("wrong number of dimensions");
 	int w = which_dim;
 	if (w<0) w+=d.n;
-	if (w<0 || w>=d.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,d.n);
+	if (w<0 || w>=d.n) RAISE("dim number %d does not exist %d-dimensional grids", which_dim,d.n);
 	int32 v[d.n];
 	for (int i=0; i<d.n; i++) {
 		v[i] = d[i];
@@ -1369,7 +1369,7 @@ template <>        inline float64 shr8r (float64 a) {return a/256.0;}
 GRID_INLET(0) {
 	if (in.dim.n<2) RAISE("at least 2 dimensions");
 	int w = which_dim; if (w<0) w+=in.dim.n;
-	if (w<0 || w>=in.dim.n) RAISE("can't join on dim number %d on %d-dimensional grids", which_dim,in.dim.n);
+	if (w<0 || w>=in.dim.n) RAISE("dim number %d does not exist on %d-dimensional grids", which_dim,in.dim.n);
 	if (!r) {t_atom2 a[1] = {256.f}; r=new Grid(1,(t_atom *)a);}
 	SAME_TYPE(in,r);
 	go = new GridOut(this,0,in.dim,in.nt);
