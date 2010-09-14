@@ -150,9 +150,17 @@ const char *atomtype_to_s (t_atomtype t) {
 #include "hack.hxx"
 #define binbuf_addv(B,S,A...) binbuf_addv(B,const_cast<char *>(S),A)
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
+#define BLAH t_gobj *x, t_glist *glist
+#define INIT1 BFObject *bself = (BFObject*)x; THISCLASS *self = (THISCLASS *)bself->self; self=self;
 \class GFSetArgs : FObject {
 	t_canvas *canvas;
 	\constructor () {canvas = canvas_getrootfor(mom);}
+	~GFSetArgs () {sys_unqueuegui(bself);}
+	void show () {
+		glist_retext(canvas->gl_owner,(t_object *)canvas);
+		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
+	}
+	static void redraw(BLAH) {INIT1 self->show();}
 	void mom_changed () {
 		BOF;
 		t_binbuf *d = binbuf_new(), *e = binbuf_new();
@@ -165,7 +173,7 @@ const char *atomtype_to_s (t_atomtype t) {
 		binbuf_eval(e,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
 		pd_popsym((t_pd *)canvas);
 		binbuf_free(d); binbuf_free(e);
-		glist_retext(canvas->gl_owner,(t_object *)canvas);
+		sys_queuegui(bself,mom,redraw);
 	}
 	\decl 0 args (...) {
 		t_canvasenvironment *ce = canvas_getenv(canvas);
@@ -180,7 +188,6 @@ const char *atomtype_to_s (t_atomtype t) {
 			if (argv[i].a_type==A_SEMI)  a[i]=s_semi ; else
 			a[i]=argv[i];
 		}
-		if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
 		binbuf_free(d);
 	}
 	\decl 0 set      (...) {BOF; binbuf_clear(b); binbuf_add(b,argc,argv);                     mom_changed();}
