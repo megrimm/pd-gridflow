@@ -66,9 +66,20 @@ struct ArgSpec {
 	t_atom2 defaultv;
 };
 
+/* this is not shared with the comma-args handling of externs ! */
+static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
+	if (argv[0].a_type==A_FLOAT && argc==1) {pd_float(o,argv[0].a_float); return;}
+	if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
+	else                          pd_typedmess(o,&s_list         ,argc  ,argv  );
+}
+
 \class Args : FObject {
+	\attr bool noloadbang;
+	\attr bool noparens;
 	vector<ArgSpec> sargs;
 	\constructor (...) {
+		noloadbang = false;
+		noparens = false;
 		sargs.resize(argc);
 		for (int i=0; i<argc; i++) {
 			if (argv[i].a_type==A_LIST) {
@@ -86,67 +97,50 @@ struct ArgSpec {
 		}
 		noutlets_set(argc);
 	}
-	\decl 0 bang () {_0_loadbang();}
-	\decl 0 loadbang ();
-	void process_args (int argc, t_atom *argv);
-};
-/* this is not shared with the comma-args handling of externs ! */
-static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
-	if (argv[0].a_type==A_FLOAT && argc==1) {pd_float(o,argv[0].a_float); return;}
-	if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
-	else                          pd_typedmess(o,&s_list         ,argc  ,argv  );
-}
-\def 0 loadbang () {
-	t_canvasenvironment *env = canvas_getenv(mom);
-	int ac = env->ce_argc;
-	t_atom2 av[ac];
-	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
-	//ac = handle_parens(ac,av);
-	int j;
-	for (j=0; j<ac; j++) if (av[j]==s_comma) break;
-	int jj = handle_parens(j,av);
-	process_args(jj,av);
-	while (j<ac) {
-		j++;
-		int k=j;
-		for (; j<ac; j++) if (av[j]==s_comma) break;
-		t_text *t = (t_text *)canvas_getabstop(mom);
-		if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
-		if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
-	}
-}
-void Args::process_args (int argc, t_atom *argv) {
-	t_canvas *canvas = canvas_getrootfor(mom);
-	t_symbol *wildcard = gensym("*");
-	bool have_rest = false;
-	for (int i=sargs.size()-1; i>=0; i--) {
-		t_atom2 *v;
-		if (i>=argc) {
-			if (sargs[i].defaultv.a_type != A_NULL) {
-				v = &sargs[i].defaultv;
-			} else if (sargs[i].name!=wildcard) {
-				pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargs[i].name->s_name);
-				continue;
-			}
-		} else v = (t_atom2 *)&argv[i];
-		if (sargs[i].name==wildcard) {
-			if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
-			have_rest = true;
-		} else {
-			if (v->a_type==A_LIST) {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
-			else                                      out[i](*v);
+	\decl 0 bang () {
+		t_canvasenvironment *env = canvas_getenv(mom); int ac = env->ce_argc; t_atom2 av[ac];
+		for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
+		ac = handle_parens(ac,av);
+		int j; for (j=0; j<ac; j++) if (av[j].a_type==A_COMMA) break;
+		process_args(j,av);
+		while (j<ac) {
+			j++;
+			int k=j;
+			for (; j<ac; j++) if (av[j].a_type==A_COMMA) break;
+			t_text *t = (t_text *)canvas_getabstop(mom);
+			if (!t->te_inlet) RAISE("can't send init-messages, because object has no [inlet]");
+			if (j-k) pd_anything2((t_pd *)t->te_inlet,j-k,av+k);
 		}
 	}
-	if (argc>int(sargs.size()) && !have_rest)
-		pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
-}
+	\decl 0 loadbang () {if (!noloadbang) _0_bang();}
+	void process_args (int argc, t_atom *argv) {
+		t_canvas *canvas = canvas_getrootfor(mom);
+		t_symbol *wildcard = gensym("*");
+		bool have_rest = false;
+		for (int i=sargs.size()-1; i>=0; i--) {
+			t_atom2 *v;
+			if (i>=argc) {
+				if (sargs[i].defaultv.a_type != A_NULL) {
+					v = &sargs[i].defaultv;
+				} else if (sargs[i].name!=wildcard) {
+					pd_error(canvas,"missing argument $%d named \"%s\"", i+1,sargs[i].name->s_name);
+					continue;
+				}
+			} else v = (t_atom2 *)&argv[i];
+			if (sargs[i].name==wildcard) {
+				if (argc-i>0) out[i](argc-i,argv+i); else out[i]();
+				have_rest = true;
+			} else {
+				if (v->a_type==A_LIST) {t_binbuf *b = *v; out[i](binbuf_getnatom(b),binbuf_getvec(b));}
+				else                                      out[i](*v);
+			}
+		}
+		if (argc>int(sargs.size()) && !have_rest)
+			pd_error(canvas,"warning: too many args (got %d, want %d)", argc, int(sargs.size()));
+	}
+};
 \end class {install("args",1,1);}
 
-#define Z(T) case T: return #T; break;
-const char *atomtype_to_s (t_atomtype t) {
-  switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
-  default: return "unknown type";}}
-#undef Z
 #include "hack.hxx"
 #define binbuf_addv(B,S,A...) binbuf_addv(B,const_cast<char *>(S),A)
 #define BOF t_binbuf *b = ((t_object *)canvas)->te_binbuf; if (!b) RAISE("no parent for canvas containing [setargs]");
