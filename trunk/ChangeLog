@@ -9,7 +9,8 @@ version 9.12 (2010.09...):
  * improved examples: dither.pd
  * [#import]: when in per_message mode, output empty grids just like any other
  * [setargs]: process commas and semis properly when updating $-variables
- * [#many]: properties dialogue saves the spacing setting to file
+ * [#many]: margins (just as in [#see])
+ * [#many]: properties dialogue saves the spacing/margins settings to file
 
 version 9.11 (2010.09.07):
 
@@ -938,6 +939,6 @@ GridFlow   0.7.0 (feb 2003): number types; mmx; other big speedups
 GridFlow   0.7.2 - 0.7.5 : pd support gets stable; float grids; @draw_image; source_filter.rb
 GridFlow   0.7.6 to 7 (2004): permanently switching from jmax to pd; #pack, #color, #camera
 GridFlow   0.8 (2005): attributes; # prefix
-GridFlow   0.8.1 to 4 (2006): LTI; FFT; complex numbers; GEM pix compatibility
-GridFlow   0.9.0 (2008): removing Ruby, removing LTI, adding OpenCV
-GridFlow   2.0 : ...
+GridFlow   0.8.1 - 0.8.4 (2006): LTI; FFT; complex numbers; GEM pix compatibility
+GridFlow   0.9.0-0.9.4 (2008): removing Ruby, removing LTI, adding OpenCV
+GridFlow   0.9.6 (2009): start GFDP (new documentation system)
