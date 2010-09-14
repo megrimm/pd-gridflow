@@ -82,7 +82,7 @@ public:
 		self->vis = !!flag;
 		if (flag) self->changed();
 		else { // can't call deletefn directly
-			sys_vgui(".x%p.c delete %s\n",c,self->rsym->s_name);
+			sys_vgui(".x%lx.c delete %s\n",(long)(intptr_t)c,self->rsym->s_name);
 			sys_unqueuegui(x);
 		}
 	}
@@ -92,16 +92,16 @@ public:
 	}
 	static void displacefn(BLAH, int dx, int dy) {INIT L
 		bself->te_xpix+=dx; bself->te_ypix+=dy;
-		sys_vgui(".x%p.c move %s %d %d\n",glist_getcanvas(glist),self->rsym->s_name,dx,dy);
+		sys_vgui(".x%lx.c move %s %d %d\n",(long)(intptr_t)glist_getcanvas(glist),self->rsym->s_name,dx,dy);
 		canvas_fixlinesfor(glist, (t_text *)x);
 	}
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
-		sys_vgui(".x%p.c itemconfigure {%sR || %sTEXT} -outline %s\n",c,
+		sys_vgui(".x%lx.c itemconfigure {%sR || %sTEXT} -outline %s\n",(long)(intptr_t)c,
 			self->rsym->s_name,self->rsym->s_name,self->selected?"#0000ff":self->outline.data());
 	}
 	static void deletefn(BLAH) {INIT L
-		/* if (self->vis) */ sys_vgui(".x%p.c delete %s\n",c,self->rsym->s_name);
+		/* if (self->vis) */ sys_vgui(".x%lx.c delete %s\n",(long)(intptr_t)c,self->rsym->s_name);
 		canvas_deletelinesfor(glist,(t_object *)bself); // hein ?
 		sys_unqueuegui(x);
 	}
@@ -167,20 +167,20 @@ public:
 			else quoted << (char)s[i];
 		}
 		// used to have {Courier -12} but this changed to use pdtk_canvas_new
-		if (vis) sys_vgui("display_update %s .x%p.c %d %d #000000 #ffffc8 %s %d \"%s\"\n",
-			rsym->s_name,glist_getcanvas(mom),text_xpix(bself,mom),text_ypix(bself,mom),
+		if (vis) sys_vgui("display_update %s .x%lx.c %d %d #000000 #ffffc8 %s %d \"%s\"\n",
+			rsym->s_name,(long)(intptr_t)glist_getcanvas(mom),text_xpix(bself,mom),text_ypix(bself,mom),
 			selected?"#0000ff":"#aaaaaa", sys_hostfontsize(glist_getfont(mom)),quoted.str().data());
 		else {
 			t_canvas *c = glist_getcanvas(mom);
-			sys_vgui(".x%p.c delete %s\n",c,rsym->s_name);
+			sys_vgui(".x%lx.c delete %s\n",(long)(intptr_t)c,rsym->s_name);
 		}
 	}
 	NEWWB
 	static void redraw(BLAH) {INIT1 self->show();}
 	static void selectfn(BLAH, int state) {INIT L
 		self->selected=!!state;
-		sys_vgui(".x%p.c itemconfigure %sR -outline %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
-		sys_vgui(".x%p.c itemconfigure %sTEXT -fill %s\n",c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
+		sys_vgui(".x%lx.c itemconfigure %sR -outline %s\n",(long)(intptr_t)c,self->rsym->s_name,self->selected?"#0000ff":"#aaaaaa");
+		sys_vgui(".x%lx.c itemconfigure %sTEXT -fill %s\n",(long)(intptr_t)c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 	\decl void anything (...) {
 		t_symbol *sel = argv[1];
@@ -409,7 +409,7 @@ static t_pd *seesend;
 		if (buf) sendbuf();
 		t_glist *c = glist_getcanvas(mom);
 		if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
-		sys_vgui("gridsee_update %s .x%p.c %d %d %d %d %d %d %d %d #cccccc %s\n",rsym->s_name,c,
+		sys_vgui("gridsee_update %s .x%lx.c %d %d %d %d %d %d %d %d #cccccc %s\n",rsym->s_name,(long)(intptr_t)c,
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,mx1,my1,mx2,my2,selected?"#0000ff":"#aaaaaa");
 		out[0](gensym("shown"),0,0);
 	}
@@ -480,13 +480,13 @@ GRID_INLET(0) {
 	void show () {
 		//if (osx!=sx || osy!=sy) canvas_fixlinesfor(c,(t_object *)bself);
 		t_glist *c = glist_getcanvas(mom);
-		sys_vgui("gf/tk_button.update %s .x%p.c %d %d %d %d #ffffff %s\n",rsym->s_name,c,
+		sys_vgui("gf/tk_button.update %s .x%lx.c %d %d %d %d #ffffff %s\n",rsym->s_name,(long)(intptr_t)c,
 			text_xpix(bself,mom),text_ypix(bself,mom),sx,sy,selected?"#0000ff":outline.data());
 	}
 	static void visfn(BLAH, int flag) {INIT
-		if (flag && !self->vis) sys_vgui("gf/tk_button.create %s .x%p.c %d %d {%s}\n",self->rsym->s_name,c,
+		if (flag && !self->vis) sys_vgui("gf/tk_button.create %s .x%lx.c %d %d {%s}\n",self->rsym->s_name,(long)(intptr_t)c,
 			text_xpix(bself,self->mom),text_ypix(bself,self->mom),self->text->s_name);
-		if (!flag && self->vis) sys_vgui("gf/tk_button.destroy %s .x%p.c\n",self->rsym->s_name,c);
+		if (!flag && self->vis) sys_vgui("gf/tk_button.destroy %s .x%lx.c\n",self->rsym->s_name,(long)(intptr_t)c);
 		GUI_FObject::visfn(x,glist,flag);//super
 	}
 	NEWWB
