@@ -19,8 +19,8 @@ static void canvas_reflecttitle(t_canvas *x)
         strcat(namebuf, ")");
     }
     else namebuf[0] = 0;
-    sys_vgui("wm title .x%lx {%s%c%s - %s}\n",
-        long(x), x->gl_name->s_name, (x->gl_dirty? '*' : ' '), namebuf,
+    sys_vgui("wm title .x%p {%s%c%s - %s}\n",
+        x, x->gl_name->s_name, (x->gl_dirty? '*' : ' '), namebuf,
             canvas_getdir(x)->s_name);
 }
 #else

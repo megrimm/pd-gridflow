@@ -794,7 +794,7 @@ struct GridOut : CObject {
 
 #define CHECK_ALIGN16(d,nt) \
 	{int bytes = 16; \
-	int align = ((unsigned long)(void*)d)%bytes; \
+	int align = ((uintptr_t)(void*)d)%bytes; \
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
@@ -841,8 +841,7 @@ struct PtrOutlet {
 	void operator () ()              {outlet_bang(   p  );}
 	void operator () (int f)         {outlet_float(  p,f);}
 	void operator () (long f)        {outlet_float(  p,f);}
-	void operator () (unsigned int f){outlet_float(  p,f);} // is also size_t in 32-bit mode
-	void operator () (unsigned long f){outlet_float(  p,f);} // is also size_t in 64-bit mode
+	void operator () (size_t f)      {outlet_float(  p,f);}
 	void operator () (float f)       {outlet_float(  p,f);}
 	void operator () (double f)      {outlet_float(  p,f);}
 	void operator () (t_symbol *s)   {outlet_symbol( p,s);}
