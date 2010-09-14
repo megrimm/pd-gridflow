@@ -161,12 +161,13 @@ void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 	}
 }
 
+// backslash is doubled here because Pd doesn't do it and Tcl's eval interprets a double backslash as a single.
 ostream &operator << (ostream &self, const t_atom &a) {
 	switch (a.a_type) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
 		case A_DOLLSYM: self << a.a_symbol->s_name; break; // for real, it's the same thing as A_SYMBOL in pd >= 0.40
-		case A_POINTER: self << "\\p(0x" << std::hex << (uintptr_t)a.a_gpointer << std::dec << ")"; break;
+		case A_POINTER: self << "\\\\p(0x" << std::hex << (uintptr_t)a.a_gpointer << std::dec << ")"; break;
 		case A_COMMA:   self << ","; break;
 		case A_SEMI:    self << ";"; break;
 		case A_DOLLAR:  self << "$" << a.a_w.w_index; break;
@@ -179,7 +180,7 @@ ostream &operator << (ostream &self, const t_atom &a) {
 			self << ")";
 			break;
 		}
-		default: self << "\\a(" << a.a_type << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
+		default: self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
 	}
 	return self;
 }
