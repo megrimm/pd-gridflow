@@ -28,6 +28,11 @@
 #include <signal.h>
 #include <SDL/SDL.h>
 
+#if !defined(SDLK_LAST)
+/* mescalinum: my SDL doesn't define any SDLK_LAST */
+#define SDLK_LAST 324
+#endif
+
 #define pd_anything pd_typedmess
 
 struct FormatSDL;

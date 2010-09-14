@@ -36,7 +36,7 @@
 		number_type_table[NumberTypeE_type_of(&d)].name, number_type_table[NT].name);
 #define CHECK_BUSY1(s) if (!this->sender) RAISE(#s " not busy");
 #define CHECK_BUSY(s)  if (!this->sender) RAISE(#s " not busy (wanting to write %ld values)",(long)n);
-#define CHECK_ALIGN(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((long)(void*)d)%bytes; \
+#define CHECK_ALIGN(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((uintptr_t)(void*)d)%bytes; \
 	if (align) {post("(%s): Alignment Warning: %p is not %d-aligned: %d", __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 // **************** Grid ******************************************

@@ -725,7 +725,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		pd_bind((t_pd *)bself,name);
 	}
 	~GFCanvasXID () {pd_unbind((t_pd *)bself,name);}
-	\decl 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%lx.c] [winfo id .x%lx]\\;\n",name->s_name,long(m),long(m));}
+	\decl 0 bang () {MOM; sys_vgui("pd %s xid [winfo id .x%p.c] [winfo id .x%p]\\;\n",name->s_name,m,m);}
 	\decl 0 xid (t_symbol *t, t_symbol *u) {MOM
 		out[2](symprintf(".x%lx",m));
 		out[1](u);
@@ -744,7 +744,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		if (m->gl_screeny2-m->gl_screeny1 < int(y)) m->gl_screeny2 = m->gl_screeny1+int(y);
 		int  sx = int(m->gl_screenx2-m->gl_screenx1); // new size x
 		int  sy = int(m->gl_screeny2-m->gl_screeny1); // new size y
-		if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%lx %dx%d\n",long(m),sx,sy);
+		if (osx!=sx || osy!=sy) sys_vgui("wm geometry .x%p %dx%d\n",m,sx,sy);
 	}
 };
 \end class {install("gf/canvas_hehehe",1,1);}
@@ -756,11 +756,11 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	t_canvas *last;
 	\constructor (int n) {this->n=n; last=0;}
 	~GFCanvasHoHoHo () {_0_hide();}
-	\decl 0 hide () {if (last) sys_vgui(".x%lx.c delete %lxRECT\n",long(last),long(bself));}
+	\decl 0 hide () {if (last) sys_vgui(".x%p.c delete %pRECT\n",last,bself);}
 	\decl 0 list (int x1, int y1, int x2, int y2) {MOM;
 		_0_hide();
 		last = m;
-		sys_vgui(".x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",long(m),x1,y1,x2,y2,long(bself));
+		sys_vgui(".x%p.c create rectangle %d %d %d %d "DASHRECT" -tags %pRECT\n",m,x1,y1,x2,y2,bself);
 	}
 };
 \end class {install("gf/canvas_hohoho",1,0);}
@@ -812,7 +812,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 	\constructor (int n) {this->n=n;}
 	\decl 0 wire_dotted  (int r, int g, int b) {BEGIN
 		wire_each(wire,ouch) {
-			sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {3 3 3 3}\n",long(can),long(wire),r,g,b);
+			sys_vgui(".x%p.c itemconfigure l%p -fill #%02x%02x%02x -dash {3 3 3 3}\n",can,wire,r,g,b);
 		}
 	}
 	\decl 0 wire_bracket (int r, int g, int b) {BEGIN
@@ -820,14 +820,14 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 		// lt.tr_ob = (t_object *)mom; lt.tr_nextoc = wire; // would like this shortcut but can't use it
 		while ((wire = linetraverser_next(&lt))) if (lt.tr_outlet==ouch) {
 			int x1=lt.tr_lx1, y1=lt.tr_ly1, x2=lt.tr_lx2, y2=lt.tr_ly2;
-			sys_vgui(".x%lx.c itemconfigure l%lx -fill #%02x%02x%02x -dash {}\n; "
-				".x%lx.c coords l%lx %d %d %d %d %d %d %d %d %d %d\n",
-				long(can),long(wire),r,g,b,
-				long(can),long(wire), x1,y1, x1,y1+3, x1+7,y1+3, x1+7,y2+8, x2-2,y2+8);
+			sys_vgui(".x%p.c itemconfigure l%p -fill #%02x%02x%02x -dash {}\n; "
+				".x%p.c coords l%p %d %d %d %d %d %d %d %d %d %d\n",
+				can,wire,r,g,b,
+				can,wire, x1,y1, x1,y1+3, x1+7,y1+3, x1+7,y2+8, x2-2,y2+8);
 		}
 	}
 	\decl 0 wire_hide () {BEGIN
-		wire_each(wire,ouch) sys_vgui(".x%lx.c delete l%lx\n",long(can),long(wire));
+		wire_each(wire,ouch) sys_vgui(".x%p.c delete l%p\n",can,wire);
 	}
 	\decl 0  box_dotted (int r, int g, int b) {BEGIN
 		wire_each(wire,ouch) {
@@ -835,8 +835,8 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 			int x1,y1,x2,y2;
 			gobj_getrect((t_gobj *)wire->to,can,&x1,&y1,&x2,&y2);
 			// was #00aa66 {3 5 3 5}
-			sys_vgui(".x%lx.c delete %lxRECT; .x%lx.c create rectangle %d %d %d %d "DASHRECT" -tags %lxRECT\n",
-				long(can),long(t),long(can),x1,y1,x2,y2,long(t));
+			sys_vgui(".x%p.c delete %pRECT; .x%p.c create rectangle %d %d %d %d "DASHRECT" -tags %pRECT\n",
+				can,t,can,x1,y1,x2,y2,t);
 			}
 	}
 	\decl 0  box_align (t_symbol *s, int x_start, int y_start, int incr);

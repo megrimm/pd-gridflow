@@ -110,12 +110,12 @@ template <class T> static void quick_put_map (long n, T *as, T b) {
 
 #ifdef PASS1
 void quick_put_map (long n, int16 *as, int16 b) {
-	if ((n&1)!=0 && ((long)as&4)!=0) {*as++=b; n--;}
+	if ((n&1)!=0 && ((intptr_t)as&4)!=0) {*as++=b; n--;}
 	quick_put_map(n>>1, (int32 *)as, (int32)(b<<16)+b);
 	if ((n&1)!=0) *as++=b;
 }
 void quick_put_map (long n, uint8 *as, uint8 b) {
-	while ((n&3)!=0 && ((long)as&4)!=0) {*as++=b; n--;}
+	while ((n&3)!=0 && ((intptr_t)as&4)!=0) {*as++=b; n--;}
 	int32 c=(b<<8)+b; c+=c<<16;
 	quick_put_map(n>>2, (int32 *)as, c);
 	while ((n&3)!=0) *as++=b;
