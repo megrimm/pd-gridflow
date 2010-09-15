@@ -1497,7 +1497,7 @@ GRID_INLET(0) {
 	delete (vector<T> *)tmp;
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
-\end class {install("#compress",1,1);}
+\end class {install("#compress",2,1);}
 
 //****************************************************************
 void startup_classes3 () {
