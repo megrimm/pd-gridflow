@@ -1472,6 +1472,33 @@ GRID_INPUT(1,r) {} GRID_END
 \end class {install("#tabwrite",2,0);}
 
 //****************************************************************
+\class GridCompress : FObject {
+	void *tmp;
+	PtrGrid r;
+	\constructor (Grid *r=0) {
+		this->r.constrain(expect_one_dim);
+		this->r=r?r:new Grid(Dim(0),int32_e,true);
+	}
+	\grin 0
+	\grin 1 int32
+};
+GRID_INLET(0) {
+	if (in.dim.n!=1) RAISE("need 1 dimension");
+	if (in.dim!=r->dim) RAISE("left dimension needs to be the same as right dimension");
+	tmp = new vector<T>;
+} GRID_FLOW {
+	vector<T> &tmp2 = *(vector<T> *)tmp;
+	int32 *data2 = (int32 *)*r+in.dex;
+	for (typeof(n) i=0; i<n; i++) if (data2[i]) tmp2.push_back(data[i]);
+} GRID_FINISH {
+	vector<T> &tmp2 = *(vector<T> *)tmp;
+	GridOut out(this,0,Dim(tmp2.size()),in.nt);
+	out.send(tmp2.size(),tmp2.data());
+} GRID_END
+GRID_INPUT(1,r) {} GRID_END
+\end class {install("#compress",2,1);}
+
+//****************************************************************
 void startup_classes3 () {
 	op_os8 = OP(*>>8);
 	\startall

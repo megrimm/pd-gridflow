@@ -1,0 +1,33 @@
+#N canvas 0 0 632 476 10;
+#X obj 0 0 doc_h;
+#X obj 3 422 doc_also;
+#X obj 0 442 doc_f;
+#X obj 39 84 #compress (1 0 0 1 0 1 0 0 1);
+#X msg 39 65 2 3 5 7 11 13 17 19 23;
+#X obj 39 103 display;
+#X obj 3 162 doc_c 1;
+#X obj 14 192 doc_cc 0;
+#X text 219 84 selects values that you want using the number 1;
+#X obj 97 192 doc_m c0 grid;
+#X text 232 192 with one dimension. list of zeroes and ones that specify
+which values are going to be kept (1) or discarded (0).;
+#X obj 3 237 doc_i 2;
+#X obj 14 267 doc_ii 0;
+#X obj 14 302 doc_ii 1;
+#X obj 97 302 doc_m i1 grid;
+#X obj 232 302 doc_same 0;
+#X obj 97 267 doc_m i0 grid;
+#X text 232 267 with one dimension \, and of the same size as the right
+inlet grid.;
+#X obj 3 334 doc_o 1;
+#X obj 14 364 doc_oo 0;
+#X obj 97 364 doc_m o0 grid;
+#X text 232 364 with one dimension \, and not bigger than the input
+grid. the size of the grid can be found with [# !=] [#fold +] on the
+right input grid.;
+#X connect 3 0 5 0;
+#X connect 4 0 3 0;
+#X connect 9 1 10 0;
+#X connect 14 1 15 0;
+#X connect 16 1 17 0;
+#X connect 20 1 21 0;
