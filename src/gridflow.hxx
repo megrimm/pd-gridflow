@@ -342,17 +342,18 @@ struct CObject {
 
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
-typedef int32 Card; /* should be switched to long int soon */
 struct Dim {
-	static const Card MAX_DIM=15; // maximum number of dimensions in a grid
-	Card n;
-	Card v[MAX_DIM]; // real stuff
+	//typedef intptr_t T; // this is signed, to match the fact that most int types are signed in Grid.
+	typedef int32 T;
+	static const int MAX_DIM=15; // maximum number of dimensions in a grid
+	T n;
+	T v[MAX_DIM]; // real stuff
 	void check(); // test invariants
-	Dim(Card n, Card *v){this->n=n; COPY(this->v,v,n); check();}
-	Dim()                    {n=0;                     check();}
-	Dim(Card a)              {n=1;v[0]=a;              check();}
-	Dim(Card a,Card b)       {n=2;v[0]=a;v[1]=b;       check();}
-	Dim(Card a,Card b,Card c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	Dim(T n, T *v){this->n=n; COPY(this->v,v,n); check();}
+	Dim()            {n=0;                     check();}
+	Dim(T a)         {n=1;v[0]=a;              check();}
+	Dim(T a,T b)     {n=2;v[0]=a;v[1]=b;       check();}
+	Dim(T a,T b,T c) {n=3;v[0]=a;v[1]=b;v[2]=c;check();}
 	Dim &operator = (const Dim &a) {n=a.n; COPY(&*v,&*a.v,n); check(); return *this;}
 	Dim(Dim *a, Dim *b, Dim *c=0) {
 		n=a->n+b->n; if(c) n+=c->n;
@@ -361,20 +362,20 @@ struct Dim {
 		COPY(v+a->n,b->v,b->n);
 		if(c) COPY(v+a->n+b->n,c->v,c->n);
 	}
-	Card count() {return n;}
-	Card operator[](Card i) const {return v[i];}
-/*	Dim *range(Card i, Card j) {return new Dim(...);} */
-	Card prod(Card start=0, Card end=-1) const {
+	T count() {return n;}
+	T operator[](T i) const {return v[i];}
+/*	Dim *range(T i, T j) {return new Dim(...);} */
+	T prod(T start=0, T end=-1) const {
 		if (start<0) start+=n;
 		if (end  <0) end  +=n;
-		Card tot=1;
-		for (Card i=start; i<=end; i++) tot *= v[i];
+		T tot=1;
+		for (T i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
 	char *to_s() const; // should be string
 	bool operator==(const Dim &o) const {
 		if (n!=o.n) return false;
-		for (Card i=0; i<n; i++) if (v[i]!=o[i]) return false;
+		for (T i=0; i<n; i++) if (v[i]!=o[i]) return false;
 		return true;
 	}
 	bool operator!=(const Dim &o) const {return !operator==(o);}
@@ -599,7 +600,10 @@ struct Grid : CObject {
 	// parens are necessary to prevent overflow at 1/16th of the word size (256 megs)
 	long bytes() {return dim.prod()*(number_type_table[nt].size/8);}
 	Dim to_dim() {return Dim(dim.prod(),(int32 *)*this);}
-#define FOO(T) operator T *() { return (T *)data; }
+#define FOO(T) operator T *() { \
+	/*NumberTypeE tnt = NumberTypeE_type_of((T *)0);*/\
+	/*if (nt!=tnt) post("cast from %s to %s",number_type_table[nt].name, number_type_table[tnt].name);*/ \
+	return (T *)data;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	Grid *dup () { /* always produce an owning grid even if from a borrowing grid */
