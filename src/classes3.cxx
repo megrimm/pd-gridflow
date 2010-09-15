@@ -1494,9 +1494,10 @@ GRID_INLET(0) {
 	vector<T> &tmp2 = *(vector<T> *)tmp;
 	GridOut out(this,0,Dim(tmp2.size()),in.nt);
 	out.send(tmp2.size(),tmp2.data());
+	delete (vector<T> *)tmp;
 } GRID_END
 GRID_INPUT(1,r) {} GRID_END
-\end class {install("#compress",2,1);}
+\end class {install("#compress",1,1);}
 
 //****************************************************************
 void startup_classes3 () {
