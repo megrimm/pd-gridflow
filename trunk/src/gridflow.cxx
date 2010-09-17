@@ -1081,14 +1081,6 @@ BUILTIN_SYMBOLS(FOO)
 	delete[] dirresult;
 	delete[] dirname;
     } catch (Barf &oozy) {oozy.error(0,-3,(t_symbol *)0);}
-    signal(SIGSEGV,SIG_DFL);
-    signal(SIGABRT,SIG_DFL);
-    signal(SIGILL,SIG_DFL);
-    //signal(SIGIOT,SIG_DFL);
-    //signal(SIGQUIT,SIG_DFL);
-    #ifndef __WIN32__
-	signal(SIGBUS, SIG_DFL);
-    #endif
     atexit(gridflow_unsetup);
     void canvas_iemguis(t_canvas *x, t_symbol *s);
     extern t_class *canvas_class;
