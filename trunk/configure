@@ -24,7 +24,7 @@ require "rbconfig"
 $CFLAGS  = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
-WIN = !!( CONFIG["arch"] =~ /mingw/ )
+WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
 # require "win32/process" if WIN
 LOG = File.open "./config.log", "w"
 
@@ -547,7 +547,7 @@ Feature.add {
 	name "FFTW (Fastest Fourier Transform in the West)"
 	produces_o ["src/fftw.o"]
 	uses_so ["-lfftw3f"  ,"-lfftw3"  ]
-	uses_so ["-lfftw3f-3","-lfftw3-3"] if WIN
+	#uses_so ["-lfftw3f-3","-lfftw3-3"] if WIN
 	options ["HAVE_FFTW"]
 	test proc {
 		c_test %`
@@ -558,6 +558,7 @@ Feature.add {
 	name "OpenGL/GLEW (for GEM support, etc)"
 	produces_o ["src/opengl.o"]
         uses_so $LIBX11DIR+["-lGLEW"] if not WIN
+	uses_so ["-lglew32"] if WIN
         uses_h ["GL/glew.h"]
 	options ["HAVE_OPENGL"]
 	test proc {
