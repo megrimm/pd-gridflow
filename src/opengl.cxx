@@ -1017,7 +1017,7 @@ static void init_enums () {
 		uint32 list = glGenLists(n);
 		//t_atom2 a[n]; for (int i=0; i<n; i++) a[i]=list+i;
 		//out[0](n,a);
-		out[0](list);
+		out[0]((long)list);
 	}
 	\decl 0 gen_textures (int n) {
 		if (n<1) RAISE("$1 must be at least 1");
