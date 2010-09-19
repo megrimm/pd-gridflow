@@ -1,5 +1,8 @@
 x = done
 
+[ ] [#for] default arg
+[ ] guard [for] against infinite loop
+[ ] merge << and pd_oprint please
 [ ] infinite loop in shoot.pd
 [ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
@@ -9,7 +12,6 @@ x = done
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] make a clean GridOut::~GridOut. can't make one because ~GridOut often happens after the next GridOut construction.
-[ ] replace Card by...?
 [ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe) or hidden (CLASS_NOINLET) (maybe)
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
 [ ] is outlet_anything2 and pd_anything2 really something we want as a behaviour of [args] ???
@@ -39,8 +41,6 @@ x = done
 [ ] [lb]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
-[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
-[ ] win32 x11
 [ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
 [ ] alias numops so that they are more pd-like
 [ ] make a rounding [# *>>8] ?
@@ -94,7 +94,6 @@ x = done
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 [ ] make [#draw_points] or equivalent (with several dot colours)
-[ ] distinguish between C++ types Grid* and GridFlow* (GridOutlet*) ?
 [ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
 [ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
 [ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
@@ -111,8 +110,6 @@ x = done
     [ ] seedless #inner
     [ ] automatic type conversion
 [ ] [route] - 1[shunt] sends a message (bug)
-[ ] [args, noloadbang]
-[ ] [args, noparens]
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
     et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
 [ ] movie api : merge "height" & "width" attributes
@@ -131,16 +128,16 @@ x = done
 [ ] change description of GridFlow on gridflow.ca and puredata.info
 [ ] gem: support greyscale conversions
 [ ] commandline version of shoot.pd craps out sometimes, eating all RAM...
-[ ] [#in x11, cast...]
 [ ] [#out grid]: cast et type...?
 [ ] go through all examples again, to see whether everything works.
 [ ] [#in] [#out]: autoclose is currently not considered as an attribute.
 [ ] [doc_link] doesn't use [doc_iemfont]
 [ ] harmonise help files of [#in] [#out] [#io.*] and introduce help files for abstract 'standardised' interfaces such as
     'window', 'movie', 'image', 'camera', talking about common options... (re)move superfluous parts of [#in].
-[ ] [setargs]: add begin..end to atomise.
-[ ] is [#grade] really working as in APL ?
-[ ] [setargs]: delay update of titlebar (?) and objectbox (?)
+[ ] PtrOutlet() : replace error() by RAISE() if you can
+[ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
+[ ] error: [#store] inlet 0 method float: must have at least 1 dimension.
+    ~GridOut(): dex=0 prod=1
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -151,6 +148,7 @@ while running #to~-help.pd :
 ==4308==    at 0x4023F5B: calloc (vg_replace_malloc.c:418)
 ==4308==    by 0x80C7E6C: getbytes (m_memory.c:24)
 
+[ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
@@ -172,6 +170,9 @@ while running #to~-help.pd :
     to make a CHDH-like animations using [gf/gl].
 [ ] see [comment] from cyclone
 [ ] lqtgavl
+[ ] Dim::T = intptr_t
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[ ] win32 x11
 
 [ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
     Program received signal SIGSEGV, Segmentation fault.
@@ -288,8 +289,7 @@ Computation Objects
 [ ] write a complete benchmark
 [ ] spatial biquads (ask Tom)
 [ ] implement the whole APL feature set :
-    compress, expand, laminate, take, drop, indexof, rotate, generalizedtranspose, deal, decode, encode,
-    membership, format, ...
+    expand, laminate, take, drop, indexof, rotate, generalizedtranspose, deal, decode, encode, membership, format, ...
 [ ] #mosaic, #dither, #queue (#delay ?)
 [ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
