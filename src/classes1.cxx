@@ -839,7 +839,7 @@ GRID_INPUT(1,r) {} GRID_END
 	\attr PtrGrid from;
 	\attr PtrGrid to;
 	\attr PtrGrid step;
-	\constructor (Grid *from, Grid *to, Grid *step) {
+	\constructor (Grid *from, Grid *to, Grid *step=0) {
 		this->from.constrain(expect_max_one_dim);
 		this->to  .constrain(expect_max_one_dim);
 		this->step.constrain(expect_max_one_dim);
@@ -850,9 +850,10 @@ GRID_INPUT(1,r) {} GRID_END
 	\decl 0 set (Grid *l=0) {from=l;}
 	\decl 0 bang () {
 		SAME_TYPE(*from,to);
-		SAME_TYPE(*from,step);
-		if (from->dim!=to->dim || to->dim!=step->dim)
-			RAISE("dimension mismatch: from:%s to:%s step:%s",from->dim.to_s(),to->dim.to_s(),step->dim.to_s());
+		if (step) {SAME_TYPE(*from,step);}
+		if (from->dim!=to->dim || (step && to->dim!=step->dim))
+			RAISE("dimension mismatch: from:%s to:%s step:%s", from->dim.to_s(), to->dim.to_s(),
+				step ? step->dim.to_s() : "default");
 		#define FOO(T) trigger((T)0);
 		TYPESWITCH(from->nt,FOO,);
 		#undef FOO
@@ -870,11 +871,10 @@ void GridFor::trigger (T bogus) {
 	T x[64*n];
 	T *fromb = (T *)*from;
 	T *  tob = (T *)*to  ;
-	T *stepb = (T *)*step;
+	T *stepb = step ? (T *)*step : (T *)alloca(n*sizeof(T *)); if (!step) for (int i=0; i<n; i++) stepb[i]=1;
 	T to2[n];
 	
-	for (int i=step->dim.prod()-1; i>=0; i--)
-		if (!stepb[i]) RAISE("step must not contain zeroes");
+	for (int i=n-1; i>=0; i--) if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
 		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
