@@ -887,14 +887,6 @@ int handle_parens(int ac, t_atom *av_) {
 }
 \end class {fclass->name = gensym("<FObject>");}
 
-void startup_number();
-void startup_classes1();
-void startup_classes3();
-void startup_classes2();
-void startup_classes_gui();
-void startup_format();
-STARTUP_LIST(void)
-
 void blargh () {
   fprintf(stderr,"begin blargh()");
 #if defined(MACOSX) || defined(__WIN32__)
@@ -998,6 +990,15 @@ void allow_big_stack () {
 
 extern "C" void sys_load_lib(t_canvas *,const char *);
 
+void startup_number();
+void startup_classes1();
+void startup_classes3();
+void startup_classes2();
+void startup_classes4();
+void startup_classes_gui();
+void startup_format();
+STARTUP_LIST(void)
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -1040,6 +1041,7 @@ BUILTIN_SYMBOLS(FOO)
 	startup_classes1();
 	startup_classes3();
 	startup_classes2();
+	startup_classes4();
 	startup_classes_gui();
 	startup_format();
 	STARTUP_LIST()
