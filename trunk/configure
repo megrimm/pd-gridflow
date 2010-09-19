@@ -252,7 +252,7 @@ Feature.add {
 			"3.666" # version number unknown, sorry.
 		end
 	}
-	# how does this handle two test procs again?
+	# how does this handle two test procs again? probably it doesn't, and the former test-proc is ignored.
 	test proc {
 		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
@@ -261,8 +261,7 @@ Feature.add {
 		if version < "3" then raise "version #{version} < 3" end
 		true
 	}
-	test proc {
-		c_test %{
+	test proc {c_test %{
 		#include <stdio.h>
 		int main () {
 			printf("GCC_VERSION %d.%d.%d\\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
@@ -271,8 +270,7 @@ Feature.add {
 Feature.add {
 	tag :stl
 	name "C++ Standard Template Library"
-	test proc {
-		c_test %{
+	test proc {c_test %{
 		#include <vector>
 		int main () {std::vector<int> foo;}}}}
 Feature.add {
@@ -339,8 +337,7 @@ Feature.add {
 	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
 	produces_o ["src/x11.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		int main () {return XSetErrorHandler==0;}"}}
 Feature.add {
@@ -350,8 +347,7 @@ Feature.add {
 	uses_so $LIBX11+["-lXext"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	options ["HAVE_X11_SHARED_MEMORY"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		#include <X11/Xutil.h>
 		#include <X11/StringDefs.h>
@@ -370,8 +366,7 @@ Feature.add {
 	uses_h ["SDL/SDL.h"]
 	#uses_h ["$$(sdl-config --cflags)"]
 	produces_o ["src/sdl.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		#undef main
 		int main () {return SDL_MapRGB==0;}"}}
@@ -380,8 +375,7 @@ Feature.add {
 	name "GNU/Apple ObjectiveC++ Compiler"
 	uses_h ["objc/Object.h"]
 	uses_so ["-lobjc"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		int main () { [[Object alloc] init]; }
 		", nil, ["-xobjective-c++"]}}
@@ -392,8 +386,7 @@ Feature.add {
 	uses_feature [:objcpp]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
 	produces_o ["src/quartz.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		int main () {return CGImageRelease==0;}
 		", nil, ["-xobjective-c++"]}}
@@ -403,8 +396,7 @@ Feature.add {
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
 	produces_o ["src/aalib.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#define aa_hardwareparams aa_hardware_params
 		extern \"C\" {
 		#include#
@@ -416,8 +408,7 @@ Feature.add {
 	uses_so ["-ljpeg"]
 	uses_h ["jpeglib.h"]
 	produces_o ["src/jpeg.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		extern \"C\" {
 		#include <stdio.h>
 		#include#
@@ -430,8 +421,7 @@ Feature.add {
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["png.h"],["libpng/png.h"],["libpng14/png.h"],["libpng12/png.h"]]
 	produces_o ["src/png.o"]
-	test proc {|f|
-		f.c_test %`
+	test proc {|f| f.c_test %`
 		extern "C" {
 		#include <stdio.h>
 		#include#
@@ -446,8 +436,7 @@ Feature.add {
 	name "Video4linux Driver Interface Version 1 (kernel)"
 	uses_h ["linux/videodev.h"]
 	produces_o ["src/videodev.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include <stdlib.h>
 		#include#
 		int main () { struct video_window foo; return 0; }"}}
@@ -458,8 +447,7 @@ Feature.add {
 	uses_h ["libv4l1.h"]
 	uses_so ["-lv4l1"]
 	defines ["HAVE_LIBV4L1"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include <linux/videodev.h>
 		#include <sys/types.h>
 		#include <libv4l1.h>
@@ -470,8 +458,7 @@ Feature.add {
 	uses_h ["libv4l2.h"]
 	uses_so ["-lv4l2"]
 	produces_o ["src/v4l2.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include <libv4l2.h>
 		int main () {return v4l2_open==0;}"}}
 Feature.add {
@@ -481,8 +468,7 @@ Feature.add {
 	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
 	produces_o ["src/dc1394.o"]
 	options ["HAVE_DC1394"]
-	test proc {|f|
-		f.c_test "
+	test proc {|f| f.c_test "
 		#include#
 		int main () {return dc1394_create_handle==0;}"}}
 Feature.add {
@@ -491,8 +477,7 @@ Feature.add {
 	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	produces_o ["src/mpeg3.o"]
-	test proc {|f|
-		f.c_test "
+	test proc {|f| f.c_test "
 		#include#
 		int main () { return mpeg3_open==0; }"}}
 Feature.add {
@@ -501,8 +486,7 @@ Feature.add {
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
 	produces_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
-	test proc {
-		c_test "
+	test proc {c_test "
 		#include#
 		int main () { return EnterMovies==0; }
 		"}}
@@ -518,8 +502,7 @@ Feature.add {
 		f.map{|x| "lqt/"+x },
 		f.map{|x| "quicktime/"+x }]
 	produces_o ["src/quicktimehw.o"]
-	test proc {|f|
-		f.c_test %`
+	test proc {|f| f.c_test %`
 		#include <stdio.h>
 		#include#
 		int main () {
@@ -538,8 +521,7 @@ Feature.add {
 	uses_so ["-lcv"]
 	options ["HAVE_OPENCV"]
 	defines {{:OPENCV_SHARE_PATH => File.dirname($C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
-	test proc {
-		c_test %`
+	test proc {c_test %`
 			#include <opencv/cv.h>
 			int main () {return 0;}`}}
 Feature.add {
@@ -548,10 +530,9 @@ Feature.add {
 	produces_o ["src/fftw.o"]
 	uses_so Or[["-lfftw3f","-lfftw3"],["-lfftw3f-3","-lfftw3-3"]]
 	options ["HAVE_FFTW"]
-	test proc {
-		c_test %`
-			#include <fftw3.h>
-			int main () {return 0;}`}}
+	test proc {|f| f.c_test %`
+		#include <fftw3.h>
+		int main () {return 0;}`}}
 Feature.add {
 	tag :opengl
 	name "OpenGL/GLEW (for GEM support, etc)"
@@ -560,8 +541,7 @@ Feature.add {
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
 	options ["HAVE_OPENGL"]
-	test proc {
-		c_test %`
+	test proc {c_test %`
                 #include#
                 int main () {return (GLint)0;}
                 `
