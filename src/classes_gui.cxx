@@ -276,6 +276,7 @@ static t_symbol *s_empty;
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy_proxy"),1,a);
 		proxy = (BFObject *)pd_newest();
 		((MouseSpyProxy *)proxy->self)->snd = (t_pd *)bself;
+		y=x=flags=0;
 	}
 	void set_rcv (t_symbol *rcv_=0) {((MouseSpyProxy *)proxy->self)->set_rcv(rcv_);}
 	~MouseSpy () {((MouseSpyProxy *)proxy->self)->delayed_free();}
@@ -419,6 +420,7 @@ static t_pd *seesend;
 		//if (self->clock) {clock_free(self->clock); self->clock=0;}
 	}
 	static void visfn(BLAH, int flag) {INIT1
+		//post("#see visfn c=%p flag=%d",glist,flag);
 		GUI_FObject::visfn(x,glist,flag);//super
 		clock_delay(self->clock,0);
 	}
