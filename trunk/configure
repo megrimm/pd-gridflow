@@ -546,8 +546,7 @@ Feature.add {
 	tag :fftw
 	name "FFTW (Fastest Fourier Transform in the West)"
 	produces_o ["src/fftw.o"]
-	uses_so ["-lfftw3f"  ,"-lfftw3"  ]
-	#uses_so ["-lfftw3f-3","-lfftw3-3"] if WIN
+	uses_so Or[["-lfftw3f","-lfftw3"],["-lfftw3f-3","-lfftw3-3"]]
 	options ["HAVE_FFTW"]
 	test proc {
 		c_test %`
