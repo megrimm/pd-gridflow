@@ -66,6 +66,8 @@ t_symbol *gridflow_folder;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
+string t_atom2::to_s() {ostringstream os; os << *this; return os.str();}
+
 Barf::Barf(const char *s, ...) {
     ostringstream os; va_list ap; va_start(ap,s  ); voprintf(os,s  ,ap);
     va_end(ap); text = os.str();}
@@ -83,10 +85,22 @@ void Barf::error(t_symbol *s, int argc, t_atom *argv) {
         ::error("[%s]: %s",os.str().data(),text.data());
 }
 
+// gf/expr
+#define A_OP    t_atomtype(0x1000)
+#define A_VAR   t_atomtype(0x1001) /* for $f1-style variables, not other variables */
+#define A_OPEN  t_atomtype(0x1002) /* only between next() and parse() */
+#define A_CLOSE t_atomtype(0x1003) /* only between next() and parse() */
+
 #define Z(T) case T: return #T; break;
-const char *atomtype_to_s (t_atomtype t) {
-  switch (t) {Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
-  default: return "unknown type";}}
+string atomtype_to_s (t_atomtype t) {
+  switch (int(t)) {
+    Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
+    Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)
+    Z(A_OP)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)
+    Z(A_CANT)Z(A_NULL)
+    default: ostringstream os; oprintf(os,"unknown:%d",int(t)); return os.str();
+  }
+}
 #undef Z
 
 void pd_oprint (ostream &o, int argc, t_atom *argv) {
@@ -163,7 +177,7 @@ void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 
 // backslash is doubled here because Pd doesn't do it and Tcl's eval interprets a double backslash as a single.
 ostream &operator << (ostream &self, const t_atom &a) {
-	switch (a.a_type) {
+	switch (int(a.a_type)) {
 		case A_FLOAT:   self << a.a_float; break;
 		case A_SYMBOL:  self << a.a_symbol->s_name; break; // i would rather show backslashes here...
 		case A_DOLLSYM: self << a.a_symbol->s_name; break; // for real, it's the same thing as A_SYMBOL in pd >= 0.40
@@ -180,7 +194,11 @@ ostream &operator << (ostream &self, const t_atom &a) {
 			self << ")";
 			break;
 		}
-		default: self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
+		case A_NULL: case A_CANT: case A_OPEN: case A_CLOSE:
+			   self << "\\\\a(" << atomtype_to_s(a.a_type)                                                << ")"; break;
+		case A_OP: case A_VAR:
+			   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_symbol   << std::dec << ")"; break;
+		default:   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
 	}
 	return self;
 }
@@ -192,7 +210,7 @@ void PtrOutlet::operator () (t_atom &a) {
     else if (a.a_type==A_POINTER) (*this)(a.a_gpointer);
     else if (a.a_type==A_LIST   ) (*this)((t_list *)a.a_gpointer);
     else if (a.a_type==A_BLOB   ) (*this)((t_blob *)a.a_gpointer);
-    else error("can't send atom whose type is %s",atomtype_to_s(a.a_type));
+    else {string s = atomtype_to_s(a.a_type); RAISE("can't send atom whose type is %s",s.data());}
     //self(1,av);
 }
 
@@ -204,7 +222,8 @@ bool t_atom2::operator == (const t_atom2 &b) {
 	if (a.a_type==A_POINTER) return a.a_gpointer==b.a_gpointer; // not deep
 	if (a.a_type==A_LIST)    return a.a_gpointer==b.a_gpointer; // not deep
 	if (a.a_type==A_BLOB)    return a.a_gpointer==b.a_gpointer; // not deep
-	RAISE("don't know how to compare elements of type %s",atomtype_to_s(a.a_type));
+	string s = atomtype_to_s(a.a_type);
+	RAISE("don't know how to compare elements of type %s",s.data());
 }
 //----------------------------------------------------------------
 // Dim
