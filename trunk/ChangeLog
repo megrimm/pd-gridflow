@@ -9,8 +9,13 @@ version 9.12 (2010.09...):
  * improved examples: dither.pd
  * [#import]: when in per_message mode, output empty grids just like any other
  * [setargs]: process commas and semis properly when updating $-variables
+ * [setargs]: use sys_queuegui to limit updates of objectboxes and titlebars
  * [#many]: margins (just as in [#see])
  * [#many]: properties dialogue saves the spacing/margins settings to file
+ * now ready for win64 builds
+ * [args]: added attributes 'noloadbang' and 'noparens'
+ * new classes: [#compress]
+ * [gf/mouse_spy]: fixed init bug
 
 version 9.11 (2010.09.07):
 
