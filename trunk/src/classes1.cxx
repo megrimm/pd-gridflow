@@ -189,23 +189,22 @@ GRID_INLET(0) {
 
 /* **************************************************************** */
 \class GridPrint : FObject {
+	\attr t_symbol *name;
+	\attr int maxrows;
 	\constructor (t_symbol *name=0) {
 		this->dest = 0;
 		this->name = name;
 		base=10; trunc=70; maxrows=50;
 	}
-	\attr t_symbol *name;
 	\grin 0
 	int base;
 	uint32 trunc;
-	int maxrows;
 	int columns;
 	t_pd *dest;
 	\decl 0 dest (void *p) {dest = (t_pd *)p;}
 	\decl void end_hook () {}
 	\decl 0 base (int x) {if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x);}
 	\decl 0 trunc (int x) {if (x<0 || x>240) RAISE("out of range (not in 0..240 range)"); trunc = x;}
-	\decl 0 maxrows (int y) {maxrows = y;}
 	void puts (const char *s) {
 		if (!dest) post("%s",s);
 		else {
@@ -294,11 +293,12 @@ GRID_INLET(0) {
 		long sy = in.dim[0];
 		long sx = n/sy;
 		for (int row=0; row<sy; row++) {
+			if (row>=maxrows) {puts("..."); break;}
 			ostringstream body;
+			//body << "row " << row << ": ";
 			dump(body,sx,&data[sx*row],' ',trunc);
 			if (body.tellp()>trunc) body << "...";
 			puts(body);
-			if (row>maxrows) {puts("..."); break;}
 		}
 	} else if (ndim == 3) {
 		puts(head);
