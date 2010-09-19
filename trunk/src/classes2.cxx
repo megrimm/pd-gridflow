@@ -46,12 +46,6 @@ struct _outlet {
 
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
-string join (int argc, t_atom *argv, string sep=" ", string term="") {
-	ostringstream os;
-	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
-	return os.str();
-}
-
 /* get the owner of the result of canvas_getenv */
 static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
@@ -71,6 +65,10 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	if (argv[0].a_type==A_FLOAT && argc==1) {pd_float(o,argv[0].a_float); return;}
 	if (argv[0].a_type==A_SYMBOL) pd_typedmess(o,argv[0].a_symbol,argc-1,argv+1);
 	else                          pd_typedmess(o,&s_list         ,argc  ,argv  );
+}
+
+static void dont_handle_parens (int ac, t_atom2 *av) {
+	for (int i=0; i<ac; i++) if (av[i]==s_comma) SETCOMMA(&av[i]);
 }
 
 \class Args : FObject {
@@ -100,7 +98,7 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	\decl 0 bang () {
 		t_canvasenvironment *env = canvas_getenv(mom); int ac = env->ce_argc; t_atom2 av[ac];
 		for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
-		ac = handle_parens(ac,av);
+		if (noparens) dont_handle_parens(ac,av); else ac = handle_parens(ac,av);
 		int j; for (j=0; j<ac; j++) if (av[j].a_type==A_COMMA) break;
 		process_args(j,av);
 		while (j<ac) {

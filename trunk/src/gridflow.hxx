@@ -66,7 +66,7 @@ typedef struct _blob t_blob;
 #define A_GRID    t_atomtype(14) /* (Grid *)    */
 #define A_GRIDOUT t_atomtype(15) /* (GridOut *) */
 
-const char *atomtype_to_s (t_atomtype t);
+string atomtype_to_s (t_atomtype t);
 
 #define gensym(s) gensym(const_cast<char *>(s))
 #define sys_vgui(FMT,ARGS...) sys_vgui(const_cast<char *>(FMT),ARGS)
@@ -282,6 +282,8 @@ struct t_atom2 : t_atom {
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
 	template <class T> t_atom2             (T value) {set_atom(this,value);              };
 	t_atom2 () {}
+
+	string to_s ();
 };
 
 template <class T> static inline T convert(const t_atom &x, T *foo) {
@@ -970,6 +972,12 @@ inline t_symbol *symprintf(const char *s, ...) {
 
               ostream &operator << (ostream &self, const t_atom &a);
 static inline ostream &operator << (ostream &self, t_symbol *s) {self << s->s_name; return self;}
+
+static inline string join (int argc, t_atom *argv, string sep=" ", string term="") {
+	ostringstream os;
+	for (int i=0; i<argc; i++) os << argv[i] << (i==argc-1 ? term : sep);
+	return os.str();
+}
 
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
