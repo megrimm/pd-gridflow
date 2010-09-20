@@ -27,6 +27,7 @@
 	#define A_OPEN  t_atomtype(0x1002) /* only between next() and parse() */
 	#define A_CLOSE t_atomtype(0x1003) /* only between next() and parse() */
 
+	string args;
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
 	t_atom2 tok;
@@ -34,7 +35,7 @@
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
-		else if (strchr("+-*/",*s)) {char t[2]={0,0}; *t=*s; tok.a_type=A_OP; tok.a_symbol=gensym(t); post("%c",*s); s++;}
+		else if (strchr("+-*/",*s)) {char t[2]={0,0}; *t=*s; tok.a_type=A_OP; tok.a_symbol=gensym(t); s++;}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
@@ -50,6 +51,7 @@
 			next(s);
 			switch (int(tok.a_type)) {
 				case A_OP: {t_atom2 tok2=tok; parse(s,level+1); code.push_back(tok2);} break;
+				case A_CLOSE: return;
 				case A_NULL: return;
 				default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());}
 			}
@@ -63,13 +65,16 @@
 		};
 	}
 	\constructor (...) {
-		string s = join(argc,argv);
-		try {parse(s.data());}
-		catch (Barf &oozy) {oozy.error(gensym("gf/expr"),argc,argv);}
-		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
-		string c = join(code.size(),code.data()); post("gf/expr code: %s",c.data());
+		args = join(argc,argv);
 	}
 	\decl 0 bang () {
+		post("----------------------------------------------------------------");
+		toks.clear(); code.clear();
+		try {parse(args.data());}
+		catch (Barf &oozy) {oozy.error(gensym("gf/expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
+		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
+		string c = join(code.size(),code.data()); post("gf/expr code: %s",c.data());
+
 		vector<float> stack;
 		int n = code.size();
 		for (int i=0; i<n; i++) {
@@ -86,10 +91,10 @@
 			  default: {string z = code[i].to_s(); RAISE("can't interpret %s",z.data());}
 			}
 		}
-		out[0](stack.back());
+		if (stack.size()) out[0](stack.back()); else RAISE("no result");
 	}
 };
-\end class {install("#expr",1,1);}
+\end class {install("#expr",1,1,CLASS_NOPARENS);}
 
 void startup_classes4 () {
 	\startall
