@@ -67,9 +67,7 @@ static void pd_anything2 (t_pd *o, int argc, t_atom *argv) {
 	else                          pd_typedmess(o,&s_list         ,argc  ,argv  );
 }
 
-static void dont_handle_parens (int ac, t_atom2 *av) {
-	for (int i=0; i<ac; i++) if (av[i]==s_comma) SETCOMMA(&av[i]);
-}
+static void dont_handle_parens (int ac, t_atom2 *av) {for (int i=0; i<ac; i++) if (av[i]==s_comma) SETCOMMA(&av[i]);}
 
 \class Args : FObject {
 	\attr bool noloadbang;
@@ -330,7 +328,7 @@ static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {ret
 		post("%s",text.str().data());
 	}
 };
-\end class {install("gf/print",1,0); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
+\end class {install("gf/print",1,0,CLASS_NOPARENS); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
 
 //****************************************************************
 
