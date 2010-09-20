@@ -281,7 +281,7 @@
 #X obj 57 89 gf/gl;
 #X msg 57 70 begin quads;
 #X obj 15 35 t b b b;
-#X obj 282 15 #for (0 0) (7 7) (1 1);
+#X obj 282 15 #for (0 0) (7 7);
 #X obj 282 34 #import (2);
 #X obj 343 111 unpack;
 #X obj 282 91 spigot;
@@ -676,7 +676,7 @@
 #X msg 75 491 vertex \$1 \$2;
 #X obj 75 510 gf/gl;
 #X obj 54 73 gf/gl;
-#X obj 302 12 #for (0 0) (7 7) (1 1);
+#X obj 302 12 #for (0 0) (7 7);
 #X msg 363 108 2 f # \$1 \$2;
 #X obj 363 146 #to_l;
 #X obj 363 184 # * (8 f # 1.732 1.732 1.732 -1.5 -1.5 -1.5 -1.5 -1.5)

@@ -16,7 +16,7 @@
 #X obj 112 174 + 1;
 #X obj 136 174 mod 600;
 #X msg 88 193 put_at \$1 0 0;
-#X obj 18 219 #for 0 600 1;
+#X obj 18 219 #for 0 600;
 #X obj 18 248 # +;
 #X obj 18 267 #outer ignore (0);
 #X obj 18 155 #slice (119 0) (120 320);

@@ -101,7 +101,7 @@
 #X obj 211 64 #to_list;
 #X obj 17 180 t a a;
 #X obj 44 343 #outer & (0 -1);
-#X obj 17 305 #for (0 0) (240 320) (1 1);
+#X obj 17 305 #for (0 0) (240 320);
 #X obj 17 101 shunt;
 #X obj 283 296 # / 320;
 #X obj 17 324 # * (1 0);

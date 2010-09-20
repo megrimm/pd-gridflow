@@ -5,7 +5,7 @@
 #X obj 21 72 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
 #X obj 21 176 # inv+ 7;
-#X obj 21 92 #for 0 320 1;
+#X obj 21 92 #for 0 320;
 #X obj 21 125 # * 7;
 #X obj 21 50 loadbang;
 #X text 41 72 make one line:;

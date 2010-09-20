@@ -14,7 +14,7 @@
 #X obj 21 186 t b b;
 #X obj 219 346 # inv* (240 320);
 #X text 6 22 Copyright 2002 \, 2006 Mathieu Bouchard;
-#X obj 120 203 #for (0 0) (240 320) (1 1);
+#X obj 120 203 #for (0 0) (240 320);
 #X obj 21 220 #store;
 #X obj 87 230 #store;
 #X obj 120 184 loadbang;

@@ -40,7 +40,7 @@
 #X obj 28 434 #clip;
 #X obj 28 482 #out window;
 #X obj 155 320 #for 120 0 -1;
-#X obj 124 211 #for 0 320 1;
+#X obj 124 211 #for 0 320;
 #X obj 482 150 env~;
 #X obj 482 169 dbtorms;
 #X obj 297 116 *~;

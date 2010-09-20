@@ -10,7 +10,7 @@
 #X obj 18 93 #fold +;
 #X text 89 95 pythagoras' theorem;
 #X obj 18 131 outlet;
-#X obj 18 55 #for (-128 -128) (128 128) (1 1);
+#X obj 18 55 #for (-128 -128) (128 128);
 #X obj 18 112 # sqrt;
 #X obj 18 74 # sq-;
 #X connect 2 0 6 0;
@@ -40,7 +40,7 @@
 #X text 64 119 angles to centre;
 #X text 22 13 bang;
 #X obj 21 32 inlet;
-#X obj 21 51 #for -128 128 1;
+#X obj 21 51 #for -128 128;
 #X obj 21 70 #t;
 #X obj 21 119 outlet;
 #X connect 0 0 6 0;
@@ -68,7 +68,7 @@
 #X text 0 23 Copyright 2002 Mathieu Bouchard;
 #X obj 161 413 #color;
 #X text 246 394 color of ripple shading;
-#X obj 161 310 #for (0 0) (256 256) (1 1);
+#X obj 161 310 #for (0 0) (256 256);
 #X obj 193 186 #outer + (0 9000);
 #X obj 7 203 #outer ignore (0 0);
 #X obj 7 279 #t;
@@ -77,7 +77,7 @@
 #N canvas 637 465 387 220 compute_sine 0;
 #X obj 8 113 #store;
 #X obj 55 113 # sin* 64;
-#X obj 55 71 #for 0 1024 1;
+#X obj 55 71 #for 0 1024;
 #X obj 55 50 loadbang;
 #X obj 55 92 # * 900;
 #X obj 125 51 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1

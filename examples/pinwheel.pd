@@ -14,7 +14,7 @@
 0;
 #X text 404 38 Presets:;
 #X text 4 26 Copyright 2009 by Federico Ferri;
-#X obj 98 133 #for (0 0) (256 256) (1 1);
+#X obj 98 133 #for (0 0) (256 256);
 #X obj 14 528 fps;
 #X floatatom 14 547 5 0 0 0 - - -;
 #X obj 13 265 # + (0 0);

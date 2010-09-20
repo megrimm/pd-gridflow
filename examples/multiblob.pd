@@ -85,7 +85,7 @@
 #X obj 23 48 bang;
 #X obj 23 105 #outer + (0 9000);
 #X obj 23 124 # cos*;
-#X obj 23 67 #for 0 24 1;
+#X obj 23 67 #for 0 24;
 #X obj 23 86 # * 1500;
 #X connect 0 0 3 0;
 #X connect 1 0 5 1;
