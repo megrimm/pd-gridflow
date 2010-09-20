@@ -1,44 +1,40 @@
-#N canvas 594 21 632 684 10;
+#N canvas 594 0 632 684 10;
 #X obj 86 180 #out window;
-#X obj 60 45 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+#X obj 65 45 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
 #X obj 86 45 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 86 199 fps detailed;
 #X obj 86 218 print;
-#X text 232 732 Returns a grid from the video capture device for every
+#X text 232 743 Returns a grid from the video capture device for every
 bang.;
-#X text 151 111 <-- open the abstraction and configure for your camera
-before sending it a bang.;
-#X obj 86 112 #camera;
-#X obj 14 732 doc_oo 0;
-#X obj 14 420 doc_ii 0;
-#X obj 14 271 doc_cc 0;
-#X obj 232 609 doc_same 0;
-#X text 232 631 same as the class of the camera object being used inside:
+#X obj 14 743 doc_oo 0;
+#X obj 14 431 doc_ii 0;
+#X obj 14 282 doc_cc 0;
+#X obj 232 620 doc_same 0;
+#X text 232 642 same as the class of the camera object being used inside:
 see #io.videodev-help.pd for a LONG list of options;
 #X obj 0 0 doc_h;
-#X obj 0 764 doc_f;
-#X obj 3 241 doc_c 1;
-#X obj 3 390 doc_i 1;
-#X obj 3 702 doc_o 1;
-#X obj 97 271 doc_m c0 float/int;
-#X obj 97 732 doc_m o0 grid;
-#X obj 97 609 doc_m i0 device;
+#X obj 0 830 doc_f;
+#X obj 3 252 doc_c 1;
+#X obj 3 401 doc_i 1;
+#X obj 97 282 doc_m c0 float/int;
+#X obj 97 743 doc_m o0 grid;
+#X obj 97 620 doc_m i0 device;
 #X obj 86 62 metro 33.3333;
-#X obj 97 420 doc_m i0 api;
-#X obj 97 631 doc_m i0 <any>;
-#X text 232 420 one of the following symbols:;
-#X text 232 442 v4l1 : linux video \, old style \, no wrapper;
-#X text 232 464 libv4l1 : linux video \, old style \, with wrapper
+#X obj 97 431 doc_m i0 api;
+#X obj 97 642 doc_m i0 <any>;
+#X text 232 431 one of the following symbols:;
+#X text 232 453 v4l1 : linux video \, old style \, no wrapper;
+#X text 232 475 libv4l1 : linux video \, old style \, with wrapper
 ;
-#X text 232 486 v4l2 : not supported yet;
-#X text 232 508 libv4l2 : not supported yet;
-#X text 232 552 quicktime : QuickTime Sequence Grabber (OSX);
-#X text 232 530 dc1394 : linux interface to DC FireWire®;
-#X text 232 574 sorry : used to indicate that no api was successfully
+#X text 232 497 v4l2 : not supported yet;
+#X text 232 519 libv4l2 : not supported yet;
+#X text 232 563 quicktime : QuickTime Sequence Grabber (OSX);
+#X text 232 541 dc1394 : linux interface to DC FireWire®;
+#X text 232 585 sorry : used to indicate that no api was successfully
 found in autodétection;
-#X text 232 358 -1 (or 8) : none (default);
-#X text 232 271 starting with GridFlow 9.9 \, this is the device number
+#X text 232 369 -1 (or 8) : none (default);
+#X text 232 282 starting with GridFlow 9.9 \, this is the device number
 relative to the current. this is a number from 0 to 7 Although more
 than 8 cameras might be supported by GridFlow \, only 8 cameras are
 supported by [#camera]. if you ever use more than 8 cameras with GridFlow
@@ -47,28 +43,57 @@ and would like to use [#camera] \, write to me.;
 #X obj 86 131 shunt;
 #X obj 123 132 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
 1;
-#X obj 232 666 doc_link #io.videodev;
+#X obj 232 677 doc_link #io.videodev;
+#X obj 3 810 doc_also;
+#X obj 185 147 #type-gui;
+#X msg 97 88 get;
+#X obj 185 128 route3 cast;
+#X obj 3 713 doc_o 2;
+#X obj 14 765 doc_oo 1;
+#X obj 103 810 #in;
+#X obj 277 810 doc_link #io.videodev;
+#X obj 133 810 doc_link #io.quicktimecamera;
+#X obj 379 810 doc_link #io.dc1394;
+#X obj 97 765 doc_m o1 <any>;
+#X text 232 765 as any of the #io camera interfaces will tell you.
+(see the "See Also" section);
+#X obj 8 166 display;
+#X obj 86 111 #camera 0;
+#X text 153 109 <-- (right click) Open this abstraction !!!;
+#X obj 7 147 #type \, abbr;
+#X obj 185 229 display;
 #X connect 0 0 3 0;
-#X connect 1 0 7 0;
-#X connect 2 0 21 0;
+#X connect 1 0 48 0;
+#X connect 2 0 18 0;
 #X connect 3 0 4 0;
-#X connect 7 0 35 0;
-#X connect 18 1 33 0;
-#X connect 18 1 32 0;
-#X connect 19 1 5 0;
-#X connect 20 1 11 0;
-#X connect 21 0 7 0;
-#X connect 22 1 24 0;
-#X connect 22 1 25 0;
-#X connect 22 1 26 0;
-#X connect 22 1 27 0;
-#X connect 22 1 28 0;
-#X connect 22 1 30 0;
-#X connect 22 1 29 0;
-#X connect 22 1 31 0;
-#X connect 23 1 12 0;
-#X connect 23 1 37 0;
-#X connect 34 0 0 0;
-#X connect 35 0 0 0;
-#X connect 35 1 34 0;
-#X connect 36 0 35 1;
+#X connect 15 1 30 0;
+#X connect 15 1 29 0;
+#X connect 16 1 5 0;
+#X connect 17 1 9 0;
+#X connect 18 0 48 0;
+#X connect 19 1 21 0;
+#X connect 19 1 22 0;
+#X connect 19 1 23 0;
+#X connect 19 1 24 0;
+#X connect 19 1 25 0;
+#X connect 19 1 27 0;
+#X connect 19 1 26 0;
+#X connect 19 1 28 0;
+#X connect 20 1 10 0;
+#X connect 20 1 34 0;
+#X connect 31 0 0 0;
+#X connect 32 0 0 0;
+#X connect 32 1 31 0;
+#X connect 33 0 32 1;
+#X connect 35 1 41 0;
+#X connect 35 1 43 0;
+#X connect 35 1 42 0;
+#X connect 35 1 44 0;
+#X connect 36 0 51 0;
+#X connect 37 0 48 0;
+#X connect 38 0 36 0;
+#X connect 45 1 46 0;
+#X connect 48 0 32 0;
+#X connect 48 0 50 0;
+#X connect 48 1 38 0;
+#X connect 50 0 47 0;
