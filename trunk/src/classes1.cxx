@@ -324,7 +324,7 @@ GRID_INLET(0) {
 	dump_dims(head,in);
 	if (in.dim.prod()==0) puts(head);
 } GRID_END
-\end class {install("#print",1,1); add_creator("@print");}
+\end class {install("#print",1,1,CLASS_NOPARENS); add_creator("@print");}
 
 /* **************************************************************** */
 // [#store] is the class for storing a grid and restituting it on demand.
