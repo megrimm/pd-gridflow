@@ -644,21 +644,24 @@ FObject::~FObject () {
 	delete[] inlets;
 	delete[] out;
 }
+
+static void dont_handle_parens (int ac, t_atom2 *av) {for (int i=0; i<ac; i++) if (av[i]==s_comma) SETCOMMA(&av[i]);}
+
 static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
     string name = string(classsym->s_name);
     if (fclasses.find(classsym)==fclasses.end()) {post("GF: class not found: '%s'",classsym->s_name); return 0;}
-    t_class *qlass = fclasses[classsym]->bfclass;
-    BFObject *bself = (BFObject *)pd_new(qlass);
+    FClass *qlass = fclasses[classsym];
+    BFObject *bself = (BFObject *)pd_new(qlass->bfclass);
     try {
 	int argc = ac;
 	t_atom2 argv[argc];
 	for (int i=0; i<argc; i++) argv[i] = at[i];
-	argc = handle_parens(argc,argv);
+	if (qlass->flags&CLASS_NOPARENS) dont_handle_parens(argc,argv); else argc = handle_parens(argc,argv);
 	int j;
 	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
 	bself->self = 0;
 	t_allocator alloc = fclasses[classsym]->allocator;
-	bself->te_binbuf = 0; //HACK: supposed to be 0
+	bself->te_binbuf = 0; //HACK: supposed to be 0 already (why this hack ? I don't recall)
 	#ifdef DES_BUGS
 		bself->magic = 0x66666600;
 	#endif
