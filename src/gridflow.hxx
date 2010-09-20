@@ -520,8 +520,8 @@ struct NumopOn {
 	AlgebraicCheck is_neutral, is_absorbent;
 	NumopOn(Map m, Zip z, Fold f, Scan s,
 	void (*neu)(T *,LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
-		map(m), zip(z), fold(f), scan(s), neutral(neu), is_neutral(n), is_absorbent(a) {}
-	NumopOn() : map(0),zip(0),fold(0),scan(0),neutral(0),is_neutral(0),is_absorbent(0) {}
+		    map(m),zip(z),fold(f),scan(s),neutral(neu),is_neutral(n),is_absorbent(a) {}
+	NumopOn() : map(0),zip(0),fold(0),scan(0),neutral(0)  ,is_neutral(0),is_absorbent(0) {}
 	NumopOn(const NumopOn &z) {
 		map=z.map; zip=z.zip; fold=z.fold; scan=z.scan;
 		is_neutral = z.is_neutral; neutral = z.neutral;
@@ -741,6 +741,7 @@ struct AttrDecl {
 	AttrDecl(t_symbol *name_, string type_) {name=name_; type=type_;}
 };
 typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
+#define CLASS_NOPARENS (1<<16)
 struct FClass {
 	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);
@@ -751,7 +752,7 @@ struct FClass {
 	t_symbol *name;
 	map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method
 	map<t_symbol *,AttrDecl *> attrs;
-	int flags; // flags: any of: CLASS_NOINLET; (yes, there's only one possibility)
+	int flags; // flags: any combination of: CLASS_NOINLET, CLASS_NOPARENS
 };
 
 void fclass_install(FClass *fc, FClass *super);
