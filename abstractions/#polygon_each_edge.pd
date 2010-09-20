@@ -8,7 +8,7 @@
 #X obj 102 41 #to_list;
 #X msg 102 60 \$1;
 #X obj 19 156 #outer + (2 1 # 0 1);
-#X obj 20 97 #for 0 0 1;
+#X obj 20 97 #for 0 0;
 #X obj 19 120 #to_float;
 #X connect 0 0 3 0;
 #X connect 2 0 1 0;

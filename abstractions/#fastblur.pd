@@ -14,11 +14,11 @@
 #X obj 334 94 #unpack 3;
 #X obj 48 284 #convolve (1 1 # 1) \, wrap 0;
 #X obj 334 133 t b l;
-#X obj 334 152 #for (0) (0) (1);
+#X obj 334 152 #for (0) (0);
 #X obj 334 190 # inv+;
 #X obj 457 171 # == 0;
 #X obj 457 133 t b l;
-#X obj 457 152 #for (0) (0) (1);
+#X obj 457 152 #for (0) (0);
 #X obj 457 190 # inv+;
 #X obj 18 148 shunt;
 #X obj 18 245 shunt;
