@@ -69,8 +69,27 @@
 		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
 		string c = join(code.size(),code.data()); post("gf/expr code: %s",c.data());
 	}
+	\decl 0 bang () {
+		vector<float> stack;
+		int n = code.size();
+		for (int i=0; i<n; i++) {
+			{string z = code[i].to_s(); post("interpreting %s",z.data());}
+			switch (int(code[i].a_type)) {
+			  case A_FLOAT: stack.push_back(code[i]); break;
+			  case A_OP: {
+				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
+				  float b = stack.back(); stack.pop_back();
+				  float a = stack.back(); stack.pop_back();
+				  op->map(1,&a,b);
+				  stack.push_back(a);
+			  } break;
+			  default: {string z = code[i].to_s(); RAISE("can't interpret %s",z.data());}
+			}
+		}
+		out[0](stack.back());
+	}
 };
-\end class {install("gf/expr",1,1);}
+\end class {install("#expr",1,1);}
 
 void startup_classes4 () {
 	\startall
