@@ -39,7 +39,7 @@ table \, it will return the value of the last element.;
 #X obj 422 88 s matable;
 #X obj 402 128 s tatable;
 #X obj 402 48 loadbang;
-#X obj 59 101 #for 0 10 1;
+#X obj 59 101 #for 0 10;
 #X text 232 489 Set the table to read from.;
 #X obj 157 583 tabwrite;
 #X obj 217 583 #tabwrite;

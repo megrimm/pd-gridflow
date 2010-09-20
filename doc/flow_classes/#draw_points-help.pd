@@ -3,7 +3,7 @@
 #X obj 236 155 #outer + (0 9000);
 #X obj 236 174 # cos* 100;
 #X obj 236 193 # + 120;
-#X obj 236 117 #for 0 12 1;
+#X obj 236 117 #for 0 12;
 #X obj 236 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 236 136 # * 3000;

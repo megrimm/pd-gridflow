@@ -9,7 +9,7 @@
 ;
 #X obj 14 330 doc_oo 0;
 #X obj 14 256 doc_ii 0;
-#X obj 171 88 #for (0 0) (128 128) (1 1);
+#X obj 171 88 #for (0 0) (128 128);
 #X text 232 256 typically the output of [#for (0 0) (height width)
 (1 1)];
 #X obj 0 0 doc_h;

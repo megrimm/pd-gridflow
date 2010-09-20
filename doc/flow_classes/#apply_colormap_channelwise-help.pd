@@ -5,7 +5,7 @@
 #X text 12 27 This object is useful for color correction. for each
 pixel it takes it apart \, looks up each part separately in the colormap
 and constructs a new pixel from that.;
-#X obj 213 235 #for 0 256 1;
+#X obj 213 235 #for 0 256;
 #X obj 213 305 #outer gamma;
 #X msg 25 267 load bluemarble.jpg;
 #X obj 25 248 t b b;

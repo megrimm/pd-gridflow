@@ -4,7 +4,7 @@
 #X msg 37 145 0 1 1 2 3 5 8 13 21 34 55 89;
 #X obj 257 130 display;
 #X obj 256 90 #redim (4 4);
-#X obj 256 71 #for 0 16 1;
+#X obj 256 71 #for 0 16;
 #X obj 256 54 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X text 259 177 should print subgrid: 2 2 # 5 6 9 10;

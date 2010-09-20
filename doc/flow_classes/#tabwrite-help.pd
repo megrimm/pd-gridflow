@@ -3,7 +3,7 @@
 -1;
 #X obj 192 110 #t;
 #X obj 192 170 #cast float32;
-#X obj 192 90 #for 0 8192 1;
+#X obj 192 90 #for 0 8192;
 #X obj 402 117 table desalon 8192;
 #X obj 402 137 table decuisine 8192;
 #X msg 92 170 set decuisine;
