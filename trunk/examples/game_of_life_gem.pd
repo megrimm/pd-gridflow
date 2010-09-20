@@ -47,7 +47,7 @@ but faster to compute.);
 #X obj 207 239 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 31 200 # << 10;
-#X obj 234 238 #for 0 256 1;
+#X obj 234 238 #for 0 256;
 #X obj 234 257 #outer gamma (3 # 333 555 999);
 #X text 261 72 20% white dots;
 #X obj 31 162 #outer ignore (4 b #);

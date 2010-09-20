@@ -69,7 +69,7 @@
 #X obj 96 27 #cast b;
 #X msg 94 169 list \$1;
 #X obj 9 169 #outer inv+;
-#X obj 10 125 #for 1 481 1;
+#X obj 10 125 #for 1 481;
 #X connect 0 0 14 0;
 #X connect 1 0 3 0;
 #X connect 3 0 9 1;
@@ -101,7 +101,7 @@
 #X msg 299 160 put_at 0 0 \, grid \$1;
 #X obj 34 128 # ==;
 #X msg 34 89 1 640 1 # 2;
-#X obj 155 66 #for 0 640 1;
+#X obj 155 66 #for 0 640;
 #X obj 154 104 #redim (1 640);
 #X msg 17 282 1 640 1 # 1;
 #X obj 299 141 #cast b;

@@ -36,14 +36,14 @@
 #X obj 392 328 #redim (32 2);
 #N canvas 733 86 441 352 Plot-a-Function™ 0;
 #X obj 17 206 # inv+ 640;
-#X obj 17 187 #for 0 640 1;
+#X obj 17 187 #for 0 640;
 #X obj 47 83 outlet;
 #X obj 17 225 #outer <;
 #X obj 47 102 inlet;
 #X text 155 243 to rgb;
 #X text 71 224 make graph \, twotone channelless;
 #X obj 17 263 outlet;
-#X obj 10 29 #for 0 640 1;
+#X obj 10 29 #for 0 640;
 #X obj 10 10 inlet;
 #X obj 17 168 #finished;
 #X obj 17 149 t a a;
