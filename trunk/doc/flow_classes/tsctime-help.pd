@@ -1,4 +1,4 @@
-#N canvas 508 124 632 550 10;
+#N canvas 508 124 632 555 10;
 #X obj 0 0 doc_h;
 #X obj 3 302 doc_c;
 #X obj 0 521 doc_f;
@@ -14,7 +14,7 @@
 #X text 232 372 reset timer;
 #X text 232 394 trigger output;
 #X obj 103 501 realtime;
-#X obj 11 96 tsctime;
+#X obj 11 100 tsctime;
 #X text 188 38 This is a super-high-resolution version of the [realtime]
 class that does not look at the ordinary clock of the operating system
 \, and instead uses the clock tick of the CPU itself. However \, if
@@ -22,9 +22,9 @@ you have a variable-clock CPU \, this will give you some kind of virtual
 time.;
 #X msg 50 45 bang;
 #X msg 11 45 bang;
-#X floatatom 14 122 10 0 0 0 - - -;
+#X floatatom 11 162 10 0 0 0 - - -;
 #X obj 78 100 realtime;
-#X floatatom 78 122 10 0 0 0 - - -;
+#X floatatom 78 162 10 0 0 0 - - -;
 #X text 190 114 It's also possible that this has some other bugs related
 to scaling. However \, even if it gives you really weird values \,
 this object will give you very precise values in what is really the
@@ -38,13 +38,20 @@ while your clock speed changes.;
 \, and this is where [tsctime] got its name from.;
 #X text 232 456 value in "milliseconds" (or lousy imitation thereof...
 see intro text above.);
+#X obj 50 64 t b b;
+#X obj 17 123 /;
+#X floatatom 17 142 10 0 0 0 - - -;
 #X connect 3 1 14 0;
 #X connect 9 1 12 0;
 #X connect 10 1 13 0;
 #X connect 11 1 25 0;
 #X connect 15 0 19 0;
-#X connect 17 0 15 1;
-#X connect 17 0 20 1;
+#X connect 15 0 27 0;
+#X connect 17 0 26 0;
 #X connect 18 0 15 0;
 #X connect 18 0 20 0;
 #X connect 20 0 21 0;
+#X connect 20 0 27 1;
+#X connect 26 0 15 1;
+#X connect 26 1 20 1;
+#X connect 27 0 28 0;

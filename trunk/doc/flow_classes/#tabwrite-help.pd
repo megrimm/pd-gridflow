@@ -1,9 +1,9 @@
-#N canvas 380 22 632 700 10;
-#X obj 192 97 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#N canvas 380 0 632 700 10;
+#X obj 192 67 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 192 140 #t;
+#X obj 192 110 #t;
 #X obj 192 170 #cast float32;
-#X obj 192 120 #for 0 8192 1;
+#X obj 192 90 #for 0 8192 1;
 #X obj 402 117 table desalon 8192;
 #X obj 402 137 table decuisine 8192;
 #X msg 92 170 set decuisine;
@@ -42,8 +42,9 @@ indexes.;
 table will be written to instead.;
 #X text 232 565 If an index is greater than the last element of the
 table \, the last element will be written to instead.;
+#X obj 192 144 # ^ 5461;
 #X connect 0 0 3 0;
-#X connect 1 0 2 0;
+#X connect 1 0 34 0;
 #X connect 1 1 31 1;
 #X connect 2 0 30 0;
 #X connect 3 0 1 0;
@@ -60,3 +61,4 @@ table \, the last element will be written to instead.;
 #X connect 25 1 32 0;
 #X connect 25 1 33 0;
 #X connect 30 0 31 0;
+#X connect 34 0 2 0;
