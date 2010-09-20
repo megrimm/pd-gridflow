@@ -1,4 +1,4 @@
-#N canvas 480 145 632 551 10;
+#N canvas 480 115 632 551 10;
 #X obj 41 115 print;
 #X obj 41 73 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
@@ -33,24 +33,28 @@
 #X obj 232 359 doc_same 0;
 #X text 232 337 same as set \$1 \, bang;
 #X text 41 151 note that 114 should not be included!;
-#X text 192 42 count from a value to another value. the latter value
-is excluded \, such that [for 0 10 1] and for [10 20 1] have no common
-outputs.;
 #X msg 72 68 set 0;
 #X msg 71 42 5;
 #X text 232 253 step (default: 1);
 #X text 232 231 to (default: 0);
 #X text 232 209 from (default: 0);
+#X text 232 315 perform the counting;
+#X text 262 42 count from a value to another value. the start value
+is included \, and the end value is excluded.;
+#X text 263 73 this is so that [for 0 10 1] and [for 10 20 1] have
+no common outputs \, and so that they continue each other \, without
+ever having to add one or subtract one.;
 #X connect 1 0 3 0;
 #X connect 3 0 0 0;
 #X connect 17 1 29 0;
 #X connect 18 1 28 0;
 #X connect 19 1 31 0;
 #X connect 20 1 30 0;
+#X connect 21 1 38 0;
 #X connect 22 1 23 0;
 #X connect 22 1 24 0;
-#X connect 25 1 38 0;
-#X connect 26 1 37 0;
-#X connect 27 1 36 0;
+#X connect 25 1 37 0;
+#X connect 26 1 36 0;
+#X connect 27 1 35 0;
+#X connect 33 0 3 0;
 #X connect 34 0 3 0;
-#X connect 35 0 3 0;
