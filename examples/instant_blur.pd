@@ -2,7 +2,7 @@
 #X obj 13 204 #cast f;
 #X obj 13 280 #cast i;
 #X text 223 365 B->RGB;
-#X obj 348 33 #for (-128 -128) (128 128) (1 1);
+#X obj 348 33 #for (-128 -128) (128 128);
 #X obj 139 26 t b b;
 #X obj 55 79 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;

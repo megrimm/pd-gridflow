@@ -128,7 +128,7 @@
 #X obj 27 333 # + 128;
 #X obj 27 76 metro 16.666;
 #X msg 131 415 load lena.jpg b;
-#X obj 69 148 #for (-120 -160) (120 160) (1 1);
+#X obj 69 148 #for (-120 -160) (120 160);
 #X obj 124 130 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
 #X obj 313 63 + 60;

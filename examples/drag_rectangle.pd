@@ -57,7 +57,7 @@
 #X text 261 55 step 1: turn on;
 #X text 96 382 cropping (to 2nd window);
 #X text 7 23 Copyright 2002 Mathieu Bouchard;
-#X obj 90 347 #for (0 0) (0 0) (1 1);
+#X obj 90 347 #for (0 0) (0 0);
 #X obj 311 318 unpack;
 #X obj 463 354 unpack;
 #X obj 344 337 s x0_i;
