@@ -2,7 +2,7 @@
 #X obj 6 7 namecanvas \$1-propcanvas;
 #X obj 10 254 cnv 4 4 4 empty empty NOTE: 0 4 0 12 -262144 -258113
 0;
-#N canvas 0 0 798 436 (subpatch) 1;
+#N canvas 0 0 798 436 (subpatch) 0;
 #X obj 308 57 r \$1-propin;
 #X obj 392 389 s \$1-propout;
 #X obj 183 298 t b b;
@@ -29,9 +29,9 @@ spacing_vertical 48 8 0 8 -262144 -1 -1 0 256;
 #X obj 308 126 unpack s 0 0;
 #X obj 273 291 pack 0 s 0 0;
 #X obj 31 111 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-left \$0-margins-left
-margins_left 48 8 0 8 -262144 -1 -1 29 256;
+margins_left 48 8 0 8 -262144 -1 -1 4 256;
 #X obj 31 95 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-top \$0-margins-top
-margins_top 48 8 0 8 -262144 -1 -1 38 256;
+margins_top 48 8 0 8 -262144 -1 -1 26 256;
 #X obj 308 76 route2 list;
 #X obj 395 69 route spacing;
 #X obj 395 88 unpack 0 0;
@@ -46,9 +46,9 @@ margins_top 48 8 0 8 -262144 -1 -1 38 256;
 #X obj 392 264 r \$0-s_spacing-y;
 #X obj 428 283 r \$0-s_spacing-x;
 #X obj 31 143 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-right \$0-margins-right
-margins_right 48 8 0 8 -262144 -1 -1 39 256;
+margins_right 48 8 0 8 -262144 -1 -1 4 256;
 #X obj 31 127 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_margins-bottom \$0-margins-bottom
-margins_bottom 48 8 0 8 -262144 -1 -1 70 256;
+margins_bottom 48 8 0 8 -262144 -1 -1 4 256;
 #X obj 167 181 gf/tk_button OK;
 #X obj 103 182 gf/tk_button Apply;
 #X obj 34 182 gf/tk_button Cancel;
