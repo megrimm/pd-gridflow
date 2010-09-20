@@ -1,19 +1,19 @@
 #N canvas 551 24 632 642 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 1117 doc_also;
-#X obj 0 1137 doc_f;
+#X obj 3 1251 doc_also;
+#X obj 0 1271 doc_f;
 #X obj 3 308 gf/gl;
-#X obj 103 1117 GEMglVertex3f;
-#X obj 193 1117 GEMglColor3f;
-#X obj 277 1117 GEMglBegin;
-#X obj 349 1117 GEMglEnd;
-#X text 409 1117 etc...;
+#X obj 103 1251 GEMglVertex3f;
+#X obj 193 1251 GEMglColor3f;
+#X obj 277 1251 GEMglBegin;
+#X obj 349 1251 GEMglEnd;
+#X text 409 1251 etc...;
 #X text 246 40 use OpenGL commands in a different way than in GEM (for
 use with GEM);
 #X obj 3 615 doc_c 0;
 #X obj 3 655 doc_i 1;
 #X obj 14 685 doc_ii 0;
-#X obj 3 1077 doc_o 0;
+#X obj 3 1211 doc_o 0;
 #X obj 97 962 doc_m i0 color;
 #X obj 97 685 doc_m i0 begin;
 #X obj 97 997 doc_m i0 end;
@@ -91,6 +91,13 @@ name uppercase suffixes like '1D' '2D' '3D' where 'D' means dimension.
 they are currently lowercased and kept.;
 #X text 245 580 not all functions are implemented yet.;
 #X msg 118 50 destroy;
+#X text 158 1079 ALSO HAS 115 OTHER METHODS (SOME OF WHICH DON'T WORK
+\, BUT MOST OF WHICH HAVEN'T BEEN TRIED YET). If you would like help
+on using that extra functionality \, please contact gridflow-dev. Also
+\, look at this :;
+#X obj 176 1167 gf/class_info;
+#X obj 176 1186 print;
+#X msg 176 1148 symbol gf/gl;
 #X connect 1 1 4 0;
 #X connect 1 1 5 0;
 #X connect 1 1 6 0;
@@ -138,3 +145,5 @@ they are currently lowercased and kept.;
 #X connect 55 2 52 0;
 #X connect 56 0 3 0;
 #X connect 61 0 54 0;
+#X connect 63 0 64 0;
+#X connect 65 0 63 0;
