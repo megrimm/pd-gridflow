@@ -1271,15 +1271,20 @@ static void init_enums () {
 		//glTexGenfv(target,pname,params);
 	}
 
-	\decl 0 tex_image_1D(t_atom target, int level, t_atom iformat, int width,                        int border, t_atom format, t_atom type, void *pixels) {
-		if (tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
-		glTexImage1D(tex_target(target),level,tex_iformat(iformat),width,             border,tex_format(format),tex_type(type),pixels);}
-	\decl 0 tex_image_2D(t_atom target, int level, t_atom iformat, int width, int height,            int border, t_atom format, t_atom type, void *pixels) {
-		glTexImage2D(tex_target(target),level,tex_iformat(iformat),width,height,      border,tex_format(format),tex_type(type),pixels);}
-	\decl 0 glTexImage3D(t_atom target, int level, t_atom iformat, int width, int height, int depth, int border, t_atom format, t_atom type, void *pixels) {
-		if (!glTexImage3D) RAISE("need OpenGL 1.2");
-		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
-		glTexImage3D(tex_target(target),level,tex_iformat(iformat),width,height,depth,border,tex_format(format),tex_type(type),pixels);} // not in GEM
+	\decl 0 tex_image(t_atom target, int level, t_atom iformat, int border, t_atom format, t_atom type, Grid *pixels) {
+		Dim &d = pixels->dim;
+		GLenum tt = tex_target(target);
+		if (d.n==1) {
+			if (tt!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+			glTexImage1D(tt,level,tex_iformat(iformat),d[0],          border,tex_format(format),tex_type(type),pixels);
+		} else if (d.n==2) {
+			glTexImage2D(tt,level,tex_iformat(iformat),d[0],d[1],     border,tex_format(format),tex_type(type),pixels);
+		} else if (d.n==3) { // not in GEM
+			if (!glTexImage3D) RAISE("need OpenGL 1.2");
+			if (tt!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+			glTexImage3D(tt,level,tex_iformat(iformat),d[0],d[1],d[2],border,tex_format(format),tex_type(type),pixels);
+		} else RAISE("$7: wrong number of dimensions (need 1 or 2 or 3, got %d)",d.n);
+	}
 
 	\decl 0 tex_parameter (...) {
 		if (argc<3) RAISE("minimum 3 args");
