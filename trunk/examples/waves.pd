@@ -137,7 +137,7 @@
 #X obj 75 86 #outer & (-1 0);
 #X obj 48 105 #convolve (2 1 #) \, op ignore \, fold inv+;
 #X obj 48 124 #outer & (0 -1);
-#X obj 73 220 #for (0 0) (240 320) (1 1);
+#X obj 73 220 #for (0 0) (240 320);
 #X obj 48 28 #redim ();
 #X obj 48 181 # >> 3;
 #X obj 48 162 # + 4;
@@ -247,7 +247,7 @@
 #X text 311 127 cubit;
 #X obj 279 165 # >> 10;
 #X obj 542 414 #checkers;
-#X obj 542 395 #for (0 0) (240 320) (1 1);
+#X obj 542 395 #for (0 0) (240 320);
 #X obj 441 245 t a;
 #X obj 542 378 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;

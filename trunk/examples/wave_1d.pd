@@ -36,7 +36,7 @@
 #X obj 339 24 block~ 2048;
 #X obj 17 36 # * 2048;
 #X obj 18 58 # /;
-#X obj 86 49 #for 1 257 1;
+#X obj 86 49 #for 1 257;
 #X obj 17 80 #to_list;
 #X connect 0 0 14 0;
 #X connect 2 0 9 0;
@@ -55,7 +55,7 @@
 #X restore 106 427 pd synth;
 #X obj 99 449 dac~;
 #X text 498 24 1-D wave generator;
-#X obj 174 87 #for -128 128 1;
+#X obj 174 87 #for -128 128;
 #X obj 174 106 # abs-;
 #X obj 130 293 #redim (1);
 #X obj 461 508 # + (0 6);

@@ -1,7 +1,7 @@
 #N canvas 651 0 596 616 10;
 #X obj 360 281 loadbang;
 #X text 414 370 palette generator;
-#X obj 359 414 #for 0 256 1;
+#X obj 359 414 #for 0 256;
 #X obj 19 280 #store;
 #X msg 52 240 \$1 \$2 # 0;
 #X obj 359 395 #finished;
@@ -22,7 +22,7 @@
 #X obj 77 108 inlet pos;
 #X obj 47 53 t b a;
 #X obj 47 127 # sq-;
-#X obj 47 79 #for (0 0) (0 0) (1 1);
+#X obj 47 79 #for (0 0) (0 0);
 #X obj 90 53 #to_list;
 #X connect 0 0 2 0;
 #X connect 1 0 5 0;
@@ -47,7 +47,7 @@
 #X obj 18 28 t b a;
 #X obj 18 143 #outer ignore (0);
 #X msg 126 128 \$1 #;
-#X obj 18 82 #for 0 0 1;
+#X obj 18 82 #for 0 0;
 #X obj 18 128 # << 7;
 #X connect 0 0 1 1;
 #X connect 1 0 11 0;
@@ -118,7 +118,7 @@
 #X msg 71 446 hidecursor;
 #N canvas 238 140 484 503 fuzzy 0;
 #X obj 47 281 outlet;
-#X obj 47 68 #for (0 0) (0 0) (1 1);
+#X obj 47 68 #for (0 0) (0 0);
 #X obj 47 13 inlet size;
 #X obj 47 32 t b a;
 #X obj 111 49 #to_list;

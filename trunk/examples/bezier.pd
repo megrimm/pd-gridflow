@@ -26,7 +26,7 @@
 #X obj 64 166 vradio 15 1 1 3 empty empty empty 0 -8 0 10 -204800 -1
 -1 0;
 #X obj 64 213 listread fill line point;
-#X obj 308 86 #for 0 65 1;
+#X obj 308 86 #for 0 65;
 #X obj 308 124 # / (f # 64);
 #X obj 8 267 #convolve (3 3 # 1) \, fold min \, seed 255;
 #X obj 8 107 #draw_polygon put (224 0 0) \, draw line \, omit last

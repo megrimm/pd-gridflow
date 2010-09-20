@@ -5,11 +5,11 @@
 #X obj 206 70 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 39 33 inlet;
-#X obj 39 81 #for (0 0) (256 256) (1 1);
+#X obj 39 81 #for (0 0) (256 256);
 #X obj 39 104 # << (4 2);
 #X obj 39 126 # +;
 #X obj 39 212 outlet;
-#X obj 206 87 #for (0 0) (256 256) (1 1);
+#X obj 206 87 #for (0 0) (256 256);
 #X obj 206 109 # >> (4 6);
 #X obj 127 176 #inner (2 2 # 85 170 170 85) \, op & \, fold ^ \, seed
 1;
@@ -72,8 +72,8 @@
 #X text 238 107 apply coords;
 #X text 365 91 apply type of transform;
 #X obj 35 434 #scale_by 2;
-#X obj 128 239 #for (0 0) (512 512) (1 1);
-#X obj 347 172 #for (-256 -256) (256 256) (1 1);
+#X obj 128 239 #for (0 0) (512 512);
+#X obj 347 172 #for (-256 -256) (256 256);
 #X obj 72 108 mod 60;
 #X obj 38 128 sel 59;
 #X obj 2 315 #fade 10;

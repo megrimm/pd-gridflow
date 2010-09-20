@@ -255,7 +255,7 @@ be replaced by a sequence of two [#convolve].;
 #X obj 39 223 #store;
 #X obj 39 266 #store;
 #X obj 39 285 #store;
-#X obj 72 22 #for -128 128 1;
+#X obj 72 22 #for -128 128;
 #X obj 129 62 #store (1111 # 128);
 #X msg 171 81 3072 # 128;
 #X obj 129 81 # rand;

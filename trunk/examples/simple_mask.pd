@@ -8,7 +8,7 @@
 ;
 #X obj 29 112 t b a;
 #X obj 238 173 #checkers;
-#X obj 238 154 #for (0 0) (240 320) (1 1);
+#X obj 238 154 #for (0 0) (240 320);
 #X obj 238 135 loadbang;
 #X obj 220 154 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
