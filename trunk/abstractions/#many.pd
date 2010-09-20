@@ -17,7 +17,7 @@
 #X msg 62 142 symbol \$1-recv-\$2-\$3;
 #X obj 26 161 list trim;
 #X obj 26 28 inlet;
-#X obj 26 66 #for (0 0) ( \$2 \$3 ) (1 1);
+#X obj 26 66 #for (0 0) ( \$2 \$3 );
 #X connect 0 0 3 0;
 #X connect 1 0 8 0;
 #X connect 2 0 10 0;
@@ -39,7 +39,7 @@
 #X obj 16 96 #import (2);
 #X obj 16 115 t a a;
 #X obj 16 20 inlet;
-#X obj 16 77 #for (0 0) ( \$2 \$3 ) (1 1);
+#X obj 16 77 #for (0 0) ( \$2 \$3 );
 #X obj 16 210 outlet;
 #X obj 16 172 pack 0 0 0;
 #X obj 200 13 inlet;
@@ -125,7 +125,7 @@
 #X obj 8 132 #to_list;
 #X msg 8 151 add2 \$1-\$2;
 #X obj 8 94 #import (2);
-#X obj 8 75 #for (0 0) ( \$2 \$3 ) (1 1);
+#X obj 8 75 #for (0 0) ( \$2 \$3 );
 #X obj 205 40 t b b;
 #X obj 130 152 pack f f f s;
 #X msg 130 171 obj 4 4 \$4 \, last send \$3-send-\$1-\$2 \, last receive
@@ -242,7 +242,7 @@
 #X obj 670 379 #fold inv+ \, seed (0 0);
 #X obj 670 360 #redim (2 2);
 #N canvas 0 0 473 297 position-boxes 0;
-#X obj 13 137 #for (0 0) ( \$2 \$3 ) (1 1);
+#X obj 13 137 #for (0 0) ( \$2 \$3 );
 #X obj 13 156 #import (2);
 #X obj 13 175 #to_list;
 #X obj 13 23 inlet;

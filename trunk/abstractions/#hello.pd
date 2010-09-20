@@ -6,7 +6,7 @@
 #X obj -6 19 # * 7;
 #X obj -6 76 #outer & (2 4 1);
 #X obj -6 -76 inlet;
-#X obj -6 -19 #for (0 0) (0 0) (1 1);
+#X obj -6 -19 #for (0 0) (0 0);
 #X obj -6 -57 t a a;
 #X obj -6 -38 #finished;
 #X obj -6 0 #inner (0 1);

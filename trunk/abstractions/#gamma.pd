@@ -4,7 +4,7 @@
 #X obj 235 73 loadbang;
 #X obj 235 97 \$1;
 #X obj 263 97 inlet gamma;
-#X obj 235 136 #for 0 256 1;
+#X obj 235 136 #for 0 256;
 #X obj 235 162 # gamma;
 #X obj 27 115 #store;
 #X obj 27 82 #outer ignore (0);

@@ -7,7 +7,7 @@
 #X obj 18 110 #finished;
 #X obj 18 191 outlet;
 #X obj 68 191 outlet;
-#X obj 18 130 #for (0 0) (0 0) (1 1);
+#X obj 18 130 #for (0 0) (0 0);
 #X obj 92 92 #to_list;
 #X msg 92 111 \$1 \$2;
 #X connect 0 0 4 0;

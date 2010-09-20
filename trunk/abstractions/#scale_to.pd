@@ -1,7 +1,7 @@
 #N canvas 0 0 450 300 10;
 #X obj 28 20 inlet;
 #X obj 28 201 outlet;
-#X obj 28 110 #for (0 0) (0 0) (1 1);
+#X obj 28 110 #for (0 0) (0 0);
 #X obj 28 144 # *;
 #X obj 28 163 # /;
 #X obj 28 182 #store;

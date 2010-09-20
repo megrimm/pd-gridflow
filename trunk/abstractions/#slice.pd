@@ -5,7 +5,7 @@
 #X obj 93 24 inlet;
 #X obj 153 24 inlet;
 #X obj 181 98 # put 1;
-#X obj 64 217 #for 0 0 1;
+#X obj 64 217 #for 0 0;
 #X obj 93 98 #to_list;
 #X obj 13 56 t a a;
 #X obj 13 75 #finished;

@@ -5,7 +5,7 @@
 #X obj 19 152 #store;
 #X obj 19 39 t a a;
 #X obj 19 58 #finished;
-#X obj 19 103 #for 0 0 1;
+#X obj 19 103 #for 0 0;
 #X obj 85 58 #to_list;
 #X msg 85 77 \$1;
 #X obj 19 122 #outer + (0 0);
