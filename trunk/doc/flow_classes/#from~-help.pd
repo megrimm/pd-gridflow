@@ -22,7 +22,7 @@ in this context. (default blocksize is 64);
 #X obj 139 600 #tabread;
 #X obj 246 160 #see;
 #X obj 28 81 osc~ 1;
-#X obj 151 101 #for -64 64 1;
+#X obj 151 101 #for -64 64;
 #X obj 151 121 #cast f;
 #X obj 151 141 # / (f 64);
 #X obj 151 81 loadbang;

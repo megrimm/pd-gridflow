@@ -56,7 +56,7 @@
 #X obj 402 409 #inner \, seed (f #);
 #X obj 402 457 #cast i;
 #X obj 63 398 #swap;
-#X obj 402 276 #for 0 160 1;
+#X obj 402 276 #for 0 160;
 #X obj 63 379 # sqrt (f #);
 #X obj 63 341 # * (f # 3);
 #X obj 402 429 # / (f # 1000);

@@ -48,7 +48,7 @@ try this on two pictures (the result will have 6 dimensions);
 #X obj 144 64 t b b;
 #X obj 171 180 # rand;
 #X obj 171 199 # * 128;
-#X obj 19 107 #for 0 128 1;
+#X obj 19 107 #for 0 128;
 #X obj 19 265 #scale_by 2;
 #X obj 74 184 #outer ^;
 #X obj 74 204 # * 2;

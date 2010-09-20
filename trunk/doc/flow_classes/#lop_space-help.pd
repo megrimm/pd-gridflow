@@ -29,7 +29,7 @@ beyond that are unstable.;
 #N canvas 857 67 388 530 test-cutoff 1;
 #X obj 6 257 #fold +;
 #X obj 6 314 display;
-#X obj 6 43 #for 0 1024 1;
+#X obj 6 43 #for 0 1024;
 #X obj 6 100 #redim (1 1024);
 #X obj 6 295 # sqrt;
 #X obj 6 24 metro 100;

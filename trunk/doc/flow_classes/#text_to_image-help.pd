@@ -19,7 +19,7 @@
 -1;
 #X obj 30 197 #draw_image put;
 #X obj 131 130 #import (4 64);
-#X obj 131 110 #for 0 256 1;
+#X obj 131 110 #for 0 256;
 #X msg 30 110 symbol patate;
 #X obj 30 130 #import;
 #X obj 131 157 loadbang;

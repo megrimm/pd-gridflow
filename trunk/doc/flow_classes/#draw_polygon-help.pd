@@ -18,7 +18,7 @@
 #X obj 20 31 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
 ;
 #X obj 53 135 #checkers;
-#X obj 53 116 #for (0 0) (240 320) (1 1);
+#X obj 53 116 #for (0 0) (240 320);
 #X obj 272 40 f;
 #X obj 297 40 + 1;
 #X obj 272 59 sel 0;
