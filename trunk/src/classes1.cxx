@@ -861,48 +861,42 @@ GRID_INPUT(1,r) {} GRID_END
 	\grin 0
 	\grin 1
 	\grin 2
-	template <class T> void trigger (T bogus);
-};
+	template <class T> void trigger (T bogus) {
+		int n = from->dim.prod();
+		int32 nn[n+1];
+		T x[64*n];
+		T *fromb = (T *)*from;
+		T *  tob = (T *)*to  ;
+		T *stepb = step ? (T *)*step : (T *)alloca(n*sizeof(T *)); if (!step) for (int i=0; i<n; i++) stepb[i]=1;
 
-template <class T>
-void GridFor::trigger (T bogus) {
-	int n = from->dim.prod();
-	int32 nn[n+1];
-	T x[64*n];
-	T *fromb = (T *)*from;
-	T *  tob = (T *)*to  ;
-	T *stepb = step ? (T *)*step : (T *)alloca(n*sizeof(T *)); if (!step) for (int i=0; i<n; i++) stepb[i]=1;
-	T to2[n];
-	
-	for (int i=n-1; i>=0; i--) if (!stepb[i]) RAISE("step must not contain zeroes");
-	for (int i=0; i<n; i++) {
-		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
-		if (nn[i]<0) nn[i]=0;
-		to2[i] = fromb[i]+stepb[i]*nn[i];
-	}
-	Dim d;
-	if (from->dim.n==0) {d = Dim(*nn);}
-	else {nn[n]=n;       d = Dim(n+1,nn);}
-	int total = d.prod();
-	go=new GridOut(this,0,d,from->nt);
-	if (total==0) return;
-	int k=0;
-	for(int d=0;;d++) {
-		// here d is the dim# to reset; d=n for none
-		for(;d<n;d++) x[k+d]=fromb[d];
-		k+=n;
-		if (k==64*n) {go->send(k,x); k=0; COPY(x,x+63*n,n);}
-		else {                             COPY(x+k,x+k-n,n);}
-		d--;
-		// here d is the dim# to increment
-		for(;;d--) {
-			if (d<0) goto end;
-			x[k+d]+=stepb[d];
-			if (x[k+d]!=to2[d]) break;
+		for (int i=n-1; i>=0; i--) if (!stepb[i]) RAISE("step must not contain zeroes");
+		for (int i=0; i<n; i++) {
+			nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
+			if (nn[i]<0) nn[i]=0;
 		}
+		Dim d;
+		if (from->dim.n==0) {d = Dim(*nn);}
+		else {nn[n]=n;       d = Dim(n+1,nn);}
+		int total = d.prod();
+		go=new GridOut(this,0,d,from->nt);
+		if (total==0) return;
+		int k=0;
+		for(int d=0;;d++) {
+			// here d is the dim# to reset; d=n for none
+			for(;d<n;d++) x[k+d]=fromb[d];
+			if (k==63*n) {go->send(k+n,x); COPY(x    ,x+k,n); k=0;}
+			else         {                 COPY(x+k+n,x+k,n); k+=n;}
+			d--;
+			// here d is the dim# to increment
+			for(;;d--) {
+				if (d<0) goto end;
+				x[k+d]+=stepb[d];
+				if (x[k+d]<tob[d]) break;
+			}
+		}
+		end: if (k) go->send(k,x);
 	}
-	end: if (k) go->send(k,x);
-}
+};
 GRID_INPUT(2,step) {} GRID_END
 GRID_INPUT(1,to) {} GRID_END
 GRID_INPUT(0,from) {_0_bang();} GRID_END
