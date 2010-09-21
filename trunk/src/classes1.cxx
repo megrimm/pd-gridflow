@@ -335,8 +335,8 @@ GRID_INLET(0) {
 // in1: whatever nt
 // out0: same nt as in1
 \class GridStore : FObject {
-	PtrGrid r; // can't be \attr
-	PtrGrid put_at; // can't be //\attr
+	PtrGrid r; // can't be \attr (why ?)
+	PtrGrid put_at; // can't be //\attr (why ?)
 	\attr Numop *op;
 	int32 *wdex ; // temporary buffer, copy of put_at
 	int32 *fromb;
@@ -837,14 +837,14 @@ GRID_INPUT(1,r) {} GRID_END
 //{ Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }
 \class GridFor : FObject {
 	\attr PtrGrid from;
-	\attr PtrGrid to;
+	\attr PtrGrid to  ;
 	\attr PtrGrid step;
 	\constructor (Grid *from, Grid *to, Grid *step=0) {
 		this->from.constrain(expect_max_one_dim);
 		this->to  .constrain(expect_max_one_dim);
 		this->step.constrain(expect_max_one_dim);
 		this->from=from;
-		this->to  =to;
+		this->to  =to  ;
 		this->step=step;
 	}
 	\decl 0 set (Grid *l=0) {from=l;}
