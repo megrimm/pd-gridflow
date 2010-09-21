@@ -105,7 +105,7 @@ def where; "[#{ARGV[0]}:#{$linenumber}]" end
 def handle_attr(line)
 	line.gsub!(/\/\/.*$/,"") # remove comment
 	frame = $stack[-1]; raise "missing \\class #{where}" if not frame or not ClassDecl===frame
-	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
+	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r"\s*;?\s*$","")
 	virtual = !!type.slice!(/\(\)$/)
 	name = type.slice!(/\w+$/)
 	handle_decl "void ___get(t_symbol *s);" if frame.attrs.size==0
