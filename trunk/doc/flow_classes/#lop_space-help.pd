@@ -1,4 +1,4 @@
-#N canvas 596 124 632 594 10;
+#N canvas 598 171 632 594 10;
 #X obj 0 0 doc_h;
 #X obj 0 560 doc_f;
 #X obj 3 149 doc_c 2;
@@ -22,23 +22,23 @@ be all zeroes. 256 leaves picture unchanged. values inside that range
 will give a blur (low pass). negative values gives unstable results.
 values between 256 and 512 will give a kind of sharpening effect. values
 beyond that are unstable.;
-#X obj 395 41 lop~;
-#X text 269 41 apply something like;
-#X text 268 59 from row to row or column to column in the same image.
+#X obj 169 58 lop~;
+#X text 43 58 apply something like;
+#X text 42 76 from row to row or column to column in the same image.
 ;
-#N canvas 857 67 388 530 test-cutoff 1;
+#N canvas 858 94 388 530 test-cutoff 0;
 #X obj 6 257 #fold +;
 #X obj 6 314 display;
 #X obj 6 43 #for 0 1024;
 #X obj 6 100 #redim (1 1024);
 #X obj 6 295 # sqrt;
 #X obj 6 24 metro 100;
-#X obj 6 7 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1 1;
+#X obj 6 7 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0 1;
 #X floatatom 108 119 5 0 0 0 - - -;
 #X obj 6 119 #lop_space 1 171;
 #X obj 110 276 #window;
 #X obj 110 143 spigot;
-#X obj 212 197 tgl 15 0 empty empty empty 17 7 0 10 -204800 -1 -1 1
+#X obj 212 197 tgl 15 0 empty empty empty 17 7 0 10 -204800 -1 -1 0
 1;
 #X obj 110 257 # * 255;
 #X obj 110 181 t a a;
@@ -88,7 +88,7 @@ beyond that are unstable.;
 #X connect 25 0 27 0;
 #X connect 26 0 25 0;
 #X connect 28 0 21 0;
-#X restore 522 29 pd test-cutoff;
+#X restore 450 48 pd test-cutoff;
 #X text 232 349 generally \, [#lop_space d n] is closely related to
 [rpole~ n/256]---[*~ 1-n/256];
 #X obj 3 540 doc_also;
@@ -98,7 +98,6 @@ beyond that are unstable.;
 #X obj 259 540 lop~;
 #X text 232 179 number of the dimension to apply the low-pass filter
 on (default: 0);
-#X obj 43 78 #lop_space;
 #X text 232 288 for a coefficient \$2 \, the cutoff wavelength is about
 804/\$2 pixels \, for small enough values of \$2. This means the cutoff
 frequency is about 804/\$2 antipixels. The value 804 is actually 256
@@ -107,7 +106,7 @@ times pi.;
 #X connect 9 1 16 0;
 #X connect 12 1 15 0;
 #X connect 13 1 18 0;
-#X connect 13 1 31 0;
+#X connect 13 1 30 0;
 #X connect 13 1 23 0;
 #X connect 14 1 29 0;
 #X connect 24 1 25 0;
