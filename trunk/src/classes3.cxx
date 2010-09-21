@@ -1261,7 +1261,7 @@ GRID_INLET(0) {
 	\grin 0
 };
 GRID_INLET(0) {
-	if (in.dim.prod()!=ninlets) RAISE("expect a grid containing a total of %d values",in.dim.prod());
+	if (in.dim.prod()!=noutlets) RAISE("expect a grid containing a total of %d values (got %d)", noutlets, in.dim.prod());
 	in.set_chunk(0);
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) out[i](float(data[i]));
