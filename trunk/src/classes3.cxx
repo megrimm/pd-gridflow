@@ -1253,18 +1253,15 @@ GRID_INLET(0) {
 \end class {install("#pack",1,1); add_creator("@pack");}
 
 \class GridUnpack : FObject {
-	int n;
 	\constructor (int n=2) {
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
-		this->n=n;
-		noutlets_set(this->n);
+		noutlets_set(n);
 	}
 	\grin 0
 };
 GRID_INLET(0) {
-	if (in.dim.n!=1) RAISE("expect one dimension");
-	if (in.dim[0]!=this->n) RAISE("expecting dim(%ld), got dim(%ld)",this->n,in.dim[0]);
+	if (in.dim.prod()!=ninlets) RAISE("expect a grid containing a total of %d values",in.dim.prod());
 	in.set_chunk(0);
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) out[i](float(data[i]));
