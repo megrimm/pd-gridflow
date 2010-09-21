@@ -938,6 +938,7 @@ static void init_enums () {
 		glCopyTexImage1D(copy_tex_target(target),level,tex_iformat(iformat),x,y,width,border);}
 	\decl 0 copy_tex_image_2D (t_atom target, int level, t_atom iformat, int x, int y, int width, int height, int border) {
 		glCopyTexImage2D(copy_tex_target(target),level,tex_iformat(iformat),x,y,width,height,border);}		
+
 	\decl 0 copy_tex_sub_image_1D (t_atom target, int level, int xoffset, int x, int y, int width) {
 		if (copy_tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
 		glCopyTexSubImage1D(copy_tex_target(target),level,xoffset,x,y,width);}
@@ -947,6 +948,20 @@ static void init_enums () {
 		if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
 		if (copy_tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
 		glCopyTexSubImage3D(copy_tex_target(target),level,xoffset,yoffset,zoffset,x,y,width,height);}
+
+////// why doesn't 3D have 'depth' in this case, and why does 1D have 'y' ?...
+//	\decl 0 copy_tex_sub_image_1D (t_atom target, int level, Grid *offset, int x, int y, int width) {
+//		Dim &d = pixels->dim;
+//		GLenum tt = tex_target(target);
+//		if (copy_tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+//		glCopyTexSubImage1D(copy_tex_target(target),level,o[0]          ,x,y,width);}
+//	\decl 0 copy_tex_sub_image_2D (t_atom target, int level, Grid *offset, int x, int y, int width, int height) {
+//		glCopyTexSubImage2D(copy_tex_target(target),level,o[0],o[1]     ,x,y,width,height);}
+//	\decl 0 copy_tex_sub_image_3D (t_atom target, int level, Grid *offset, int x, int y, int width, int height) {
+//		if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
+//		if (copy_tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+//		glCopyTexSubImage3D(copy_tex_target(target),level,o[0],o[1],o[2],x,y,width,height);}
+
 
 	\decl 0 cull_face (t_atom mode) {glCullFace(which_side(mode));}
 	\decl 0 delete_lists (uint32 list, int range) {glDeleteLists(list,range);}  // not in GEM
@@ -1306,16 +1321,21 @@ static void init_enums () {
 		}
 	}
 
-	\decl 0 tex_sub_image_1D(t_atom target, int level, int xoffset,                           int width,                        t_atom format, t_atom type, const GLvoid *pixels) {
-		if (tex_target(target)!=GL_TEXTURE_1D) RAISE("must be texture_1d");
-		glTexSubImage1D(tex_target(target),level,xoffset,                width,             tex_format(format),tex_type(type),pixels);}
-	\decl 0 tex_sub_image_2D(t_atom target, int level, int xoffset, int yoffset,              int width, int height,            t_atom format, t_atom type, const GLvoid *pixels) {
-		glTexSubImage2D(tex_target(target),level,xoffset,yoffset,        width,height,      tex_format(format),tex_type(type),pixels);}
-	\decl 0 tex_sub_image_3D(t_atom target, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, t_atom format, t_atom type, const GLvoid *pixels) {
-		if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
-		if (tex_target(target)!=GL_TEXTURE_3D) RAISE("must be texture_3d");
-		glTexSubImage3D(tex_target(target),level,xoffset,yoffset,zoffset,width,height,depth,tex_format(format),tex_type(type),pixels);} // not in GEM
-
+	\decl 0 tex_sub_image(t_atom target, int level, Grid *offset, t_atom format, t_atom type, Grid *pixels) {
+		Dim &d = pixels->dim;
+		float *o = (float *)*offset;
+		GLenum tt = tex_target(target);
+		if (d.n==1) {
+			if (tt!=GL_TEXTURE_1D) RAISE("must be texture_1d");
+			glTexSubImage1D(tt,level,o[0],          d[0],          tex_format(format),tex_type(type),pixels);
+		} else if (d.n==2) {
+			glTexSubImage2D(tt,level,o[0],o[1],     d[0],d[1],     tex_format(format),tex_type(type),pixels);
+		} else if (d.n==3) { // not in GEM
+			if (!glTexSubImage3D) RAISE("need OpenGL 1.2");
+			if (tt!=GL_TEXTURE_3D) RAISE("must be texture_3d");
+			glTexSubImage3D(tt,level,o[0],o[1],o[2],d[0],d[1],d[2],tex_format(format),tex_type(type),pixels);
+		} else RAISE("$6: wrong number of dimensions (need 1 or 2 or 3, got %d)",d.n);
+	}
 	\decl 0 translate       (float x, float y, float z) {glTranslatef(x,y,z);}
 	\decl 0 vertex (...) {switch (argc) {
 		case 2: glVertex2f(argv[0],argv[1]); break;
