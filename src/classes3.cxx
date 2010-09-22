@@ -32,7 +32,7 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 
 //****************************************************************
 \class GridToTilde : FObject {
-	PtrGrid blah;
+	P<Grid> blah;
 	t_outlet **sigout;
 	int chans; /* number of channels */
 	int start;
@@ -87,7 +87,7 @@ GRID_INLET(0) {
 }
 //****************************************************************
 \class GridFromTilde : FObject {
-	PtrGrid blah;
+	P<Grid> blah;
 	t_inlet **sigin;
 	int chans; /* number of channels */
 	t_sample **sam;
@@ -129,7 +129,7 @@ GRID_INLET(0) {
 //****************************************************************
 \class GridJoin : FObject {
 	\attr int which_dim;
-	PtrGrid r;
+	P<Grid> r;
 	\grin 0
 	\grin 1
 	\constructor (int which_dim=-1, Grid *r=0) {
@@ -352,7 +352,7 @@ static CONSTRAINT(expect_pair) {if (d.prod()!=2) RAISE("expecting only two numbe
 
 \class GridMoment : FObject {
 	\constructor (int order=1) {
-		offset.constrain(expect_pair);
+		offset.but(expect_pair);
 		t_atom2 a[2] = {t_atom2(0),t_atom2(0)};
 		offset=new Grid(2,a,int32_e);
 		if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
@@ -361,7 +361,7 @@ static CONSTRAINT(expect_pair) {if (d.prod()!=2) RAISE("expecting only two numbe
 	\grin 0 int
 	\grin 1 int
 	\attr int order; // order
-	\attr PtrGrid offset;
+	\attr P<Grid> offset;
 	int64 sumy,sumxy,sumx,sum,y; // temporaries
 };
 
@@ -534,8 +534,8 @@ GRID_INLET(0) {
 \class GridBorder : FObject {
 	/*\attr */ Dim diml;
 	/*\attr */ Dim dimr;
-	PtrGrid diml_grid;
-	PtrGrid dimr_grid;
+	P<Grid> diml_grid;
+	P<Grid> dimr_grid;
 	\grin 0
 	\grin 1 int
 	\grin 2 int
@@ -598,15 +598,15 @@ static CONSTRAINT(expect_convolution_matrix) {
 	};
 	\attr Numop *op;
 	\attr Numop *fold;
-	\attr PtrGrid seed;
-	\attr PtrGrid b;
+	\attr P<Grid> seed;
+	\attr P<Grid> b;
 	\attr bool wrap;
 	\attr bool anti;
-	PtrGrid a;
+	P<Grid> a;
 	vector<PlanEntry> plan;
 	int margx,margy; // margins
 	\constructor (Grid *r=0) {
-		b.constrain(expect_convolution_matrix);
+		b.but(expect_convolution_matrix);
 		this->op = op_mul;
 		this->fold = op_add;
 		this->seed = new Grid(Dim(),int32_e,true);
@@ -718,11 +718,11 @@ static CONSTRAINT(expect_scale_factor) {
 }
 
 \class GridScaleBy : FObject {
-	\attr PtrGrid scale; // integer scale factor
+	\attr P<Grid> scale; // integer scale factor
 	int scaley;
 	int scalex;
 	\constructor (Grid *factor=0) {
-		scale.constrain(expect_scale_factor);
+		scale.but(expect_scale_factor);
 		t_atom2 a[1] = {2};
 		scale = factor?factor:new Grid(1,a);
 		prepare_scale_factor();
@@ -768,13 +768,13 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 // ----------------------------------------------------------------
 //{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }
 \class GridDownscaleBy : FObject {
-	\attr PtrGrid scale;
+	\attr P<Grid> scale;
 	\attr bool smoothly;
 	int scaley;
 	int scalex;
-	PtrGrid temp;
+	P<Grid> temp;
 	\constructor (Grid *factor=0, t_symbol *option=0) {
-		scale.constrain(expect_scale_factor);
+		scale.but(expect_scale_factor);
 		t_atom2 a[1] = {2};
 		scale = factor?factor:new Grid(1,a,int32_e);
 		prepare_scale_factor();
@@ -854,8 +854,8 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 
 //****************************************************************
 \class GridLayer : FObject {
-	PtrGrid r;
-	\constructor () {r.constrain(expect_rgb_picture); r=new Grid(Dim(1,1,3),int32_e,true);}
+	P<Grid> r;
+	\constructor () {r.but(expect_rgb_picture); r=new Grid(Dim(1,1,3),int32_e,true);}
 	\grin 0 int
 	\grin 1 int
 };
@@ -910,19 +910,19 @@ OmitMode convert(const t_atom &x, OmitMode *foo) {
 }
 \class DrawPolygon : FObject {
 	\attr Numop *op;
-	\attr PtrGrid color;
-	\attr PtrGrid polygon;
+	\attr P<Grid> color;
+	\attr P<Grid> polygon;
 	\attr DrawMode draw;
 	\attr OmitMode omit;
-	PtrGrid color2;
-	PtrGrid lines;
+	P<Grid> color2;
+	P<Grid> lines;
 	int lines_start;
 	int lines_stop;
 	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
 		draw=DRAW_FILL;
 		omit=OMIT_NONE;
-		this->color.constrain(expect_one_dim);
-		this->polygon.constrain(expect_polygon);
+		this->color  .but(expect_one_dim);
+		this->polygon.but(expect_polygon);
 		this->op = op;
 		this->color   = color   ? color   : new Grid(Dim(1)  ,int32_e,true);
 		this->polygon = polygon ? polygon : new Grid(Dim(0,2),int32_e,true);
@@ -1051,15 +1051,15 @@ static CONSTRAINT(expect_position) {
 
 \class DrawImage : FObject {
 	\attr Numop *op;
-	\attr PtrGrid image;
-	\attr PtrGrid position;
+	\attr P<Grid> image;
+	\attr P<Grid> position;
 	\attr bool alpha;
 	\attr bool tile;
 	\constructor (Numop *op=op_put, Grid *image=0, Grid *position=0) {
 		alpha=false; tile=false;
 		this->op = op;
-		this->position.constrain(expect_position);
-		this->image   .constrain(expect_picture);
+		this->position.but(expect_position);
+		this->image   .but(expect_picture);
 		this->image    = image    ? image    : new Grid(Dim(1,1,3),int32_e,true);
 		this->position = position ? position : new Grid(Dim(2),int32_e,true);
 	}
@@ -1156,8 +1156,8 @@ GRID_INPUT(2,position) {} GRID_END
 /* NOT FINISHED */
 \class GridDrawPoints : FObject {
 	\attr Numop *op;
-	\attr PtrGrid color;
-	\attr PtrGrid points;
+	\attr P<Grid> color;
+	\attr P<Grid> points;
 	\grin 0
 	\grin 1 int32
 	\grin 2 int32
@@ -1223,7 +1223,7 @@ GRID_INLET(0) {
 
 \class GridPack : FObject {
 	int n;
-	PtrGrid a;
+	P<Grid> a;
 	\attr NumberTypeE cast;
 	\constructor (t_atom2 d=2, NumberTypeE nt=int32_e) {
 		Dim dim;
@@ -1302,12 +1302,12 @@ static CONSTRAINT(expect_min_one_dim) {
 #define OP(x) op_dict[string(#x)]
 \class GridClusterAvg : FObject {
 	\attr int numClusters;
-	\attr PtrGrid r;
-	\attr PtrGrid sums;
-	\attr PtrGrid counts;
+	\attr P<Grid> r;
+	\attr P<Grid> sums;
+	\attr P<Grid> counts;
 	\constructor (int v) {
 		_1_float(v);
-		r.constrain(expect_min_one_dim);
+		r.but(expect_min_one_dim);
 		r = new Grid(Dim(0));
 	}
 	\decl 1 float (int v) {numClusters = v;}
@@ -1354,10 +1354,10 @@ static Numop *op_os8;
 \class GridLopSpace : FObject {
 	\attr bool reverse;
 	\attr int which_dim;
-	\attr PtrGrid r;
+	\attr P<Grid> r;
 	\grin 0
 	\grin 1
-	PtrGrid r2;
+	P<Grid> r2;
 	\constructor (int which_dim=0, Grid *r=0) {this->which_dim = which_dim; this->r=r; reverse=false;}
 };
 template <class T> inline T       shr8r (T       a) {return (a+128)>>8;}
@@ -1435,7 +1435,7 @@ GRID_INLET(0) {
 
 \class GridTabwrite : FObject {
 	t_symbol *t;
-	PtrGrid r;
+	P<Grid> r;
 	\constructor (t_symbol *table=&s_) {
 		t = table;
 	}
@@ -1471,9 +1471,9 @@ GRID_INPUT(1,r) {} GRID_END
 //****************************************************************
 \class GridCompress : FObject {
 	void *tmp;
-	PtrGrid r;
+	P<Grid> r;
 	\constructor (Grid *r=0) {
-		this->r.constrain(expect_one_dim);
+		this->r.but(expect_one_dim);
 		this->r=r?r:new Grid(Dim(0),int32_e,true);
 	}
 	\grin 0

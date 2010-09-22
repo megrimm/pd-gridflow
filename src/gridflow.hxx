@@ -212,6 +212,8 @@ struct Barf {
 #define siglongjmp longjmp
 #endif
 
+extern char *short_backtrace (int start=3, int end=4);
+
 //#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define RAISE(args...) throw Barf(__FILE__,__LINE__,__PRETTY_FUNCTION__,args)
@@ -295,37 +297,6 @@ static inline const char *convert(const t_atom &x, const char **foo) {
 	return ((t_symbol *)*xx)->s_name;
 }
 
-//****************************************************************
-
-//template <class T> class P : T * {};
-//a reference counting pointer class
-//note: T <= CObject
-//used mostly as P<Grid>, P<BitPacking>
-extern char *short_backtrace (int start=3, int end=4);
-template <class T> struct P {
-public:
-	//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
-	//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
-	#define INCR if (p) {p->refcount++;}
-	#define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
-	T *p;
-	P()               {p=0;}
-	P(T *_p)          {p=_p  ; INCR;}
-	P(const P<T> &_p) {p=_p.p; INCR;}
-	P<T> &operator = (T *  _p) {DECR; p=_p;   INCR; return *this;}
-	P<T> &operator = (P<T> _p) {DECR; p=_p.p; INCR; return *this;}
-	bool operator == (P<T> _p) {return p==_p.p;}
-	bool operator != (P<T> _p) {return p!=_p.p;}
-	~P() {DECR;}
-	bool operator !() {return  !p;}
-	operator bool()   {return !!p;}
-	T &operator *()   {return  *p;}
-	T *operator ->()  {return   p;}
-	operator T *() {return p;}
-	//#undef INCR
-	//#undef DECR
-};
-
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
 template <class T> inline void COPY  (T *dest, const T *src, long n=1) {gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));}
 template <class T> inline void CLEAR (T *dest,               long n=1) {memset(dest,0,n*sizeof(T));}
@@ -340,47 +311,6 @@ struct CObject {
 };
 
 #undef check
-
-//****************************************************************
-// a Dim is a list of dimensions that describe the shape of a grid
-struct Dim {
-	//typedef intptr_t T; // this is signed, to match the fact that most int types are signed in Grid.
-	typedef int32 T;
-	static const int MAX_DIM=15; // maximum number of dimensions in a grid
-	T n;
-	T v[MAX_DIM]; // real stuff
-	void check(); // test invariants
-	Dim(T n, T *v){this->n=n; COPY(this->v,v,n); check();}
-	Dim()            {n=0;                     check();}
-	Dim(T a)         {n=1;v[0]=a;              check();}
-	Dim(T a,T b)     {n=2;v[0]=a;v[1]=b;       check();}
-	Dim(T a,T b,T c) {n=3;v[0]=a;v[1]=b;v[2]=c;check();}
-	Dim &operator = (const Dim &a) {n=a.n; COPY(&*v,&*a.v,n); check(); return *this;}
-	Dim(Dim *a, Dim *b, Dim *c=0) {
-		n=a->n+b->n; if(c) n+=c->n;
-		if (n>Dim::MAX_DIM) RAISE("too many dims");
-		COPY(v     ,a->v,a->n);
-		COPY(v+a->n,b->v,b->n);
-		if(c) COPY(v+a->n+b->n,c->v,c->n);
-	}
-	T count() {return n;}
-	T operator[](T i) const {return v[i];}
-/*	Dim *range(T i, T j) {return new Dim(...);} */
-	T prod(T start=0, T end=-1) const {
-		if (start<0) start+=n;
-		if (end  <0) end  +=n;
-		T tot=1;
-		for (T i=start; i<=end; i++) tot *= v[i];
-		return tot;
-	}
-	char *to_s() const; // should be string
-	bool operator==(const Dim &o) const {
-		if (n!=o.n) return false;
-		for (T i=0; i<n; i++) if (v[i]!=o[i]) return false;
-		return true;
-	}
-	bool operator!=(const Dim &o) const {return !operator==(o);}
-};
 
 //****************************************************************
 //NumberTypeE is a very small int identifying the type of the (smallest) elements of a grid
@@ -449,6 +379,84 @@ NumberTypeE NumberTypeE_find (const t_atom &sym);
   case uint8_e: C(uint8) break;           case int16_e: C(int16) break; \
   case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
+
+//****************************************************************
+// a Dim is a list of dimensions that describe the shape of a grid
+struct Dim {
+	//typedef intptr_t T; // this is signed, to match the fact that most int types are signed in Grid.
+	typedef int32 T;
+	static const int MAX_DIM=15; // maximum number of dimensions in a grid
+	T n;
+	T v[MAX_DIM]; // real stuff
+	void check(); // test invariants
+	Dim(T n, T *v){this->n=n; COPY(this->v,v,n); check();}
+	Dim()            {n=0;                     check();}
+	Dim(T a)         {n=1;v[0]=a;              check();}
+	Dim(T a,T b)     {n=2;v[0]=a;v[1]=b;       check();}
+	Dim(T a,T b,T c) {n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	Dim &operator = (const Dim &a) {n=a.n; COPY(&*v,&*a.v,n); check(); return *this;}
+	Dim(Dim *a, Dim *b, Dim *c=0) {
+		n=a->n+b->n; if(c) n+=c->n;
+		if (n>Dim::MAX_DIM) RAISE("too many dims");
+		COPY(v     ,a->v,a->n);
+		COPY(v+a->n,b->v,b->n);
+		if(c) COPY(v+a->n+b->n,c->v,c->n);
+	}
+	T count() {return n;}
+	T operator[](T i) const {return v[i];}
+/*	Dim *range(T i, T j) {return new Dim(...);} */
+	T prod(T start=0, T end=-1) const {
+		if (start<0) start+=n;
+		if (end  <0) end  +=n;
+		T tot=1;
+		for (T i=start; i<=end; i++) tot *= v[i];
+		return tot;
+	}
+	char *to_s() const; // should be string
+	bool operator==(const Dim &o) const {
+		if (n!=o.n) return false;
+		for (T i=0; i<n; i++) if (v[i]!=o[i]) return false;
+		return true;
+	}
+	bool operator!=(const Dim &o) const {return !operator==(o);}
+};
+
+//****************************************************************
+// GridConstraint interface: (only a GRID_BEGIN time constraint)
+// return if d and nt are acceptable, else RAISE with proper descriptive message
+#define CONSTRAINT(NAME) void NAME (const Dim &d, NumberTypeE nt)
+typedef CONSTRAINT((*GridConstraint));
+CONSTRAINT(expect_any);
+
+//template <class T> class P : T * {};
+//a reference counting pointer class
+//note: T <= CObject
+//used mostly as P<Grid>, P<BitPacking>
+template <class T> struct P {
+public:
+	//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
+	//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
+	#define INCR if (p) {p->refcount++;}
+	#define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
+	T *p;
+	GridConstraint dc; // is not really related to the general P template, but it saves some trouble later
+	void but (GridConstraint dc) {this->dc=dc;}
+	P()               {dc=0; p=0;}
+	P(T *_p)          {dc=0; p=_p  ; INCR;}
+	P(const P<T> &_p) {dc=0; p=_p.p; INCR;}
+	P<T> &operator = (T *  _p) {DECR; p=_p;   INCR; return *this;}
+	P<T> &operator = (P<T> _p) {DECR; p=_p.p; INCR; return *this;}
+	bool operator == (P<T> _p) {return p==_p.p;}
+	bool operator != (P<T> _p) {return p!=_p.p;}
+	~P() {DECR;}
+	bool operator !() {return  !p;}
+	operator bool()   {return !!p;}
+	T &operator *()   {return  *p;}
+	T *operator ->()  {return   p;}
+	operator T *() {return p;}
+	#undef INCR
+	#undef DECR
+};
 
 //****************************************************************
 //BitPacking objects encapsulate optimised loops of bitfield conversion (mostly for I/O)
@@ -627,31 +635,13 @@ EACH_NUMBER_TYPE(FOO)
 };
 static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
 
-// GridConstraint interface: (only a GRID_BEGIN time constraint)
-// return if d and nt are acceptable, else RAISE with proper descriptive message
-#define CONSTRAINT(NAME) void NAME (const Dim &d, NumberTypeE nt)
-typedef CONSTRAINT((*GridConstraint));
-
-struct PtrGrid : public P<Grid> {
-	GridConstraint dc;
-	void constrain(GridConstraint dc_) {dc=dc_;}
-	PtrGrid()                  : P<Grid>(), dc(0) {}
-	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0) {dc=_p.dc; p=_p.p; INCR;}
-	PtrGrid(         Grid *_p) : P<Grid>(), dc(0) {            p=_p; INCR;}
-	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p;   INCR; return *this;}
-	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
-	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
-};
-#undef INCR
-#undef DECR
-
 static inline Dim convert(const t_atom &x, Dim *foo) {
 	Grid *d = convert(x,(Grid **)0);
 	if (!d) RAISE("urgh");
 	if (d->dim.n!=1) RAISE("dimension list must have only one dimension itself");
 	return Dim(d->dim[0],(int32 *)d->data);
 }
-static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(convert(x,(Grid **)0));}
+static inline P<Grid> convert(const t_atom &x, P<Grid> *foo) {return P<Grid>(convert(x,(Grid **)0));}
 
 //****************************************************************
 // GridInlet represents a grid-aware inlet
@@ -668,7 +658,7 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 #define GRID_END }
 
 /* macros for defining a gridinlet's behaviour as just storage (without and with backstore, respectively) */
-// V is a PtrGrid instance-var
+// V is a P<Grid> instance-var
 #define GRID_INPUT(I,V) \
 	GRID_INLET(I) {V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in.dex,data,n);} GRID_FINISH
 #define GRID_INPUT2(I,V) GRID_INLET(I) {V->next = new Grid(in.dim,NumberTypeE_type_of(data));} \
@@ -689,7 +679,7 @@ struct GridInlet : CObject {
 	// set once per transmission
 	GridOut *sender; Dim dim; NumberTypeE nt; /* nt shouldn't need to exist */
 	// modified continually
-	long dex; PtrGrid buf; /* factor-chunk buffer */ long bufi; /* buffer index: how much of buf is filled */
+	long dex; P<Grid> buf; /* factor-chunk buffer */ long bufi; /* buffer index: how much of buf is filled */
 
 	GridInlet(FObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0), dim(0), nt(int32_e), dex(0), bufi(0) {}

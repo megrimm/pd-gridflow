@@ -120,7 +120,7 @@ void set_atom (t_atom *a, CvTermCriteria &tc) {
 	set_atom(a,b);
 }
 
-CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
+CvArr *cvGrid(P<Grid> g, CvMode mode, int reqdims=-1) {
 	int channels=1;
 	int dims=g->dim.n;
 	//post("mode=%d",(int)mode);
@@ -145,7 +145,7 @@ CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 	//return 0;
 }
 
-IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
+IplImage *cvImageGrid(P<Grid> g /*, CvMode mode */) {
 	Dim &d = g->dim;
 	if (d.n!=3) RAISE("expected 3 dimensions, got %s",d.to_s());
 	int channels=g->dim[2];
@@ -201,11 +201,11 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 };
 \end class {}
 
-// from flow_objects.c
-static void snap_backstore (PtrGrid &r) {if (r && r->next) {r=r->next.p; r->next=0;}}
+// from classes1.cxx
+static void snap_backstore (P<Grid> &r) {if (r && r->next) {P<Grid> tmp=r->next.p; r=tmp;}}
 
 \class CvOp2 : CvOp1 {
-	PtrGrid r;
+	P<Grid> r;
 	\constructor (Grid *r=0) {this->r = r?r:new Grid(Dim(),int32_e,true);}
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
 	\grin 0
@@ -217,8 +217,8 @@ GRID_INLET(0) {
 	if (in.dim != r->dim) RAISE("dimension mismatch: left:%s right:%s",in.dim.to_s(),r->dim.to_s());
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,(T *)data);
-	PtrGrid o = new Grid(in.dim,in.nt);
+	P<Grid> l = new Grid(in.dim,(T *)data);
+	P<Grid> o = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
 	CvArr *c = cvGrid(o,mode);
@@ -260,8 +260,8 @@ GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
-	PtrGrid l = new Grid(in.dim,(T *)data);
-	PtrGrid o = new Grid(in.dim,in.nt);
+	P<Grid> l = new Grid(in.dim,(T *)data);
+	P<Grid> o = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *c = cvGrid(o,mode);
 	//post("a=%p, b=%p", a, b);
@@ -282,10 +282,10 @@ GRID_INLET(0) {
 	if (in.dim[0] != in.dim[1]) RAISE("matrix should be square");
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,(T *)data);
-	PtrGrid o0 = new Grid(in.dim,in.nt);
-	PtrGrid o1 = new Grid(in.dim,in.nt);
-	PtrGrid o2 = new Grid(in.dim,in.nt);
+	P<Grid> l  = new Grid(in.dim,(T *)data);
+	P<Grid> o0 = new Grid(in.dim,in.nt);
+	P<Grid> o1 = new Grid(in.dim,in.nt);
+	P<Grid> o2 = new Grid(in.dim,in.nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *c0 = cvGrid(o0,mode);
 	CvArr *c1 = cvGrid(o1,mode);
@@ -320,7 +320,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,in.nt); COPY((T *)*l,data,in.dim.prod());
+	P<Grid> l = new Grid(in.dim,in.nt); COPY((T *)*l,data,in.dim.prod());
 	IplImage *img = cvImageGrid(l);
 	cvEllipse(img,center,axes,angle,start_angle,end_angle,color,thickness,line_type,shift);
 	cvReleaseImageHeader(&img);
@@ -339,7 +339,7 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,(T *)data); CvArr *a = cvGrid(l,mode);
+	P<Grid> l = new Grid(in.dim,(T *)data); CvArr *a = cvGrid(l,mode);
 	CvSeq *seq = cvApproxPoly(a,sizeof(CvMat),storage,CV_POLY_APPROX_DP,accuracy,closed);
 	seq=seq; //blah
 } GRID_END
@@ -440,7 +440,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,(T *)data);
+	P<Grid> l = new Grid(in.dim,(T *)data);
 	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
 	int n = ret ? ret->total : 0;
@@ -471,10 +471,8 @@ GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
 	int32 v[] = {in.dim.prod(0)/in.dim.prod(-1),in.dim.prod(-1)};
-	PtrGrid l = new Grid(Dim(2,v),(T *)data);
-	CvArr *a = (CvMat *)cvGrid(l,mode,2);
-	PtrGrid o = new Grid(Dim(1,v),int32_e);
-	CvArr *c = (CvMat *)cvGrid(o,mode);
+	P<Grid> l = new Grid(Dim(2,v),(T *)data); CvArr *a = (CvMat *)cvGrid(l,mode,2);
+	P<Grid> o = new Grid(Dim(1,v),int32_e);   CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvKMeans2(a,numClusters,c,termcrit);
 	int w[in.dim.n];
 	COPY(w,in.dim.v,in.dim.n);
@@ -502,10 +500,8 @@ GRID_INLET(0) {
 GRID_INLET(0) {
 	in.set_chunk(0);
 } GRID_FLOW {
-	PtrGrid l = new Grid(in.dim,(T *)data);
-	CvArr *a = (CvMat *)cvGrid(l,mode,2);
-	PtrGrid o = new Grid(in.dim,float32_e);
-	CvArr *c = (CvMat *)cvGrid(o,mode);
+	P<Grid> l = new Grid(in.dim,(T *)data);	CvArr *a = (CvMat *)cvGrid(l,mode,2);
+	P<Grid> o = new Grid(in.dim,float32_e);	CvArr *c = (CvMat *)cvGrid(o,mode);
 	cvCornerHarris(a,c,block_size,aperture_size,k);
 	cvRelease(&a);
 	cvRelease(&c);

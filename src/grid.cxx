@@ -39,6 +39,8 @@
 #define CHECK_ALIGN(d,nt) {int bytes = number_type_table[nt].size/8; int align = ((uintptr_t)(void*)d)%bytes; \
 	if (align) {post("(%s): Alignment Warning: %p is not %d-aligned: %d", __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
+CONSTRAINT(expect_any) {}
+
 // **************** Grid ******************************************
 
 void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
