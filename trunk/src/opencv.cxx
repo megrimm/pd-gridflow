@@ -202,7 +202,7 @@ CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0
 \end class {}
 
 // from flow_objects.c
-static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
+static void snap_backstore (PtrGrid &r) {if (r && r->next) {r=r->next.p; r->next=0;}}
 
 \class CvOp2 : CvOp1 {
 	PtrGrid r;

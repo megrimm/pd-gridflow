@@ -375,7 +375,7 @@ GRID_INLET(0) {
 // takes the backstore of a grid and puts it back into place. a backstore
 // is a grid that is filled while the grid it would replace has not
 // finished being used.
-static void snap_backstore (PtrGrid &r) {if (r.next) {r=r.next.p; r.next=0;}}
+static void snap_backstore (PtrGrid &r) {if (r && r->next) {P<Grid> tmp=r->next; r=tmp;}}
 
 template <class T> void GridStore::compute_indices(T *v, long nc, long nd) {
 	for (int i=0; i<nc; i++) {
@@ -465,8 +465,8 @@ GRID_INLET(1) {
 	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
 		//!@#$ this was supposed to be inlets[0].sender i suppose... but it's not.
-		if (in.sender) r.next = new Grid(in.dim,nt);
-		else           r      = new Grid(in.dim,nt);
+		if (in.sender) r->next = new Grid(in.dim,nt);
+		else           r       = new Grid(in.dim,nt);
 		return;
 	}
 	// put_at ( ... )
@@ -497,7 +497,7 @@ GRID_INLET(1) {
 	cs = in.dim.prod(chunk);
 } GRID_FLOW {
 	if (!put_at) { // reassign
-		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in.dex, data, n);
+		COPY(((T *)*(r->next ? r->next.p : &*r.p))+in.dex, data, n);
 		return;
 	}
 	// put_at (...)
