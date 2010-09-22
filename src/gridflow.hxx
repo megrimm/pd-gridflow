@@ -302,13 +302,12 @@ static inline const char *convert(const t_atom &x, const char **foo) {
 //note: T <= CObject
 //used mostly as P<Grid>, P<BitPacking>
 extern char *short_backtrace (int start=3, int end=4);
-template <class T> class P {
+template <class T> struct P {
 public:
-
-//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
-//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
-#define INCR if (p) {p->refcount++;}
-#define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
+	//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
+	//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
+	#define INCR if (p) {p->refcount++;}
+	#define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
 	T *p;
 	P()               {p=0;}
 	P(T *_p)          {p=_p  ; INCR;}
@@ -323,8 +322,8 @@ public:
 	T &operator *()   {return  *p;}
 	T *operator ->()  {return   p;}
 	operator T *() {return p;}
-//#undef INCR
-//#undef DECR
+	//#undef INCR
+	//#undef DECR
 };
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
@@ -428,7 +427,7 @@ inline NumberTypeE NumberTypeE_type_of(_type_ *x) {return _type_##_e;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
-struct NumberType : CObject {
+struct NumberType {
 	const char *alias;
 	const char *name;
 	int size;
@@ -586,6 +585,7 @@ struct Grid : CObject {
 	NumberTypeE nt;
 	void *data;
 	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
+	P<Grid> next; /* used for reentrancy */
 	Grid(const Dim &dim=Dim(), NumberTypeE nt=int32_e, bool clear=false) {
 		data=0; state=1;
 		init(dim,nt);
@@ -635,10 +635,9 @@ typedef CONSTRAINT((*GridConstraint));
 struct PtrGrid : public P<Grid> {
 	GridConstraint dc;
 	void constrain(GridConstraint dc_) {dc=dc_;}
-	P<Grid> next;
-	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
-	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
-	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {            p=_p; INCR;}
+	PtrGrid()                  : P<Grid>(), dc(0) {}
+	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0) {dc=_p.dc; p=_p.p; INCR;}
+	PtrGrid(         Grid *_p) : P<Grid>(), dc(0) {            p=_p; INCR;}
 	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p;   INCR; return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim,_p->nt); DECR; p=_p.p; INCR; return *this;}
@@ -672,8 +671,8 @@ static inline PtrGrid convert(const t_atom &x, PtrGrid *foo) {return PtrGrid(con
 // V is a PtrGrid instance-var
 #define GRID_INPUT(I,V) \
 	GRID_INLET(I) {V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FLOW {COPY((T *)*(V)+in.dex,data,n);} GRID_FINISH
-#define GRID_INPUT2(I,V) GRID_INLET(I) {V.next = new Grid(in.dim,NumberTypeE_type_of(data));} \
-	GRID_FLOW {COPY(((T *)*(V.next?V.next.p:&*V.p))+in.dex,data,n);} GRID_FINISH
+#define GRID_INPUT2(I,V) GRID_INLET(I) {V->next = new Grid(in.dim,NumberTypeE_type_of(data));} \
+	GRID_FLOW {COPY(((T *)*(V->next?V->next.p:&*V.p))+in.dex,data,n);} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
