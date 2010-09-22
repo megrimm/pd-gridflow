@@ -79,10 +79,10 @@ GridHandler *stromgol; // remove this asap
 	\attr NumberTypeE cast;
 	/*\attr*/ Dim dim; // size of grids to send
 	\attr bool per_message;
-	PtrGrid dim_grid;
+	P<Grid> dim_grid;
 	\constructor (...) {
 		per_message = true;
-		dim_grid.constrain(expect_dim_dim_list);
+		dim_grid.but(expect_dim_dim_list);
 		this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
 		if (argc>2) RAISE("too many arguments");
 		if (argc>0 && argv[0]!=gensym("per_message")) {
@@ -335,8 +335,8 @@ GRID_INLET(0) {
 // in1: whatever nt
 // out0: same nt as in1
 \class GridStore : FObject {
-	PtrGrid r; // can't be \attr (why ?)
-	PtrGrid put_at; // can't be //\attr (why ?)
+	P<Grid> r; // can't be \attr (why ?)
+	P<Grid> put_at; // can't be //\attr (why ?)
 	\attr Numop *op;
 	int32 *wdex ; // temporary buffer, copy of put_at
 	int32 *fromb;
@@ -345,7 +345,7 @@ GRID_INLET(0) {
 	int d; // goes with wdex
 	long cs; // chunksize used in put_at
 	\constructor (Grid *r=0) {
-		put_at.constrain(expect_max_one_dim);
+		put_at.but(expect_max_one_dim);
 		this->r = r?r:new Grid(Dim(),int32_e,true);
 		op = op_put;
 		wdex  = NEWBUF(int32,Dim::MAX_DIM); // temporary buffer, copy of put_at
@@ -375,7 +375,7 @@ GRID_INLET(0) {
 // takes the backstore of a grid and puts it back into place. a backstore
 // is a grid that is filled while the grid it would replace has not
 // finished being used.
-static void snap_backstore (PtrGrid &r) {if (r && r->next) {P<Grid> tmp=r->next; r=tmp;}}
+static void snap_backstore (P<Grid> &r) {if (r && r->next) {P<Grid> tmp=r->next; r=tmp;}}
 
 template <class T> void GridStore::compute_indices(T *v, long nc, long nd) {
 	for (int i=0; i<nc; i++) {
@@ -523,7 +523,7 @@ GRID_INLET(1) {
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
 \class GridOp : FObject {
 	\attr Numop *op;
-	PtrGrid r;
+	P<Grid> r;
 	\constructor (Numop *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(Dim(),int32_e,true);}
 	\grin 0
 	\grin 1
@@ -568,7 +568,7 @@ GRID_INPUT2(1,r) {} GRID_END
 //****************************************************************
 \class GridFold : FObject {
 	\attr Numop *op;
-	\attr PtrGrid seed;
+	\attr P<Grid> seed;
 	\constructor (Numop *op) {this->op=op;}
 	\grin 0
 };
@@ -613,7 +613,7 @@ GRID_INLET(0) {
 
 \class GridScan : FObject {
 	\attr Numop *op;
-	\attr PtrGrid seed;
+	\attr P<Grid> seed;
 	\constructor (Numop *op) {this->op = op;}
 	\grin 0
 };
@@ -657,9 +657,9 @@ GRID_INLET(0) {
 \class GridInner : FObject {
 	\attr Numop *op;
 	\attr Numop *fold;
-	\attr PtrGrid seed;
-	PtrGrid r;
-	PtrGrid r2; // temporary
+	\attr P<Grid> seed;
+	P<Grid> r;
+	P<Grid> r2; // temporary
 	bool use_dot;
 	\constructor (Grid *r=0) {
 		this->op = op_mul;
@@ -778,7 +778,7 @@ GRID_INPUT(1,r) {} GRID_END
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 \class GridOuter : FObject {
 	\attr Numop *op;
-	PtrGrid r;
+	P<Grid> r;
 	\constructor (Numop *op, Grid *r=0) {
 		this->op = op;
 		this->r = r ? r : new Grid(Dim(),int32_e,true);
@@ -836,13 +836,13 @@ GRID_INPUT(1,r) {} GRID_END
 //{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> } or
 //{ Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }
 \class GridFor : FObject {
-	\attr PtrGrid from;
-	\attr PtrGrid to  ;
-	\attr PtrGrid step;
+	\attr P<Grid> from;
+	\attr P<Grid> to  ;
+	\attr P<Grid> step;
 	\constructor (Grid *from, Grid *to, Grid *step=0) {
-		this->from.constrain(expect_max_one_dim);
-		this->to  .constrain(expect_max_one_dim);
-		this->step.constrain(expect_max_one_dim);
+		this->from.but(expect_max_one_dim);
+		this->to  .but(expect_max_one_dim);
+		this->step.but(expect_max_one_dim);
 		this->from=from;
 		this->to  =to  ;
 		this->step=step;
@@ -933,11 +933,11 @@ GRID_INLET(0) {
 //{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
 \class GridRedim : FObject {
 	/*\attr*/ Dim dim;
-	PtrGrid dim_grid;
-	PtrGrid temp; // temp->dim is not of the same shape as dim
+	P<Grid> dim_grid;
+	P<Grid> temp; // temp->dim is not of the same shape as dim
 	~GridRedim() {}
 	\constructor (Grid *d) {
-		dim_grid.constrain(expect_dim_dim_list);
+		dim_grid.but(expect_dim_dim_list);
 		dim_grid=d;
 		dim = dim_grid->to_dim();
 	//	if (!dim.prod()) RAISE("target grid size must not be zero");
