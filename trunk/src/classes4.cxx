@@ -43,26 +43,28 @@
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
-	void parse (const char *s, int level=0) { // should be storing last token for look-ahead...
+	void parse (const char *s, int level=0, t_symbol *after=0) {
+		post("%*sbegin after %s",level*2,"",after?after->s_name:"none");
 		next(s);
 		switch (int(tok.a_type)) {
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			code.push_back(tok);
 			next(s);
 			switch (int(tok.a_type)) {
-				case A_OP: {t_atom2 tok2=tok; parse(s,level+1); code.push_back(tok2);} break;
+				case A_OP: {t_atom2 tok2=tok; parse(s,level+1,tok.a_symbol); code.push_back(tok2);} break;
 				case A_CLOSE: return;
 				case A_NULL: return;
 				default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());}
 			}
 		  break;
 		  case A_OPEN: parse(s,level+1); break;
-		  case A_CLOSE: return; // may be uncaught syntax error
+		  case A_CLOSE: return; // this is actually a syntax error
 		  case A_COMMA: RAISE("can't use comma there");
 		  case A_SEMI:  RAISE("semi not supported");
 		  case A_NULL:  return; // may be uncaught syntax error
 		  default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());} // A_CANT, A_OP
 		};
+		post("%*send   after %s",level*2,"",after?after->s_name:"none");
 	}
 	\constructor (...) {
 		args = join(argc,argv);
