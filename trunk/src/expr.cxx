@@ -54,7 +54,7 @@ map<t_symbol *, int> priorities;
 		toks.push_back(tok);
 	}
 	void parse (const char *s, int level=0, t_symbol *prevop=0) {
-		post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
+		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
            top:	next(s);
 		switch (int(tok.a_type)) {
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -84,19 +84,21 @@ map<t_symbol *, int> priorities;
 		  case A_SEMI:  RAISE("semi not supported");
 		  default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());} // A_CANT, A_OP
 		};
-		post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
+		//post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
 	}
 	\constructor (...) {
+		prev=0; //toks.clear(); code.clear();
 		args = join(argc,argv);
+		parse(args.data());
+		//try {parse(args.data());} // should use fclasses_pd[pd_class(x)]->name->s_name
+		//catch (Barf &oozy) {oozy.error(gensym("#expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
+		string t = join(toks.size(),toks.data());
+		string c = join(code.size(),code.data());
 	}
 	\decl 0 bang () {
-		post("----------------------------------------------------------------");
-		toks.clear(); code.clear(); prev=0;
-		try {parse(args.data());} // should use fclasses_pd[pd_class(x)]->name->s_name
-		catch (Barf &oozy) {oozy.error(gensym("#expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
-		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
-		string c = join(code.size(),code.data()); post("gf/expr code: %s",c.data());
-
+		//post("----------------------------------------------------------------");
+		//post("#expr toks: %s",t.data());
+		//post("#expr code: %s",c.data());
 		vector<float> stack;
 		int n = code.size();
 		for (int i=0; i<n; i++) {
