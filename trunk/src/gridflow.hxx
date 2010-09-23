@@ -54,6 +54,7 @@ using std::ostringstream;
 using std::pair;
 typedef pair<int,t_symbol *> insel; // inlet-selector compound
 
+#define a_index    a_w.w_index
 #define a_float    a_w.w_float
 #define a_symbol   a_w.w_symbol
 #define a_gpointer a_w.w_gpointer
@@ -284,7 +285,10 @@ struct t_atom2 : t_atom {
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
 	template <class T> t_atom2             (T value) {set_atom(this,value);              };
 	t_atom2 () {}
-
+	t_atom2 (t_atomtype t, int i)         {a_type = t; a_index    = i;}
+	t_atom2 (t_atomtype t, float f)       {a_type = t; a_float    = f;}
+	t_atom2 (t_atomtype t, t_symbol *s)   {a_type = t; a_symbol   = s;}
+	t_atom2 (t_atomtype t, t_gpointer *p) {a_type = t; a_gpointer = p;}
 	string to_s ();
 };
 
