@@ -39,7 +39,7 @@ map<t_symbol *, int> priorities;
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
-		else if (strchr("+-*/",*s)) {char t[2]={0,0}; *t=*s; tok.a_type=A_OP; tok.a_symbol=gensym(t); s++;}
+		else if (strchr("+-*/%&|^",*s)) {char t[2]={0,0}; *t=*s; tok.a_type=A_OP; tok.a_symbol=gensym(t); s++;}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
@@ -58,11 +58,16 @@ map<t_symbol *, int> priorities;
 				case A_OP: {
 					int priority1 = prevop ? priorities[prevop] : 42;
 					int priority2 =          priorities[tok.a_symbol];
-					if (priority1 < priority2) {code.push_back(prevop); parse(s,level+1,tok.a_symbol);}
-					else                       {parse(s,level+1,tok.a_symbol); if (prevop) code.push_back(prevop);}
+					if (priority1 <= priority2) {
+						            code.push_back(t_atom2(A_OP,prevop));
+						parse(s,level+1,tok.a_symbol);
+					} else {
+						parse(s,level+1,tok.a_symbol);
+						if (prevop) code.push_back(t_atom2(A_OP,prevop));
+					}
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
-					if (prevop) code.push_back(prevop);
+					if (prevop) code.push_back(t_atom2(A_OP,prevop));
 				} return;
 				default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());}
 			}
@@ -81,8 +86,8 @@ map<t_symbol *, int> priorities;
 	\decl 0 bang () {
 		post("----------------------------------------------------------------");
 		toks.clear(); code.clear(); prev=0;
-		try {parse(args.data());}
-		catch (Barf &oozy) {oozy.error(gensym("gf/expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
+		try {parse(args.data());} // should use fclasses_pd[pd_class(x)]->name->s_name
+		catch (Barf &oozy) {oozy.error(gensym("#expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
 		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
 		string c = join(code.size(),code.data()); post("gf/expr code: %s",c.data());
 
@@ -112,7 +117,10 @@ map<t_symbol *, int> priorities;
 
 void startup_classes4 () {
 	#define PR(SYM) priorities[gensym(#SYM)]
+	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
-
+	PR(&) = 10;
+	PR(|) = 11;
+	PR(^) = 12;
 	\startall
 }
