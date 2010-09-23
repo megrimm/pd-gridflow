@@ -192,10 +192,8 @@ DEF_OP(vid,  a==0 ? T(0) :      b/a , 1, side==at_left  && x==1, false)
 DEF_OP(vid2, a==0 ?    0 : div2(b,a), 1, side==at_left  && x==1, false)
 DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), 0, false, (side==at_left && x==0) || (side==at_right && x==1))
 DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), 0, false, (side==at_left && x==0) || (side==at_right && x==1))
-//DEF_OPF(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
-//DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
-DEF_OP(rem, b==0?(T)0:a%b, 0, false, (side==at_left&&x==0) || (side==at_right&&x==1))
-DEF_OP(mer, a==0?(T)0:b%a, 0, false, (side==at_left&&x==0) || (side==at_right&&x==1))
+DEF_OPF(rem, b==0 ? 0 : a%b, b==0 ? 0 : fmodf(a,b), 0, false, (side==at_left&&x==0) || (side==at_right&&x==1))
+DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : fmodf(b,a), 0, false, (side==at_left&&x==0) || (side==at_right&&x==1))
 #endif
 #ifdef PASS2
 DEF_OP(gcd,   gcd(a,b), 0, x==0, x==1)
@@ -311,10 +309,10 @@ Numop op_table1[] = {
 	DECL_OP_NOFLOAT(div2, "div", 0),
 	DECL_OP(vid, "inv*", 0),
 	DECL_OP_NOFLOAT(vid2,"swapdiv", 0),
-	DECL_OP_NOFLOAT(mod, "%",       0),
-	DECL_OP_NOFLOAT(dom, "swap%",   0),
-	DECL_OP_NOFLOAT(rem, "rem",     0),
-	DECL_OP_NOFLOAT(mer, "swaprem", 0),
+	DECL_OP(mod, "%",       0),
+	DECL_OP(dom, "swap%",   0),
+	DECL_OP(rem, "rem",     0),
+	DECL_OP(mer, "swaprem", 0),
 };
 const long op_table1_n = COUNT(op_table1);
 #endif
