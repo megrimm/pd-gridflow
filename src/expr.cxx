@@ -53,52 +53,65 @@ map<t_symbol *, int> priorities;
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
-	void parse (const char *s, int level=0, t_symbol *prevop=0) {
+	void parse (const char *&s, int level=0, t_symbol *prevop=0) {
 		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
-           top:	next(s);
+           	next(s);
+           top:
 		switch (int(tok.a_type)) {
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			code.push_back(tok);
 			next(s);
+		  infix:
 			switch (int(tok.a_type)) {
 				case A_OP: {
 					int priority1 = prevop ? priorities[prevop] : 42;
 					int priority2 =          priorities[tok.a_symbol];
 					if (priority1 <= priority2) {
 						            code.push_back(t_atom2(A_OP,prevop));
-						parse(s,level+1,tok.a_symbol);
+						parse(s,level,tok.a_symbol);
 					} else {
-						parse(s,level+1,tok.a_symbol);
+						parse(s,level,tok.a_symbol);
 						if (prevop) code.push_back(t_atom2(A_OP,prevop));
 					}
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
+					if (level && int(tok.a_type)!=A_CLOSE) post("missing ')' %d times",level);
 					if (prevop) code.push_back(t_atom2(A_OP,prevop));
-				} return;
-				default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());}
+					return;
+				}
+				default: {
+					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+					RAISE("syntax error (%db) tok=%s type=%s",level,z.data(),zt.data());
+				}
 			}
 		  break;
-		  case A_OPEN: parse(s,level+1); break;
-		  case A_CLOSE: A_NULL: return; // this is actually a syntax error
-		  case A_COMMA: RAISE("can't use comma there");
-		  case A_SEMI:  RAISE("semi not supported");
-		  default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());} // A_CANT, A_OP
+		  case A_OPEN: {
+			  parse(s,level+1);
+			  next(s);
+			  //string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+			  //post("A_OPEN after next(s): tok=%s type=%s",z.data(),zt.data());
+			  switch (int(tok.a_type)) {case A_OP: case A_CLOSE: case A_NULL: case A_SEMI: goto infix;};
+			  goto top;
+		  }
+		  default: {
+			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+			  RAISE("syntax error (%da) tok=%s",level,z.data(),zt.data());
+		  }
 		};
 		//post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
 	}
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
 		args = join(argc,argv);
-		parse(args.data());
+		const char *s = args.data();
+		parse(s);
 		//try {parse(args.data());} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
-		string t = join(toks.size(),toks.data());
-		string c = join(code.size(),code.data());
 	}
 	\decl 0 bang () {
 		//post("----------------------------------------------------------------");
-		//post("#expr toks: %s",t.data());
-		//post("#expr code: %s",c.data());
+		//string t = join(toks.size(),toks.data()); post("#expr toks: %s",t.data());
+		//string c = join(code.size(),code.data()); post("#expr code: %s",c.data());
 		vector<float> stack;
 		int n = code.size();
 		for (int i=0; i<n; i++) {
