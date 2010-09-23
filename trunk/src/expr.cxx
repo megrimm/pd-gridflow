@@ -39,7 +39,13 @@ map<t_symbol *, int> priorities;
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
-		else if (strchr("+-*/%&|^",*s)) {char t[2]={0,0}; *t=*s; tok.a_type=A_OP; tok.a_symbol=gensym(t); s++;}
+		else if (strchr("+-*/%&|^<>",*s)) {
+			char t[3]={0,0,0};
+			t[0]=*s++;
+			if (*s==s[-1] || *s=='=') t[1]=*s++;
+			tok.a_type=A_OP;
+			tok.a_symbol=gensym(t);
+		}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
@@ -119,8 +125,12 @@ void startup_classes4 () {
 	#define PR(SYM) priorities[gensym(#SYM)]
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
+	PR(<<) = PR(>>) = 7;
+	PR(<) = PR(>) = PR(<=) = PR(>=) = PR(==) = PR(!=) = 8;
 	PR(&) = 10;
-	PR(|) = 11;
-	PR(^) = 12;
+	PR(^) = 11;
+	PR(|) = 12;
+	PR(&&) = 13;
+	PR(||) = 14;
 	\startall
 }
