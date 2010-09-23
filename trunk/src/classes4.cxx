@@ -20,6 +20,8 @@
 
 #include "gridflow.hxx.fcs"
 
+map<t_symbol *, int> priorities;
+
 // FOR FUTURE USE
 \class GFExpr : FObject {
 	#define A_OP    t_atomtype(0x1000)
@@ -31,7 +33,9 @@
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
 	t_atom2 tok;
+	int prev;
 	void next (const char *&s) {
+		if (prev) {tok=toks[toks.size()-prev]; prev--; return;}
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
@@ -43,35 +47,40 @@
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
-	void parse (const char *s, int level=0, t_symbol *after=0) {
-		post("%*sbegin after %s",level*2,"",after?after->s_name:"none");
-		next(s);
+	void parse (const char *s, int level=0, t_symbol *prevop=0) {
+		post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
+           top:	next(s);
 		switch (int(tok.a_type)) {
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			code.push_back(tok);
 			next(s);
 			switch (int(tok.a_type)) {
-				case A_OP: {t_atom2 tok2=tok; parse(s,level+1,tok.a_symbol); code.push_back(tok2);} break;
-				case A_CLOSE: return;
-				case A_NULL: return;
+				case A_OP: {
+					int priority1 = prevop ? priorities[prevop] : 42;
+					int priority2 =          priorities[tok.a_symbol];
+					if (priority1 < priority2) {code.push_back(prevop); parse(s,level+1,tok.a_symbol);}
+					else                       {parse(s,level+1,tok.a_symbol); if (prevop) code.push_back(prevop);}
+				} break;
+				case A_CLOSE: case A_NULL: case A_SEMI: {
+					if (prevop) code.push_back(prevop);
+				} return;
 				default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());}
 			}
 		  break;
 		  case A_OPEN: parse(s,level+1); break;
-		  case A_CLOSE: return; // this is actually a syntax error
+		  case A_CLOSE: A_NULL: return; // this is actually a syntax error
 		  case A_COMMA: RAISE("can't use comma there");
 		  case A_SEMI:  RAISE("semi not supported");
-		  case A_NULL:  return; // may be uncaught syntax error
 		  default: {string z=tok.to_s(); RAISE("syntax error (%db) tok=%s",level,z.data());} // A_CANT, A_OP
 		};
-		post("%*send   after %s",level*2,"",after?after->s_name:"none");
+		post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
 	}
 	\constructor (...) {
 		args = join(argc,argv);
 	}
 	\decl 0 bang () {
 		post("----------------------------------------------------------------");
-		toks.clear(); code.clear();
+		toks.clear(); code.clear(); prev=0;
 		try {parse(args.data());}
 		catch (Barf &oozy) {oozy.error(gensym("gf/expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
 		string t = join(toks.size(),toks.data()); post("gf/expr toks: %s",t.data());
@@ -90,7 +99,10 @@
 				  op->map(1,&a,b);
 				  stack.push_back(a);
 			  } break;
-			  default: {string z = code[i].to_s(); RAISE("can't interpret %s",z.data());}
+			  default: {
+				string z = code[i].to_s();
+				RAISE("can't interpret %s (atomtype %s)",z.data(),atomtype_to_s(code[i].a_type).data());
+			  }
 			}
 		}
 		if (stack.size()) out[0](stack.back()); else RAISE("no result");
@@ -99,5 +111,8 @@
 \end class {install("#expr",1,1,CLASS_NOPARENS);}
 
 void startup_classes4 () {
+	#define PR(SYM) priorities[gensym(#SYM)]
+	PR(+) = PR(-) = 6;
+
 	\startall
 }
