@@ -38,8 +38,9 @@ map<t_atom2, int> priorities;
 	string args;
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
-	t_atom2 tok;
-	int prev;
+	t_atom2 tok;   // which token was last produced by next()
+	int prev;      // look-ahead is done by next() followed by prev++;
+	const char *s; // an iterator through the args variable
 	void next (const char *&s) {
 		if (prev) {tok=toks[toks.size()-prev]; prev--; return;}
 		while (*s && isspace(*s)) s++;
@@ -55,6 +56,14 @@ map<t_atom2, int> priorities;
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
 		else if (*s==',') {s++; tok.a_type=A_COMMA;}
+		else if (*s=='$') {
+			if (s[1]=='f') {}
+			else RAISE("$ type must be f");
+			char *e; long i = strtol(s+2,&e,10); s=(const char *)e;
+			if (i<1) RAISE("$ var index must be greater than 0");
+			if (i>32) RAISE("$ var index is bigger than 32, which is probably a mistake");
+			tok = t_atom2(A_VAR,int(i+256*'f'));
+		}
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
@@ -65,17 +74,17 @@ map<t_atom2, int> priorities;
 			code.push_back(t_atom2(A_OP,gensym("^")));
 		} else code.push_back(a);
 	}
-	void parse (const char *&s, int level=0, t_atom2 prevop=t_atom2(A_NULL,0)) {
+	void parse (int level=0, t_atom2 prevop=t_atom2(A_NULL,0)) {
 		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
            	next(s);
            top:
 		switch (int(tok.a_type)) {
 		  case A_OP: {
 			t_symbol *o = tok.a_symbol;
-			if      (o==gensym("+")) {parse(s,level,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(s,level,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("!")) {parse(s,level,t_atom2(A_OP1,gensym("==")));}
-			else if (o==gensym("~")) {parse(s,level,t_atom2(A_OP1,tok.a_symbol));}
+			if      (o==gensym("+")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("-")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("!")) {parse(level,t_atom2(A_OP1,gensym("==")));}
+			else if (o==gensym("~")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -90,16 +99,16 @@ map<t_atom2, int> priorities;
 					//post("priorities %d %d",priority1,priority2);
 					if (priority1 <= priority2) {
 						add(prevop);
-						parse(s,level,tok);
+						parse(level,tok);
 					} else {
-						parse(s,level,tok);
+						parse(level,tok);
 						if (prevop.a_type!=A_NULL) add(prevop);
 					}
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
 					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
 					if (prevop.a_type!=A_NULL) add(prevop);
-					if (tok.a_type==A_SEMI) {add(tok); parse(s,level);}
+					if (tok.a_type==A_SEMI) {add(tok); parse(level);}
 					break;
 				}
 				default: {
@@ -108,10 +117,7 @@ map<t_atom2, int> priorities;
 				}
 			}
 		  break;
-		  case A_OPEN: {
-			  parse(s,level+1);
-			  goto infix;
-		  }
+		  case A_OPEN: {parse(level+1); goto infix;}
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 			  RAISE("syntax error (%da) tok=%s",level,z.data(),zt.data());
@@ -122,8 +128,8 @@ map<t_atom2, int> priorities;
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
 		args = join(argc,argv);
-		const char *s = args.data();
-		parse(s);
+		s = args.data();
+		parse();
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
 		if (*s) RAISE("expression not finished parsing");
@@ -168,7 +174,7 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(+) = PR1(-) = PR(~) = PR(==) = 3; // unary "==" is "!"
+	PR1(+) = PR1(-) = PR1(~) = PR1(==) = 3; // unary "==" is "!"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
