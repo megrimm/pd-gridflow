@@ -184,6 +184,10 @@ GRID_INLET(1) {
 
 //------------------------------------------------------------------------
 
+// LinuxIntel y:6409 yuv:34233
+//   OsxIntel y:6409 yuv:34233
+//   OsxPPC   y:6409 yuv:
+
 \class GridFromPix : FObject {
 	P<BitPacking> bp_rgba;
 	P<BitPacking> bp_bgra;
@@ -206,7 +210,7 @@ GRID_INLET(1) {
 		  #ifdef GL_VERSION_1_2
 		  case GL_BGRA: bp = bp_bgra; break;
 		  #endif
-		  //case GL_LUMINANCE: break;
+		  //case GL_LUMINANCE: bp=bp_grey; break;
 		  //case 0x85b9: break;
 		  default: ::post("can't produce grid from pix format %d (0x%x)",im.format,im.format); return;}
 		switch (im.type) {
@@ -259,6 +263,11 @@ GRID_INLET(1) {
 		bp_rgba = new BitPacking(is_le(),4,4,rgba);
 		bp_bgra = new BitPacking(is_le(),4,4,bgra);
 	} else
+	if (s==gensym("y")) {
+		channels=1;
+		bp_rgba = 0;
+		bp_bgra = 0;
+	}
 	RAISE("unknown colorspace '%s'",s->s_name);
 }
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
