@@ -81,7 +81,8 @@ map<t_atom2, int> priorities;
 			code.push_back(t_atom2(A_OP,gensym("^")));
 		} else code.push_back(a);
 	}
-	void parse (int level=0, t_atom2 prevop=t_atom2(A_NULL,0)) {
+	int parse (int level=0, t_atom2 prevop=t_atom2(A_NULL,0), int maxelems=1) {
+		int elems=1;
 		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
            	next(s);
            top:
@@ -119,8 +120,11 @@ map<t_atom2, int> priorities;
 						RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
 					}
 					parse(level);
-					a.a_type = A_OP1;
-					if (!priorities[a]) RAISE("unknown function '%s'",a.a_symbol->s_name);
+					t_symbol *o = a.a_symbol;
+					if   (a==gensym("abs"))                a=t_atom2(A_OP1,gensym("abs-"));
+					else if (priorities[t_atom2(A_OP1,o)]) a=t_atom2(A_OP1,o);
+					else if (priorities[t_atom2(A_OP ,o)]) a=t_atom2(A_OP ,o);
+					else RAISE("unknown function '%s'",o->s_name);
 					code.push_back(a);
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
@@ -138,10 +142,11 @@ map<t_atom2, int> priorities;
 		  case A_OPEN: {parse(level+1); goto infix;}
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-			  RAISE("syntax error (%da) tok=%s",level,z.data(),zt.data());
+			  RAISE("syntax error (%da) tok=%s type=%s",level,z.data(),zt.data());
 		  }
 		};
 		//post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
+		return elems;
 	}
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
@@ -199,7 +204,7 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = 2;
+	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs-) = PR1(rand) = 2;
 	PR1(+) = PR1(inv+) = PR1(~) = PR1(==) = 3; // unary "==" is "!"; unary "-" is "inv+"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
