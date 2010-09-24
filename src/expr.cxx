@@ -38,6 +38,7 @@ map<t_atom2, int> priorities;
 	string args;
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
+	vector<t_atom2> inputs;
 	t_atom2 tok;   // which token was last produced by next()
 	int prev;      // look-ahead is done by next() followed by prev++;
 	const char *s; // an iterator through the args variable
@@ -62,7 +63,8 @@ map<t_atom2, int> priorities;
 			char *e; long i = strtol(s+2,&e,10); s=(const char *)e;
 			if (i<1) RAISE("$ var index must be greater than 0");
 			if (i>32) RAISE("$ var index is bigger than 32, which is probably a mistake");
-			tok = t_atom2(A_VAR,int(i+256*'f'));
+			tok = t_atom2(A_VAR,int(i-1+256*'f'));
+			if (int(inputs.size())<i) {inputs.resize(i); ninlets_set(i);}
 		}
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
@@ -130,6 +132,7 @@ map<t_atom2, int> priorities;
 		args = join(argc,argv);
 		s = args.data();
 		parse();
+		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
 		if (*s) RAISE("expression not finished parsing");
@@ -144,6 +147,9 @@ map<t_atom2, int> priorities;
 			{string z = code[i].to_s(); post("interpreting %s",z.data());}
 			switch (int(code[i].a_type)) {
 			  case A_FLOAT: stack.push_back(code[i]); break;
+			  case A_VAR: {
+				  stack.push_back(inputs[code[i].a_index & 255]);
+			  } break;
 			  case A_OP: {
 				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
 				  float b = stack.back(); stack.pop_back();
@@ -167,6 +173,10 @@ map<t_atom2, int> priorities;
 		for (int i=noutlets-1; i>=0; i--) {
 			if (stack.size()) {out[i](stack.back()); stack.pop_back();} else RAISE("no result");
 		}
+	}
+	\decl n float (int winlet, float f) {
+		inputs[winlet] = f;
+		if (!winlet) _0_bang();
 	}
 };
 \end class {install("#expr",1,1,CLASS_NOPARENS);}
