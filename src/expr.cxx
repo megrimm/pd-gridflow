@@ -59,6 +59,7 @@ map<t_atom2, int> priorities;
 		toks.push_back(tok);
 	}
 	void add (const t_atom2 &a) {
+		if (a.a_type==A_SEMI) {noutlets_set(noutlets+1); return;}
 		if (a.a_type==A_OP1 && a.a_symbol==gensym("~")) {
 			code.push_back(-1);
 			code.push_back(t_atom2(A_OP,gensym("^")));
@@ -98,8 +99,8 @@ map<t_atom2, int> priorities;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
 					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
 					if (prevop.a_type!=A_NULL) add(prevop);
-					if (tok.a_type==A_SEMI) add(t_atom2(A_SEMI,0));
-					return;
+					if (tok.a_type==A_SEMI) {add(tok); parse(s,level);}
+					break;
 				}
 				default: {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
@@ -157,7 +158,9 @@ map<t_atom2, int> priorities;
 			  }
 			}
 		}
-		if (stack.size()) out[0](stack.back()); else RAISE("no result");
+		for (int i=noutlets-1; i>=0; i--) {
+			if (stack.size()) {out[i](stack.back()); stack.pop_back();} else RAISE("no result");
+		}
 	}
 };
 \end class {install("#expr",1,1,CLASS_NOPARENS);}
@@ -165,7 +168,7 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(-) = PR(==) = 3; // unary "==" is "!"
+	PR1(+) = PR1(-) = PR(~) = PR(==) = 3; // unary "==" is "!"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
