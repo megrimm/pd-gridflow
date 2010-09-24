@@ -894,14 +894,14 @@ static CONSTRAINT(expect_polygon) {if (d.n!=2 || d[1]!=2) RAISE("expecting Dim[n
 
 enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
-DrawMode convert(const t_atom &x, DrawMode *foo) {
+DrawMode convert(const t_atom2 &x, DrawMode *foo) {
 	t_symbol *s = convert(x,(t_symbol **)0);
 	if (s==gensym("fill")) return DRAW_FILL;
 	if (s==gensym("line")) return DRAW_LINE;
 	if (s==gensym("point")) return DRAW_POINT;
 	RAISE("unknown DrawMode '%s' (want fill or line)",s->s_name);
 }
-OmitMode convert(const t_atom &x, OmitMode *foo) {
+OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	t_symbol *s = convert(x,(t_symbol **)0);
 	if (s==gensym("none")) return OMIT_NONE;
 	if (s==gensym("last")) return OMIT_LAST;
