@@ -20,7 +20,12 @@
 
 #include "gridflow.hxx.fcs"
 
-map<t_symbol *, int> priorities;
+bool operator < (const t_atom2 &a, const t_atom2 &b) {
+	if (a.a_type!=b.a_type) return a.a_type<b.a_type;
+	return uintptr_t(a.a_symbol)<uintptr_t(b.a_symbol);
+}
+	
+map<t_atom2, int> priorities;
 
 // FOR FUTURE USE
 \class GFExpr : FObject {
@@ -59,11 +64,9 @@ map<t_symbol *, int> priorities;
            top:
 		switch (int(tok.a_type)) {
 		  case A_OP:
-			if (tok==gensym("+")) {}
-			if (tok==gensym("-")) {
-				parse(s,level,t_atom2(A_OP1,tok.a_symbol));
-			}
-			
+			if      (tok.a_symbol==gensym("+")) {parse(s,level,t_atom2(A_OP1,tok.a_symbol));}
+			else if (tok.a_symbol==gensym("-")) {parse(s,level,t_atom2(A_OP1,tok.a_symbol));}
+			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 			break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			code.push_back(tok);
@@ -71,9 +74,10 @@ map<t_symbol *, int> priorities;
 			next(s);
 			switch (int(tok.a_type)) {
 				case A_OP: {
-					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop.a_symbol] : 42;
-					int priority2 =                       priorities[tok.a_symbol];
+					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
+					int priority2 =                       priorities[tok];
 					if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
+					//post("priorities %d %d",priority1,priority2);
 					if (priority1 <= priority2) {
 						code.push_back(prevop);
 						parse(s,level,tok);
@@ -131,6 +135,13 @@ map<t_symbol *, int> priorities;
 				  op->map(1,&a,b);
 				  stack.push_back(a);
 			  } break;
+			  case A_OP1: {
+				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
+				  float b = stack.back(); stack.pop_back();
+				  float a = 0;
+				  op->map(1,&a,b);
+				  stack.push_back(a);
+			  } break;
 			  default: {
 				string z = code[i].to_s();
 				RAISE("can't interpret %s (atomtype %s)",z.data(),atomtype_to_s(code[i].a_type).data());
@@ -143,7 +154,9 @@ map<t_symbol *, int> priorities;
 \end class {install("#expr",1,1,CLASS_NOPARENS);}
 
 void startup_classes4 () {
-	#define PR(SYM) priorities[gensym(#SYM)]
+	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
+	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
+	PR1(-) = 3;
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
