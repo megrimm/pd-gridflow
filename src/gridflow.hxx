@@ -272,7 +272,7 @@ struct t_atom2 : t_atom {
 	operator   int64 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return  (int64)round(a_float);}
 	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return               a_float ;}
 
-#define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
+#define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B", got %s",to_s().data()); return C;}
 	TYPECASTER2(string      ,A_SYMBOL ,"symbol"     ,string(a_symbol->s_name))
 	//TYPECASTER2(const char *,A_SYMBOL ,"symbol"     ,       a_symbol->s_name ) //"ambiguous" ?
 	TYPECASTER2(t_symbol   *,A_SYMBOL ,"symbol"     ,       a_symbol         )
