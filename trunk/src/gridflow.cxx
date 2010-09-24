@@ -66,30 +66,35 @@ t_symbol *gridflow_folder;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
-string t_atom2::to_s() {ostringstream os; os << *this; return os.str();}
+string t_atom2::to_s() const {ostringstream os; os << *this; return os.str();}
 
 Barf::Barf(const char *s, ...) {
     ostringstream os; va_list ap; va_start(ap,s  ); voprintf(os,s  ,ap);
     va_end(ap); text = os.str();}
 Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
-    ostringstream os; va_list ap; va_start(ap,fmt); voprintf(os,fmt,ap); //oprintf(os,"\n%s:%d:in `%s'",file,line,func);
+    ostringstream os; va_list ap; va_start(ap,fmt); voprintf(os,fmt,ap);
+    // oprintf(os,"\n%s:%d:in `%s'",file,line,func);
+    //oprintf(os,"\n%s",short_backtrace(2,7));
     va_end(ap); text = os.str();}
 
 void Barf::error(BFObject *bself, int winlet, t_symbol *sel) {
+	//post("----------------------------------------------------------------");
 	if (!bself) ::error("[???] inlet %d method %s: %s"                              ,winlet,sel?sel->s_name:"(???)",text.data());
 	else    pd_error(bself,"%s inlet %d method %s: %s",bself->binbuf_string().data(),winlet,sel?sel->s_name:"(???)",text.data());
 }
 void Barf::error(t_symbol *s, int argc, t_atom *argv) {
+	//post("----------------------------------------------------------------");
 	ostringstream os; os << s->s_name;
 	for (int i=0; i<argc; i++) os << (i ? " " : " ") << argv[i];
         ::error("[%s]: %s",os.str().data(),text.data());
 }
 
-// gf/expr
-#define A_OP    t_atomtype(0x1000)
-#define A_VAR   t_atomtype(0x1001) /* for $f1-style variables, not other variables */
-#define A_OPEN  t_atomtype(0x1002) /* only between next() and parse() */
-#define A_CLOSE t_atomtype(0x1003) /* only between next() and parse() */
+// [#expr]
+#define A_OPEN  t_atomtype(0x1000) /* only between next() and parse() */
+#define A_CLOSE t_atomtype(0x1001) /* only between next() and parse() */
+#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
+#define A_OP1   t_atomtype(0x1003) /* operator: unary prefix */
+#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
 
 #define Z(T) case T: return #T; break;
 string atomtype_to_s (t_atomtype t) {
