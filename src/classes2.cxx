@@ -405,7 +405,7 @@ void ParallelPort_call(ParallelPort *self);
 		clock_delay(clock,0);
 	}
 	void call ();
-	#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
+	#define FRAISE(funk,f) RAISE("can't "#funk": %s",strerror(ferror(f)));
 	\decl 0 float (float x) {
 		uint8 foo = (uint8) x;
 		if (fwrite(&foo,1,1,f)<1) FRAISE(fwrite,f);
