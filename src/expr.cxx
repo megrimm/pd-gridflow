@@ -24,10 +24,11 @@ map<t_symbol *, int> priorities;
 
 // FOR FUTURE USE
 \class GFExpr : FObject {
-	#define A_OP    t_atomtype(0x1000)
-	#define A_VAR   t_atomtype(0x1001) /* for $f1-style variables, not other variables */
-	#define A_OPEN  t_atomtype(0x1002) /* only between next() and parse() */
-	#define A_CLOSE t_atomtype(0x1003) /* only between next() and parse() */
+	#define A_OPEN  t_atomtype(0x1000) /* only between next() and parse() */
+	#define A_CLOSE t_atomtype(0x1001) /* only between next() and parse() */
+	#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
+	#define A_OP1   t_atomtype(0x1003) /* operator: unary prefix */
+	#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
 
 	string args;
 	vector<t_atom2> toks;
@@ -39,12 +40,11 @@ map<t_symbol *, int> priorities;
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
-		else if (strchr("+-*/%&|^<>",*s)) {
+		else if (strchr("+-*/%&|^<>=",*s)) {
 			char t[3]={0,0,0};
 			t[0]=*s++;
 			if (*s==s[-1] || *s=='=') t[1]=*s++;
-			tok.a_type=A_OP;
-			tok.a_symbol=gensym(t);
+			tok = t_atom2(A_OP,gensym(t));
 		}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
@@ -53,30 +53,38 @@ map<t_symbol *, int> priorities;
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
-	void parse (const char *&s, int level=0, t_symbol *prevop=0) {
+	void parse (const char *&s, int level=0, t_atom2 prevop=t_atom2(A_NULL,0)) {
 		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
            	next(s);
            top:
 		switch (int(tok.a_type)) {
+		  case A_OP:
+			if (tok==gensym("+")) {}
+			if (tok==gensym("-")) {
+				parse(s,level,t_atom2(A_OP1,tok.a_symbol));
+			}
+			
+			break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			code.push_back(tok);
+		  infix: // this section could become another method
 			next(s);
-		  infix:
 			switch (int(tok.a_type)) {
 				case A_OP: {
-					int priority1 = prevop ? priorities[prevop] : 42;
-					int priority2 =          priorities[tok.a_symbol];
+					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop.a_symbol] : 42;
+					int priority2 =                       priorities[tok.a_symbol];
 					if (priority1 <= priority2) {
-						            code.push_back(t_atom2(A_OP,prevop));
-						parse(s,level,tok.a_symbol);
+						code.push_back(prevop);
+						parse(s,level,tok);
 					} else {
-						parse(s,level,tok.a_symbol);
-						if (prevop) code.push_back(t_atom2(A_OP,prevop));
+						parse(s,level,tok);
+						if (prevop.a_type!=A_NULL) code.push_back(prevop);
 					}
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
-					if (level && int(tok.a_type)!=A_CLOSE) post("missing ')' %d times",level);
-					if (prevop) code.push_back(t_atom2(A_OP,prevop));
+					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
+					if (prevop.a_type!=A_NULL) code.push_back(prevop);
+					if (tok.a_type==A_SEMI) code.push_back(t_atom2(A_SEMI,0));
 					return;
 				}
 				default: {
@@ -87,11 +95,7 @@ map<t_symbol *, int> priorities;
 		  break;
 		  case A_OPEN: {
 			  parse(s,level+1);
-			  next(s);
-			  //string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-			  //post("A_OPEN after next(s): tok=%s type=%s",z.data(),zt.data());
-			  switch (int(tok.a_type)) {case A_OP: case A_CLOSE: case A_NULL: case A_SEMI: goto infix;};
-			  goto top;
+			  goto infix;
 		  }
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
@@ -105,8 +109,9 @@ map<t_symbol *, int> priorities;
 		args = join(argc,argv);
 		const char *s = args.data();
 		parse(s);
-		//try {parse(args.data());} // should use fclasses_pd[pd_class(x)]->name->s_name
-		//catch (Barf &oozy) {oozy.error(gensym("#expr"),binbuf_getnatom(bself->te_binbuf),binbuf_getvec(bself->te_binbuf));}
+		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
+		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
+		if (*s) RAISE("expression not finished parsing");
 	}
 	\decl 0 bang () {
 		//post("----------------------------------------------------------------");
