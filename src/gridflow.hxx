@@ -258,7 +258,7 @@ struct t_atom2 : t_atom {
 	bool operator != (const t_atom2 &b) {return !(*this==b);}
 	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
-	operator float32 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return a_float;}
+	operator float32 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return a_float;}
 #define TYPECASTER(T,A,B) operator T () const { \
   float f = round(float32(*this)); if (f<A || f>=B) RAISE("value %f is out of range",f); return (T)f;}
 	TYPECASTER(   bool,           0  ,          2  )
@@ -268,9 +268,9 @@ struct t_atom2 : t_atom {
 	TYPECASTER(  int32, -0x80000000LL, 0x80000000LL)
 	TYPECASTER( uint32,           0  ,0x100000000LL)
 #undef TYPECASTER
-	operator  uint64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return (uint64)round(a_float);}
-	operator   int64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return  (int64)round(a_float);}
-	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float"); return               a_float ;}
+	operator  uint64 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return (uint64)round(a_float);}
+	operator   int64 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return  (int64)round(a_float);}
+	operator float64 () const {if (a_type!=A_FLOAT) RAISE("expected float, got %s",to_s().data()); return               a_float ;}
 
 #define TYPECASTER2(T,A,B,C) operator T () const {if (a_type!=A) RAISE("expected "B); return C;}
 	TYPECASTER2(string      ,A_SYMBOL ,"symbol"     ,string(a_symbol->s_name))
@@ -289,17 +289,11 @@ struct t_atom2 : t_atom {
 	t_atom2 (t_atomtype t, float f)       {a_type = t; a_float    = f;}
 	t_atom2 (t_atomtype t, t_symbol *s)   {a_type = t; a_symbol   = s;}
 	t_atom2 (t_atomtype t, t_gpointer *p) {a_type = t; a_gpointer = p;}
-	string to_s ();
+	string to_s () const;
 };
 
-template <class T> static inline T convert(const t_atom &x, T *foo) {
-	const t_atom2 *xx = (const t_atom2 *)&x;
-	return (T)*xx;
-}
-static inline const char *convert(const t_atom &x, const char **foo) {
-	const t_atom2 *xx = (const t_atom2 *)&x;
-	return ((t_symbol *)*xx)->s_name;
-}
+template <class T> static inline T convert(const t_atom2 &x, T *foo) {return (T)x;}
+static inline const char *convert(const t_atom2 &x, const char **foo) {return ((t_symbol *)x)->s_name;}
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
 template <class T> inline void COPY  (T *dest, const T *src, long n=1) {gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));}
@@ -438,7 +432,7 @@ CONSTRAINT(expect_any);
 //used mostly as P<Grid>, P<BitPacking>
 template <class T> struct P {
 public:
-	//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace());}
+	//#define INCR if (p) {p->refcount++; if (p->refcount>1) post("refcount++ to %d at %s",p->refcount,short_backtrace(3,6));}
 	//#define DECR if (p) {if (p->refcount>1) post("refcount-- from %d at %s",p->refcount,short_backtrace()); p->refcount--; if (!p->refcount) delete p;}
 	#define INCR if (p) {p->refcount++;}
 	#define DECR if (p) {p->refcount--; if (!p->refcount) delete p;}
@@ -579,10 +573,10 @@ extern map<string,NumberType *> number_type_dict;
 extern map<string,Numop *> op_dict;
 extern map<string,Numop *> vop_dict;
 
-static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
-	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_symbol->s_name));}
+static inline NumberTypeE convert(const t_atom2 &x, NumberTypeE *bogus) {
+	if (x.a_type!=A_SYMBOL) RAISE("expected number-type, got %s",x.to_s().data()); return NumberTypeE_find(string(x.a_symbol->s_name));}
 
-static Numop *convert(const t_atom &x, Numop **bogus) {
+static Numop *convert(const t_atom2 &x, Numop **bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
 	string k = string(x.a_symbol->s_name);
 	if (op_dict.find(k)==op_dict.end()) {
@@ -637,15 +631,15 @@ EACH_NUMBER_TYPE(FOO)
 	void init_from_atom(const t_atom &x);
 	void init_from_list(int n, t_atom *a, NumberTypeE nt=int32_e);
 };
-static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
+static inline Grid *convert (const t_atom2 &r, Grid **bogus) {return new Grid(r);}
 
-static inline Dim convert(const t_atom &x, Dim *foo) {
+static inline Dim convert(const t_atom2 &x, Dim *foo) {
 	Grid *d = convert(x,(Grid **)0);
 	if (!d) RAISE("urgh");
 	if (d->dim.n!=1) RAISE("dimension list must have only one dimension itself");
 	return Dim(d->dim[0],(int32 *)d->data);
 }
-static inline P<Grid> convert(const t_atom &x, P<Grid> *foo) {return P<Grid>(convert(x,(Grid **)0));}
+static inline P<Grid> convert(const t_atom2 &x, P<Grid> *foo) {return P<Grid>(convert(x,(Grid **)0));}
 
 //****************************************************************
 // GridInlet represents a grid-aware inlet
