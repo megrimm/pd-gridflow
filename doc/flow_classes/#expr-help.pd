@@ -1,38 +1,54 @@
-#N canvas 467 70 632 446 10;
+#N canvas 467 70 632 582 10;
 #X obj 0 0 doc_h;
-#X obj 3 392 doc_also;
-#X obj 0 412 doc_f;
-#X obj 3 180 doc_c 1..;
-#X obj 14 210 doc_cc any;
-#X obj 97 210 doc_m cany <atom>;
-#X text 232 210 floats and symbols (and commas and semicolons) that
+#X obj 3 528 doc_also;
+#X obj 0 548 doc_f;
+#X obj 3 267 doc_c 1..;
+#X obj 14 297 doc_cc any;
+#X obj 97 297 doc_m cany <atom>;
+#X text 232 297 floats and symbols (and commas and semicolons) that
 will be joined together to form a string which will be interpreted
 in a manner quite similar to what [expr] does.;
-#X obj 3 268 doc_i 1;
-#X obj 14 298 doc_ii 0;
-#X obj 97 298 doc_m i0 bang;
-#X text 232 298 evaluate expression and output result.;
-#X obj 3 330 doc_o 1;
-#X obj 14 360 doc_oo 0;
-#X obj 97 360 doc_m o0 float;
-#X text 232 360 the result.;
-#X obj 103 392 expr;
-#X obj 139 392 expr~;
-#X obj 181 392 fexpr~;
+#X obj 14 385 doc_ii 0;
+#X obj 97 385 doc_m i0 bang;
+#X text 232 381 evaluate expression and output result.;
+#X obj 103 528 expr;
+#X obj 139 528 expr~;
+#X obj 181 528 fexpr~;
 #X obj 98 43 #expr;
 #X text 135 43 computes the result of the formula(s) you write in it.
 ;
-#X text 96 128 it supports C-like operator precedence \, and the use
+#X text 96 142 it supports C-like operator precedence \, and the use
 of () for overriding operator precedence.;
-#X text 96 157 it supports float literals \, hex literals.;
+#X text 96 171 it supports float literals \, hex literals.;
 #X text 96 62 it supports those infix operators: + - * / & ^ | << >>
 ;
 #X text 96 78 and these: == != < <= > >= && ||;
 #X text 118 94 unlike [expr] \, a||b may return non-bool b;
 #X text 118 108 unlike [expr] \, a&&b may return non-bool a;
-#X connect 1 1 15 0;
-#X connect 1 1 16 0;
-#X connect 1 1 17 0;
+#X text 118 123 unlike [expr] \, a%b is like [# %] and [mod] \, not
+like [%].;
+#X text 96 188 it supports $f1 \, $f2 \, $f3 \, etc.;
+#X text 96 203 it does not support $s1 \, $v1 \, etc.;
+#X obj 3 355 doc_i 1..;
+#X obj 97 402 doc_m i0 float;
+#X text 232 396 set value of $f1 and then do like bang.;
+#X obj 14 399 doc_ii other;
+#X obj 97 399 doc_m iother float;
+#X text 232 399 set value of any other $f variable \, such as $f2 \,
+$f3 \, etc. \; for example \, a float into inlet 6 will set $f7.;
+#X obj 3 440 doc_o 1..;
+#X obj 14 470 doc_oo any;
+#X obj 97 470 doc_m oany float;
+#X text 232 470 the results \, output from right to left \, even though
+they get computed left-to-right. [#expr] makes a list of the results
+and then outputs it in reverse order.;
+#X text 97 219 it supports some functions that have a single arguments
+\, which are the following : sin cos exp log;
+#X connect 1 1 10 0;
+#X connect 1 1 11 0;
+#X connect 1 1 12 0;
 #X connect 5 1 6 0;
-#X connect 9 1 10 0;
-#X connect 13 1 14 0;
+#X connect 8 1 9 0;
+#X connect 25 1 26 0;
+#X connect 28 1 29 0;
+#X connect 32 1 33 0;

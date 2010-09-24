@@ -32,7 +32,7 @@ map<t_atom2, int> priorities;
 	#define A_OPEN  t_atomtype(0x1000) /* only between next() and parse() */
 	#define A_CLOSE t_atomtype(0x1001) /* only between next() and parse() */
 	#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
-	#define A_OP1   t_atomtype(0x1003) /* operator: unary prefix */
+	#define A_OP1   t_atomtype(0x1003) /* unary prefix operator or unary function */
 	#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
 
 	string args;
@@ -66,6 +66,11 @@ map<t_atom2, int> priorities;
 			tok = t_atom2(A_VAR,int(i-1+256*'f'));
 			if (int(inputs.size())<i) {inputs.resize(i); ninlets_set(i);}
 		}
+		else if (isalpha(*s)) {
+			char *e=(char *)s; while (isalpha(*e)) e++;
+			tok = symprintf("%.*s",e-s,s);
+			s=e;
+		}
 		else RAISE("syntax error at character '%c'",*s);
 		toks.push_back(tok);
 	}
@@ -81,10 +86,10 @@ map<t_atom2, int> priorities;
            	next(s);
            top:
 		switch (int(tok.a_type)) {
-		  case A_OP: {
+		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
 			if      (o==gensym("+")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("-")) {parse(level,t_atom2(A_OP1,gensym("inv+")));}
 			else if (o==gensym("!")) {parse(level,t_atom2(A_OP1,gensym("==")));}
 			else if (o==gensym("~")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
@@ -94,7 +99,7 @@ map<t_atom2, int> priorities;
 		  infix: // this section could become another method
 			next(s);
 			switch (int(tok.a_type)) {
-				case A_OP: {
+				case A_OP: { // binary
 					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
 					int priority2 =                       priorities[tok];
 					if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
@@ -106,6 +111,17 @@ map<t_atom2, int> priorities;
 						parse(level,tok);
 						if (prevop.a_type!=A_NULL) add(prevop);
 					}
+				} break;
+				case A_OPEN: { // function (1 arg only)
+					t_atom2 a = code.back(); code.pop_back();
+					if (a.a_type!=A_SYMBOL) {
+						string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+						RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
+					}
+					parse(level);
+					a.a_type = A_OP1;
+					if (!priorities[a]) RAISE("unknown function '%s'",a.a_symbol->s_name);
+					code.push_back(a);
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
 					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
@@ -159,9 +175,8 @@ map<t_atom2, int> priorities;
 			  } break;
 			  case A_OP1: {
 				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				  float b = stack.back(); stack.pop_back();
-				  float a = 0;
-				  op->map(1,&a,b);
+				  float a = stack.back(); stack.pop_back();
+				  op->map(1,&a,0.f);
 				  stack.push_back(a);
 			  } break;
 			  default: {
@@ -184,7 +199,8 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(+) = PR1(-) = PR1(~) = PR1(==) = 3; // unary "==" is "!"
+	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = 2;
+	PR1(+) = PR1(inv+) = PR1(~) = PR1(==) = 3; // unary "==" is "!"; unary "-" is "inv+"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
