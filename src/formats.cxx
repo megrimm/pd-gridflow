@@ -240,7 +240,7 @@ GRID_INLET(0) {
 		head.reserved = 0;
 		head.dimn = in.dim.n;
 		size_t sz = 4*in.dim.n;
-#define FRAISE(funk,f) RAISE("can't "#funk": %s",ferror(f));
+#define FRAISE(funk,f) RAISE("can't "#funk": %s",strerror(ferror(f)));
 		if (fwrite(&head,1,8,f    )< 8) FRAISE(fwrite,f);
 		if (fwrite(in.dim.v,1,sz,f)<sz) FRAISE(fwrite,f);
 	}
