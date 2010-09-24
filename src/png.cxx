@@ -114,7 +114,7 @@ GRID_INLET(0) {
 	//	color_type, channels, width, rowbytes, height, gamma);
 	for (int i=0; i<(int)height; i++) row_pointers[i] = image_data + i*rowbytes;
 	if ((uint32)rowbytes != width*channels)
-		RAISE("rowbytes mismatch: %d is not %d*%d=%d", rowbytes, width, channels, width*channels);
+		RAISE("rowbytes mismatch: %d is not %d*%d=%d", rowbytes, int(width), channels, int(width*channels));
 	png_read_image(png, row_pointers);
 	delete[] row_pointers;
 	row_pointers = 0;
