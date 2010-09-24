@@ -68,10 +68,15 @@ BUILTIN_SYMBOLS(FOO)
 
 string t_atom2::to_s() const {ostringstream os; os << *this; return os.str();}
 
+//#define ARRET kill(getpid(),SIGSTOP);
+#define ARRET /**/
+
 Barf::Barf(const char *s, ...) {
+    ARRET
     ostringstream os; va_list ap; va_start(ap,s  ); voprintf(os,s  ,ap);
     va_end(ap); text = os.str();}
 Barf::Barf(const char *file, int line, const char *func, const char *fmt, ...) {
+    ARRET
     ostringstream os; va_list ap; va_start(ap,fmt); voprintf(os,fmt,ap);
     // oprintf(os,"\n%s:%d:in `%s'",file,line,func);
     //oprintf(os,"\n%s",short_backtrace(2,7));
@@ -201,7 +206,7 @@ ostream &operator << (ostream &self, const t_atom &a) {
 		}
 		case A_NULL: case A_CANT: case A_OPEN: case A_CLOSE:
 			   self << "\\\\a(" << atomtype_to_s(a.a_type)                                                << ")"; break;
-		case A_OP: case A_VAR:
+		case A_VAR: case A_OP: case A_OP1:
 			   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_symbol   << std::dec << ")"; break;
 		default:   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
 	}
