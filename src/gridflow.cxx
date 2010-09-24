@@ -206,8 +206,9 @@ ostream &operator << (ostream &self, const t_atom &a) {
 		}
 		case A_NULL: case A_CANT: case A_OPEN: case A_CLOSE:
 			   self << "\\\\a(" << atomtype_to_s(a.a_type)                                                << ")"; break;
-		case A_VAR: case A_OP: case A_OP1:
-			   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << char(a.a_index>>8) << int(a.a_index&255) << std::dec << ")"; break;
+		case A_VAR:self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << char(a.a_index>>8) << int(a.a_index&255) << std::dec << ")"; break;
+		case A_OP:
+		case A_OP1:self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_symbol   << std::dec << ")"; break;
 		default:   self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << a.a_gpointer << std::dec << ")"; break;
 	}
 	return self;
