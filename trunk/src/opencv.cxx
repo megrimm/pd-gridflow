@@ -188,9 +188,9 @@ void set_atom (t_atom *a, CvScalar &s) {
 	t_binbuf *b = binbuf_new(); binbuf_addv(b,"ffff",s.val[0],s.val[1],s.val[2],s.val[3]);
 	set_atom(a,b);
 }
-CvPoint  convert (const t_atom &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}
-CvSize   convert (const t_atom &a, CvSize *)    {USELIST; return cvSize(  GETI(0),GETI(1));}
-CvScalar convert (const t_atom &a, CvScalar *)  {USELIST; return cvScalar(GETF(0),GETF(1),GETF(2),GETF(3));}
+CvPoint  convert (const t_atom2 &a, CvPoint *)   {USELIST; return cvPoint( GETI(0),GETI(1));}
+CvSize   convert (const t_atom2 &a, CvSize *)    {USELIST; return cvSize(  GETI(0),GETI(1));}
+CvScalar convert (const t_atom2 &a, CvScalar *)  {USELIST; return cvScalar(GETF(0),GETF(1),GETF(2),GETF(3));}
 
 /* ******************************** CLASSES ******************************** */
 

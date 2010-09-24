@@ -300,7 +300,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 //****************************************************************
 
-static inline const t_atom *convert (const t_atom &r, const t_atom **bogus) {return &r;}
+static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {return &r;}
 
 \class GFPrint : FObject {
 	string prefix;
