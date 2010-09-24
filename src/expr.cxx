@@ -40,7 +40,7 @@ map<t_symbol *, int> priorities;
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
-		else if (strchr("+-*/%&|^<>=",*s)) {
+		else if (strchr("+-*/%&|^<>=!",*s)) {
 			char t[3]={0,0,0};
 			t[0]=*s++;
 			if (*s==s[-1] || *s=='=') t[1]=*s++;
@@ -73,6 +73,7 @@ map<t_symbol *, int> priorities;
 				case A_OP: {
 					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop.a_symbol] : 42;
 					int priority2 =                       priorities[tok.a_symbol];
+					if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
 					if (priority1 <= priority2) {
 						code.push_back(prevop);
 						parse(s,level,tok);
