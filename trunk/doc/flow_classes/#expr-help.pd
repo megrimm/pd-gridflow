@@ -1,19 +1,19 @@
-#N canvas 467 70 632 582 10;
+#N canvas 467 70 632 641 10;
 #X obj 0 0 doc_h;
-#X obj 3 528 doc_also;
-#X obj 0 548 doc_f;
-#X obj 3 267 doc_c 1..;
-#X obj 14 297 doc_cc any;
-#X obj 97 297 doc_m cany <atom>;
-#X text 232 297 floats and symbols (and commas and semicolons) that
+#X obj 3 587 doc_also;
+#X obj 0 607 doc_f;
+#X obj 3 290 doc_c 1..;
+#X obj 14 320 doc_cc any;
+#X obj 97 320 doc_m cany <atom>;
+#X text 232 320 floats and symbols (and commas and semicolons) that
 will be joined together to form a string which will be interpreted
 in a manner quite similar to what [expr] does.;
-#X obj 14 385 doc_ii 0;
-#X obj 97 385 doc_m i0 bang;
-#X text 232 381 evaluate expression and output result.;
-#X obj 103 528 expr;
-#X obj 139 528 expr~;
-#X obj 181 528 fexpr~;
+#X obj 14 408 doc_ii 0;
+#X obj 97 408 doc_m i0 bang;
+#X text 232 408 evaluate expression and output result.;
+#X obj 103 587 expr;
+#X obj 139 587 expr~;
+#X obj 181 587 fexpr~;
 #X obj 98 43 #expr;
 #X text 135 43 computes the result of the formula(s) you write in it.
 ;
@@ -29,21 +29,23 @@ of () for overriding operator precedence.;
 like [%].;
 #X text 96 188 it supports $f1 \, $f2 \, $f3 \, etc.;
 #X text 96 203 it does not support $s1 \, $v1 \, etc.;
-#X obj 3 355 doc_i 1..;
-#X obj 97 402 doc_m i0 float;
-#X text 232 396 set value of $f1 and then do like bang.;
-#X obj 14 399 doc_ii other;
-#X obj 97 399 doc_m iother float;
-#X text 232 399 set value of any other $f variable \, such as $f2 \,
+#X obj 3 378 doc_i 1..;
+#X obj 97 430 doc_m i0 float;
+#X text 232 430 set value of $f1 and then do like bang.;
+#X obj 14 454 doc_ii other;
+#X obj 97 454 doc_m iother float;
+#X text 232 454 set value of any other $f variable \, such as $f2 \,
 $f3 \, etc. \; for example \, a float into inlet 6 will set $f7.;
-#X obj 3 440 doc_o 1..;
-#X obj 14 470 doc_oo any;
-#X obj 97 470 doc_m oany float;
-#X text 232 470 the results \, output from right to left \, even though
+#X obj 3 499 doc_o 1..;
+#X obj 14 529 doc_oo any;
+#X obj 97 529 doc_m oany float;
+#X text 232 529 the results \, output from right to left \, even though
 they get computed left-to-right. [#expr] makes a list of the results
 and then outputs it in reverse order.;
-#X text 97 219 it supports some functions that have a single arguments
-\, which are the following : sin cos exp log;
+#X text 96 219 it supports some functions that have a single argument
+\, which are the following : sin cos exp log tanh sqrt abs rand;
+#X text 118 248 [#expr rand($f1)] is the same as [expr random(0 \,
+$f1)];
 #X connect 1 1 10 0;
 #X connect 1 1 11 0;
 #X connect 1 1 12 0;
