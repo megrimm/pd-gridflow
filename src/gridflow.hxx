@@ -194,8 +194,8 @@ struct FObject;
 struct BFObject;
 struct Barf {
   string text;
-  Barf(const char *s, ...);
-  Barf(const char *file, int line, const char *func, const char *fmt, ...);
+  Barf(                                              const char *fmt, ...) __attribute__((format(printf,2,3)));
+  Barf(const char *file, int line, const char *func, const char *fmt, ...) __attribute__((format(printf,5,6)));
   void error(BFObject *self, int winlet, t_symbol *selector);
   void error(t_symbol *s, int argc, t_atom *argv);
   ~Barf() {}
