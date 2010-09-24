@@ -1,4 +1,4 @@
-#N canvas 545 149 533 523 10;
+#N canvas 629 127 533 523 10;
 #X obj 57 11 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X obj 57 47 display;
@@ -99,6 +99,22 @@
 #X text 327 182 -10;
 #X text 379 182 1;
 #X obj 296 330 #expr log($f1*3);
+#X obj 294 392 #expr weight($f1);
+#X floatatom 294 374 5 0 0 0 - - -;
+#X obj 294 411 display;
+#X floatatom 149 376 5 0 0 0 - - -;
+#X obj 149 413 display;
+#X obj 149 394 #expr tanh($f1);
+#X floatatom 49 376 5 0 0 0 - - -;
+#X obj 49 413 display;
+#X obj 49 394 #expr sqrt($f1);
+#X floatatom 49 436 5 0 0 0 - - -;
+#X obj 49 473 display;
+#X obj 49 454 #expr abs($f1);
+#X floatatom 152 436 5 0 0 0 - - -;
+#X obj 152 473 display;
+#X obj 152 454 #expr rand($f1);
+#X obj 307 460 ../doc/numop;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
 #X connect 3 0 5 0;
@@ -150,3 +166,13 @@
 #X connect 75 0 38 0;
 #X connect 76 0 80 0;
 #X connect 80 0 77 0;
+#X connect 81 0 83 0;
+#X connect 82 0 81 0;
+#X connect 84 0 86 0;
+#X connect 86 0 85 0;
+#X connect 87 0 89 0;
+#X connect 89 0 88 0;
+#X connect 90 0 92 0;
+#X connect 92 0 91 0;
+#X connect 93 0 95 0;
+#X connect 95 0 94 0;
