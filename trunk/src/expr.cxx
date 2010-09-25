@@ -209,7 +209,7 @@ void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
 	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs-) = PR1(rand) = 2;
-	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = PR(c2p) = PR(p2c) = 2;
+	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = 2;
 	PR1(+) = PR1(inv+) = PR1(~) = PR1(==) = 3; // unary "==" is "!"; unary "-" is "inv+"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
