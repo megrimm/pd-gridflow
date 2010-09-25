@@ -399,9 +399,9 @@ GRID_INLET(0) {
 	int na = in.dim.n;
 	int nb = r->dim.n;
 	int32 v[Dim::MAX_DIM];
-	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
+	if (na<1) RAISE("must have at least 1 dimension, got %d",na);
 	long nc = in.dim[na-1];
-	if (nc>nb) RAISE("got %d elements in last dimension, expecting <= %d", nc, nb);
+	if (nc>nb) RAISE("got %ld elements in last dimension, expecting <= %d",nc,nb);
 	long nnc = r->dim.prod(nc);
 	int lastindexable = nnc ? r->dim.prod()/nnc-1 : 0; // SIGFPE happened when r was especially empty (nnc==0)
 	int ngreatest = nt_greatest((T *)0);
@@ -473,8 +473,8 @@ GRID_INLET(1) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	long nn=r->dim.n, na=put_at->dim[0], nb=in.dim.n;
-	if (nn<na) RAISE("stored grid dims (%d) < length of put_at list (%d)",nn,na);
-	if (nn<nb) RAISE("stored grid dims (%d) < right inlet dims (%d)"     ,nn,nb);
+	if (nn<na) RAISE("stored grid dims (%ld) < length of put_at list (%ld)",nn,na);
+	if (nn<nb) RAISE("stored grid dims (%ld) < right inlet dims (%ld)"     ,nn,nb);
 	int32 sizeb[nn];
 	for (int i=0; i<nn; i++) {fromb[i]=0; sizeb[i]=1;}
 	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim.prod());
