@@ -67,7 +67,7 @@ map<t_atom2, int> priorities;
 			if (int(inputs.size())<i) {inputs.resize(i); ninlets_set(i);}
 		}
 		else if (isalpha(*s)) {
-			char *e=(char *)s; while (isalpha(*e)) e++;
+			char *e=(char *)s; while (isalnum(*e)) e++;
 			tok = symprintf("%.*s",e-s,s);
 			s=e;
 		}
@@ -81,18 +81,17 @@ map<t_atom2, int> priorities;
 			code.push_back(t_atom2(A_OP,gensym("^")));
 		} else code.push_back(a);
 	}
-	int parse (int level=0, t_atom2 prevop=t_atom2(A_NULL,0), int maxelems=1) {
-		int elems=1;
+	int parse (int level=0, bool comma=false, t_atom2 prevop=t_atom2(A_NULL,0)) {
 		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
            	next(s);
            top:
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if      (o==gensym("+")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(level,t_atom2(A_OP1,gensym("inv+")));}
-			else if (o==gensym("!")) {parse(level,t_atom2(A_OP1,gensym("==")));}
-			else if (o==gensym("~")) {parse(level,t_atom2(A_OP1,tok.a_symbol));}
+			if      (o==gensym("+")) {parse(level,comma,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("-")) {parse(level,comma,t_atom2(A_OP1,gensym("inv+")));}
+			else if (o==gensym("!")) {parse(level,comma,t_atom2(A_OP1,gensym("==")));}
+			else if (o==gensym("~")) {parse(level,comma,t_atom2(A_OP1,tok.a_symbol));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -107,9 +106,9 @@ map<t_atom2, int> priorities;
 					//post("priorities %d %d",priority1,priority2);
 					if (priority1 <= priority2) {
 						add(prevop);
-						parse(level,tok);
+						parse(level,comma,tok);
 					} else {
-						parse(level,tok);
+						parse(level,comma,tok);
 						if (prevop.a_type!=A_NULL) add(prevop);
 					}
 				} break;
@@ -119,19 +118,23 @@ map<t_atom2, int> priorities;
 						string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 						RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
 					}
-					parse(level);
-					t_symbol *o = a.a_symbol;
-					if   (a==gensym("abs"))                a=t_atom2(A_OP1,gensym("abs-"));
-					else if (priorities[t_atom2(A_OP1,o)]) a=t_atom2(A_OP1,o);
-					else if (priorities[t_atom2(A_OP ,o)]) a=t_atom2(A_OP ,o);
+					t_symbol *o = a.a_symbol; int e=1;
+					if   (a==gensym("abs"))                {a=t_atom2(A_OP1,gensym("abs-"));}
+					else if (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
+					else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
 					else RAISE("unknown function '%s'",o->s_name);
+					if (parse(level,true)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
 					code.push_back(a);
 				} break;
 				case A_CLOSE: case A_NULL: case A_SEMI: {
 					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
 					if (prevop.a_type!=A_NULL) add(prevop);
-					if (tok.a_type==A_SEMI) {add(tok); parse(level);}
+					if (tok.a_type==A_SEMI) {add(tok); int elems=parse(level); post("A_SEMI: elems=%d",elems);}
 					break;
+				}
+				case A_COMMA: {
+					if (!comma) RAISE("can't use comma in this context");
+					return 1+parse(level);
 				}
 				default: {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
@@ -146,13 +149,14 @@ map<t_atom2, int> priorities;
 		  }
 		};
 		//post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
-		return elems;
+		return 1;
 	}
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
 		args = join(argc,argv);
 		s = args.data();
-		parse();
+		int elems = parse();
+		post("A_NULL: elems=%d",elems);
 		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
@@ -199,12 +203,13 @@ map<t_atom2, int> priorities;
 		if (!winlet) _0_bang();
 	}
 };
-\end class {install("#expr",1,1,CLASS_NOPARENS);}
+\end class {install("#expr",1,1,CLASS_NOPARENS|CLASS_NOCOMMA);}
 
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
 	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs-) = PR1(rand) = 2;
+	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = PR(c2p) = PR(p2c) = 2;
 	PR1(+) = PR1(inv+) = PR1(~) = PR1(==) = 3; // unary "==" is "!"; unary "-" is "inv+"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
