@@ -729,6 +729,7 @@ struct AttrDecl {
 };
 typedef FObject *(*t_allocator)(BFObject *,MESSAGE3);
 #define CLASS_NOPARENS (1<<16)
+#define CLASS_NOCOMMA  (1<<17)
 struct FClass {
 	t_allocator allocator; // returns a new C++ object
 	void (*startup)(FClass *);
@@ -739,7 +740,7 @@ struct FClass {
 	t_symbol *name;
 	map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method
 	map<t_symbol *,AttrDecl *> attrs;
-	int flags; // flags: any combination of: CLASS_NOINLET, CLASS_NOPARENS
+	int flags; // flags: any combination of: CLASS_NOINLET, CLASS_NOPARENS, CLASS_NOCOMMA
 };
 
 void fclass_install(FClass *fc, FClass *super);
