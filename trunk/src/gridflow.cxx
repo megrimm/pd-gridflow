@@ -669,7 +669,8 @@ static void *BFObject_new (t_symbol *classsym, int ac, t_atom *at) {
 	for (int i=0; i<argc; i++) argv[i] = at[i];
 	if (qlass->flags&CLASS_NOPARENS) dont_handle_parens(argc,argv); else argc = handle_parens(argc,argv);
 	int j;
-	for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;
+	if (qlass->flags&CLASS_NOCOMMA) {for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) argv[j]=s_comma;}
+	else                            {for (j=0; j<argc; j++) if (argv[j].a_type==A_COMMA) break;}
 	bself->self = 0;
 	t_allocator alloc = fclasses[classsym]->allocator;
 	bself->te_binbuf = 0; //HACK: supposed to be 0 already (why this hack ? I don't recall)
