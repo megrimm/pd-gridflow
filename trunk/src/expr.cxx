@@ -34,7 +34,8 @@ map<t_atom2, int> priorities;
 	#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
 	#define A_OP1   t_atomtype(0x1003) /* unary prefix operator or unary function */
 	#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
-
+        //      A_SYMBOL for [v] names and [table] names; also used between next() and parse() for function names.
+        //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
 	string args;
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
@@ -153,7 +154,7 @@ map<t_atom2, int> priorities;
 	}
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
-		args = join(argc,argv);
+		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
 		int elems = parse();
 		post("A_NULL: elems=%d",elems);
@@ -172,21 +173,26 @@ map<t_atom2, int> priorities;
 			{string z = code[i].to_s(); post("interpreting %s",z.data());}
 			switch (int(code[i].a_type)) {
 			  case A_FLOAT: stack.push_back(code[i]); break;
+			  case A_SYMBOL: {
+				float f;
+				if (value_getfloat(code[i],&f)) RAISE("unknown variable '%s'",code[i].a_symbol->s_name);
+				stack.push_back(f);
+			  } break;
 			  case A_VAR: {
-				  stack.push_back(inputs[code[i].a_index & 255]);
+				stack.push_back(inputs[code[i].a_index & 255]);
 			  } break;
 			  case A_OP: {
-				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				  float b = stack.back(); stack.pop_back();
-				  float a = stack.back(); stack.pop_back();
-				  op->map(1,&a,b);
-				  stack.push_back(a);
+				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
+				float b = stack.back(); stack.pop_back();
+				float a = stack.back(); stack.pop_back();
+				op->map(1,&a,b);
+				stack.push_back(a);
 			  } break;
 			  case A_OP1: {
-				  Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				  float a = stack.back(); stack.pop_back();
-				  op->map(1,&a,0.f);
-				  stack.push_back(a);
+				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
+				float a = stack.back(); stack.pop_back();
+				op->map(1,&a,0.f);
+				stack.push_back(a);
 			  } break;
 			  default: {
 				string z = code[i].to_s();
@@ -199,6 +205,7 @@ map<t_atom2, int> priorities;
 		}
 	}
 	\decl n float (int winlet, float f) {
+		if (winlet>=int(inputs.size())) RAISE("$f%d does not exist here",winlet+1);
 		inputs[winlet] = f;
 		if (!winlet) _0_bang();
 	}
