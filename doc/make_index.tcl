@@ -15,7 +15,8 @@ foreach {k v} {
   grid     {what is a grid ?}
   image    {an image of pixels is just one way to use a grid}
   indexmap {goes with \[#store\]}
-  numop    {numops represent ways of combining two numbers (usually)}
+  numop1   {a numop1 is a transformation made on one number (usually)}
+  numop2   {a numop2 represents a way of combining two numbers (usually)}
   numtype  {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
 } {
   set k "doc_link $k 1"
