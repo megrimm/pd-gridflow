@@ -59,7 +59,7 @@ public:
 	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
 
-template <class O, class T> class OpLoops: public NumopOn<T> {
+template <class O, class T> class OpLoops: public Numop2On<T> {
 public:
   static inline T f(T a, T b) {return O::f(a,b);}
   #define FOO(I) as[I]=f(as[I],b);
@@ -146,20 +146,20 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 
 #define  OL(O,T) OpLoops<Y##O<T>,T>
 #define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
-#define DECL_OPON(L,O,T) NumopOn<T>( \
-	(NumopOn<T>::Map) L(O,T)::_map,  (NumopOn<T>::Zip) L(O,T)::_zip, \
-	(NumopOn<T>::Fold)L(O,T)::_fold, (NumopOn<T>::Scan)L(O,T)::_scan, \
+#define DECL_OPON(L,O,T) Numop2On<T>( \
+	(Numop2On<T>::Map) L(O,T)::_map,  (Numop2On<T>::Zip) L(O,T)::_zip, \
+	(Numop2On<T>::Fold)L(O,T)::_fold, (Numop2On<T>::Scan)L(O,T)::_scan, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECL_OPON_NOFOLD(L,O,T) NumopOn<T>( \
-	(NumopOn<T>::Map)L(O,T)::_map, (NumopOn<T>::Zip)L(O,T)::_zip, 0,0, \
+#define DECL_OPON_NOFOLD(L,O,T) Numop2On<T>( \
+	(Numop2On<T>::Map)L(O,T)::_map, (Numop2On<T>::Zip)L(O,T)::_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECLOP(        L,M,O,sym,flags,dim) Numop(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+#define DECLOP(        L,M,O,sym,flags,dim) Numop2(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64)),  M(L,O,float32)   NONLITE(,M(L,O,float64)),flags,dim)
-#define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
-	NONLITE(,M(L,O,int64)),NumopOn<float32>() NONLITE(,NumopOn<float64>()), flags,dim)
-//	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>()), flags,dim)
-#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop(sym,NumopOn<uint8>(),NumopOn<int16>(),NumopOn<int32>() \
-	NONLITE(,NumopOn<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),flags,dim)
+#define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop2(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+	NONLITE(,M(L,O,int64)),Numop2On<float32>() NONLITE(,Numop2On<float64>()), flags,dim)
+//	NONLITE(,M(L,O,int64),Numop2On<float32>(),Numop2On<float64>()), flags,dim)
+#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop2(sym,Numop2On<uint8>(),Numop2On<int16>(),Numop2On<int32>() \
+	NONLITE(,Numop2On<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),flags,dim)
 
 #define DECL_OP(                O,sym,flags)     DECLOP(         OL,DECL_OPON       ,O,sym,flags,1)
 #define DECL_OP_NOFLOAT(        O,sym,flags)     DECLOP_NOFLOAT( OL,DECL_OPON       ,O,sym,flags,1)
@@ -293,11 +293,11 @@ DEF_OP(c2p,     gf_c2p(a-b), 0, false, false)
 DEF_OP(p2c,     gf_p2c(a)+b, 0, false, false)
 #endif
 
-extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
+extern Numop2     op_table1[], op_table2[], op_table3[], op_table4[];
 extern const long op_table1_n, op_table2_n, op_table3_n, op_table4_n;
 
 #ifdef PASS1
-Numop op_table1[] = {
+Numop2 op_table1[] = {
 	DECL_OP(ignore, "ignore", OP_ASSOC),
 	DECL_OP(put, "put", OP_ASSOC),
 	DECL_OP(add, "+", OP_ASSOC|OP_COMM), // "LINV=sub"
@@ -317,7 +317,7 @@ Numop op_table1[] = {
 const long op_table1_n = COUNT(op_table1);
 #endif
 #ifdef PASS2
-Numop op_table2[] = {
+Numop2 op_table2[] = {
 	DECL_OP_NOFLOAT(gcd,  "gcd",  OP_ASSOC|OP_COMM),
 	DECL_OP_NOFLOAT(gcd2, "gcd2", OP_ASSOC|OP_COMM),
 	DECL_OP_NOFLOAT(lcm,  "lcm",  OP_ASSOC|OP_COMM),
@@ -353,7 +353,7 @@ int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 	int64 p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
 	return c<p/2?p:c>q/2?q:a-b; }
 
-Numop op_table3[] = {
+Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(sinmul, "sin*", 0),
 	DECL_OP_NOFOLD(cosmul, "cos*", 0),
 	DECL_OP_NOFOLD(atan,   "atan", 0),
@@ -387,7 +387,7 @@ Numop op_table3[] = {
 const long op_table3_n = COUNT(op_table3);
 #endif
 #ifdef PASS4
-Numop op_table4[] = {
+Numop2 op_table4[] = {
 	DECL_VOP(cx_mul,     "C.*",     OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_div,     "C./",     0,2),
@@ -436,7 +436,7 @@ void startup_numop2 () {
 	}
 // S:name; M:mode; F:replacement function;
 #define OVERRIDE_INT(S,M,F) { \
-	Numop *foo = op_dict[string(#S)]; \
+	Numop2 *foo = dynamic_cast<Numop2 *>(op_dict[string(#S)]); \
 	foo->on_uint8.M=F; \
 	foo->on_int16.M=F; \
 	foo->on_int32.M=F; }

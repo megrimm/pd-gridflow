@@ -239,6 +239,18 @@ bool t_atom2::operator == (const t_atom2 &b) {
 	string s = atomtype_to_s(a.a_type);
 	RAISE("don't know how to compare elements of type %s",s.data());
 }
+
+Numop *convert(const t_atom2 &x, Numop **bogus) {
+	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
+	string k = string(x.a_symbol->s_name);
+	if (op_dict.find(k)==op_dict.end()) {
+		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not '%s'", k.data());
+		return vop_dict[k];
+	} else return op_dict[k];
+}
+
+int Numop::arity () {RAISE("Numop::arity() : pure-virtual function called !");}
+
 //----------------------------------------------------------------
 // Dim
 

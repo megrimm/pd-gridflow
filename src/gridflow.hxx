@@ -510,8 +510,15 @@ inline void swap_endian(long n, float64 *data) {swap64(n,(uint64 *)data);}
 
 enum LeftRight { at_left, at_right };
 
-template <class T>
-struct NumopOn {
+template <class T> struct Numop1On {
+	// Function Vectorisations
+	typedef void (*Map)(         long n, T *as       ); Map map;
+	Numop1On(Map m) : map(m) {}
+	Numop1On()      : map(0) {}
+	Numop1On(const Numop1On &z) {map=z.map;}
+};
+
+template <class T> struct Numop2On {
 	// Function Vectorisations
 	typedef void (*Map )(         long n, T *as, T  b ); Map  map;
 	typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
@@ -523,47 +530,68 @@ struct NumopOn {
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
 	void (*neutral)(T *,LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
 	AlgebraicCheck is_neutral, is_absorbent;
-	NumopOn(Map m, Zip z, Fold f, Scan s,
+	Numop2On(Map m, Zip z, Fold f, Scan s,
 	void (*neu)(T *,LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
 		    map(m),zip(z),fold(f),scan(s),neutral(neu),is_neutral(n),is_absorbent(a) {}
-	NumopOn() : map(0),zip(0),fold(0),scan(0),neutral(0)  ,is_neutral(0),is_absorbent(0) {}
-	NumopOn(const NumopOn &z) {
+	Numop2On() : map(0),zip(0),fold(0),scan(0),neutral(0)  ,is_neutral(0),is_absorbent(0) {}
+	Numop2On(const Numop2On &z) {
 		map=z.map; zip=z.zip; fold=z.fold; scan=z.scan;
 		is_neutral = z.is_neutral; neutral = z.neutral;
 		is_absorbent = z.is_absorbent; }
 };
 
-// semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c)
-#define OP_ASSOC (1<<0)
-// abelian property: commutativity: f(a,b)=f(b,a)
-#define OP_COMM (1<<1)
-
 struct Numop {
 	const char *name;
 	t_symbol *sym;
+	int size; // 1 means regular numop; more than 1 means vecop
+	virtual int arity ();
+};
+
+struct Numop1 : Numop {
+	virtual int arity () {return 1;}
+	#define FOO(T) Numop1On<T> on_##T; Numop1On<T> *on(T &foo) { \
+		if (!on_##T.map) RAISE("operator %s does not support type "#T,name); else return &on_##T;}
+	EACH_NUMBER_TYPE(FOO)
+	#undef FOO
+	template <class T> inline void map(long n, T *as) {on(*as)->map(n,(T *)as);}
+	Numop1(const char *name_,
+		#define FOO(T) Numop1On<T> op_##T, 
+		EACH_NUMBER_TYPE(FOO)
+		#undef FOO
+	int size_) {
+		name=name_; size=size_;
+		#define FOO(T) on_##T = op_##T;
+		EACH_NUMBER_TYPE(FOO)
+		#undef FOO
+		sym=gensym((char *)name);
+	}
+};
+
+struct Numop2 : Numop {
+	virtual int arity () {return 2;}
 	int flags;
-	int size; // numop=1; vecop>1
-#define FOO(T) NumopOn<T> on_##T; \
-  NumopOn<T> *on(T &foo) { \
-    if (!on_##T.map) RAISE("operator %s does not support type "#T,name); \
-    return &on_##T;}
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
+		#define OP_ASSOC (1<<0) /* semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c) */
+		#define OP_COMM (1<<1)  /* abelian property: commutativity: f(a,b)=f(b,a) */
+	#define FOO(T) Numop2On<T> on_##T; Numop2On<T> *on(T &foo) { \
+		if (!on_##T.map) RAISE("operator %s does not support type "#T,name); else return &on_##T;}
+	EACH_NUMBER_TYPE(FOO)
+	#undef FOO
 	template <class T> inline void map(long n, T *as, T b)   {on(*as)->map(n,(T *)as,     b );}
 	template <class T> inline void zip(long n, T *as, T *bs) {on(*as)->zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, T *as, T *bs) {typename NumopOn<T>::Fold f = on(*as)->fold;
+	template <class T> inline void fold(long an, long n, T *as, T *bs) {typename Numop2On<T>::Fold f = on(*as)->fold;
 		if (f) f(an,n,as,bs); else RAISE("operator %s does not support fold",name);}
-	template <class T> inline void scan(long an, long n, T *as, T *bs) {typename NumopOn<T>::Scan f = on(*as)->scan;
+	template <class T> inline void scan(long an, long n, T *as, T *bs) {typename Numop2On<T>::Scan f = on(*as)->scan;
 		if (f) f(an,n,as,bs); else RAISE("operator %s does not support scan",name);}
 
-	Numop(const char *name_,
-#define FOO(T) NumopOn<T> op_##T, 
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	int flags_, int size_) : name(name_), flags(flags_), size(size_) {
-#define FOO(T) on_##T = op_##T;
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
+	Numop2(const char *name_,
+		#define FOO(T) Numop2On<T> op_##T, 
+		EACH_NUMBER_TYPE(FOO)
+		#undef FOO
+	int flags_, int size_) {
+		name=name_; size=size_; flags=flags_;
+		#define FOO(T) on_##T = op_##T;
+		EACH_NUMBER_TYPE(FOO)
+		#undef FOO
 		sym=gensym((char *)name);
 	}
 };
@@ -576,14 +604,13 @@ extern map<string,Numop *> vop_dict;
 static inline NumberTypeE convert(const t_atom2 &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type, got %s",x.to_s().data()); return NumberTypeE_find(string(x.a_symbol->s_name));}
 
-static Numop *convert(const t_atom2 &x, Numop **bogus) {
-	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
-	string k = string(x.a_symbol->s_name);
-	if (op_dict.find(k)==op_dict.end()) {
-		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not '%s'", k.data());
-		return vop_dict[k];
-	} else return op_dict[k];
-}
+       Numop  *convert(const t_atom2 &x, Numop  **bogus);
+static Numop1 *convert(const t_atom2 &x, Numop1 **bogus) {
+	Numop *nu = convert(x,(Numop **)0); if (nu->arity()!=1) RAISE("this Numop doesn't have one argument" );
+	return (Numop1 *)nu;}
+static Numop2 *convert(const t_atom2 &x, Numop2 **bogus) {
+	Numop *nu = convert(x,(Numop **)0); if (nu->arity()!=2) RAISE("this Numop doesn't have two arguments");
+	return (Numop2 *)nu;}
 
 // ****************************************************************
 struct Grid : CObject {
@@ -875,7 +902,7 @@ struct PtrOutlet {
 
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
-extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
+extern Numop2 *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #undef ARGS
 #define ARGS(OBJ) ((OBJ) ? (OBJ)->bself->binbuf_string().data() : "[???]")
