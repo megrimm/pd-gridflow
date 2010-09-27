@@ -14,8 +14,18 @@ version 9.12 (2010.09...):
  * [#many]: properties dialogue saves the spacing/margins settings to file
  * now ready for win64 builds
  * [args]: added attributes 'noloadbang' and 'noparens'
- * new classes: [#compress]
+ * internals: added CLASS_NOPARENS and CLASS_NOCOMMA about parsing of args
+ * added [#compress]
+ * added [#expr], a [expr]-lookalike (no grid support yet)
  * [gf/mouse_spy]: fixed init bug
+ * [#print]: fix maxrows (was a bit off)
+ * [#for]: step argument is now optional.
+ * [print] and [#print]: stop parsing parentheses in creation arguments
+ * [#unpack]: accept any grid containing as many elements as there are outlets
+ * numops: add float support to % swap% rem swaprem
+ * more detailed error messages of the form "expected this, got that"
+ * [#out grid] [parallel_port]: fix crash in case of error writing
+ * [#]: now defaults to [# ignore]
 
 version 9.11 (2010.09.07):
 

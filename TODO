@@ -1,9 +1,6 @@
 x = done
 
-[ ] [#for] default arg
-[ ] guard [for] against infinite loop
-[ ] merge << and pd_oprint please
-[ ] infinite loop in shoot.pd
+[ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
 [ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] document "f 1 2 3" as a shortcut grid literal
@@ -21,23 +18,21 @@ x = done
     [ ] abstraction component location lookup doesn't uplevel.
     [ ] [gf/object_bbox] doesn't support looking up a [receives] inside the abstraction because it is 'not patchable'
         and because it's not in the same canvas either
-    [ ] [gf/object_bbox] doesn't have a float index feature.
     [ ] [gf/object_bbox] can't look in a separate canvas (and it would be better if it could)
         and I want to use a 2nd order GOP to make things easier (avoid mistakes when saving abstraction)
+[ ] [#many]: spacing and margins don't get saved when properties-dialogue has not been used
+[ ] [#many]: doesn't show little star indicating that file hasn't been saved
 [ ] [#many]: add support for [hsl] and [vsl]
 [ ] figure out domain name transfer problem
-[ ] weird patchcord disappearance involving [gf/canvas_getpos] and [display]... never seen this before 2010.08.14
 [ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
-[ ] [doc_link]: add http support
 [ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
-[ ] répondre à re:[#spigot]
-[ ] [#from_pix]: rajouter un [pix_rgba] implicite...
+[ ] [#from_pix]: rajouter un [pix_rgba] implicite... convertTo(RGBA) ...
+[ ] [#from_pix, colorspace y]
 [ ] heat.pd still sucks (?)
 [ ] accelerate [#outer ignore (0)]
-[ ] [#print] maxrows doesn't work
 [ ] [lb]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
@@ -50,7 +45,6 @@ x = done
     generally, be a lot more careful about exception handling, because
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
     because if you assume an operation works, you're not really _using_ throw/catch.
-[ ] win32 color_correction.pd crash
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] turtle.pd
@@ -138,6 +132,11 @@ x = done
 [ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
 [ ] error: [#store] inlet 0 method float: must have at least 1 dimension.
     ~GridOut(): dex=0 prod=1
+[ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
+[ ] merge << and pd_oprint please
+[ ] infinite loop in shoot.pd
+[ ] add more stuff to [#expr]...
+[ ] change numop to numop2 all over the documentation
 ---------------------------------------------------------CIBLE--------------------------------------------------
 later
 
@@ -171,8 +170,6 @@ while running #to~-help.pd :
 [ ] see [comment] from cyclone
 [ ] lqtgavl
 [ ] Dim::T = intptr_t
-[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
-[ ] win32 x11
 
 [ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
     Program received signal SIGSEGV, Segmentation fault.
@@ -190,9 +187,14 @@ Not Important
 //DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 //DEF_OP(pingpong,  
 
+Win32/Win64
+[ ] win32 color_correction.pd crash
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[ ] win32 x11
+
 OpenCV
 [ ] cvOpticalFlow
-[ ] [cv.split]
+[ ] [cv/#Split]
 [ ] cvEstimateRigidTransform
 [ ] cvApproxPoly pour un seul poly à la fois
 [ ] cvMeanShift, cvCamShift (?)
@@ -226,7 +228,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] re-enable int64,float64
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
-[ ] look into -ftree-vectorize
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
@@ -277,9 +278,8 @@ Architecture
 
 Computation Objects
 [ ] #counter (similar to #for)
-[ ] zero option in #convolve (as an alternative to wraparound)
-[ ] #conv (simpler #convolve) should allow n-D convolution
-[ ] #convolve rewritten as combination of #conv+#border ?
+[ ] zero option in #convolve (as an alternative to wraparound)... sort of a built-in #border
+[ ] #convolve should allow n-D convolution
 [ ] #store: option zero (?)
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
