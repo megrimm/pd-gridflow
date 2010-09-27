@@ -48,7 +48,7 @@ map<t_atom2, int> priorities;
 	vector<t_atom2> inputs;
 	t_atom2 tok;   // which token was last produced by next()
 	const char *s; // an iterator through the args variable
-	void next (const char *&s) {
+	void next () {
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
@@ -90,7 +90,7 @@ map<t_atom2, int> priorities;
 	}
 	// context: 0=outside, 1=plain parens; 2=func parens; 3=brackets
 	int parse (int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
-           	next(s);
+           	next();
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
@@ -103,7 +103,7 @@ map<t_atom2, int> priorities;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			add(tok);
 		  infix: // this section could become another method
-			next(s);
+			next();
 			switch (int(tok.a_type)) {
 			  case A_OP: { // binary
 				int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
