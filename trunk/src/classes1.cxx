@@ -50,7 +50,7 @@ public: template <class T>
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
 
-Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
+Numop2 *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
 
 static CONSTRAINT(expect_dim_dim_list) {if (d.n!=1) RAISE("dimension list should be Dim[n], not %s",d.to_s());}
 //static CONSTRAINT(expect_min_one_dim) {if (d.n<1 ) RAISE("minimum 1 dimension");}
@@ -337,7 +337,7 @@ GRID_INLET(0) {
 \class GridStore : FObject {
 	P<Grid> r; // can't be \attr (why ?)
 	P<Grid> put_at; // can't be //\attr (why ?)
-	\attr Numop *op;
+	\attr Numop2 *op;
 	int32 *wdex ; // temporary buffer, copy of put_at
 	int32 *fromb;
 	int32 *to2  ;
@@ -522,9 +522,9 @@ GRID_INLET(1) {
 //{ Dim[*As]<T> -> Dim[*As]<T> } or
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
 \class GridOp : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op; // should allow Numop1 too
 	P<Grid> r;
-	\constructor (Numop *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(Dim(),int32_e,true);}
+	\constructor (Numop2 *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(Dim(),int32_e,true);}
 	\grin 0
 	\grin 1
 };
@@ -567,9 +567,9 @@ GRID_INPUT2(1,r) {} GRID_END
 
 //****************************************************************
 \class GridFold : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	\attr P<Grid> seed;
-	\constructor (Numop *op) {this->op=op;}
+	\constructor (Numop2 *op) {this->op=op;}
 	\grin 0
 };
 
@@ -612,9 +612,9 @@ GRID_INLET(0) {
 \end class {install("#fold",1,1);}
 
 \class GridScan : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	\attr P<Grid> seed;
-	\constructor (Numop *op) {this->op = op;}
+	\constructor (Numop2 *op) {this->op = op;}
 	\grin 0
 };
 
@@ -655,8 +655,8 @@ GRID_INLET(0) {
 // result is a Dim[*si,   *sk,*ss]<T>
 // Currently *ss can only be = Dim[]
 \class GridInner : FObject {
-	\attr Numop *op;
-	\attr Numop *fold;
+	\attr Numop2 *op;
+	\attr Numop2 *fold;
 	\attr P<Grid> seed;
 	P<Grid> r;
 	P<Grid> r2; // temporary
@@ -777,9 +777,9 @@ GRID_INPUT(1,r) {} GRID_END
 /* **************************************************************** */
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 \class GridOuter : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	P<Grid> r;
-	\constructor (Numop *op, Grid *r=0) {
+	\constructor (Numop2 *op, Grid *r=0) {
 		this->op = op;
 		this->r = r ? r : new Grid(Dim(),int32_e,true);
 	}
@@ -974,7 +974,7 @@ GRID_INPUT(1,dim_grid) {
 
 \end class {install("#redim",2,1); add_creator("@redim");}
 
-#define OP(x) op_dict[string(#x)]
+#define OP(x) dynamic_cast<Numop2 *>(op_dict[string(#x)])
 void startup_classes1 () {
 	op_add = OP(+);
 	op_sub = OP(-);

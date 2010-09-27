@@ -133,7 +133,7 @@ def make_fun_map(op,type)
 		puts "emms"
 	}
 	$decls << "void #{s}(long,#{type}*,#{type});\n"
-	$install << "op_dict[string(\"#{sym}\")]->on_#{type}.map = #{s};\n"
+	$install << "((Numop2 *)op_dict[string(\"#{sym}\")])->on_#{type}.map = #{s};\n"
 	$count += 1
 end
 
@@ -183,7 +183,7 @@ def make_fun_zip(op,type)
 	}
 	#$decls << "void #{s}(long,#{type}*,#{type}*,#{type}*);\n"
 	$decls << "void #{s}(long,#{type}*,#{type}*);\n"
-	$install << "op_dict[string(\"#{sym}\")]->on_#{type}.zip = #{s};\n"
+	$install << "((Numop2 *)op_dict[string(\"#{sym}\")])->on_#{type}.zip = #{s};\n"
 	$count += 1
 end
 

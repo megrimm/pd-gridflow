@@ -596,8 +596,8 @@ static CONSTRAINT(expect_convolution_matrix) {
 	struct  PlanEntry {long y; long x; bool neutral;
 		PlanEntry (long y, long x, bool neutral) : y(y), x(x), neutral(neutral) {}
 	};
-	\attr Numop *op;
-	\attr Numop *fold;
+	\attr Numop2 *op;
+	\attr Numop2 *fold;
 	\attr P<Grid> seed;
 	\attr P<Grid> b;
 	\attr bool wrap;
@@ -909,7 +909,7 @@ OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	RAISE("unknown OmitMode '%s' (want none or last or odd)",s->s_name);
 }
 \class DrawPolygon : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	\attr P<Grid> color;
 	\attr P<Grid> polygon;
 	\attr DrawMode draw;
@@ -918,7 +918,7 @@ OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	P<Grid> lines;
 	int lines_start;
 	int lines_stop;
-	\constructor (Numop *op=op_put, Grid *color=0, Grid *polygon=0) {
+	\constructor (Numop2 *op=op_put, Grid *color=0, Grid *polygon=0) {
 		draw=DRAW_FILL;
 		omit=OMIT_NONE;
 		this->color  .but(expect_one_dim);
@@ -1050,12 +1050,12 @@ static CONSTRAINT(expect_position) {
 }
 
 \class DrawImage : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	\attr P<Grid> image;
 	\attr P<Grid> position;
 	\attr bool alpha;
 	\attr bool tile;
-	\constructor (Numop *op=op_put, Grid *image=0, Grid *position=0) {
+	\constructor (Numop2 *op=op_put, Grid *image=0, Grid *position=0) {
 		alpha=false; tile=false;
 		this->op = op;
 		this->position.but(expect_position);
@@ -1155,13 +1155,13 @@ GRID_INPUT(2,position) {} GRID_END
 
 /* NOT FINISHED */
 \class GridDrawPoints : FObject {
-	\attr Numop *op;
+	\attr Numop2 *op;
 	\attr P<Grid> color;
 	\attr P<Grid> points;
 	\grin 0
 	\grin 1 int32
 	\grin 2 int32
-	\constructor (Numop *op=op_put, Grid *color=0, Grid *points=0) {
+	\constructor (Numop2 *op=op_put, Grid *color=0, Grid *points=0) {
 		this->op = op;
 		this->color  = color  ? color  : new Grid(Dim(),int32_e,true);
 		this->points = points ? points : new Grid(Dim(),int32_e,true);
@@ -1299,7 +1299,7 @@ GRID_INLET(0) {
 static CONSTRAINT(expect_min_one_dim) {
 	if (d.n<1) RAISE("expecting at least one dimension, got %s",d.to_s());}
 
-#define OP(x) op_dict[string(#x)]
+#define OP(x) dynamic_cast<Numop2 *>(op_dict[string(#x)])
 \class GridClusterAvg : FObject {
 	\attr int numClusters;
 	\attr P<Grid> r;
