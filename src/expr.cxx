@@ -43,14 +43,12 @@ map<t_atom2, int> priorities;
         //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
         /* end */
 	string args;
-	vector<t_atom2> toks;
+	//vector<t_atom2> toks;
 	vector<t_atom2> code;
 	vector<t_atom2> inputs;
 	t_atom2 tok;   // which token was last produced by next()
-	int prev;      // look-ahead is done by next() followed by prev++;
 	const char *s; // an iterator through the args variable
 	void next (const char *&s) {
-		if (prev) {tok=toks[toks.size()-prev]; prev--; return;}
 		while (*s && isspace(*s)) s++;
 		if (!*s) tok.a_type=A_NULL;
 		else if (isdigit(*s) || *s=='.') {char *e; tok = strtof(s,&e); s=(const char *)e;}
@@ -81,7 +79,7 @@ map<t_atom2, int> priorities;
 			s=e;
 		}
 		else RAISE("syntax error at character '%c'",*s);
-		toks.push_back(tok);
+		//toks.push_back(tok);
 	}
 	void add (const t_atom2 &a) {
 		if (a.a_type==A_SEMI) {noutlets_set(noutlets+1); return;}
@@ -168,11 +166,10 @@ map<t_atom2, int> priorities;
 		return 1;
 	}
 	\constructor (...) {
-		prev=0; //toks.clear(); code.clear();
+		//toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
-		int elems = parse(0);
-		post("A_NULL: elems=%d",elems);
+		parse(0);
 		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
