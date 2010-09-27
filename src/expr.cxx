@@ -37,7 +37,6 @@ map<t_atom2, int> priorities;
 	#define A_VAR      t_atomtype(0x1002) /* for $f1-style variables, not other variables */
 	#define A_OP1      t_atomtype(0x1003) /* unary prefix operator or unary function */
 	#define A_OP       t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
-	//#define A_VAR_V    t_atomtype(0x1005) /* [v] read */
 	#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
 	/* used for both */
         //      A_SYMBOL for [v] names and [table] names; also used between next() and parse() for function names.
@@ -195,15 +194,13 @@ map<t_atom2, int> priorities;
 			//{string z = code[i].to_s(); post("interpreting %s",z.data());}
 			switch (int(code[i].a_type)) {
 			  case A_FLOAT: case A_SYMBOL: stack.push_back(code[i]); break;
-			  //case A_VAR_V: {
-			  //} break;
 			  case A_VAR_A: {
 				int i = lookup(stack.back()); stack.pop_back();
-				t_symbol *t = stack.back(); stack.pop_back();
+				t_symbol *t = stack.back();
 				t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
 				int npoints; t_word *vec;
 				if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
-				stack.push_back(npoints ? vec[clip(i,0,npoints-1)].w_float : 0);
+				stack.back() = npoints ? vec[clip(i,0,npoints-1)].w_float : 0;
 			  } break;
 			  case A_VAR: {
 				stack.push_back(inputs[code[i].a_index & 255]);
@@ -211,15 +208,15 @@ map<t_atom2, int> priorities;
 			  case A_OP: {
 				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
 				float b = lookup(stack.back()); stack.pop_back();
-				float a = lookup(stack.back()); stack.pop_back();
+				float a = lookup(stack.back());
 				op->map(1,&a,b);
-				stack.push_back(a);
+				stack.back() = a;
 			  } break;
 			  case A_OP1: {
 				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				float a = lookup(stack.back()); stack.pop_back();
+				float a = lookup(stack.back());
 				op->map(1,&a,0.f);
-				stack.push_back(a);
+				stack.back() = a;
 			  } break;
 			  default: {
 				string z = code[i].to_s();
