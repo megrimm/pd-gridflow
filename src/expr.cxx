@@ -27,10 +27,12 @@ bool operator < (const t_atom2 &a, const t_atom2 &b) {
 	
 map<t_atom2, int> priorities;
 
-// FOR FUTURE USE
 \class GFExpr : FObject {
-	#define A_OPEN  t_atomtype(0x1000) /* only between next() and parse() */
-	#define A_CLOSE t_atomtype(0x1001) /* only between next() and parse() */
+	/* only between next() and parse() */
+	#define A_OPEN  t_atomtype(0x1000) // '('
+	#define A_CLOSE t_atomtype(0x1001) // ')'
+	#define A_BRA   t_atomtype(0x1008) // '['
+	#define A_KET   t_atomtype(0x1009) // ']'
 	#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
 	#define A_OP1   t_atomtype(0x1003) /* unary prefix operator or unary function */
 	#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
@@ -56,6 +58,8 @@ map<t_atom2, int> priorities;
 		}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
+		else if (*s=='[') {s++; tok.a_type=A_BRA;}
+		else if (*s==']') {s++; tok.a_type=A_KET;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
 		else if (*s==',') {s++; tok.a_type=A_COMMA;}
 		else if (*s=='$') {
@@ -82,17 +86,16 @@ map<t_atom2, int> priorities;
 			code.push_back(t_atom2(A_OP,gensym("^")));
 		} else code.push_back(a);
 	}
-	int parse (int level=0, bool comma=false, t_atom2 prevop=t_atom2(A_NULL,0)) {
-		//post("%*sbegin (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
+	// context: 0=outside, 1=plain parens; 2=func parens; 3=brackets
+	int parse (int level, int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
            	next(s);
-           top:
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if      (o==gensym("+")) {parse(level,comma,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(level,comma,t_atom2(A_OP1,gensym("inv+")));}
-			else if (o==gensym("!")) {parse(level,comma,t_atom2(A_OP1,gensym("==")));}
-			else if (o==gensym("~")) {parse(level,comma,t_atom2(A_OP1,tok.a_symbol));}
+			if      (o==gensym("+")) {parse(level,context,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("-")) {parse(level,context,t_atom2(A_OP1,gensym("inv+")));}
+			else if (o==gensym("!")) {parse(level,context,t_atom2(A_OP1,gensym("==")));}
+			else if (o==gensym("~")) {parse(level,context,t_atom2(A_OP1,tok.a_symbol));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -100,63 +103,69 @@ map<t_atom2, int> priorities;
 		  infix: // this section could become another method
 			next(s);
 			switch (int(tok.a_type)) {
-				case A_OP: { // binary
-					int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
-					int priority2 =                       priorities[tok];
-					if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
-					//post("priorities %d %d",priority1,priority2);
-					if (priority1 <= priority2) {
-						add(prevop);
-						parse(level,comma,tok);
-					} else {
-						parse(level,comma,tok);
-						if (prevop.a_type!=A_NULL) add(prevop);
-					}
-				} break;
-				case A_OPEN: { // function (1 arg only)
-					t_atom2 a = code.back(); code.pop_back();
-					if (a.a_type!=A_SYMBOL) {
-						string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-						RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
-					}
-					t_symbol *o = a.a_symbol; int e=1;
-					if   (a==gensym("abs"))                {a=t_atom2(A_OP1,gensym("abs-"));}
-					else if (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
-					else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
-					else RAISE("unknown function '%s'",o->s_name);
-					if (parse(level,true)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
-					code.push_back(a);
-				} break;
-				case A_CLOSE: case A_NULL: case A_SEMI: {
-					if (level && int(tok.a_type)!=A_CLOSE) RAISE("missing ')' %d times",level);
-					if (prevop.a_type!=A_NULL) add(prevop);
-					if (tok.a_type==A_SEMI) {add(tok); int elems=parse(level); post("A_SEMI: elems=%d",elems);}
-					break;
-				}
-				case A_COMMA: {
-					if (!comma) RAISE("can't use comma in this context");
-					return 1+parse(level);
-				}
-				default: {
+			  case A_OP: { // binary
+				int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
+				int priority2 =                         priorities[tok];
+				if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
+				if (priority1 <= priority2) {add(prevop); parse(level,context,tok);}
+				else {parse(level,context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
+			  } break;
+			  case A_OPEN: { // function (1 arg only)
+				t_atom2 a = code.back(); code.pop_back();
+				if (a.a_type!=A_SYMBOL) {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-					RAISE("syntax error (%db) tok=%s type=%s",level,z.data(),zt.data());
+					RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
 				}
+				t_symbol *o = a.a_symbol; int e=1;
+				if   (a==gensym("abs"))                {a=t_atom2(A_OP1,gensym("abs-"));}
+				else if (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
+				else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
+				else RAISE("unknown function '%s'",o->s_name);
+				if (parse(level,2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
+				code.push_back(a);
+			  } break;
+			  case A_CLOSE: {
+				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this pojnt");
+				if (prevop.a_type!=A_NULL) add(prevop);
+			  } break;
+			  case A_NULL: case A_SEMI: {
+				if (level) RAISE("forgot to close parens or brackets %d times",level);
+				if (prevop.a_type!=A_NULL) add(prevop);
+				if (tok.a_type==A_SEMI) {add(tok); int elems=parse(level,0); post("A_SEMI: elems=%d",elems);}
+			  } break;
+			  case A_BRA: {
+				t_atom2 a = code.back(); code.pop_back();
+				if (a.a_type!=A_SYMBOL) {
+					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+					RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
+				}
+			  }  break;
+			  case A_KET: {
+				if (context!=3) RAISE("can't close a bracket at this level");
+			  }  break;
+			  case A_COMMA: {
+			  	if (context!=2) RAISE("can't use comma in this context");
+				return 1+parse(level,context);
+			  }
+			  default: {
+				string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
+				RAISE("syntax error (%db) tok=%s type=%s",level,z.data(),zt.data());
+			  }
 			}
 		  break;
-		  case A_OPEN: {parse(level+1); goto infix;}
+		  case A_OPEN: {parse(level+1,1); goto infix;}
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 			  RAISE("syntax error (%da) tok=%s type=%s",level,z.data(),zt.data());
 		  }
 		};
-		//post("%*send (prevop=%s)",level*2,"",prevop?prevop->s_name:"(null)");
 		return 1;
 	}
 	\constructor (...) {
 		prev=0; //toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
-		int elems = parse();
+		int elems = parse(0,0);
 		post("A_NULL: elems=%d",elems);
 		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
