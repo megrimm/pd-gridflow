@@ -415,12 +415,11 @@ const long op_table4_n = COUNT(op_table4);
 #ifdef PASS1
 map<string,NumberType *> number_type_dict;
 map<string,Numop *> op_dict;
-map<string,Numop *> vop_dict;
 void startup_numop2 () {
-	INIT_TABLE( op_dict,op_table1)
-	INIT_TABLE( op_dict,op_table2)
-	INIT_TABLE( op_dict,op_table3)
-	INIT_TABLE(vop_dict,op_table4)
+	INIT_TABLE(op_dict,op_table1)
+	INIT_TABLE(op_dict,op_table2)
+	INIT_TABLE(op_dict,op_table3)
+	INIT_TABLE(op_dict,op_table4)
 	INIT_TABLE(number_type_dict,number_type_table)
 
 	for (int i=0; i<COUNT(number_type_table); i++) {
