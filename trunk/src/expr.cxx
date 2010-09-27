@@ -29,15 +29,20 @@ map<t_atom2, int> priorities;
 
 \class GFExpr : FObject {
 	/* only between next() and parse() */
-	#define A_OPEN  t_atomtype(0x1000) // '('
-	#define A_CLOSE t_atomtype(0x1001) // ')'
-	#define A_BRA   t_atomtype(0x1008) // '['
-	#define A_KET   t_atomtype(0x1009) // ']'
-	#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
-	#define A_OP1   t_atomtype(0x1003) /* unary prefix operator or unary function */
-	#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
+	#define A_OPEN    t_atomtype(0x1000) // '('
+	#define A_CLOSE   t_atomtype(0x1001) // ')'
+	#define A_SQOPEN  t_atomtype(0x1008) // '['
+	#define A_SQCLOSE t_atomtype(0x1009) // ']'
+	/* used for bytecode */
+	#define A_VAR      t_atomtype(0x1002) /* for $f1-style variables, not other variables */
+	#define A_OP1      t_atomtype(0x1003) /* unary prefix operator or unary function */
+	#define A_OP       t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
+	//#define A_VAR_V    t_atomtype(0x1005) /* [v] read */
+	#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
+	/* used for both */
         //      A_SYMBOL for [v] names and [table] names; also used between next() and parse() for function names.
         //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
+        /* end */
 	string args;
 	vector<t_atom2> toks;
 	vector<t_atom2> code;
@@ -58,8 +63,8 @@ map<t_atom2, int> priorities;
 		}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
-		else if (*s=='[') {s++; tok.a_type=A_BRA;}
-		else if (*s==']') {s++; tok.a_type=A_KET;}
+		else if (*s=='[') {s++; tok.a_type=A_SQOPEN;}
+		else if (*s==']') {s++; tok.a_type=A_SQCLOSE;}
 		else if (*s==';') {s++; tok.a_type=A_SEMI;}
 		else if (*s==',') {s++; tok.a_type=A_COMMA;}
 		else if (*s=='$') {
@@ -87,15 +92,15 @@ map<t_atom2, int> priorities;
 		} else code.push_back(a);
 	}
 	// context: 0=outside, 1=plain parens; 2=func parens; 3=brackets
-	int parse (int level, int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
+	int parse (int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
            	next(s);
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if      (o==gensym("+")) {parse(level,context,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(level,context,t_atom2(A_OP1,gensym("inv+")));}
-			else if (o==gensym("!")) {parse(level,context,t_atom2(A_OP1,gensym("==")));}
-			else if (o==gensym("~")) {parse(level,context,t_atom2(A_OP1,tok.a_symbol));}
+			if      (o==gensym("+")) {parse(context,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("inv+")));}
+			else if (o==gensym("!")) {parse(context,t_atom2(A_OP1,gensym("==")));}
+			else if (o==gensym("~")) {parse(context,t_atom2(A_OP1,tok.a_symbol));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -107,56 +112,58 @@ map<t_atom2, int> priorities;
 				int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
 				int priority2 =                         priorities[tok];
 				if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
-				if (priority1 <= priority2) {add(prevop); parse(level,context,tok);}
-				else {parse(level,context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
+				if (priority1 <= priority2) {add(prevop); parse(context,tok);}
+				else {parse(context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
 			  } break;
-			  case A_OPEN: { // function (1 arg only)
+			  case A_OPEN: { // function (1 or 2 args)
 				t_atom2 a = code.back(); code.pop_back();
 				if (a.a_type!=A_SYMBOL) {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-					RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
+					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
 				t_symbol *o = a.a_symbol; int e=1;
 				if   (a==gensym("abs"))                {a=t_atom2(A_OP1,gensym("abs-"));}
 				else if (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
 				else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
 				else RAISE("unknown function '%s'",o->s_name);
-				if (parse(level,2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
+				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
 				code.push_back(a);
 			  } break;
 			  case A_CLOSE: {
-				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this pojnt");
+				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this point");
 				if (prevop.a_type!=A_NULL) add(prevop);
 			  } break;
 			  case A_NULL: case A_SEMI: {
-				if (level) RAISE("forgot to close parens or brackets %d times",level);
+				if (context!=0) RAISE("unexpected end of expression");
 				if (prevop.a_type!=A_NULL) add(prevop);
-				if (tok.a_type==A_SEMI) {add(tok); int elems=parse(level,0); post("A_SEMI: elems=%d",elems);}
+				if (tok.a_type==A_SEMI) {add(tok); int elems=parse(0); post("A_SEMI: elems=%d",elems);}
 			  } break;
-			  case A_BRA: {
-				t_atom2 a = code.back(); code.pop_back();
+			  case A_SQOPEN: {
+				t_atom2 a = code.back();
 				if (a.a_type!=A_SYMBOL) {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-					RAISE("syntax error (%dc) tok=%s type=%s",level,z.data(),zt.data());
+					RAISE("syntax error (d) tok=%s type=%s",z.data(),zt.data());
 				}
+				parse(3);
+				code.push_back(t_atom2(A_VAR_A,0));
 			  }  break;
-			  case A_KET: {
-				if (context!=3) RAISE("can't close a bracket at this level");
+			  case A_SQCLOSE: {
+				if (context!=3) RAISE("can't close a bracket at this point");
 			  }  break;
 			  case A_COMMA: {
 			  	if (context!=2) RAISE("can't use comma in this context");
-				return 1+parse(level,context);
+				return 1+parse(context);
 			  }
 			  default: {
 				string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-				RAISE("syntax error (%db) tok=%s type=%s",level,z.data(),zt.data());
+				RAISE("syntax error (b) tok=%s type=%s",z.data(),zt.data());
 			  }
 			}
 		  break;
-		  case A_OPEN: {parse(level+1,1); goto infix;}
+		  case A_OPEN: {parse(1); goto infix;}
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
-			  RAISE("syntax error (%da) tok=%s type=%s",level,z.data(),zt.data());
+			  RAISE("syntax error (a) tok=%s type=%s",z.data(),zt.data());
 		  }
 		};
 		return 1;
@@ -165,41 +172,52 @@ map<t_atom2, int> priorities;
 		prev=0; //toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
-		int elems = parse(0,0);
+		int elems = parse(0);
 		post("A_NULL: elems=%d",elems);
 		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
 		if (*s) RAISE("expression not finished parsing");
 	}
+	t_atom2 lookup (const t_atom2 &a) {
+		if (a.a_type!=A_SYMBOL) return a;
+		float f; t_symbol *s=a;
+		if (value_getfloat(s,&f)) RAISE("unknown variable '%s'",s->s_name);
+		return f;//stack.push_back(f);
+	}
 	\decl 0 bang () {
 		//post("----------------------------------------------------------------");
 		//string t = join(toks.size(),toks.data()); post("#expr toks: %s",t.data());
 		//string c = join(code.size(),code.data()); post("#expr code: %s",c.data());
-		vector<float> stack;
+		vector<t_atom2> stack;
 		int n = code.size();
 		for (int i=0; i<n; i++) {
-			{string z = code[i].to_s(); post("interpreting %s",z.data());}
+			//{string z = code[i].to_s(); post("interpreting %s",z.data());}
 			switch (int(code[i].a_type)) {
-			  case A_FLOAT: stack.push_back(code[i]); break;
-			  case A_SYMBOL: {
-				float f;
-				if (value_getfloat(code[i],&f)) RAISE("unknown variable '%s'",code[i].a_symbol->s_name);
-				stack.push_back(f);
+			  case A_FLOAT: case A_SYMBOL: stack.push_back(code[i]); break;
+			  //case A_VAR_V: {
+			  //} break;
+			  case A_VAR_A: {
+				int i = lookup(stack.back()); stack.pop_back();
+				t_symbol *t = stack.back(); stack.pop_back();
+				t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
+				int npoints; t_word *vec;
+				if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
+				stack.push_back(npoints ? vec[clip(i,0,npoints-1)].w_float : 0);
 			  } break;
 			  case A_VAR: {
 				stack.push_back(inputs[code[i].a_index & 255]);
 			  } break;
 			  case A_OP: {
 				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				float b = stack.back(); stack.pop_back();
-				float a = stack.back(); stack.pop_back();
+				float b = lookup(stack.back()); stack.pop_back();
+				float a = lookup(stack.back()); stack.pop_back();
 				op->map(1,&a,b);
 				stack.push_back(a);
 			  } break;
 			  case A_OP1: {
 				Numop *op = TO(Numop *,t_atom2(code[i].a_symbol->s_name));
-				float a = stack.back(); stack.pop_back();
+				float a = lookup(stack.back()); stack.pop_back();
 				op->map(1,&a,0.f);
 				stack.push_back(a);
 			  } break;

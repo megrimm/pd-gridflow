@@ -1,19 +1,19 @@
-#N canvas 467 25 632 642 10;
+#N canvas 467 24 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 3 671 doc_also;
-#X obj 0 691 doc_f;
-#X obj 3 383 doc_c 1..;
-#X obj 14 413 doc_cc any;
-#X obj 97 413 doc_m cany <atom>;
-#X text 232 413 floats and symbols (and commas and semicolons) that
+#X obj 3 685 doc_also;
+#X obj 0 705 doc_f;
+#X obj 3 425 doc_c 1..;
+#X obj 14 455 doc_cc any;
+#X obj 97 455 doc_m cany <atom>;
+#X text 232 455 floats and symbols (and commas and semicolons) that
 will be joined together to form a string which will be interpreted
 in a manner quite similar to what [expr] does.;
-#X obj 14 501 doc_ii 0;
-#X obj 97 501 doc_m i0 bang;
-#X text 232 501 evaluate expression and output result.;
-#X obj 103 671 expr;
-#X obj 139 671 expr~;
-#X obj 181 671 fexpr~;
+#X obj 14 543 doc_ii 0;
+#X obj 97 543 doc_m i0 bang;
+#X text 232 543 evaluate expression and output result.;
+#X obj 103 685 expr;
+#X obj 139 685 expr~;
+#X obj 181 685 fexpr~;
 #X obj 98 43 #expr;
 #X text 135 43 computes the result of the formula(s) you write in it.
 ;
@@ -29,17 +29,17 @@ of () for overriding operator precedence.;
 like [%].;
 #X text 96 188 it supports $f1 \, $f2 \, $f3 \, etc.;
 #X text 96 203 it does not support $s1 \, $v1 \, etc.;
-#X obj 3 471 doc_i 1..;
-#X obj 97 523 doc_m i0 float;
-#X text 232 523 set value of $f1 and then do like bang.;
+#X obj 3 513 doc_i 1..;
+#X obj 97 565 doc_m i0 float;
+#X text 232 565 set value of $f1 and then do like bang.;
 #X obj 14 546 doc_ii other;
 #X obj 97 545 doc_m iother float;
 #X text 232 545 set value of any other $f variable \, such as $f2 \,
 $f3 \, etc. \; for example \, a float into inlet 6 will set $f7.;
-#X obj 3 583 doc_o 1..;
-#X obj 14 613 doc_oo any;
-#X obj 97 613 doc_m oany float;
-#X text 232 613 the results \, output from right to left \, even though
+#X obj 3 597 doc_o 1..;
+#X obj 14 627 doc_oo any;
+#X obj 97 627 doc_m oany float;
+#X text 232 627 the results \, output from right to left \, even though
 they get computed left-to-right. [#expr] makes a list of the results
 and then outputs it in reverse order.;
 #X text 120 248 [#expr rand($f1)] is the same as [expr random(0 \,
@@ -55,6 +55,8 @@ which are the following : min max div rem cmp hypot atan2 avg;
 $f1>$f2)];
 #X text 119 348 [#expr rem($f1 \, $f2)] = [expr $f1 % $f2];
 #X text 122 363 ...;
+#X text 97 381 it supports table lookup but only with a constant table
+name (no $s1);
 #X connect 1 1 10 0;
 #X connect 1 1 11 0;
 #X connect 1 1 12 0;
