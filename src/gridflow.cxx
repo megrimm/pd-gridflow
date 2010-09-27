@@ -1027,7 +1027,8 @@ void allow_big_stack () {
 
 extern "C" void sys_load_lib(t_canvas *,const char *);
 
-void startup_number();
+void startup_numop2();
+void startup_numop1();
 void startup_classes1();
 void startup_classes3();
 void startup_classes2();
@@ -1073,7 +1074,8 @@ extern "C" void gridflow_setup () {
 #define FOO(SYM,NAME) s_##SYM = gensym(NAME);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	startup_number();
+	startup_numop2();
+	startup_numop1();
 	\startall
 	startup_classes1();
 	startup_classes3();
