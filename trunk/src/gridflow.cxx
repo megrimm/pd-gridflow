@@ -100,6 +100,9 @@ void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 #define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
 #define A_OP1   t_atomtype(0x1003) /* operator: unary prefix */
 #define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
+#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
+#define A_SQOPEN  t_atomtype(0x1008) // '['
+#define A_SQCLOSE t_atomtype(0x1009) // ']'
 
 #define Z(T) case T: return #T; break;
 string atomtype_to_s (t_atomtype t) {
@@ -107,7 +110,7 @@ string atomtype_to_s (t_atomtype t) {
     Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
     Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)
     Z(A_CANT)Z(A_NULL)
-    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)
+    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)Z(A_SQOPEN)Z(A_SQCLOSE)Z(A_VAR_A)
     default: ostringstream os; oprintf(os,"unknown:%d",int(t)); return os.str();
   }
 }
@@ -204,7 +207,7 @@ ostream &operator << (ostream &self, const t_atom &a) {
 			self << ")";
 			break;
 		}
-		case A_NULL: case A_CANT: case A_OPEN: case A_CLOSE:
+		case A_NULL: case A_CANT: case A_OPEN: case A_CLOSE: case A_SQOPEN: case A_SQCLOSE:
 			   self << "\\\\a(" << atomtype_to_s(a.a_type)                                                << ")"; break;
 		case A_VAR:self << "\\\\a(" << atomtype_to_s(a.a_type) << " " << std::hex << char(a.a_index>>8) << int(a.a_index&255) << std::dec << ")"; break;
 		case A_OP:
