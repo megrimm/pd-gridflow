@@ -267,8 +267,8 @@ GRID_INLET(1) {
 		channels=1;
 		bp_rgba = 0;
 		bp_bgra = 0;
-	}
-	RAISE("unknown colorspace '%s'",s->s_name);
+	} else
+		RAISE("unknown colorspace '%s'",s->s_name);
 }
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
 \end class {install("#from_pix",1,1); add_creator("#import_pix");}
