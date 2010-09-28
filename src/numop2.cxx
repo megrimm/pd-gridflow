@@ -173,10 +173,8 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 #define DECL_VOP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD_FLOAT(  O,sym,flags,dim) DECLOP_FLOAT(  VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 
-template <class T> static inline T gf_floor (T a) {
-	return (T) floor((double)a); }
-template <class T> static inline T gf_trunc (T a) {
-	return (T) floor(abs((double)a)) * (a<0?-1:1); }
+template <class T> static inline T gf_floor (T a) {return (T) floor(    (double)a              );}
+template <class T> static inline T gf_trunc (T a) {return (T) floor(abs((double)a)) * (a<0?-1:1);}
 
 #ifdef PASS1
 DEF_OP(ignore, a, 0, side==at_right, side==at_left)
@@ -232,21 +230,13 @@ DEF_OP(abssub,  gf_abs(a-b), 0, false, false)
 DEF_OP(sqsub,   (a-b)*(a-b), 0, false, false)
 DEF_OP(avg,         (a+b)/2, 0, false, false)
 DEF_OPF(hypot, floor(sqrt(a*a+b*b)), sqrt(a*a+b*b), 0, false, false)
-DEF_OPF(sqrt,  floor(sqrt(a)),       sqrt(a),       0, false, false)
-DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), 0, false, false)
 //DEF_OP(erf,"erf*", 0)
 DEF_OP(weight,weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),0,false,false)
 #define BITS(T) (sizeof(T)*8)
 DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
 DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 
-DEF_OP(sin,  sin(a-b),   0, false, false)
-DEF_OP(cos,  cos(a-b),   0, false, false)
 DEF_OP(atan2,atan2(a,b), 0, false, false)
-DEF_OP(tanh, tanh(a-b),  0, false, false)
-DEF_OP(exp,  exp(a-b),   0, false, false)
-DEF_OP(log,  log(a-b),   0, false, false)
-
 #endif
 #ifdef PASS4
 
@@ -283,12 +273,7 @@ DEF_OP(cx_vid,     a==Plex<T>(0,0) ? T(0) : b/a,       1, false, false)
 DEF_OP(cx_vidconj, a==Plex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false)
 DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
 DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
-DEF_OP(cx_sin,  sin(a-b),   0, false, false)
-DEF_OP(cx_cos,  cos(a-b),   0, false, false)
 //DEF_OP(cx_atan2,atan2(a,b), 0, false, false)
-DEF_OP(cx_tanh, tanh(a-b),  0, false, false)
-DEF_OP(cx_exp,  exp(a-b),   0, false, false)
-DEF_OP(cx_log,  log(a-b),   0, false, false)
 DEF_OP(c2p,     gf_c2p(a-b), 0, false, false)
 DEF_OP(p2c,     gf_p2c(a)+b, 0, false, false)
 #endif
@@ -369,19 +354,12 @@ Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(sqsub, "sq-",  OP_COMM),
 	DECL_OP(avg,   "avg",  OP_COMM),
 	DECL_OP(hypot, "hypot",OP_COMM), // huh, almost OP_ASSOC
-	DECL_OP_NOFOLD(sqrt, "sqrt", 0),
-	DECL_OP_NOFOLD(rand, "rand", 0),
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
 	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
 	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
 
-	DECL_OP_NOFOLD_FLOAT(sin,  "sin",   0),
-	DECL_OP_NOFOLD_FLOAT(cos,  "cos",   0),
 	DECL_OP_NOFOLD_FLOAT(atan2,"atan2", 0),
-	DECL_OP_NOFOLD_FLOAT(tanh, "tanh",  0),
-	DECL_OP_NOFOLD_FLOAT(exp,  "exp",   0),
-	DECL_OP_NOFOLD_FLOAT(log,  "log",   0),
 
 };
 const long op_table3_n = COUNT(op_table3);
@@ -397,12 +375,7 @@ Numop2 op_table4[] = {
 //	DECL_VOP(cx_vidconj, "C.invconj*",  0,2),
 	DECL_VOP(cx_sqsub,   "C.sq-",   OP_COMM,2),
 	DECL_VOP(cx_abssub,  "C.abs-",  OP_COMM,2),
-	DECL_VOP_NOFOLD_FLOAT(cx_sin,  "C.sin",  0,2),
-	DECL_VOP_NOFOLD_FLOAT(cx_cos,  "C.cos",  0,2),
 //	DECL_VOP_NOFOLD_FLOAT(cx_atan2,"C.atan2",0,2),
-	DECL_VOP_NOFOLD_FLOAT(cx_tanh, "C.tanh", 0,2),
-	DECL_VOP_NOFOLD_FLOAT(cx_exp,  "C.exp",  0,2),
-	DECL_VOP_NOFOLD_FLOAT(cx_log,  "C.log",  0,2),
 	DECL_VOP_NOFOLD(      c2p,     "c2p", 0,2),
 	DECL_VOP_NOFOLD(      p2c,     "p2c", 0,2),
 };
