@@ -21,6 +21,85 @@
 
 #include "gridflow.hxx.fcs"
 #include <math.h>
+#include <complex>
+
+template <class T> class Op {
+public:
+	// I call abort() on those because I can't say they're purevirtual.
+	static T f(T a) {abort();}
+};
+
+template <class O, class T> class OpLoops: public Numop1::On<T> {
+public:
+  static inline T f(T a) {return O::f(a);}
+  #define FOO(I) as[I]=f(as[I]);
+  static void _map (long n, T *as) {if (!n) return; UNROLL_8(FOO,n,as)}
+  #undef FOO
+};
+
+#define Plex std::complex
+
+#define DEF_OP_COMMON(op,expr,T) inline static T f(T a) { return (T)(expr); }
+#define DEF_OP(op,expr) template <class T> class Y##op : Op<T> { public: DEF_OP_COMMON(op,expr,T);};
+#define DEF_OPFT(op,expr,T) template <> class Y##op<T> : Op<T> { public: DEF_OP_COMMON(op,expr,T);};
+// this macro is for operators that have different code for the float version
+#define DEF_OPF( op,expr,expr2) \
+	DEF_OP(  op,expr      ) \
+	DEF_OPFT(op,     expr2,float32) \
+	DEF_OPFT(op,     expr2,float64)
+
+#define  OL(O,T) OpLoops<Y##O<T>,T>
+#define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
+#define DECL_OPON(L,O,T) Numop1::On<T>((Numop1::On<T>::Map) L(O,T)::_map)
+#define DECLOP(        L,M,O,sym,dim) Numop1(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+	NONLITE(,M(L,O,int64)),  M(L,O,float32)   NONLITE(,M(L,O,float64)),dim)
+#define DECLOP_NOFLOAT(L,M,O,sym,dim) Numop1(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+	NONLITE(,M(L,O,int64)),Numop1::On<float32>() NONLITE(,Numop1::On<float64>()),dim)
+//	NONLITE(,M(L,O,int64),Numop1::On<float32>(),Numop1::On<float64>()),dim)
+#define DECLOP_FLOAT(  L,M,O,sym,dim) Numop1(sym,Numop1::On<uint8>(),Numop1::On<int16>(),Numop1::On<int32>() \
+	NONLITE(,Numop1::On<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),dim)
+
+#define DECL_OP(          O,sym)     DECLOP(         OL,DECL_OPON,O,sym,1)
+#define DECL_OP_NOFLOAT(  O,sym)     DECLOP_NOFLOAT( OL,DECL_OPON,O,sym,1)
+#define DECL_OP_FLOAT(    O,sym)     DECLOP_FLOAT(   OL,DECL_OPON,O,sym,1)
+#define DECL_VOP(         O,sym,dim) DECLOP(        VOL,DECL_OPON,O,sym,dim)
+#define DECL_VOP_NOFLOAT( O,sym,dim) DECLOP_NOFLOAT(VOL,DECL_OPON,O,sym,dim)
+#define DECL_VOP_FLOAT(   O,sym,dim) DECLOP_FLOAT(  VOL,DECL_OPON,O,sym,dim)
+
+DEF_OPF(sqrt,floor(sqrt(a)),sqrt(a))
+DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a))
+
+DEF_OP(sin,  sin(a))
+DEF_OP(cos,  cos(a))
+DEF_OP(tanh, tanh(a))
+DEF_OP(exp,  exp(a))
+DEF_OP(log,  log(a))
+
+DEF_OP(cx_sin,  sin(a))
+DEF_OP(cx_cos,  cos(a))
+DEF_OP(cx_tanh, tanh(a))
+DEF_OP(cx_exp,  exp(a))
+DEF_OP(cx_log,  log(a))
+
+Numop1 op_table_unary[] = {
+	DECL_OP(sqrt, "sqrt"),
+	DECL_OP(rand, "rand"),
+	DECL_OP_FLOAT(sin,  "sin"),
+	DECL_OP_FLOAT(cos,  "cos"),
+	DECL_OP_FLOAT(tanh, "tanh"),
+	DECL_OP_FLOAT(exp,  "exp"),
+	DECL_OP_FLOAT(log,  "log"),
+	DECL_VOP_FLOAT(cx_sin,  "C.sin",  2),
+	DECL_VOP_FLOAT(cx_cos,  "C.cos",  2),
+	DECL_VOP_FLOAT(cx_tanh, "C.tanh", 2),
+	DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
+	DECL_VOP_FLOAT(cx_log,  "C.log",  2),
+};
+const long op_table_unary_n = COUNT(op_table_unary);
+
+// D=dictionary, A=table, A##_n=table count.
+#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[string(A[i].name)]=&A[i];
 
 void startup_numop1 () {
+	INIT_TABLE(op_dict,op_table_unary)
 }
