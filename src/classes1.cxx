@@ -524,7 +524,10 @@ GRID_INLET(1) {
 \class GridOp : FObject {
 	\attr Numop2 *op; // should allow Numop1 too
 	P<Grid> r;
-	\constructor (Numop2 *op, Grid *r=0) {this->op=op; this->r=r?r:new Grid(Dim(),int32_e,true);}
+	\constructor (Numop2 *op=0, Grid *r=0) {
+		this->op=op?op:TO(Numop2*,gensym("ignore"));
+		this->r=r?r:new Grid(Dim(),int32_e,true);
+	}
 	\grin 0
 	\grin 1
 };
