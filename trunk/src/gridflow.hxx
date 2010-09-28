@@ -510,36 +510,6 @@ inline void swap_endian(long n, float64 *data) {swap64(n,(uint64 *)data);}
 
 enum LeftRight { at_left, at_right };
 
-template <class T> struct Numop1On {
-	// Function Vectorisations
-	typedef void (*Map)(         long n, T *as       ); Map map;
-	Numop1On(Map m) : map(m) {}
-	Numop1On()      : map(0) {}
-	Numop1On(const Numop1On &z) {map=z.map;}
-};
-
-template <class T> struct Numop2On {
-	// Function Vectorisations
-	typedef void (*Map )(         long n, T *as, T  b ); Map  map;
-	typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
-	typedef void (*Fold)(long an, long n, T *as, T *bs); Fold fold;
-	typedef void (*Scan)(long an, long n, T *as, T *bs); Scan scan;
-	// Algebraic Properties (those involving simply numeric types)
-	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
-	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
-	// absorbent: right: exists a forall y {f(x,y)=a}; ...
-	void (*neutral)(T *,LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
-	AlgebraicCheck is_neutral, is_absorbent;
-	Numop2On(Map m, Zip z, Fold f, Scan s,
-	void (*neu)(T *,LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
-		    map(m),zip(z),fold(f),scan(s),neutral(neu),is_neutral(n),is_absorbent(a) {}
-	Numop2On() : map(0),zip(0),fold(0),scan(0),neutral(0)  ,is_neutral(0),is_absorbent(0) {}
-	Numop2On(const Numop2On &z) {
-		map=z.map; zip=z.zip; fold=z.fold; scan=z.scan;
-		is_neutral = z.is_neutral; neutral = z.neutral;
-		is_absorbent = z.is_absorbent; }
-};
-
 struct Numop {
 	const char *name;
 	t_symbol *sym;
@@ -548,14 +518,21 @@ struct Numop {
 };
 
 struct Numop1 : Numop {
+	template <class T> struct On {
+		// Function Vectorisations
+		typedef void (*Map)(         long n, T *as       ); Map map;
+		On(Map m) : map(m) {}
+		On()      : map(0) {}
+		On(const On &z) {map=z.map;}
+	};
 	virtual int arity () {return 1;}
-	#define FOO(T) Numop1On<T> on_##T; Numop1On<T> *on(T &foo) { \
+	#define FOO(T) On<T> on_##T; On<T> *on(T &foo) { \
 		if (!on_##T.map) RAISE("operator %s does not support type "#T,name); else return &on_##T;}
 	EACH_NUMBER_TYPE(FOO)
 	#undef FOO
 	template <class T> inline void map(long n, T *as) {on(*as)->map(n,(T *)as);}
 	Numop1(const char *name_,
-		#define FOO(T) Numop1On<T> op_##T, 
+		#define FOO(T) On<T> op_##T, 
 		EACH_NUMBER_TYPE(FOO)
 		#undef FOO
 	int size_) {
@@ -568,23 +545,44 @@ struct Numop1 : Numop {
 };
 
 struct Numop2 : Numop {
+	template <class T> struct On {
+		// Function Vectorisations
+		typedef void (*Map )(         long n, T *as, T  b ); Map  map;
+		typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
+		typedef void (*Fold)(long an, long n, T *as, T *bs); Fold fold;
+		typedef void (*Scan)(long an, long n, T *as, T *bs); Scan scan;
+		// Algebraic Properties (those involving simply numeric types)
+		typedef bool (*AlgebraicCheck)(T x, LeftRight side);
+		// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
+		// absorbent: right: exists a forall y {f(x,y)=a}; ...
+		void (*neutral)(T *,LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
+		AlgebraicCheck is_neutral, is_absorbent;
+		On(Map m, Zip z, Fold f, Scan s,
+		void (*neu)(T *,LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
+			map(m),zip(z),fold(f),scan(s),neutral(neu),is_neutral(n),is_absorbent(a) {}
+		On() : map(0),zip(0),fold(0),scan(0),neutral(0)  ,is_neutral(0),is_absorbent(0) {}
+		On(const On &z) {
+			map=z.map; zip=z.zip; fold=z.fold; scan=z.scan;
+			is_neutral = z.is_neutral; neutral = z.neutral;
+			is_absorbent = z.is_absorbent; }
+	};
 	virtual int arity () {return 2;}
 	int flags;
 		#define OP_ASSOC (1<<0) /* semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c) */
 		#define OP_COMM (1<<1)  /* abelian property: commutativity: f(a,b)=f(b,a) */
-	#define FOO(T) Numop2On<T> on_##T; Numop2On<T> *on(T &foo) { \
+	#define FOO(T) On<T> on_##T; On<T> *on(T &foo) { \
 		if (!on_##T.map) RAISE("operator %s does not support type "#T,name); else return &on_##T;}
 	EACH_NUMBER_TYPE(FOO)
 	#undef FOO
 	template <class T> inline void map(long n, T *as, T b)   {on(*as)->map(n,(T *)as,     b );}
 	template <class T> inline void zip(long n, T *as, T *bs) {on(*as)->zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, T *as, T *bs) {typename Numop2On<T>::Fold f = on(*as)->fold;
+	template <class T> inline void fold(long an, long n, T *as, T *bs) {typename On<T>::Fold f = on(*as)->fold;
 		if (f) f(an,n,as,bs); else RAISE("operator %s does not support fold",name);}
-	template <class T> inline void scan(long an, long n, T *as, T *bs) {typename Numop2On<T>::Scan f = on(*as)->scan;
+	template <class T> inline void scan(long an, long n, T *as, T *bs) {typename On<T>::Scan f = on(*as)->scan;
 		if (f) f(an,n,as,bs); else RAISE("operator %s does not support scan",name);}
 
 	Numop2(const char *name_,
-		#define FOO(T) Numop2On<T> op_##T, 
+		#define FOO(T) On<T> op_##T, 
 		EACH_NUMBER_TYPE(FOO)
 		#undef FOO
 	int flags_, int size_) {

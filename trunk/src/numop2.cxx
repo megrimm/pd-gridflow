@@ -59,7 +59,7 @@ public:
 	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
 
-template <class O, class T> class OpLoops: public Numop2On<T> {
+template <class O, class T> class OpLoops: public Numop2::On<T> {
 public:
   static inline T f(T a, T b) {return O::f(a,b);}
   #define FOO(I) as[I]=f(as[I],b);
@@ -146,20 +146,20 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 
 #define  OL(O,T) OpLoops<Y##O<T>,T>
 #define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
-#define DECL_OPON(L,O,T) Numop2On<T>( \
-	(Numop2On<T>::Map) L(O,T)::_map,  (Numop2On<T>::Zip) L(O,T)::_zip, \
-	(Numop2On<T>::Fold)L(O,T)::_fold, (Numop2On<T>::Scan)L(O,T)::_scan, \
+#define DECL_OPON(L,O,T) Numop2::On<T>( \
+	(Numop2::On<T>::Map) L(O,T)::_map,  (Numop2::On<T>::Zip) L(O,T)::_zip, \
+	(Numop2::On<T>::Fold)L(O,T)::_fold, (Numop2::On<T>::Scan)L(O,T)::_scan, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECL_OPON_NOFOLD(L,O,T) Numop2On<T>( \
-	(Numop2On<T>::Map)L(O,T)::_map, (Numop2On<T>::Zip)L(O,T)::_zip, 0,0, \
+#define DECL_OPON_NOFOLD(L,O,T) Numop2::On<T>( \
+	(Numop2::On<T>::Map)L(O,T)::_map, (Numop2::On<T>::Zip)L(O,T)::_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
 #define DECLOP(        L,M,O,sym,flags,dim) Numop2(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64)),  M(L,O,float32)   NONLITE(,M(L,O,float64)),flags,dim)
 #define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop2(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
-	NONLITE(,M(L,O,int64)),Numop2On<float32>() NONLITE(,Numop2On<float64>()), flags,dim)
-//	NONLITE(,M(L,O,int64),Numop2On<float32>(),Numop2On<float64>()), flags,dim)
-#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop2(sym,Numop2On<uint8>(),Numop2On<int16>(),Numop2On<int32>() \
-	NONLITE(,Numop2On<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),flags,dim)
+	NONLITE(,M(L,O,int64)),Numop2::On<float32>() NONLITE(,Numop2::On<float64>()), flags,dim)
+//	NONLITE(,M(L,O,int64),Numop2::On<float32>(),Numop2::On<float64>()), flags,dim)
+#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop2(sym,Numop2::On<uint8>(),Numop2::On<int16>(),Numop2::On<int32>() \
+	NONLITE(,Numop2::On<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),flags,dim)
 
 #define DECL_OP(                O,sym,flags)     DECLOP(         OL,DECL_OPON       ,O,sym,flags,1)
 #define DECL_OP_NOFLOAT(        O,sym,flags)     DECLOP_NOFLOAT( OL,DECL_OPON       ,O,sym,flags,1)
