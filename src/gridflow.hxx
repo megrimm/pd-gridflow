@@ -597,7 +597,6 @@ struct Numop2 : Numop {
 extern NumberType number_type_table[];
 extern map<string,NumberType *> number_type_dict;
 extern map<string,Numop *> op_dict;
-extern map<string,Numop *> vop_dict;
 
 static inline NumberTypeE convert(const t_atom2 &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type, got %s",x.to_s().data()); return NumberTypeE_find(string(x.a_symbol->s_name));}
