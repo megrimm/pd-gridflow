@@ -1,5 +1,16 @@
 x = done
 
+9.12 minimum :
+
+[ ] [#expr] local
+[ ] numop1
+[ ] list-attrs
+[ ] parens-msg
+[ ] fix [#for] that I broke the other day
+				if (stepb[d]>0 ? x[k+d]<tob[d] : x[k+d]>tob[d]) break;
+
+autre court terme ( > 9.12 ) :
+
 [ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
 [ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
@@ -214,7 +225,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 
 [ ] add Minesweeper example based on [#many]
 [ ] OpenCL
-[ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level (?)
@@ -224,8 +234,8 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] [#expr]
 [ ] [#line]? [#pipe]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
-[ ] #: option swap
-[ ] re-enable int64,float64
+[ ] #,#fold,#scan,: option swap
+[ ] re-test int64,float64 and make sure it works
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
@@ -248,7 +258,6 @@ Installation
 
 Documentation
 [ ] document how to report bugs, basic troubleshooting
-[ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] architecture: class->type/shape->use->role
 [ ] benchmarks (especially: simple video i/o)
@@ -257,12 +266,8 @@ Documentation
 Architecture
 [ ] reentrancy of objects (to allow true recursion)
 [ ] expand the [doc_same] concept
-[ ] pull mode (functional-style)
-[ ] bidirectional messages (constraint/relational-style)
-[ ] send-reply messages (imperative-style)
 [ ] dispatch on _#{i}_-named methods (any selector one inlet)
 [ ] generalize the backstore
-[ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
 [ ] lazy grids: Grid#operator T* makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
@@ -271,7 +276,7 @@ Architecture
 [ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
-[ ] SSE
+[ ] SSE, liboil
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] read http://en.wikipedia.org/wiki/Tacit_programming
@@ -311,8 +316,7 @@ Input/Output
 [ ] Grid: text version of the format (?)
 [ ] ffmpeg, xine, mplayer
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
-[ ] x11: sync with the actual vsync of the monitor
-[ ] x11: double buffering using a Pixmap remote-object
+[ ] x11: double buffering using a Pixmap remote-object, sync frames at constant rate, optionally with the actual vsync of the monitor
 [ ] support for audio in the mpeg streams
 [ ] synchronized audio with the video when using mpeg1 & 2
 [ ] full screen mode (without the menu bars or frames)
