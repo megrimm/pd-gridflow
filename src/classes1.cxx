@@ -522,9 +522,9 @@ GRID_INLET(1) {
 //{ Dim[*As]<T> -> Dim[*As]<T> } or
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
 \class GridOp : FObject {
-	\attr Numop2 *op; // should allow Numop1 too
+	\attr Numop *op;
 	P<Grid> r;
-	\constructor (Numop2 *op=0, Grid *r=0) {
+	\constructor (Numop *op=0, Grid *r=0) {
 		this->op=op?op:TO(Numop2*,gensym("ignore"));
 		this->r=r?r:new Grid(Dim(),int32_e,true);
 	}
@@ -542,27 +542,36 @@ GRID_INLET(0) {
 	if (go->fresh) go->create_buf(); /* force it now (hack) */
 } GRID_FLOW {
 	long moton = go->buf.dim.prod();
-	T *rdata = (T *)*r;
-	long loop = r->dim.prod();
-	while (n) {
-		long pn = min(moton,n);
-		T tada[pn];
-		COPY(tada,data,pn);
-		if (loop>1) {
-			if (in.dex+pn <= loop) op->zip(pn/op->size,tada,rdata+go->dex); else {
-				// !@#$ should prebuild and reuse this array when "loop" is small
-				T data2[pn];
-				long ii = mod(go->dex,loop);
-				long m = min(loop-ii,pn);
-				COPY(data2,rdata+ii,m);
-				long nn = m+((pn-m)/loop)*loop;
-				for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
-				if (pn>nn) COPY(data2+nn,rdata,pn-nn);
-				op->zip(pn/op->size,tada,data2);
-			}
-		} else op->map(pn,tada,loop ? *rdata : T(0));
-		go->send(pn,tada);
-		n-=pn; data+=pn;
+	if (op->arity()==2) {
+		Numop2 *op = (Numop2 *)this->op;
+		T *rdata = (T *)*r;
+		long loop = r->dim.prod();
+		while (n) {
+			long pn = min(moton,n);
+			T tada[pn];
+			COPY(tada,data,pn);
+			if (loop>1) {
+				if (in.dex+pn <= loop) op->zip(pn/op->size,tada,rdata+go->dex); else {
+					// !@#$ should prebuild and reuse this array when "loop" is small
+					T data2[pn];
+					long ii = mod(go->dex,loop);
+					long m = min(loop-ii,pn);
+					COPY(data2,rdata+ii,m);
+					long nn = m+((pn-m)/loop)*loop;
+					for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
+					if (pn>nn) COPY(data2+nn,rdata,pn-nn);
+					op->zip(pn/op->size,tada,data2);
+				}
+			} else op->map(pn,tada,loop ? *rdata : T(0));
+			go->send(pn,tada);
+			n-=pn; data+=pn;
+		}
+	} else {
+		Numop1 *op = (Numop1 *)this->op;
+		T tada[n];
+		COPY(tada,data,n);
+		op->map(n,tada);
+		go->send(n,tada);
 	}
 } GRID_END
 GRID_INPUT2(1,r) {} GRID_END
