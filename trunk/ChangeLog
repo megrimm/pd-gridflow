@@ -26,7 +26,12 @@ version 9.12 (2010.09...):
  * more detailed error messages of the form "expected this, got that"
  * [#out grid] [parallel_port]: fix crash in case of error writing
  * [#]: now defaults to [# ignore]
-
+ * reintroducing real unary operators. this means that there are now two
+   tables of operators in the doc, and the table of unary only applies to
+   [#] and [#expr] (they weren't much useful with anything else anyway).
+   Those operators have become unary :
+     sqrt rand sin cos tanh log exp C.sin C.cos C.tanh C.log C.exp
+   
 version 9.11 (2010.09.07):
 
  * now officially requires Pd 41
