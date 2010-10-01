@@ -903,7 +903,7 @@ GRID_INPUT(1,r) {} GRID_END
 			for(;;d--) {
 				if (d<0) goto end;
 				x[k+d]+=stepb[d];
-				if (x[k+d]<tob[d]) break;
+				if (stepb[d]>0 ? x[k+d]<tob[d] : x[k+d]>tob[d]) break;
 			}
 		}
 		end: if (k) go->send(k,x);
