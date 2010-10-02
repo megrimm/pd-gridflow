@@ -66,6 +66,11 @@ public:
 #define DECL_VOP_NOFLOAT( O,sym,dim) DECLOP_NOFLOAT(VOL,DECL_OPON,O,sym,dim)
 #define DECL_VOP_FLOAT(   O,sym,dim) DECLOP_FLOAT(  VOL,DECL_OPON,O,sym,dim)
 
+DEF_OP(logic_not, !a);
+DEF_OP(not, -1-a); // because ~a doesn't exist for T=float
+DEF_OP(unary_minus, -a); // for use by #expr
+DEF_OP(abs, a<0 ? -a : a);
+
 DEF_OPF(sqrt,floor(sqrt(a)),sqrt(a))
 DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a))
 
@@ -82,6 +87,11 @@ DEF_OP(cx_exp,  exp(a))
 DEF_OP(cx_log,  log(a))
 
 Numop1 op_table_unary[] = {
+	DECL_OP(unary_minus, "unary-"),
+	DECL_OP(logic_not, "!"),
+	DECL_OP(not, "~"),
+	DECL_OP(abs, "abs"),
+
 	DECL_OP(sqrt, "sqrt"),
 	DECL_OP(rand, "rand"),
 	DECL_OP_FLOAT(sin,  "sin"),

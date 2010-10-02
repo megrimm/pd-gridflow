@@ -94,9 +94,8 @@ map<t_atom2, int> priorities;
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if      (o==gensym("+")) {parse(context,t_atom2(A_OP1,tok.a_symbol));}
-			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("inv+")));}
-			else if (o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
+			if (o==gensym("+") || o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
+			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("unary-")));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -118,8 +117,7 @@ map<t_atom2, int> priorities;
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
 				t_symbol *o = a.a_symbol; int e=1;
-				if   (a==gensym("abs"))                {a=t_atom2(A_OP1,gensym("abs-"));}
-				else if (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
+				if      (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
 				else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
 				else RAISE("unknown function '%s'",o->s_name);
 				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
@@ -235,9 +233,9 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs-) = PR1(rand) = 2;
+	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs) = PR1(rand) = 2;
 	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = 2;
-	PR1(+) = PR1(inv+) = PR1(~) = PR1(!) = 3; // unary "-" is "inv+"
+	PR1(+) = PR1(unary-) = PR1(~) = PR1(!) = 3;
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
