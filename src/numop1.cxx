@@ -76,7 +76,16 @@ DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a))
 
 DEF_OP(sin,  sin(a))
 DEF_OP(cos,  cos(a))
+DEF_OP(tan,  tan(a))
+DEF_OP(asin, asin(a))
+DEF_OP(acos, acos(a))
+DEF_OP(atan, atan(a))
+DEF_OP(sinh, sinh(a))
+DEF_OP(cosh, cosh(a))
 DEF_OP(tanh, tanh(a))
+DEF_OP(asinh, asinh(a))
+DEF_OP(acosh, acosh(a))
+DEF_OP(atanh, atanh(a))
 DEF_OP(exp,  exp(a))
 DEF_OP(log,  log(a))
 
@@ -91,6 +100,12 @@ Numop1 op_table_unary[] = {
 	DECL_OP(logic_not, "!"),
 	DECL_OP(not, "~"),
 	DECL_OP(abs, "abs"),
+	DECL_OP(tan, "tan"),
+	DECL_OP(sinh, "sinh"),
+	DECL_OP(cosh, "cosh"),
+	//DECL_OP(asin, "asin"),
+	//DECL_OP(acos, "acos"),
+	//DECL_OP(atan, "atan"), // but atan is already reserved by a c° function.
 
 	DECL_OP(sqrt, "sqrt"),
 	DECL_OP(rand, "rand"),
