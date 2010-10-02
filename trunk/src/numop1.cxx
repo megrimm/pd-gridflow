@@ -74,51 +74,56 @@ DEF_OP(abs, a<0 ? -a : a);
 DEF_OPF(sqrt,floor(sqrt(a)),sqrt(a))
 DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a))
 
-DEF_OP(sin,  sin(a))
-DEF_OP(cos,  cos(a))
+DEF_OP(sin,  sin(a))		DEF_OP(cx_sin,  sin(a))
+DEF_OP(cos,  cos(a))		DEF_OP(cx_cos,  cos(a))
 DEF_OP(tan,  tan(a))
 DEF_OP(asin, asin(a))
 DEF_OP(acos, acos(a))
 DEF_OP(atan, atan(a))
 DEF_OP(sinh, sinh(a))
 DEF_OP(cosh, cosh(a))
-DEF_OP(tanh, tanh(a))
+DEF_OP(tanh, tanh(a))		DEF_OP(cx_tanh, tanh(a))
 DEF_OP(asinh, asinh(a))
 DEF_OP(acosh, acosh(a))
 DEF_OP(atanh, atanh(a))
-DEF_OP(exp,  exp(a))
-DEF_OP(log,  log(a))
+DEF_OP(exp,  exp(a))		DEF_OP(cx_exp,  exp(a))
+DEF_OP(log,  log(a))		DEF_OP(cx_log,  log(a))
 
-DEF_OP(cx_sin,  sin(a))
-DEF_OP(cx_cos,  cos(a))
-DEF_OP(cx_tanh, tanh(a))
-DEF_OP(cx_exp,  exp(a))
-DEF_OP(cx_log,  log(a))
+DEF_OP(erf,  erf(a))
+DEF_OP(erfc, erfc(a))
+DEF_OP(cbrt, cbrt(a))
+DEF_OP(expm1, expm1(a))
+DEF_OP(log1p, log1p(a))
+DEF_OP(floor, floor(a))
+DEF_OP(ceil,  ceil(a))
 
 Numop1 op_table_unary[] = {
 	DECL_OP(unary_minus, "unary-"),
 	DECL_OP(logic_not, "!"),
 	DECL_OP(not, "~"),
 	DECL_OP(abs, "abs"),
-	DECL_OP(tan, "tan"),
-	DECL_OP(sinh, "sinh"),
-	DECL_OP(cosh, "cosh"),
 	//DECL_OP(asin, "asin"),
 	//DECL_OP(acos, "acos"),
 	//DECL_OP(atan, "atan"), // but atan is already reserved by a c° function.
 
 	DECL_OP(sqrt, "sqrt"),
 	DECL_OP(rand, "rand"),
-	DECL_OP_FLOAT(sin,  "sin"),
-	DECL_OP_FLOAT(cos,  "cos"),
-	DECL_OP_FLOAT(tanh, "tanh"),
-	DECL_OP_FLOAT(exp,  "exp"),
-	DECL_OP_FLOAT(log,  "log"),
-	DECL_VOP_FLOAT(cx_sin,  "C.sin",  2),
-	DECL_VOP_FLOAT(cx_cos,  "C.cos",  2),
-	DECL_VOP_FLOAT(cx_tanh, "C.tanh", 2),
-	DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
-	DECL_VOP_FLOAT(cx_log,  "C.log",  2),
+	DECL_OP_FLOAT(sin,  "sin"),   DECL_VOP_FLOAT(cx_sin,  "C.sin",  2),
+	DECL_OP_FLOAT(cos,  "cos"),   DECL_VOP_FLOAT(cx_cos,  "C.cos",  2),
+	DECL_OP_FLOAT(tan, "tan"),
+	DECL_OP_FLOAT(sinh, "sinh"),
+	DECL_OP_FLOAT(cosh, "cosh"),
+	DECL_OP_FLOAT(tanh, "tanh"),  DECL_VOP_FLOAT(cx_tanh, "C.tanh", 2),
+	DECL_OP_FLOAT(exp,  "exp"),   DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
+	DECL_OP_FLOAT(log,  "log"),   DECL_VOP_FLOAT(cx_log,  "C.log",  2),
+	DECL_OP_FLOAT(erf,  "erf"),
+	DECL_OP_FLOAT(erfc, "erfc"),
+	DECL_OP_FLOAT(cbrt, "cbrt"),
+	DECL_OP_FLOAT(expm1, "expm1"),
+	DECL_OP_FLOAT(log1p, "log1p"),
+	
+	DECL_OP_FLOAT(floor, "floor"),
+	DECL_OP_FLOAT(ceil, "ceil"),
 };
 const long op_table_unary_n = COUNT(op_table_unary);
 

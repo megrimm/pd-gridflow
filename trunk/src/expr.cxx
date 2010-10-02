@@ -233,7 +233,9 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs) = PR1(rand) = 2;
+	PR1(sin) = PR1(cos) = PR1(tan) = PR1(sinh) = PR1(cosh) = PR1(tanh) = 2;
+	PR1(exp) = PR1(log) = PR1(curt) = PR1(sqrt) = PR1(abs) = PR1(rand) = PR1(expm1) = PR1(log1p) = 2;
+	PR1(isinf) = PR1(finite) = PR1(isnan) = 2;
 	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = 2;
 	PR1(+) = PR1(unary-) = PR1(~) = PR1(!) = 3;
 	PR(*) = PR(/) = PR(%) = 5;
