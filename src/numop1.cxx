@@ -96,6 +96,9 @@ DEF_OP(expm1, expm1(a))
 DEF_OP(log1p, log1p(a))
 DEF_OP(floor, floor(a))
 DEF_OP(ceil,  ceil(a))
+DEF_OP(isinf, isinf(a))
+DEF_OP(finite, finite(a))
+DEF_OP(isnan, isnan(a))
 
 Numop1 op_table_unary[] = {
 	DECL_OP(unary_minus, "unary-"),
@@ -124,6 +127,9 @@ Numop1 op_table_unary[] = {
 	
 	DECL_OP_FLOAT(floor, "floor"),
 	DECL_OP_FLOAT(ceil, "ceil"),
+	DECL_OP_FLOAT(isinf, "isinf"),
+	DECL_OP_FLOAT(finite, "finite"),
+	DECL_OP_FLOAT(isnan, "isnan"),
 };
 const long op_table_unary_n = COUNT(op_table_unary);
 
