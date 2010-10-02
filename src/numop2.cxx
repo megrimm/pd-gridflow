@@ -237,6 +237,8 @@ DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
 DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 
 DEF_OP(atan2,atan2(a,b), 0, false, false)
+// 9.12
+DEF_OP(ldexp,ldexp(a,b), 0, false, false)
 #endif
 #ifdef PASS4
 
@@ -345,8 +347,6 @@ Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(tanhmul,"tanh*", 0),
 	DECL_OP_NOFOLD(gamma,  "gamma", 0),
 	DECL_OP_NOFOLD(pow,    "**", 0),
-	DECL_OP_NOFOLD(logmul, "log*", 0),
-	DECL_OP_NOFOLD(divexp, "/exp", 0),
 // 0.8
 	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
 	DECL_OP(clipsub,"clip-", 0),
@@ -358,9 +358,11 @@ Numop2 op_table3[] = {
 	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
 	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
-
 	DECL_OP_NOFOLD_FLOAT(atan2,"atan2", 0),
-
+// 9.12
+	DECL_OP_NOFOLD(logmul, "log*", 0),
+	DECL_OP_NOFOLD(divexp, "/exp", 0),
+	DECL_OP_NOFOLD(ldexp,  "ldexp", 0),
 };
 const long op_table3_n = COUNT(op_table3);
 #endif
