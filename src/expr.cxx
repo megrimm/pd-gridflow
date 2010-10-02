@@ -96,8 +96,7 @@ map<t_atom2, int> priorities;
 			t_symbol *o = tok.a_symbol;
 			if      (o==gensym("+")) {parse(context,t_atom2(A_OP1,tok.a_symbol));}
 			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("inv+")));}
-			else if (o==gensym("!")) {parse(context,t_atom2(A_OP1,gensym("==")));}
-			else if (o==gensym("~")) {parse(context,t_atom2(A_OP1,tok.a_symbol));}
+			else if (o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -210,9 +209,9 @@ map<t_atom2, int> priorities;
 				stack.back() = a;
 			  } break;
 			  case A_OP1: {
-				Numop2 *op = TO(Numop2 *,t_atom2(code[i].a_symbol->s_name));
+				Numop1 *op = TO(Numop1 *,t_atom2(code[i].a_symbol->s_name));
 				float a = lookup(stack.back());
-				op->map(1,&a,0.f);
+				op->map(1,&a);
 				stack.back() = a;
 			  } break;
 			  default: {
@@ -238,7 +237,7 @@ void startup_classes4 () {
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
 	PR1(sin) = PR1(cos) = PR1(exp) = PR1(log) = PR1(tanh) = PR1(sqrt) = PR1(abs-) = PR1(rand) = 2;
 	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = 2;
-	PR1(+) = PR1(inv+) = PR1(~) = PR1(==) = 3; // unary "==" is "!"; unary "-" is "inv+"
+	PR1(+) = PR1(inv+) = PR1(~) = PR1(!) = 3; // unary "-" is "inv+"
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
