@@ -3,14 +3,53 @@ x = done
 9.12 minimum :
 
 [ ] [#expr] local
-[ ] numop1
-[ ] list-attrs
-[ ] parens-msg
-[ ] fix [#for] that I broke the other day
-				if (stepb[d]>0 ? x[k+d]<tob[d] : x[k+d]>tob[d]) break;
+[ ] numop1: [#expr] unaries don't all work.
 
 autre court terme ( > 9.12 ) :
 
+    //if() conditional  - if (condition, IfT rue-expr, IfFalse-expr) - in expr~ if 'condition' is a signal, the result will be determined on sample by sample basis (added in version 0.4)
+    int ()   	convert to integer
+    rint ()    	round a float to a nearby integer
+    copysign() 	copy sign of a number(added in version 0.4)
+    imodf  	get signed integer value from floating point number(added in version 0.4)
+    modf    	get signed fractional value from floating-point number(added in version 0.4)
+    drem    	floating-point remainder function (added in versio n 0.4)
+
+    power functions
+    	
+    pow ()	raise to the power of {e.g., pow(x,y) is x to the power of y}
+    sqrt ()	square root
+    ln() and log()    	natural log
+    log10()    	log base 10
+    fact()    	factorial
+    erf()    	error function (added in version 0.4)
+    erfc()    	complementary error function (added in version 0.4)
+    cbrt()    	cube root (added in version 0.4)
+    expm1()    	exponential minus 1 (added in version 0.4)
+    log1p()    	logarithm of 1 plus (added in version 0.4)
+    ldexp()    	multiply floating-point number by integral power of 2 (added in version 0.4)
+    	
+    Trigonometric
+    	
+    asin()    	arc sine
+    acos()    	arc cosine
+    atan()    	arc tangent
+    atan2()    	arc tangent of 2 variables
+    asinh()    	inverse hyperbolic sine
+    acosh()    	inverse hyperbolic cosine
+    atan()    	inverse hyperbolic tangent
+    fmod()    	 floating-point remainder function (added in version 0.4)
+
+    Table Functions
+    	
+    size()    	size of a table
+    sum()    	sum of all elements of a table
+    Sum()    	sum of elemnets of a specified boundary of a table
+
+[ ] list-attrs
+[ ] parens-msg
+[ ] make automatic documentation tables for numop... add [gf/numop_info]
+[ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
 [ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
 [ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
@@ -158,6 +197,7 @@ while running #to~-help.pd :
 ==4308==    at 0x4023F5B: calloc (vg_replace_malloc.c:418)
 ==4308==    by 0x80C7E6C: getbytes (m_memory.c:24)
 
+[ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
 [ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
 [ ] regular dc1394 options
