@@ -795,6 +795,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \end class {install("gf/canvas_loadbang",1,0);};
 
+\class GFCanvasSend : FObject {
+	int n;
+	\constructor (int n=0) {this->n=n;}
+	\decl void anything (...) {MOM; typedmess((t_pd *)m,argv[1],argc-2,argv+2);}
+};
+\end class {install("gf/canvas_send",1,0);}
+
 #define BEGIN \
 	t_outlet *ouch = ((t_object *)mom)->te_outlet; \
 	t_canvas *can = mom->gl_owner; \
