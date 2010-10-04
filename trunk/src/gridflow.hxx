@@ -515,6 +515,7 @@ struct Numop {
 	t_symbol *sym;
 	int size; // 1 means regular numop; more than 1 means vecop
 	virtual int arity ();
+	virtual ~Numop() {} // never used, only to shut up warning
 };
 
 struct Numop1 : Numop {
