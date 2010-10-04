@@ -157,7 +157,7 @@ static void dont_handle_parens (int ac, t_atom2 *av) {for (int i=0; i<ac; i++) i
 		binbuf_addv(d,"s",gensym("args"));
 		binbuf_add(d,max(int(binbuf_getnatom(b))-1,0),binbuf_getvec(b)+1);
 		t_canvasenvironment *pce = canvas_getenv(canvas->gl_owner);
-		if (!pce) RAISE("no canvas environment for canvas containing canvas containing [setargs]");
+		if (!pce) RAISE("no canvas environment for canvas containing abstraction that [setargs] is in");
 		pd_pushsym((t_pd *)canvas);
 		binbuf_addbinbuf(e,d);
 		binbuf_eval(e,(t_pd *)bself,pce->ce_argc,pce->ce_argv);
@@ -197,6 +197,13 @@ static void dont_handle_parens (int ac, t_atom2 *av) {for (int i=0; i<ac; i++) i
 		SETDOLLSYM(&a,gensym(d));
 		free(d);
 		binbuf_add(b,1,&a); mom_changed();
+	}
+	\decl 0 dirty (bool state=1) {
+		t_atom2 a[]={state};
+		t_glist *m = canvas->gl_owner;
+		if (!m) RAISE("missing canvas");
+		typedmess((t_pd *)m,gensym("dirty"),1,a);
+		//if (glist_isvisible(canvas)) canvas_reflecttitle(canvas);
 	}
 };
 \end class {install("setargs",1,0);}
