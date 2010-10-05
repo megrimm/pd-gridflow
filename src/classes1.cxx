@@ -232,8 +232,8 @@ GRID_INLET(0) {
 		columns = max(maxd,mind);
 	}
 	string format (NumberTypeE nt) {
-		if (nt==float32_e) return "%6f";
-		if (nt==float64_e) return "%14f";
+		if (nt==float32_e) return "%.6g";
+		if (nt==float64_e) return "%.14g";
 		ostringstream r;
 		r << "%";
 		r << columns;
