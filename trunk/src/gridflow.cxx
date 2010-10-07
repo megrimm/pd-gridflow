@@ -1029,9 +1029,9 @@ void allow_big_stack () {
     error("GF: getrlimit: %s",strerror(errno));
   happy.rlim_cur = happy.rlim_max;
   if (0>setrlimit(RLIMIT_STACK,&happy))
-    error("GF: setting stack size to %ld: %s",happy.rlim_cur,strerror(errno));
+    error("GF: setting stack size to %ld: %s",long(happy.rlim_cur),strerror(errno));
   else
-    post( "GF: setting stack size to %ld",happy.rlim_cur);
+    post( "GF: setting stack size to %ld",long(happy.rlim_cur));
 #endif
 }
 
