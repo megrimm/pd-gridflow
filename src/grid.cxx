@@ -102,6 +102,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #define FOO(T) return !! gh->flow_##T;
 	TYPESWITCH(nt,FOO,return false)
 #undef FOO
+	return false; // avoid warning "may reach end of non-void function" with some versions of gcc
 }
 
 void GridInlet::begin(GridOut *sender) {
