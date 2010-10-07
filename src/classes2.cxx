@@ -267,7 +267,7 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 	vector<t_atom2> r;
 	\constructor (...) {_1_list(argc,argv);}
 	\decl 0 list(t_atom a) {
-		for (size_t i; i<r.size(); i++) if (r[i]==a) {out[0](i); return;}
+		for (size_t i=0; i<r.size(); i++) if (r[i]==a) {out[0](i); return;}
 		out[0](-1);
 	}
 	\decl 1 list(...) {r.resize(argc); for (int i=0; i<argc; i++) r[i]=argv[i];}
