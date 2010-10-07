@@ -1,24 +1,27 @@
 /* $Id$ */
 
-version 9.12 (2010.09...):
+version 9.12 (2010.10.06):
 
  * Gem loading is now optional at run-time (and mandatory at compile-time),
    so that not having Gem will only result in 3 classes not being loaded.
  * [doc_iemfont]: reversed behaviour so that it takes as argument px sizes
  * [gridflow]: added attr pd_version
- * improved examples: dither.pd
+ * improved examples: dither.pd qbert.pd
  * [#import]: when in per_message mode, output empty grids just like any other
  * [setargs]: process commas and semis properly when updating $-variables
  * [setargs]: use sys_queuegui to limit updates of objectboxes and titlebars
+ * [setargs]: added method 'dirty'
  * [#many]: margins (just as in [#see])
  * [#many]: properties dialogue saves the spacing/margins settings to file
  * now ready for win64 builds
  * [args]: added attributes 'noloadbang' and 'noparens'
  * internals: added CLASS_NOPARENS and CLASS_NOCOMMA about parsing of args
- * added [#compress]
- * added [#expr], a [expr]-lookalike (no grid support yet)
+ * added [#compress] and [gf/canvas_send]
+ * added [#expr], a [expr]-lookalike (no grid support yet, but does use
+   [#]-like numops internally)
  * [gf/mouse_spy]: fixed init bug
- * [#print]: fix maxrows (was a bit off)
+ * [#print]: fixed maxrows (was a bit off)
+ * [#print]: changed number format when printing float32 or float64.
  * [#for]: step argument is now optional.
  * [print] and [#print]: stop parsing parentheses in creation arguments
  * [#unpack]: accept any grid containing as many elements as there are outlets
@@ -32,7 +35,7 @@ version 9.12 (2010.09...):
    Those operators have become unary (one-input):
      sqrt rand sin cos tanh log exp C.sin C.cos C.tanh C.log C.exp
  * added numops (one input): ! ~ unary- abs tan sinh cosh floor ceil
- * added numops (one input): erf erfc cbrt expm1 log1p isinf finite isnan
+ * added numops (one input): erf erfc cbrt expm1 log1p
  * added numops (two inputs): ldexp log* /exp
 
 version 9.11 (2010.09.07):
