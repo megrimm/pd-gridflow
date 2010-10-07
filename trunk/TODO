@@ -1,12 +1,12 @@
 x = done
 
-9.12 minimum :
+9.13 :
 
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
 [ ] reenable numop1 isinf finite isnan (talk to alx1)
 
-autre court terme ( > 9.12 ) :
+[ ] more expr :
 
     //if() conditional  - if (condition, IfT rue-expr, IfFalse-expr) - in expr~ if 'condition' is a signal, the result will be determined on sample by sample basis (added in version 0.4)
     int ()   	convert to integer
