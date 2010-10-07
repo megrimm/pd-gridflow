@@ -127,9 +127,9 @@ Numop1 op_table_unary[] = {
 	
 	DECL_OP_FLOAT(floor, "floor"),
 	DECL_OP_FLOAT(ceil, "ceil"),
-	DECL_OP_FLOAT(isinf, "isinf"),
-	DECL_OP_FLOAT(finite, "finite"),
-	DECL_OP_FLOAT(isnan, "isnan"),
+//	DECL_OP_FLOAT(isinf, "isinf"),
+//	DECL_OP_FLOAT(finite, "finite"),
+//	DECL_OP_FLOAT(isnan, "isnan"),
 };
 const long op_table_unary_n = COUNT(op_table_unary);
 
