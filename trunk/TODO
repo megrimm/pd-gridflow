@@ -4,6 +4,7 @@ x = done
 
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
+[ ] reenable numop1 isinf finite isnan (talk to alx1)
 
 autre court terme ( > 9.12 ) :
 
