@@ -116,12 +116,9 @@ map<t_atom2, int> priorities;
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
-				t_symbol *o = a.a_symbol; int e=1;
-				if      (priorities[t_atom2(A_OP1,o)]) {a=t_atom2(A_OP1,o);}
-				else if (priorities[t_atom2(A_OP ,o)]) {a=t_atom2(A_OP ,o); e=2;}
-				else RAISE("unknown function '%s'",o->s_name);
+				t_symbol *o = a.a_symbol; int e = ((Numop *)o)->arity();
 				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
-				code.push_back(a);
+				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:A_CANT,o));
 			  } break;
 			  case A_CLOSE: {
 				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this point");
@@ -233,11 +230,8 @@ map<t_atom2, int> priorities;
 void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
-	PR1(sin) = PR1(cos) = PR1(tan) = PR1(sinh) = PR1(cosh) = PR1(tanh) = 2;
-	PR1(exp) = PR1(log) = PR1(curt) = PR1(sqrt) = PR1(abs) = PR1(rand) = PR1(expm1) = PR1(log1p) = 2;
-	PR1(isinf) = PR1(finite) = PR1(isnan) = 2;
-	PR(min) = PR(max) = PR(div) = PR(rem) = PR(cmp) = PR(hypot) = PR(atan2) = PR(avg) = 2;
-	PR1(+) = PR1(unary-) = PR1(~) = PR1(!) = 3;
+	// all functions() are supposed to have priority 2
+	PR1(+) = PR1(unary-) = PR1(~) = PR1(!) = 3; // all unaries are supposed to have priority 3
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
