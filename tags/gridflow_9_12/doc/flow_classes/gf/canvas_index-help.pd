@@ -1,0 +1,36 @@
+#N canvas 0 0 632 398 10;
+#X obj 0 0 doc_h gf/;
+#X obj 0 364 doc_f;
+#X floatatom 41 76 5 0 0 0 - - -;
+#X obj 41 40 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#N canvas 492 219 438 154 see_inside 0;
+#X obj 44 50 gf/canvas_index 0;
+#X obj 44 31 inlet;
+#X obj 44 69 outlet;
+#X connect 0 0 2 0;
+#X connect 1 0 0 0;
+#X restore 41 57 pd see_inside;
+#X obj 3 106 doc_c 1;
+#X obj 3 168 doc_i 1;
+#X obj 3 230 doc_o 1;
+#X obj 14 260 doc_oo 0;
+#X obj 97 260 doc_m o0 float;
+#X text 232 260 nonnegative integer representing the index of the specified
+canvas in the canvas that it is in. this is the same index that decides
+the order of the objects in a .pd file \, and the same index that is
+used to make "connect" messages in dynamic patching.;
+#X obj 14 198 doc_ii 0;
+#X obj 14 136 doc_cc 0;
+#X text 232 198 query;
+#X text 232 136 canvas level;
+#X obj 97 198 doc_m i0 bang;
+#X obj 97 136 doc_m c0 float;
+#X obj 3 344 doc_also;
+#X obj 103 344 gf/canvas_count;
+#X connect 3 0 4 0;
+#X connect 4 0 2 0;
+#X connect 9 1 10 0;
+#X connect 15 1 13 0;
+#X connect 16 1 14 0;
+#X connect 17 1 18 0;

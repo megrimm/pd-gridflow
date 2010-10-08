@@ -1,0 +1,16 @@
+#N canvas 460 0 760 300 10;
+#X obj 36 38 args (first s foo) (second f 42) (third s bar) (fourth
+f 23) *;
+#X obj 36 87 print o1;
+#X obj 113 87 print o2;
+#X obj 190 87 print o3;
+#X obj 268 88 print o4;
+#X obj 345 87 print o5;
+#X obj 423 87 print o6;
+#X obj 423 68 inlet;
+#X connect 0 0 1 0;
+#X connect 0 1 2 0;
+#X connect 0 2 3 0;
+#X connect 0 3 4 0;
+#X connect 0 4 5 0;
+#X connect 7 0 6 0;

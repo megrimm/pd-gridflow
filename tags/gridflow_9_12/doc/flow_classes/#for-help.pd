@@ -1,0 +1,90 @@
+#N canvas 596 0 632 642 10;
+#X floatatom 13 197 5 0 0 0 - - -;
+#X floatatom 45 219 5 0 0 0 - - -;
+#X floatatom 78 238 5 0 0 0 - - -;
+#X obj 13 280 display;
+#X text 119 238 <-- step value;
+#X text 90 217 <-- upper bound;
+#X text 60 194 <-- lower bound;
+#X obj 13 261 #for 0 8 1;
+#X obj 265 286 display;
+#X msg 264 178 0 0;
+#X msg 369 224 1 1;
+#X msg 326 203 4 4;
+#X text 232 484 Upper bound;
+#X text 232 449 Lower bound. As with the other arguments \, they are
+overwritten when another value is given.;
+#X text 414 224 <-- step value (1);
+#X text 373 202 <-- upper bound (2);
+#X text 309 177 <-- lower bound (3);
+#X text 26 38 When given scalar bounds \, works like a regular [for]
+object plugged to a [#import] tuned for a Dim(size) where size is the
+number of values produced by a bang to that [for].;
+#X text 232 669 Sets the upper bound;
+#X text 232 691 Sets the step value;
+#X text 232 753 The result of the operation is a single dimension grid
+in the case of scalar values and variable dimensions for vectors.;
+#X obj 0 0 doc_h;
+#X obj 3 551 doc_i 3;
+#X obj 3 419 doc_c 3;
+#X text 232 581 activate object (send output);
+#X text 232 603 Sets the lower bound and activate;
+#X text 232 647 Sets the lower bound without activating;
+#X text 26 84 When given vector bounds \, will work like any number
+of [for] objects producing all possible combinations of their values
+in the proper order. (try it below);
+#X text 27 132 the formula for knowing the size of the output will
+be is floor((to-from)/step).;
+#X obj 14 753 doc_oo 0;
+#X obj 14 506 doc_cc 2;
+#X text 232 625 the three arguments at once;
+#X obj 14 449 doc_cc 0;
+#X obj 14 484 doc_cc 1;
+#X obj 14 581 doc_ii 0;
+#X obj 3 723 doc_o 1;
+#X obj 14 669 doc_ii 1;
+#X obj 14 691 doc_ii 2;
+#X text 11 177 With scalar bounds:;
+#X text 262 158 With vector bounds:;
+#X obj 97 625 doc_m i0 list;
+#X obj 97 581 doc_m i0 bang;
+#X obj 97 647 doc_m i0 set;
+#X obj 97 449 doc_m c0 grid;
+#X obj 97 484 doc_m c1 grid;
+#X obj 97 506 doc_m c2 grid;
+#X obj 97 603 doc_m i0 grid;
+#X obj 97 669 doc_m i1 grid;
+#X obj 97 691 doc_m i2 grid;
+#X obj 0 831 doc_f;
+#X obj 264 247 #for (0 0) (8 3) (1 1);
+#X obj 97 753 doc_m o0 grid;
+#X obj 3 811 doc_also;
+#X obj 428 273 #for (0 0) (8 3);
+#X obj 428 255 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 246 248 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X text 447 252 new shortcut: default step;
+#X text 232 506 Step value (default: whichever series of ones fits
+with the other grids);
+#X connect 0 0 7 0;
+#X connect 1 0 7 1;
+#X connect 2 0 7 2;
+#X connect 7 0 3 0;
+#X connect 9 0 50 0;
+#X connect 10 0 50 2;
+#X connect 11 0 50 1;
+#X connect 40 1 31 0;
+#X connect 41 1 24 0;
+#X connect 42 1 26 0;
+#X connect 43 1 13 0;
+#X connect 44 1 12 0;
+#X connect 45 1 57 0;
+#X connect 46 1 25 0;
+#X connect 47 1 18 0;
+#X connect 48 1 19 0;
+#X connect 50 0 8 0;
+#X connect 51 1 20 0;
+#X connect 53 0 8 0;
+#X connect 54 0 53 0;
+#X connect 55 0 50 0;

@@ -1,0 +1,64 @@
+#N canvas 380 0 632 700 10;
+#X obj 192 67 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 192 110 #t;
+#X obj 192 170 #cast float32;
+#X obj 192 90 #for 0 8192;
+#X obj 402 117 table desalon 8192;
+#X obj 402 137 table decuisine 8192;
+#X msg 92 170 set decuisine;
+#X obj 0 0 doc_h;
+#X obj 3 610 doc_o;
+#X obj 3 650 doc_also;
+#X obj 0 670 doc_f;
+#X text 26 36 Takes a grid containing indexes at the right inlet \,
+a grid containing values at the left \, then writes those values to
+a table.;
+#X obj 3 276 doc_c 1;
+#X obj 14 306 doc_cc 0;
+#X obj 97 306 doc_m c0 symbol;
+#X text 232 306 Name of the table to write to.;
+#X obj 14 368 doc_ii 0;
+#X obj 97 368 doc_m i0 grid;
+#X obj 97 451 doc_m i0 set;
+#X obj 3 338 doc_i 2;
+#X obj 14 495 doc_ii 1;
+#X text 232 451 \$1=table;
+#X obj 163 650 tabread;
+#X obj 103 650 tabwrite;
+#X obj 217 650 #tabread;
+#X obj 97 495 doc_m i1 grid;
+#X text 232 368 Input grid containing the values to be written to the
+table. This must be sent after the grid of indexes.;
+#X text 232 495 Input grid containing index values to be written to
+the table.;
+#X text 232 403 If there are less values than there are indexes \,
+the value grid will be looped over from the beginning \, for the remaining
+indexes.;
+#X text 232 473 Set the table to write to.;
+#X obj 192 190 # / (f 8191);
+#X obj 192 220 #tabwrite desalon;
+#X text 232 530 If an index is negative \, the first element of the
+table will be written to instead.;
+#X text 232 565 If an index is greater than the last element of the
+table \, the last element will be written to instead.;
+#X obj 192 144 # ^ 5461;
+#X connect 0 0 3 0;
+#X connect 1 0 34 0;
+#X connect 1 1 31 1;
+#X connect 2 0 30 0;
+#X connect 3 0 1 0;
+#X connect 6 0 31 0;
+#X connect 9 1 23 0;
+#X connect 9 1 22 0;
+#X connect 9 1 24 0;
+#X connect 14 1 15 0;
+#X connect 17 1 26 0;
+#X connect 17 1 28 0;
+#X connect 18 1 21 0;
+#X connect 18 1 29 0;
+#X connect 25 1 27 0;
+#X connect 25 1 32 0;
+#X connect 25 1 33 0;
+#X connect 30 0 31 0;
+#X connect 34 0 2 0;

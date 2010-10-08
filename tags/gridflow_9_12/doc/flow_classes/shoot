@@ -1,0 +1,1 @@
+pd -send "do symbol $1" shoot.pd

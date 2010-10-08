@@ -1,0 +1,37 @@
+#N canvas 481 142 611 399 10;
+#X obj 87 344 setargs;
+#X obj 87 173 list prepend set setargs-demo;
+#X msg 97 146 bang;
+#X obj 87 192 list trim;
+#X msg 87 123 list hello world;
+#X obj 346 13 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 346 49 display;
+#X obj 346 30 args *;
+#X obj 346 85 symbol \$1;
+#X obj 346 68 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 346 104 display;
+#X msg 136 265 adddollar 0 \, adddollar 666 \, addcomma \, addsemi
+;
+#X text 82 104 TURN OFF CHECKBOX AND TRY THIS;
+#X msg 136 286 adddollsym 0-queqchose \, adddollsym 1-stuff \, adddollar
+2 \, adddollsym 6-dondaine;
+#X obj 36 56 inlet;
+#X text 127 147 (clears);
+#X msg 136 320 adddollsym2 foo-%1-bar % \, adddollsym2 @0-zut-@3 @
+;
+#X msg 111 230 dirty;
+#X connect 1 0 3 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 0;
+#X connect 4 0 1 0;
+#X connect 5 0 7 0;
+#X connect 7 0 6 0;
+#X connect 8 0 10 0;
+#X connect 9 0 8 0;
+#X connect 11 0 0 0;
+#X connect 13 0 0 0;
+#X connect 14 0 1 0;
+#X connect 16 0 0 0;
+#X connect 17 0 0 0;

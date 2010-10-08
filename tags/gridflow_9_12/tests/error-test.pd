@@ -1,0 +1,7 @@
+#N canvas 583 228 450 300 10;
+#X obj 35 95 gf/error hello %d world %s;
+#X msg 35 76 list 2 foo;
+#X msg 17 18 bang;
+#X obj 17 37 error-2-test;
+#X connect 1 0 0 0;
+#X connect 2 0 3 0;

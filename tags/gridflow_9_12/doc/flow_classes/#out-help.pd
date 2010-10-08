@@ -1,0 +1,179 @@
+#N canvas 173 0 632 685 10;
+#X obj 15 325 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X text 10 71 Displaying a grid:;
+#X text 342 73 Saving a grid:;
+#X obj 15 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 15 221 #in;
+#X msg 65 227 open window;
+#X msg 65 252 close;
+#X text 232 866 "close" closes the file and hides the display \, must
+be accompanied by message "open window" to reopen the display.;
+#X text 232 1046 A bang notifies when a complete grid has been received.
+;
+#X text 12 32 Displays or saves an incoming grid (usually an image
+or a video).;
+#X obj 15 302 #out window \, title example;
+#X obj 127 100 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 133 1187 #record;
+#X text 232 901 "open filename.format" (ex: "open somefile.jpg") sets
+the filename to write to.;
+#X obj 351 96 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 351 190 #in;
+#X msg 127 262 hidecursor;
+#X text 196 261 <-- linux only;
+#X obj 0 0 doc_h;
+#X obj 3 371 doc_c n;
+#X obj 3 1187 doc_also;
+#N canvas 140 70 570 615 More 0;
+#X text 203 143 open default display for screenshot;
+#X msg 82 197 open videodev /dev/video0;
+#X text 277 196 open a video device;
+#X msg 187 388 open x11 here;
+#X msg 158 337 open x11 local 10;
+#X text 298 390 connect to default display;
+#X text 297 338 connect to display #10 on this machine;
+#X msg 65 313 open x11 remote.host.bla.net 0;
+#X text 297 315 connect to remote machine on display #0;
+#X text 202 114 open an image file;
+#X msg 242 437 close;
+#X msg 83 142 open x11 here;
+#X msg 200 413 open window;
+#X text 299 413 opens a window x11 \, quartz or sdl;
+#X obj 23 223 cnv 15 23 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 23 223 #in;
+#X obj 5 13 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 14 14 #out;
+#X obj 23 480 #out;
+#X msg 53 114 open sewing.jpg;
+#X obj 23 72 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 23 93 t b b;
+#X msg 83 170 open lsd.mov;
+#X text 203 169 open a quicktime video;
+#X obj 97 74 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X msg 165 363 open save_here.jpg;
+#X text 298 362 select file to write to in jpg format;
+#X text 14 36 #out communicating grids (images) to/from devices \,
+sockets \, files;
+#X text 37 502 An incoming file is sent through the opened device or
+file. In single file format \, a subsequent picture overwrites the
+preceeding one. There are many more options.;
+#X connect 1 0 15 0;
+#X connect 3 0 18 0;
+#X connect 4 0 18 0;
+#X connect 7 0 18 0;
+#X connect 10 0 18 0;
+#X connect 11 0 15 0;
+#X connect 12 0 18 0;
+#X connect 15 0 18 0;
+#X connect 19 0 15 0;
+#X connect 20 0 21 0;
+#X connect 21 0 15 0;
+#X connect 21 1 19 0;
+#X connect 22 0 15 0;
+#X connect 24 0 15 0;
+#X connect 25 0 18 0;
+#X restore 140 334 pd More info about this object class;
+#X obj 3 757 doc_i 1;
+#X obj 14 787 doc_ii 0;
+#X obj 14 1046 doc_oo 0;
+#X obj 97 787 doc_m i0 grid;
+#X obj 97 901 doc_m i0 open;
+#X obj 97 866 doc_m i0 close;
+#X obj 103 1187 #in;
+#X text 188 426 auto-open with auto-detect of the format-handler;
+#X text 226 451 auto-open with manual choice of the format-handler
+;
+#X text 88 406 nothing opened \, you have to open by yourself;
+#X obj 46 407 #out;
+#X obj 46 428 #out filename.suffix;
+#X obj 46 449 #out handler filename.suffix;
+#X obj 97 822 doc_m i0 autoclose;
+#X obj 0 1207 doc_f;
+#X obj 97 1046 doc_m o0 bang;
+#X msg 15 117 load working.jpg;
+#X msg 127 117 load sewing.jpg;
+#X msg 351 113 load sewing.jpg;
+#X text 232 822 "autoclose 1": close after incoming image is finished.
+;
+#X text 232 844 "autoclose 0": doesn't.;
+#X text 232 787 write one frame (or in the case of [#out grid] \, one
+grid of any kind).;
+#X obj 351 266 #out;
+#X msg 365 235 open somefile.jpg \, autoclose;
+#X obj 97 1068 doc_m o1 not_open;
+#X obj 3 1016 doc_o 2;
+#X obj 14 1068 doc_oo 1;
+#X text 232 1068 Signals that the requested operation cannot be performed
+because [#in] is in closed mode. This could mean a "close" message
+was previously sent \, or no "open" (or equivalent) was ever done \,
+or the file was not found \, or the file was read-protected \, or the
+device is locked by another object or application that opened it (busy)
+\, or any other reason.;
+#X text 246 522 picture formats;
+#X text 234 482 generic file format that can encode any grid.;
+#X obj 236 500 doc_accolade;
+#X obj 124 483 doc_link #io.grid;
+#X obj 124 523 doc_link #io.jpeg;
+#X obj 124 503 doc_link #io.ppm;
+#X obj 124 563 doc_link #io.quicktimehw;
+#X text 236 563 movie formats (.mov and .avi);
+#X obj 124 593 doc_link #io.x11;
+#X obj 236 598 doc_accolade;
+#X obj 124 613 doc_link #io.quartz;
+#X obj 124 633 doc_link #io.sdl;
+#X obj 124 653 doc_link #io.aalib;
+#X text 58 707 note that [#in] supports some more modules (those that
+are only for input);
+#X text 252 627 see also [#to_pix] with [gemwin];
+#X text 251 642 and see also [#see];
+#X msg 124 675 open window;
+#X text 233 675 alias for either quartz or x11 or sdl;
+#X obj 124 543 doc_link #io.png;
+#X text 252 611 window adaptors;
+#X obj 187 1187 #to_pix;
+#X obj 241 1187 gemwin;
+#X obj 289 1187 doc_link #see;
+#X obj 97 1155 doc_m o1 <any>;
+#X obj 97 936 doc_m i0 <any>;
+#X text 232 1155 messages coming from a specific module listed above.
+;
+#X text 232 936 passed to the file format handler currently open. If
+none is open \, this will send a "not_open" message on outlet 1;
+#X text 232 971 See the help for the specific module that you are using
+\, by clicking a link above.;
+#X connect 3 0 38 0;
+#X connect 4 0 10 0;
+#X connect 5 0 10 0;
+#X connect 6 0 10 0;
+#X connect 10 0 0 0;
+#X connect 11 0 39 0;
+#X connect 14 0 40 0;
+#X connect 15 0 44 0;
+#X connect 16 0 10 0;
+#X connect 20 1 28 0;
+#X connect 20 1 12 0;
+#X connect 20 1 70 0;
+#X connect 20 1 71 0;
+#X connect 20 1 72 0;
+#X connect 25 1 43 0;
+#X connect 26 1 13 0;
+#X connect 27 1 7 0;
+#X connect 35 1 41 0;
+#X connect 35 1 42 0;
+#X connect 37 1 8 0;
+#X connect 38 0 4 0;
+#X connect 39 0 4 0;
+#X connect 40 0 15 0;
+#X connect 45 0 44 0;
+#X connect 46 1 49 0;
+#X connect 73 1 75 0;
+#X connect 74 1 77 0;
+#X connect 74 1 76 0;

@@ -1,0 +1,10 @@
+#N canvas 538 231 450 139 10;
+#X obj 87 53 #in videodev /dev/video0;
+#X msg 87 34 get;
+#X obj 87 15 loadbang;
+#X obj 87 72 print a;
+#X obj 250 72 print b;
+#X connect 0 0 3 0;
+#X connect 0 1 4 0;
+#X connect 1 0 0 0;
+#X connect 2 0 1 0;

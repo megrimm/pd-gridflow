@@ -1,0 +1,35 @@
+#N canvas 0 0 632 431 10;
+#X obj 0 0 doc_h;
+#X obj 3 377 doc_also;
+#X obj 0 397 doc_f;
+#X obj 3 95 doc_c ...;
+#X obj 3 157 doc_i 2;
+#X obj 14 187 doc_ii 0;
+#X obj 14 257 doc_ii 1;
+#X obj 3 289 doc_o 1;
+#X obj 14 319 doc_oo 0;
+#X obj 103 377 gf/sprintf;
+#X obj 97 209 doc_m i0 cast;
+#X obj 97 187 doc_m i0 list;
+#X obj 97 257 doc_m i1 list;
+#X obj 14 125 doc_cc any;
+#X obj 97 125 doc_m cany <atom>;
+#X text 232 209 numbertype of the grid to send;
+#X obj 232 231 doc_link numtype 1;
+#X obj 124 48 #sprintf;
+#X text 182 41 generate text like [gf/sprintf] as a grid \, without
+producing symbols;
+#X obj 97 319 doc_m o0 grid;
+#X text 232 319 a one-dimensional grid \, with one ascii byte per value.
+it would be a good idea to support Unicode here \, but it doesn't.
+;
+#X text 232 125 same as [gf/sprintf];
+#X text 232 187 same as [gf/sprintf];
+#X text 232 257 same as [gf/sprintf];
+#X connect 1 1 9 0;
+#X connect 10 1 15 0;
+#X connect 10 1 16 0;
+#X connect 11 1 22 0;
+#X connect 12 1 23 0;
+#X connect 14 1 21 0;
+#X connect 19 1 20 0;

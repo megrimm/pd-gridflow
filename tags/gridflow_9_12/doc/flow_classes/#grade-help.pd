@@ -1,0 +1,54 @@
+#N canvas 596 0 632 610 10;
+#X floatatom 19 54 5 0 0 0 - - -;
+#X floatatom 51 54 5 0 0 0 - - -;
+#X floatatom 83 54 5 0 0 0 - - -;
+#X floatatom 115 54 5 0 0 0 - - -;
+#X obj 19 86 #pack 4;
+#X obj 19 105 #grade;
+#X obj 0 0 doc_h;
+#X obj 3 157 doc_c 0;
+#X obj 3 197 doc_i 1;
+#X obj 3 446 doc_o 1;
+#X obj 14 476 doc_oo 0;
+#X obj 14 227 doc_ii 0;
+#X obj 97 227 doc_m i0 grid;
+#X obj 97 476 doc_m o0 grid;
+#X text 232 336 you may achieve different kinds of sorting by applying
+various filters before [#grade]. the possibilities are unlimited. if
+you plug [#grade] directly into another [#grade] \, you will get the
+inverse arrangement \, which allows to take the sorted values and make
+them unsorted in the original way. note that this is really not the
+same as just listing the values backwards.;
+#X obj 0 576 doc_f;
+#X obj 3 556 doc_also;
+#X obj 103 556 #sort;
+#X text 232 288 For a grid of size (m... n) \, each piece of size (n)
+is considered separately \, making many separate gradings \, and everything
+is put together in a grid of size (m... n).;
+#X obj 19 124 display;
+#X text 236 58 indicates how values have to be placed in order to be
+sorted. can be used for sorting \, but also other activities related
+to sorting \, such as finding the biggest element \, finding the median
+\, equalising colours \, etc.;
+#X text 232 227 For a grid of size (n) \, gives a "top" of elements
+\, from smallest to largest. This is a crucial component for making
+[#sort] (look at the inside of a [#sort] object for an example).;
+#X text 232 498 Values produced are ranging from 0 to n-1 \, because
+that's the normal numbering of grid elements in GridFlow \, and is
+what [#store] expects.;
+#X text 232 476 Grid of the same size as input \, but in numbertype
+"i".;
+#X obj 145 556 doc_link indexmap 1;
+#X connect 0 0 4 0;
+#X connect 1 0 4 1;
+#X connect 2 0 4 2;
+#X connect 3 0 4 3;
+#X connect 4 0 5 0;
+#X connect 5 0 19 0;
+#X connect 12 1 21 0;
+#X connect 12 1 18 0;
+#X connect 12 1 14 0;
+#X connect 13 1 23 0;
+#X connect 13 1 22 0;
+#X connect 16 1 17 0;
+#X connect 16 1 24 0;

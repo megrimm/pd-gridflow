@@ -1,0 +1,206 @@
+#N canvas 522 5 632 642 10;
+#X obj 0 0 doc_h;
+#X obj 3 618 doc_c 0..;
+#X msg 40 648 open x11;
+#X msg 40 668 open x11 here;
+#X msg 40 708 open x11 local 0;
+#X text 178 649 synonym of "open x11 here".;
+#X text 181 668 connects to the default X11 server \, according to
+your environment variable "DISPLAY".;
+#X text 182 708 connects to a display server on this machine.;
+#X msg 39 739 open x11 remote foo.org 0;
+#X text 201 738 connects to a remote X11 display server using TCP.
+Port number will be 6000 plus the display number \, because of the
+X11 standard.;
+#X text 141 38 supports 15 \, 16 \, 24 \, 32-bit truecolor displays
+;
+#X text 141 57 now also support 8-bit indexed displays \, using a private
+colormap configured as 3:3:2 RGB. When using 8-bit you can specify
+the "use_stripes" option to use a completely different color scheme
+involving R \, G \, B diagonal stripes \, a kind of 6:6:6 RGB spread
+over three pixels.;
+#X text 141 129 If you are using Windows or MacOS 10: you will have
+to install a X11 server. This will emulate Unix display on your OS.
+(note: Unix systems also need a X11 server \, but it's built-in and
+handles the video driver directly). In the case of MacOS 10 and QNX
+that both use non-X11 display technology on top of a basically Unix
+OS \, the OS comes with a X11 server \, but it may be on a "bundled
+software" CD.;
+#X msg 37 794 open x11 display foo.org:0;
+#X obj 3 856 doc_i 1;
+#X obj 14 886 doc_ii 0;
+#X text 232 886 with [#in] \, captures a frame;
+#X text 232 1278 \$1=height \$2=width. changes the window's size \,
+just like sending a grid dim(height \, width \, 3) would. this affects
+the size of screen captures too.;
+#X text 232 1212 This makes the cursor invisible.;
+#X obj 3 2486 doc_also;
+#X text 141 227 Destroying the object (or sending "close") should close
+the window.;
+#X obj 35 65 #out x11;
+#X text 140 259 because of the design of Xlib \, or if any of the connections
+involved crashes \, then the whole program has to be terminated. (don't
+you love xlib). Something similar happens if you close any of the windows
+yourself \, but IIRC this could be fixed.;
+#X obj 14 1793 doc_oo 0;
+#X text 232 1998 \$1=y \$2=x \$3=buttons;
+#X text 232 2020 This is emitted every time the cursor moves inside
+the window connected to this format handler. This is also emitted when
+the cursor is dragging from inside to outside the window. This is also
+emitted when a mouse button is pressed.;
+#X text 232 2094 The y and x coordinates are relative to the upper
+right corner of the window. Specific button states may be extracted
+from the button value by applying [>> buttonnumber] and then checking
+whether the result is odd.;
+#X text 232 2155 0: Shift;
+#X text 232 2177 1: Caps Lock;
+#X text 232 2199 2: Control;
+#X text 232 2221 3: Alternate;
+#X text 232 2243 4: NumLock;
+#X text 232 2265 5: (unknown);
+#X text 232 2287 6: Meta or Window Key;
+#X text 232 2309 7: Scroll Lock;
+#X text 232 2331 8: Left Mouse Button;
+#X text 232 2353 9: Middle Mouse Button or Mouse Wheel Click;
+#X text 232 2375 10: Right Mouse Button;
+#X text 232 2397 11: Wheel Up;
+#X text 232 2419 12: Wheel Down;
+#X text 232 2441 NOTE: This message form may become longer in the future
+\, but the already defined parts will stay the same.;
+#X text 232 1793 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1928 \$1=y \$2=x \$3=buttons \$4=keyname;
+#X text 232 1950 Same as keypress but when a key gets released instead.
+NOTE: This message form may become longer in the future \, but the
+already defined parts will stay the same.;
+#X obj 0 2506 doc_f;
+#X text 208 795 other syntax for 'remote'.;
+#X text 141 480 there is one last argument that may be added to every
+"open" message of [#in x11]. if you don't put it \, a new toplevel
+window is created. if you put "root" then the screen's wallpaper will
+be used instead (it may fail to work with some popular window managers).
+You can also put a window number \, e.g. 0x28003ff \, you may connect
+to an existing window. you can find out the number of a window by using
+a tool like xwininfo \, part of X11 standard tools. (This used to work
+also for [#out x11]. it's a bug);
+#X msg 38 824 open x11 here override_redirect;
+#X text 237 823 if you need borderless untouchable windows.;
+#X text 141 377 then you can add override_redirect option to open a
+window that will not be handled by the window manager \, so that it
+doesn't have any borders \, for example. however \, this is "dangerous"
+\, as you can lock yourself out of your computer. On Linux you can
+escape that using Ctrl+Alt+F1 or similar. Another problem is that it
+prevents the window from getting 'keypress' 'keyrelease' events.;
+#X text 232 1815 This is emitted when a keyboard key is pressed while
+this format handler's window is active. Keynames follow the X11 standard
+\, similarly to PureData's [keyname] object. The only exception is
+that keynames that are digits get prefixed by a capital D so that they
+don't get mistaken for actual numbers. NOTE: This message form may
+become longer in the future \, but the already defined parts will stay
+the same.;
+#X text 232 955 Resizes the window to the size of the grid \; Encodes
+that grid in the display's pixel format \; Also displays it if autodraw
+is greater than 0 \; The values must be in range 0-255 \, or else they
+will be "wrapped".;
+#X text 232 1240 move the window to the position \$1=y \$2=x;
+#X text 232 1326 does: out_size \$1 \$2 \, move \$3 \$4;
+#X text 232 1571 puts the symbol \$1 in the titlebar instead of the
+default GridFlow (240 \, 320 \, 3)" or similar). if title is an empty
+string \, the title goes back to the default mode of writing "GridFlow"
+and the window size.;
+#X text 232 1645 moves mouse cursor to location y=\$1 x=\$2. use sparingly.
+;
+#X text 232 1683 for future use.;
+#X text 232 1514 0: don't use explicit shared memory for sending to
+the video card.;
+#X text 232 1549 1: use shared memory if available.;
+#X obj 97 1029 doc_m i0 border;
+#X text 232 1029 0: hide window border. this does not work in Apple
+X11. It may or may not work on Linux X11 (or other X11 servers) depending
+on the window manager. This was tested on GNOME/Metacity.;
+#X text 232 1090 1: show window border (default);
+#X text 232 1112 this option is not the same as override_redirect \,
+because it asks the window manager to not put the border \, while still
+managing the window otherwise. thus \, for example \, Metacity still
+allows Alt+Button1 and Alt+Tab to affect that window \, which is not
+the case with override_redirect. Also \, border is different \, as
+this setting can be changed while the window exists.;
+#X obj 103 2486 #mouse;
+#X text 232 1383 Note that if your cursor table has them numbered from
+0 to 154 using only even numbers \, then those cursor numbers are all
+doubled compared to the ones GridFlow uses.;
+#X text 232 1348 \$1=cursor_id. \$1=cursor_id. Selects one of the 77
+predefined cursors of X11 \, from 0 to 76;
+#X text 232 1431 Note that out-of-range values are now rejected.;
+#X text 232 1453 On Linux \, the file /usr/include/X11/cursorfont.h
+contain a list of cursor names \, with doubled numbers \, but this
+file isn't always already installed. On Ubuntu \, this is in the package
+named "libx11-dev".;
+#X obj 151 2486 doc_link #io.quartz;
+#X obj 241 2486 doc_link #io.sdl;
+#X text 140 330 only one window may be used per x11 connection (to
+simplify matters \; this doesn't reduce flexibility).;
+#X obj 97 1998 doc_m o0 position;
+#X obj 97 886 doc_m i0 bang;
+#X obj 97 1278 doc_m i0 out_size;
+#X obj 97 1348 doc_m i0 setcursor;
+#X obj 97 1212 doc_m i0 hidecursor;
+#X obj 97 1793 doc_m o0 keypress;
+#X obj 97 1928 doc_m o0 keyrelease;
+#X obj 97 1240 doc_m i0 move;
+#X obj 97 1514 doc_m i0 shared_memory;
+#X obj 97 1683 doc_m i0 xvideo;
+#X obj 97 1571 doc_m i0 title;
+#X obj 97 1645 doc_m i0 warp;
+#X obj 97 1326 doc_m i0 set_geometry;
+#X obj 3 1747 doc_o 1;
+#X obj 97 911 doc_m i0 grid;
+#X text 232 933 with [#out] \, displays a frame.;
+#X text 232 911 grid(rows columns rgb);
+#X obj 313 2486 doc_link #see;
+#X obj 367 2486 gf/mouse_spy;
+#X connect 19 1 63 0;
+#X connect 19 1 68 0;
+#X connect 19 1 69 0;
+#X connect 19 1 88 0;
+#X connect 19 1 89 0;
+#X connect 59 1 60 0;
+#X connect 59 1 61 0;
+#X connect 59 1 62 0;
+#X connect 71 1 24 0;
+#X connect 71 1 25 0;
+#X connect 71 1 26 0;
+#X connect 71 1 27 0;
+#X connect 71 1 28 0;
+#X connect 71 1 29 0;
+#X connect 71 1 30 0;
+#X connect 71 1 31 0;
+#X connect 71 1 32 0;
+#X connect 71 1 33 0;
+#X connect 71 1 34 0;
+#X connect 71 1 35 0;
+#X connect 71 1 36 0;
+#X connect 71 1 37 0;
+#X connect 71 1 38 0;
+#X connect 71 1 39 0;
+#X connect 71 1 40 0;
+#X connect 72 1 16 0;
+#X connect 73 1 17 0;
+#X connect 74 1 65 0;
+#X connect 74 1 64 0;
+#X connect 74 1 66 0;
+#X connect 74 1 67 0;
+#X connect 75 1 18 0;
+#X connect 76 1 41 0;
+#X connect 76 1 50 0;
+#X connect 77 1 42 0;
+#X connect 77 1 43 0;
+#X connect 78 1 52 0;
+#X connect 79 1 57 0;
+#X connect 79 1 58 0;
+#X connect 80 1 56 0;
+#X connect 81 1 54 0;
+#X connect 82 1 55 0;
+#X connect 83 1 53 0;
+#X connect 85 1 86 0;
+#X connect 85 1 51 0;
+#X connect 85 1 87 0;

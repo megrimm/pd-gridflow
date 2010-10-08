@@ -1,0 +1,149 @@
+#N canvas 551 24 632 642 10;
+#X obj 0 0 doc_h gf/;
+#X obj 3 1251 doc_also;
+#X obj 0 1271 doc_f;
+#X obj 3 308 gf/gl;
+#X obj 103 1251 GEMglVertex3f;
+#X obj 193 1251 GEMglColor3f;
+#X obj 277 1251 GEMglBegin;
+#X obj 349 1251 GEMglEnd;
+#X text 409 1251 etc...;
+#X text 246 40 use OpenGL commands in a different way than in GEM (for
+use with GEM);
+#X obj 3 615 doc_c 0;
+#X obj 3 655 doc_i 1;
+#X obj 14 685 doc_ii 0;
+#X obj 3 1211 doc_o 0;
+#X obj 97 962 doc_m i0 color;
+#X obj 97 685 doc_m i0 begin;
+#X obj 97 997 doc_m i0 end;
+#X obj 97 1032 doc_m i0 vertex;
+#X text 232 742 0 or "points" does GL_POINTS;
+#X text 232 764 1 or "triangles" does GL_TRIANGLES;
+#X text 232 786 2 or "triangle_strip" does GL_TRIANGLE_STRIP;
+#X text 232 808 3 or "quads" does GL_QUADS;
+#X text 232 830 4 or "quad_strip" does GL_QUAD_STRIP;
+#X text 232 852 5 or "polygon" does GL_POLYGON;
+#X text 232 874 6 or "triangle_fan" does GL_TRIANGLE_FAN;
+#X text 232 896 7 or "lines" does GL_LINES;
+#X text 232 918 8 or "line_loop" does GL_LINE_LOOP;
+#X text 232 940 9 or "line_strip" does GL_LINE_STRIP;
+#X text 232 962 takes 3 or 4 float arguments. Sets the colour of the
+upcoming vertex.;
+#X text 232 685 begin a new GL geo.;
+#X text 232 997 finish making the current GL geo after all vertices
+have been added.;
+#X text 232 1032 takes 2 \, 3 or 4 float arguments and append a new
+vertex to the geo.;
+#X text 232 707 \$1 is a float or symbol for the shape type (which
+decides how the edges will connect the vertices);
+#X obj 3 53 gemhead;
+#X obj 54 29 loadbang;
+#X msg 3 281 end;
+#X obj 31 201 t f f;
+#X obj 58 220 cos;
+#X obj 31 220 sin;
+#X obj 31 262 pack;
+#X obj 31 243 *;
+#X obj 31 163 t f f;
+#X obj 58 243 *;
+#X obj 69 108 gf/gl;
+#X obj 31 182 *;
+#X obj 31 144 for 0 1 0.005;
+#X msg 69 89 scale 4 4 1 \, begin triangles;
+#X obj 116 165 + 0.1;
+#X msg 54 48 create \, 1;
+#X text 246 74 this page will not document the whole of the [gf/gl]
+interface \, because it is extremely long and complex and corresponds
+quite directly to what you can find in the OpenGL reference manuals
+for the C language. Instead \, let's see what is different between
+the manual (as seen on http://opengl.org/ \, for example) and [gf/gl]
+\, and let's also see how it differs from GEM.;
+#X text 245 171 first \, note that although you'd normally still use
+[gf/gl] by using a [gemwin] and a [gemhead] \, you don't actually need
+the contents of [gemhead]'s message at all \, and instead you may use
+bang or whatever else. no need for [repeat].;
+#X text 244 245 then note that 'glBegin' \, instead of being mapped
+to a class named [GEMglBegin] \, it is mapped to a method named 'begin'
+in class [gf/gl]. Likewise for all other functions of OpenGL \, which
+lose the initial two letters "gl" \, and which are lowercased. The
+non-first uppercases also get a underscore \, and thus 'glLoadMatrix'
+becomes 'load_matrix'.;
+#X obj 86 165 f 60;
+#X msg 120 142 60;
+#X obj 54 67 gemwin 30;
+#X obj 3 72 t b b b;
+#X msg 31 281 color 0.5 \$1 \$2 \, vertex \$1 \$2;
+#X text 245 329 then note that for 'glVertex2fv' \, the final 'v' is
+stripped \, as there is no functional difference with the other function
+'glVertex2f'. Then the 'f' is also stripped (because Pd doesn't support
+any other data types than 'f' \, so there is no functional difference
+with 'glVertex2d' or 'glVertex2s'. Then the '2' is also stripped \,
+because the proper variant of glVertex is chosen at runtime depending
+on the list of arguments being given. Thus you have to write it as
+just 'vertex' \, with 2 \, 3 or 4 arguments.;
+#X text 245 452 then \, all GLenum macros such as GL_POINTS are lowercased
+and the first three characters "GL_" are removed. Thus "GL_POINTS"
+*has* to be written as just "points" instead. Or else \, you can write
+the same number as you'd had to write if you were using GEMgl.;
+#X text 245 526 it's not decided yet what will happen with function
+name uppercase suffixes like '1D' '2D' '3D' where 'D' means dimension.
+they are currently lowercased and kept.;
+#X text 245 580 not all functions are implemented yet.;
+#X msg 118 50 destroy;
+#X text 158 1079 ALSO HAS 115 OTHER METHODS (SOME OF WHICH DON'T WORK
+\, BUT MOST OF WHICH HAVEN'T BEEN TRIED YET). If you would like help
+on using that extra functionality \, please contact gridflow-dev. Also
+\, look at this :;
+#X obj 176 1167 gf/class_info;
+#X obj 176 1186 print;
+#X msg 176 1148 symbol gf/gl;
+#X connect 1 1 4 0;
+#X connect 1 1 5 0;
+#X connect 1 1 6 0;
+#X connect 1 1 7 0;
+#X connect 1 1 8 0;
+#X connect 14 1 28 0;
+#X connect 15 1 32 0;
+#X connect 15 1 18 0;
+#X connect 15 1 25 0;
+#X connect 15 1 26 0;
+#X connect 15 1 27 0;
+#X connect 15 1 19 0;
+#X connect 15 1 20 0;
+#X connect 15 1 24 0;
+#X connect 15 1 21 0;
+#X connect 15 1 22 0;
+#X connect 15 1 23 0;
+#X connect 15 1 29 0;
+#X connect 16 1 30 0;
+#X connect 17 1 31 0;
+#X connect 33 0 55 0;
+#X connect 34 0 48 0;
+#X connect 35 0 3 0;
+#X connect 36 0 38 0;
+#X connect 36 1 37 0;
+#X connect 37 0 42 0;
+#X connect 38 0 40 0;
+#X connect 39 0 56 0;
+#X connect 40 0 39 0;
+#X connect 41 0 44 0;
+#X connect 41 1 40 1;
+#X connect 41 1 42 1;
+#X connect 42 0 39 1;
+#X connect 44 0 36 0;
+#X connect 45 0 41 0;
+#X connect 46 0 43 0;
+#X connect 47 0 52 1;
+#X connect 48 0 54 0;
+#X connect 52 0 44 1;
+#X connect 52 0 47 0;
+#X connect 53 0 52 1;
+#X connect 55 0 35 0;
+#X connect 55 1 45 0;
+#X connect 55 2 46 0;
+#X connect 55 2 52 0;
+#X connect 56 0 3 0;
+#X connect 61 0 54 0;
+#X connect 63 0 64 0;
+#X connect 65 0 63 0;
