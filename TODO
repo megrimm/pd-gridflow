@@ -19,16 +19,9 @@ x = done
     power functions
     	
     pow ()	raise to the power of {e.g., pow(x,y) is x to the power of y}
-    sqrt ()	square root
-    ln() and log()    	natural log
+    ln()    	alias for log()
     log10()    	log base 10
     fact()    	factorial
-    erf()    	error function (added in version 0.4)
-    erfc()    	complementary error function (added in version 0.4)
-    cbrt()    	cube root (added in version 0.4)
-    expm1()    	exponential minus 1 (added in version 0.4)
-    log1p()    	logarithm of 1 plus (added in version 0.4)
-    ldexp()    	multiply floating-point number by integral power of 2 (added in version 0.4)
     	
     Trigonometric
     	

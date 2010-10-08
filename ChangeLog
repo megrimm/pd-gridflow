@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.12 (2010.10.06):
+version 9.12 (2010.10.08):
 
  * Gem loading is now optional at run-time (and mandatory at compile-time),
    so that not having Gem will only result in 3 classes not being loaded.
@@ -36,7 +36,7 @@ version 9.12 (2010.10.06):
      sqrt rand sin cos tanh log exp C.sin C.cos C.tanh C.log C.exp
  * added numops (one input): ! ~ unary- abs tan sinh cosh floor ceil
  * added numops (one input): erf erfc cbrt expm1 log1p
- * added numops (two inputs): ldexp log* /exp
+ * added numops (two inputs): ldexp /exp
 
 version 9.11 (2010.09.07):
 
