@@ -13,8 +13,7 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/expr.o src/classes_gui.o \
 src/numop1.o src/numop2.1.o src/numop2.2.o src/numop2.3.o src/numop2.4.o src/formats.o
-PDLIB += gridflow_gem_loader$(PDSUF) gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
-PDLIB += gridflow_gem9292$(PDSUF) gridflow_gem9293$(PDSUF) gridflow_gem9393$(PDSUF)
+PDLIB += gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
 
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
