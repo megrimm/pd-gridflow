@@ -347,6 +347,7 @@ Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(tanhmul,"tanh*", 0),
 	DECL_OP_NOFOLD(gamma,  "gamma", 0),
 	DECL_OP_NOFOLD(pow,    "**", 0),
+	DECL_OP_NOFOLD(pow,    "pow", 0), // new alias in 9.13
 // 0.8
 	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
 	DECL_OP(clipsub,"clip-", 0),
