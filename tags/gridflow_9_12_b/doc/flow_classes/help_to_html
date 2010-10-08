@@ -1,0 +1,34 @@
+#!/usr/bin/env tclsh
+
+source ../../tcl/pd_parser.tcl
+
+proc scrounche {list} {
+  set s [join $list " "]
+  regsub -all { \\,} $s ,
+}
+
+#puts      [join [list hello \\, world] " "]
+#puts [scrounche [list hello \\, world]]
+#exit
+
+proc basename {f} {lindex [file split $f] end}
+
+set files [glob *-help.pd cv/*-help.pd gf/*-help.pd]
+set n [llength $files]; set i 0
+foreach fname $files {
+  set f [open $fname]
+  set g [open png/[regsub {pd$} $fname html] w]
+  puts $g "<html><head><title>$fname</title></head>"
+  puts $g "<style type=\"text/css\">.hidden\{font-size: 8px\; color: white\}</style>"
+  puts $g "<body>"
+  puts $g "<img src=\"[regsub # [regsub {pd$} [basename $fname] png] %23]\"><br clear=\"left\">"
+  puts $g "<p class=\"hidden\">"
+  foreach line [pd_mess_split [read $f]] {
+    if {[lindex $line 1] == "text"} {puts $g [scrounche [lrange $line 4 end]]}
+  }
+  puts $g "</p></body></html>"
+  close $f
+  close $g
+  incr i; puts -nonewline "\r$i files out of $n"; flush stdout
+}
+puts ""

@@ -1,0 +1,425 @@
+x = done
+
+9.13 :
+
+[ ] [#expr] local
+[ ] numop1: [#expr] unaries don't all work.
+[ ] reenable numop1 isinf finite isnan (talk to alx1)
+
+[ ] more expr :
+
+    //if() conditional  - if (condition, IfT rue-expr, IfFalse-expr) - in expr~ if 'condition' is a signal, the result will be determined on sample by sample basis (added in version 0.4)
+    int ()   	convert to integer
+    rint ()    	round a float to a nearby integer
+    copysign() 	copy sign of a number(added in version 0.4)
+    imodf  	get signed integer value from floating point number(added in version 0.4)
+    modf    	get signed fractional value from floating-point number(added in version 0.4)
+    drem    	floating-point remainder function (added in versio n 0.4)
+
+    power functions
+    	
+    pow ()	raise to the power of {e.g., pow(x,y) is x to the power of y}
+    ln()    	alias for log()
+    log10()    	log base 10
+    fact()    	factorial
+    	
+    Trigonometric
+    	
+    asin()    	arc sine
+    acos()    	arc cosine
+    atan()    	arc tangent
+    atan2()    	arc tangent of 2 variables
+    asinh()    	inverse hyperbolic sine
+    acosh()    	inverse hyperbolic cosine
+    atan()    	inverse hyperbolic tangent
+    fmod()    	 floating-point remainder function (added in version 0.4)
+
+    Table Functions
+    	
+    size()    	size of a table
+    sum()    	sum of all elements of a table
+    Sum()    	sum of elemnets of a specified boundary of a table
+
+[ ] list-attrs
+[ ] parens-msg
+[ ] make automatic documentation tables for numop... add [gf/numop_info]
+[ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
+[ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
+[ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
+[ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
+[ ] document "f 1 2 3" as a shortcut grid literal
+[ ] [#import] does the same rounding bullshit again, when we want a float grid
+[ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
+[ ] should clean the -path thing because /abstractions/ gets saved in the path
+[ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
+[ ] make a clean GridOut::~GridOut. can't make one because ~GridOut often happens after the next GridOut construction.
+[ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe) or hidden (CLASS_NOINLET) (maybe)
+[ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
+[ ] is outlet_anything2 and pd_anything2 really something we want as a behaviour of [args] ???
+[ ] [#many]: add support for non-i grids
+    [ ] should the internal grid always stored as float, and then a [#cast] would change it to the user's favourite type ?
+[ ] [#many]: add support for abstraction components
+    [ ] abstraction component location lookup doesn't uplevel.
+    [ ] [gf/object_bbox] doesn't support looking up a [receives] inside the abstraction because it is 'not patchable'
+        and because it's not in the same canvas either
+    [ ] [gf/object_bbox] can't look in a separate canvas (and it would be better if it could)
+        and I want to use a 2nd order GOP to make things easier (avoid mistakes when saving abstraction)
+[ ] [#many]: spacing and margins don't get saved when properties-dialogue has not been used
+[ ] [#many]: doesn't show little star indicating that file hasn't been saved
+[ ] [#many]: add support for [hsl] and [vsl]
+[ ] figure out domain name transfer problem
+[ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
+[ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
+[ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
+    donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
+[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
+[ ] [#from_pix]: rajouter un [pix_rgba] implicite... convertTo(RGBA) ...
+[ ] [#from_pix, colorspace y]
+[ ] heat.pd still sucks (?)
+[ ] accelerate [#outer ignore (0)]
+[ ] [lb]
+[ ] other invalid command name ".x8f03820.c" not related to hidden [display]
+[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
+[ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
+[ ] alias numops so that they are more pd-like
+[ ] make a rounding [# *>>8] ?
+[ ] [#fft] sign crash
+[ ] [#import] bug (see atelier)
+[ ] remove RAISE from grid.cxx, because of all the problems it causes.
+    generally, be a lot more careful about exception handling, because
+    assuming an operation works, is as troublesome when using throw/catch as when you don't,
+    because if you assume an operation works, you're not really _using_ throw/catch.
+[ ] unify [print] and [display] source code
+[ ] isn't .str().data() evil ?
+[ ] turtle.pd
+[ ] [#remap_image, cache]
+[ ] [#import (...) f] converts floats to int to float (wtf)
+[ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm (easy to do in #scale_by-help.pd)
+[ ] bug: see #fft*-test.pd
+[ ] merge threshold.pd, simple_mask.pd, color_detect.pd
+[ ] on which classes do we add an attr-outlet ?
+[ ] [#in]/[#out]: what happened to frame number in right outlet?
+[ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
+[ ] go back in all help files and fill in whatever is still missing
+[ ] GF objects don't have default methods like bang and list, unlike pd itself.
+[ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
+[ ] [#draw_polygon] : winding-rule, et multi-rule (ce dernier utile pour dessiner plusieurs polygones à la fois)
+[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b
+[ ] put_at is lacking some checks for number-of-dims, causing segfault.
+[ ] strange problem with [#import] when input size doesn't match output size and object is recreated
+[ ] can't handle [args] that come out as grid literals and have to become setter messages.
+[ ] conversion from float to int is inconsistent: when to round and when to trunc?
+[ ] what to do with [#motion_detection] ?
+[ ] videodev,quicktime,etc: height,width vs size : standardise
+[ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
+[ ] cellular_1d.pd: should get a variable width
+[ ] [pack] trigger_by (choose which inlets are hot)
+[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
+[ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
+[ ] error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
+[ ] doc attributes: [doc_a] [doc_aa] ?
+[ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
+[ ] distinguish messages vs atoms in this manual
+    e.g. [doc_aa] would contain something like [doc_m] but wouldn't have [doc_m] as a subnode.
+[ ] [print], [gf/print] bugs : "(", ")", what else...?
+[ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
+[ ] support "get" in abstractions... automatically, through [args] ? or [attr] ?
+[ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
+[ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
+[ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
+[ ] [#fold] is slowwww
+[ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
+[ ] #inner could optimise permutation matrices?
+[ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
+[ ] make [#draw_points] or equivalent (with several dot colours)
+[ ] [#in libv4l] lacks framerate, tuner, norm, frequency.
+[ ] every [doc_bottom] [r $0-r2] message is received 6 times (duplicates)
+[ ] retune [#rgb_to_yuv] and [#yuv_to_rgb] and [#greyscale...] etc.
+[ ] make single abstraction that replaces all picture converters and more.
+[ ] various_effects.pd doesn't completely support greyscale. other patches don't necessarily, either.
+    make more efforts to make colorspaces switchable.
+[ ] [display] visible outside redrectangle in [doc_h]
+[ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
+    this is a [doc_make] bug because not using [gf/canvas_loadbang].
+[ ] visfn: if (self->vis & !flag) sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
+[ ] add default values in docs
+[ ] use sand.pd as basis for introducing those features :
+    [ ] seedless #convolve
+    [ ] seedless #inner
+    [ ] automatic type conversion
+[ ] [route] - 1[shunt] sends a message (bug)
+[ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
+    et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
+[ ] movie api : merge "height" & "width" attributes
+[ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
+[ ] multi-valued attributes in source_filter
+[ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
+[ ] reduce [doc_h] clock again before release !
+[ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
+[ ] revoir le système de paquetage pour linux.
+[ ] [#dim_append] [#dim_prepend] (pas si utiles que ça...?)
+[ ] unparse_args, pass_args could be doing more common work, and use a.join(",").
+[ ] big bug in rendering of [#type-gui, vertical] (leaves trace of horiz [#type-gui] behind) when not loaded directly from file.
+[ ] int64, float64 should be rejected from NumberTypeE \attr and arguments when in --lite mode
+[ ] add ro attr support
+[ ] fix [#fastblur] wrong size bug
+[ ] change description of GridFlow on gridflow.ca and puredata.info
+[ ] gem: support greyscale conversions
+[ ] commandline version of shoot.pd craps out sometimes, eating all RAM...
+[ ] [#out grid]: cast et type...?
+[ ] go through all examples again, to see whether everything works.
+[ ] [#in] [#out]: autoclose is currently not considered as an attribute.
+[ ] [doc_link] doesn't use [doc_iemfont]
+[ ] harmonise help files of [#in] [#out] [#io.*] and introduce help files for abstract 'standardised' interfaces such as
+    'window', 'movie', 'image', 'camera', talking about common options... (re)move superfluous parts of [#in].
+[ ] PtrOutlet() : replace error() by RAISE() if you can
+[ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
+[ ] error: [#store] inlet 0 method float: must have at least 1 dimension.
+    ~GridOut(): dex=0 prod=1
+[ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
+[ ] merge << and pd_oprint please
+[ ] infinite loop in shoot.pd
+[ ] add more stuff to [#expr]...
+[ ] change numop to numop2 all over the documentation
+---------------------------------------------------------CIBLE--------------------------------------------------
+later
+
+while running #to~-help.pd :
+==4308== Invalid read of size 4
+==4308==    at 0x80F1931: upsampling_perform_linear (d_resample.c:92)
+==4308==  Address 0x51fa2f0 is 0 bytes after a block of size 128 alloc'd
+==4308==    at 0x4023F5B: calloc (vg_replace_malloc.c:418)
+==4308==    by 0x80C7E6C: getbytes (m_memory.c:24)
+
+[ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
+[ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
+[ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
+[ ] [#in unicap] and/or [#in videojack] ?
+[ ] test accuracy of RGB2Y etc
+[ ] [range] name conflict.
+[ ] [#camera] [#cast] setting ? or not ?
+[ ] fix SDL modifiers
+[ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
+[ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
+[ ] DimConstraint could become a lot better than just the current CONSTRAINT() thing.
+[ ] [#out x11]: add 'rootsize' ro attr
+[ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
+    a value in million cycles or something.
+[ ] look at [pdgst] and [pix_pix2gst]
+[ ] [gf/class_info]: add class-list, attr types, arg types, superclasses
+[ ] make a generic graph tool that can do efficient graphs using grids (?) and can be configured to do things like PMPD
+    but can also serve other purposes. And/or start from waves.pd's mask system to make a patch that recycles the wave data
+    to make a CHDH-like animations using [gf/gl].
+[ ] see [comment] from cyclone
+[ ] lqtgavl
+[ ] Dim::T = intptr_t
+
+[ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
+    Program received signal SIGSEGV, Segmentation fault.
+    with gdb: canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
+	dirresult=0xbfffb634 "", nameresult=0xbfffb630, size=4096, bin=1) at g_canvas.c:160
+    with valgrind: Invalid read of size 4 at canvas_open (g_canvas.c:160) by 0x64705F76: ???
+	Address 0x9c is not stack'd, malloc'd or (recently) free'd
+    with no further info (2008.08.17)
+
+Not Important
+[ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
+    and is_base_sel(symbol) also would include bang and list.
+
+// was for 9.9
+//DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
+//DEF_OP(pingpong,  
+
+Win32/Win64
+[ ] win32 color_correction.pd crash
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[ ] win32 x11
+
+OpenCV
+[ ] cvOpticalFlow
+[ ] [cv/#Split]
+[ ] cvEstimateRigidTransform
+[ ] cvApproxPoly pour un seul poly à la fois
+[ ] cvMeanShift, cvCamShift (?)
+       cvCamShift s'utilise presque comme MeanShift, sauf que ça requiert un autre type non-grid.
+       Celui-ci peut être représenté comme une grille de 5 éléments pour faire plus facile
+       (contrairement à cvHistogram, qui contient une grille ND mais a besoin de quelques champs de plus que ça).
+[ ] cvCalcBackProject (?)
+[ ] cvCalcHist, cvCreateHist.
+[ ] SnakeImage
+[ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
+
+malloc alignment = 4 mod 8 (en utilisant valgrind)
+
+ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids of floats as coordinates and
+interpolates using 4-point interpolation, eg, right inlet -> (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5)
+outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
+
+[ ] add Minesweeper example based on [#many]
+[ ] OpenCL
+[ ] encoding of quicktime RGBA (PNG) does not work at all!
+[ ] make example on separable convkernels
+[ ] add concepts of hot inlet and conf inlet at the code level (?)
+[ ] Add a video latency patch (in examples)
+[ ] Numop: warn on misalignment
+[ ] remove GridInlet* ?
+[ ] [#expr]
+[ ] [#line]? [#pipe]?
+[ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
+[ ] #,#fold,#scan,: option swap
+[ ] re-test int64,float64 and make sure it works
+[ ] Copy-on-Write (COW)
+[ ] internal grid protocol redesigned
+[ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
+[ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
+[ ] #import with zero size crashes?
+[ ] MMX computations may be done misaligned, which may be bad.
+[ ] when file not found, mpeg error messages are wrong, they say the filename is "".
+[ ] "unsupported codec" bogus errors.
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[ ] some seeds aren't typechecked
+[ ] GRID_FINISH triggered while backstore ???
+[ ] what would be a way to make GF work well with Pd's idea of a list?
+[ ] write unit tests about required functionality
+[ ] write unit tests about error checking
+[ ] make system to ensure everything is working before a release.
+[ ] it's possible to crash by sending data in two inlets of a same object at once
+
+Installation
+[ ] cross-compile ? http://www.libsdl.org/extras/win32/cross/ http://rooster.stanford.edu/~ben/linux/cross.php
+
+Documentation
+[ ] document how to report bugs, basic troubleshooting
+[ ] ascii conventions: [foo] vs "foo", etc.
+[ ] architecture: class->type/shape->use->role
+[ ] benchmarks (especially: simple video i/o)
+[ ] mimic [pdp_help_input] and [pdp_help_output] ?
+
+Architecture
+[ ] reentrancy of objects (to allow true recursion)
+[ ] expand the [doc_same] concept
+[ ] dispatch on _#{i}_-named methods (any selector one inlet)
+[ ] generalize the backstore
+[ ] lazy grids: Grid#operator T* makes sure all the grid is received
+	and Grid#range(int start, int n, T bogus) makes sure the
+	specified part of the grid is received.
+[ ] accounting: grids packets numbers bytes copybytes
+[ ] memory profiling
+[ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
+[ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
+    grid reception is not completed yet.) 
+[ ] SSE, liboil
+[ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
+    what about: qprofile, amd profiler, opreport -cl --demangle=smart
+[ ] read http://en.wikipedia.org/wiki/Tacit_programming
+
+Computation Objects
+[ ] #counter (similar to #for)
+[ ] zero option in #convolve (as an alternative to wraparound)... sort of a built-in #border
+[ ] #convolve should allow n-D convolution
+[ ] #store: option zero (?)
+[ ] #fold, #scan: option reverse (right-to-left)
+[ ] #join: option swap
+[ ] #matrix_solve (CV), #replace_if, #random_select, #markov_chain, #splice, full-featured #slice (in c++)
+[ ] add 2D markov example
+[ ] #draw_polygon smoothly
+[ ] write a complete benchmark
+[ ] spatial biquads (ask Tom)
+[ ] implement the whole APL feature set :
+    expand, laminate, take, drop, indexof, rotate, generalizedtranspose, deal, decode, encode, membership, format, ...
+[ ] #mosaic, #dither, #queue (#delay ?)
+[ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
+[ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
+        with fuzzy flag; (don't call it #chroma_key though)
+	maybe #mask...
+[ ] effectv
+[ ] create abstractions for usage patterns (eg: like #remap_image)
+[ ] multilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
+[ ] #scale_by/#downscale_by fractional values
+[ ] bicubic interpolation
+[ ] multilinear interpolation (n-dimensional?)
+[ ] #perlin
+[ ] #moment could support more than 2 dimensions
+[ ] note in the helpfiles what is meant by YUV in gridflow (what colorspace that is)
+
+Input/Output
+[ ] a #store that is persistent (saved in .pd) ?
+[ ] Grid: support storage in all six numtypes and perhaps also bpv 1,2,4.
+[ ] Grid: text version of the format (?)
+[ ] ffmpeg, xine, mplayer
+[ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
+[ ] x11: double buffering using a Pixmap remote-object, sync frames at constant rate, optionally with the actual vsync of the monitor
+[ ] support for audio in the mpeg streams
+[ ] synchronized audio with the video when using mpeg1 & 2
+[ ] full screen mode (without the menu bars or frames)
+[ ] support for audio in cameras / videodev ... see field vcaps.audios
+
+Format
+[ ] remaining number type support in formats
+[ ] threaded [#in]/[#out] handlers
+[ ] put_at/reassign in x11/sdl/quartz
+[ ] Generic SHM/MMAP Drivers
+[ ] "open grid pipe" and such.
+[ ] format grid: "headerless until 10" (text files)
+[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that (?)
+[ ] is there anything else deserving to be unified between the video plugins?
+[ ] look at camorama
+[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
+
+User Interface
+[ ] better [#color]
+[ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
+[ ] object construction menu specialized for each class (generated from class reflection/metadata)
+
+OSX:
+[ ] [#io.quicktimeapple] déboguer farfisa_2.mov
+[ ] [#io.quicktimecamera] minsize, size, maxsize
+[ ] unifier les décodeurs de colorspaces dans tous les modules de caméra, et les accélérer
+[ ] [#io.quartz] fullscreen mode
+[ ] [#io.quicktimeapple out] grid, codec, quality.
+[ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
+[ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
+    par exemple, les binaires gras pour 3 cpus.
+[ ] [#io.quicktimecamera] crash when opening busy camera (?) or is it when opening two cameras at once ?
+[ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
+    (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
+     vite, la détection de mouvement de various_effects.pd fait un clignotement. est-ce qu'on peut vraiment avoir 30 fps
+     présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
+     [pix_video] et [#camera] en alternance.)
+
+Peines Perdues:
+[ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
+[ ] [#many]: add support for 'floatatom' objects ?
+    (no: we require method 'pos'. apart from that we could work around the lack of 'send', 'receive')
+
+----------------------------------------------------------------------------------------------------------------
+Autres notes
+
+-mfpmath=sse2
+
+Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
+use external programs for raw video input. rationale: mplayer is a very nice piece of software supporting virtually any
+input format/codec. since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is
+to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
+
+very old bookmarks: http://pdl.perl.org/ http://www.opendragon.com/Pages/MaxObjects.shtml
+	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
+
+there are bugs with abstractions that use [route]->[list] instead of [route2] because they fail when $1="list".
+
+svn propset svn:mime-type text/pure-data *.pd
+
+How to release GridFlow :
+
+dir=gridflow-9.11; tag=gridflow_9_11
+svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
+svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
+chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
+scp $dir.tar.gz gridflow@artengine.ca:public_html/download
+mv $dir.tar.gz /home/matju/GridFlow
+cd doc/homepage; pico index.html; make install
+make binaries
+pd-announce mlist : post release
+freshmeat if anyone cares (just restored my account but didn't use it)

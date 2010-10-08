@@ -1,0 +1,17 @@
+#N canvas 770 0 450 689 10;
+#X obj 37 341 #reinterval;
+#X obj 37 44 #color;
+#X obj 37 27 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 55 104 #color;
+#X obj 73 164 #color;
+#X obj 91 226 #color;
+#X obj 109 284 #color;
+#X obj 37 372 #color;
+#X connect 0 0 7 0;
+#X connect 1 0 0 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 1;
+#X connect 4 0 0 2;
+#X connect 5 0 0 3;
+#X connect 6 0 0 4;

@@ -1,0 +1,54 @@
+#N canvas 0 0 632 642 10;
+#X obj 101 75 gridflow;
+#X msg 101 56 get;
+#X obj 0 0 doc_h;
+#X obj 0 675 doc_f;
+#X obj 3 156 doc_c 0;
+#X obj 3 196 doc_i 1;
+#X obj 3 297 doc_o 1;
+#X obj 101 94 print;
+#X obj 14 226 doc_ii 0;
+#X obj 97 226 doc_m i0 get;
+#X text 232 584 get version: outputs a version message with three elements.
+the former leading 0 is not included. GridFlow 9.9 is reported as 9
+9 0 \, the trailing zero being there just in case there are any subreleases
+anytime in the future.;
+#X text 210 49 get some global attributes of GridFlow.;
+#X text 210 73 can also be used to load GridFlow \, if there is the
+correct -path option to find GridFlow \, but there is no corresponding
+-lib option. (see also [import] \, the Path menu \, the Startup menu
+\, pdrc \, pdsettings \, etc.);
+#X obj 14 327 doc_oo 0;
+#X obj 97 584 doc_m o0 version;
+#X obj 3 655 doc_also;
+#X text 232 226 get any attribute listed under "outlet 0". the name
+of the attribute can be given as a \$1 if only that attribute is wanted.
+if there are no arguments \, all attributes are output.;
+#X obj 97 327 doc_m o0 folder;
+#X text 232 327 the main folder of the currently loaded GridFlow library.
+this is a folder named 'gridflow' inside a folder found in -path. (unless
+you didn't install correctly \, in which case some things won't work
+correctly \, anyway).;
+#X obj 97 388 doc_m o0 os;
+#X text 232 388 "win32" indicates a MS Windows system (with MinGW layer
+for partial posix emulation);
+#X text 232 423 "darwin" indicates a MacOS 10 ("Darwin") system. This
+has native posix support except for some features that GF doesn't use
+directly (such as libdl). This does not normally run X11 (though some
+apps may... Pd-OSX does not require X11 since 2004 or so). Lots of
+typical linux components are available as part of the base OS \, or
+on the developers tools CD \, or in FINK \, or in MacPorts.;
+#X text 232 523 "linux" indicates a Linux system \, FreeBSD system
+\, or other. This is currently including anything except "win32" and
+"darwin". If you need this to be more specific \, contact gridflow-dev.
+;
+#X obj 103 655 gf/class_info;
+#X connect 0 0 7 0;
+#X connect 1 0 0 0;
+#X connect 9 1 16 0;
+#X connect 14 1 10 0;
+#X connect 15 1 23 0;
+#X connect 17 1 18 0;
+#X connect 19 1 20 0;
+#X connect 19 1 21 0;
+#X connect 19 1 22 0;

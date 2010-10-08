@@ -1,0 +1,61 @@
+#N canvas 566 41 632 633 10;
+#X obj 28 179 #from_pix;
+#X obj 28 99 gemdead;
+#X obj 28 43 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
+#X obj 34 81 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
+#X obj 0 0 doc_h;
+#X obj 0 599 doc_f;
+#X text 162 66 use pix-objects without [gemwin]. this is something
+that fakes a [gemhead] to a certain extent \, but doesn't use [gemhead].
+;
+#X obj 28 61 metro 50;
+#X obj 3 240 doc_c 0;
+#X obj 3 280 doc_i 1;
+#X obj 3 447 doc_o 1;
+#X obj 14 310 doc_ii 0;
+#X obj 97 310 doc_m i0 bang;
+#X obj 97 345 doc_m i0 float;
+#X obj 14 477 doc_oo 0;
+#X obj 97 477 doc_m o0 gem_state;
+#X text 232 512 with one float argument \, turns rendering on/off;
+#X text 232 534 with two pointer arguments \, sends a GemState* and
+a GemCache* around.;
+#X text 232 477 same as what [gemhead] does \, except the GemCache
+has no "parent". I don't know what this means.;
+#X obj 3 579 doc_also;
+#X obj 103 579 #to_pix;
+#X obj 157 579 #from_pix;
+#X text 232 380 1 turns rendering on \, 0 turns rendering off.;
+#X text 232 310 simulate one [gemwin] frame using a gem_state message
+with pointers.;
+#X text 232 345 simulate turning [gemwin] on/off using a gem_state
+message with a float.;
+#X obj 55 159 pix_rgba;
+#X obj 28 119 pix_video;
+#X obj 28 199 #out window;
+#X obj 28 139 shunt;
+#X obj 68 139 tgl 15 0 empty empty empty 17 7 0 10 -257985 -1 -1 0
+1;
+#X text 162 136 depending on your camera \, using [pix_rgba] might
+be necessary...;
+#X text 232 402 this doesn't seem to have any effect on [pix_video]
+\, but I don't know whether it's ok to not use this.;
+#X connect 0 0 27 0;
+#X connect 1 0 26 0;
+#X connect 2 0 7 0;
+#X connect 3 0 1 0;
+#X connect 7 0 1 0;
+#X connect 12 1 23 0;
+#X connect 13 1 24 0;
+#X connect 13 1 22 0;
+#X connect 13 1 31 0;
+#X connect 15 1 16 0;
+#X connect 15 1 17 0;
+#X connect 15 1 18 0;
+#X connect 19 1 20 0;
+#X connect 19 1 21 0;
+#X connect 25 0 0 0;
+#X connect 26 0 28 0;
+#X connect 28 0 0 0;
+#X connect 28 1 25 0;
+#X connect 29 0 28 1;

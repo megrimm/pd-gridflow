@@ -1,0 +1,21 @@
+#N canvas 503 94 632 321 10;
+#X obj 0 287 doc_f;
+#X obj 0 0 doc_h;
+#X obj 3 103 doc_c 1;
+#X obj 3 165 doc_i 1;
+#X obj 3 227 doc_o 0;
+#X text 232 195 dummy inlet meant to do the same as the comment-inlet
+;
+#X obj 14 195 doc_ii 0;
+#X obj 97 195 doc_m i0 <none>;
+#X text 56 55 pseudo-comment that looks like this:;
+#X obj 278 56 doc_same 42;
+#X obj 14 133 doc_cc 0;
+#X obj 3 267 doc_also;
+#X obj 97 133 doc_m c0 float;
+#X text 232 133 number of the argument to say in: "(Same as argument
+\$1)";
+#X obj 103 267 doc_link doc_link;
+#X connect 7 1 5 0;
+#X connect 11 1 14 0;
+#X connect 12 1 13 0;

@@ -1,0 +1,385 @@
+#N canvas 0 0 916 522 10;
+#X obj 0 0 doc_demo;
+#X obj 0 30 cnv 15 906 22 empty empty empty 20 12 0 14 -195568 -66577
+0;
+#X text 10 30 op name;
+#X text 96 30 description;
+#X text 446 30 effect on pixels;
+#X text 676 30 effect on coords;
+#X obj 0 70 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 70 op ignore;
+#X text 96 70 A;
+#X text 446 70 no effect;
+#X text 676 70 no effect;
+#X obj 0 89 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 89 op put;
+#X text 96 89 B;
+#X text 446 89 replace by;
+#X text 676 89 replace by;
+#X obj 0 108 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 108 op +;
+#X text 96 108 A + B;
+#X text 446 108 brightness \, crossfade;
+#X text 676 108 move \, morph;
+#X obj 0 127 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 127 op -;
+#X text 96 127 A - B;
+#X text 446 127 brightness \, motion detection;
+#X text 676 127 move \, motion detection;
+#X obj 0 146 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 146 op inv+;
+#X text 96 146 B - A;
+#X text 446 146 negate then contrast;
+#X text 676 146 180 degree rotate then move;
+#X obj 0 165 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 165 op *;
+#X text 96 165 A * B;
+#X text 446 165 contrast;
+#X text 676 165 zoom out;
+#X obj 0 184 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 184 op *>>8;
+#X text 446 184 contrast;
+#X text 676 184 zoom out;
+#X obj 0 203 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 203 op /;
+#X text 96 203 A / B \, rounded towards zero;
+#X text 446 203 contrast;
+#X text 676 203 zoom in;
+#X obj 0 222 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 222 op div;
+#X text 96 222 A / B \, rounded downwards;
+#X text 446 222 contrast;
+#X text 676 222 zoom in;
+#X obj 0 241 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 241 op inv*;
+#X text 96 241 B / A \, rounded towards zero;
+#X obj 0 260 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 260 op swapdiv;
+#X text 96 260 B / A \, rounded downwards;
+#X obj 0 279 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 279 op %;
+#X text 96 279 A % B \, modulo (goes with div);
+#X text 446 279 --;
+#X text 676 279 tile;
+#X obj 0 298 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 298 op swap%;
+#X text 96 298 B % A \, modulo (goes with div);
+#X obj 0 317 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 317 op rem;
+#X text 96 317 A % B \, remainder (goes with /);
+#X obj 0 336 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 336 op swaprem;
+#X text 96 336 B % A \, remainder (goes with /);
+#X obj 0 355 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 355 op gcd;
+#X text 96 355 greatest common divisor;
+#X obj 0 374 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 374 op lcm;
+#X text 96 374 least common multiple;
+#X obj 0 393 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 393 op |;
+#X text 96 393 A or B \, bitwise;
+#X text 446 393 bright munchies;
+#X text 676 393 bottomright munchies;
+#X obj 0 412 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 412 op ^;
+#X text 96 412 A xor B \, bitwise;
+#X text 446 412 symmetric munchies (fractal checkers);
+#X text 676 412 symmetric munchies (fractal checkers);
+#X obj 0 431 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 431 op &;
+#X text 96 431 A and B \, bitwise;
+#X text 446 431 dark munchies;
+#X text 676 431 topleft munchies;
+#X obj 0 450 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 450 op <<;
+#X text 96 450 A * pow(2 \, mod(B \, 32)) \, which is left-shifting
+;
+#X text 446 450 like *;
+#X text 676 450 like *;
+#X obj 0 469 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 469 op >>;
+#X text 96 469 A / pow(2 \, mod(B \, 32)) \, which is right-shifting
+;
+#X text 446 469 like / \, div;
+#X text 676 469 like / \, div;
+#X obj 0 488 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 488 op ||;
+#X text 96 488 if A is zero then B else A;
+#X obj 0 507 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 507 op &&;
+#X text 96 507 if A is zero then zero else B;
+#X obj 0 526 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 526 op min;
+#X text 96 526 the lowest value in A \, B;
+#X text 446 526 clipping;
+#X text 676 526 clipping (of individual points);
+#X obj 0 545 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 545 op max;
+#X text 96 545 the highest value in A \, B;
+#X text 446 545 clipping;
+#X text 676 545 clipping (of individual points);
+#X obj 0 564 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 564 op cmp;
+#X text 96 564 -1 when A<B \, 0 when A=B \, 1 when A>B;
+#X obj 0 583 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 583 op ==;
+#X text 96 583 is A equal to B ? 1=true \, 0=false;
+#X obj 0 602 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 602 op !=;
+#X text 96 602 is A not equal to B ?;
+#X obj 0 621 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 621 op >;
+#X text 96 621 is A greater than B ?;
+#X obj 0 640 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 640 op <=;
+#X text 96 640 is A not greater than B ?;
+#X obj 0 659 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 659 op <;
+#X text 96 659 is A less than B ?;
+#X obj 0 678 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 678 op >=;
+#X text 96 678 is A not less than B ?;
+#X obj 0 697 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 697 op sin*;
+#X text 96 697 B * sin(A) in centidegrees;
+#X text 446 697 --;
+#X text 676 697 waves \, rotations;
+#X obj 0 716 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 716 op cos*;
+#X text 96 716 B * cos(A) in centidegrees;
+#X text 446 716 --;
+#X text 676 716 waves \, rotations;
+#X obj 0 735 cnv 15 906 26 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 735 op atan;
+#X text 96 735 arctan(A/B) in centidegrees;
+#X text 446 735 --;
+#X text 676 735 find angle to origin \; (part of polar transform);
+#X obj 0 763 cnv 15 906 26 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 763 op tanh*;
+#X text 96 763 B * tanh(A) in centidegrees;
+#X text 446 763 smooth clipping;
+#X text 676 763 smooth clipping (of individual points) \; neural sigmoid
+\, fuzzy logic;
+#X obj 0 791 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 791 op log*;
+#X text 96 791 B * log(A) in base e;
+#X obj 0 810 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 810 op /exp;
+#X text 96 810 exp(A / B) in base e;
+#X obj 0 829 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 829 op gamma;
+#X text 96 829 floor(pow(a/256.0 \, 256.0/b)*256.0);
+#X text 446 829 gamma correction;
+#X obj 0 848 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 848 op **;
+#X text 96 848 A**B \, that is \, A raised to power B;
+#X text 446 848 gamma correction;
+#X obj 0 867 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 867 op abs-;
+#X text 96 867 absolute value of (A-B);
+#X obj 0 886 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 886 op sq-;
+#X text 96 886 (A-B) times (A-B);
+#X obj 0 905 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 905 op avg;
+#X text 96 905 (A+B)/2;
+#X obj 0 924 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 924 op hypot;
+#X text 96 924 distance function: square root of (A*A+B*B);
+#X obj 0 943 cnv 15 906 26 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 943 op clip+;
+#X text 96 943 like A+B but overflow causes clipping instead of wrapping
+around;
+#X obj 0 971 cnv 15 906 26 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 971 op clip-;
+#X text 96 971 like A-B but overflow causes clipping instead of wrapping
+around;
+#X obj 0 999 cnv 15 906 26 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 999 op erf*;
+#X text 96 999 integral of e^(-x*x) dx ... (coming soon \; what ought
+to be the scaling factor?);
+#X obj 0 1027 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1027 op weight;
+#X text 96 1027 number of "1" bits in an integer;
+#X obj 0 1046 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1046 op atan2;
+#X text 96 1044 atan2(A \, B) in radians \, float only;
+#X obj 0 1065 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 1138 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1138 op C.*;
+#X text 96 1138 A*B;
+#X obj 0 1157 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1157 op C.*conj;
+#X text 96 1157 A*conj(B);
+#X obj 0 1176 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1176 op C./;
+#X text 96 1176 A/B;
+#X obj 0 1195 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1195 op C./conj;
+#X text 96 1195 A/conj(B);
+#X obj 0 1214 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1214 op C.sq-;
+#X text 96 1214 (A-B)*(A-B);
+#X obj 0 1233 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1233 op C.abs-;
+#X text 96 1233 abs(A-B);
+#X obj 0 1268 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1268 op c2p;
+#X obj 0 1287 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1287 op p2c;
+#X obj 10 1306 outlet;
+#X text 10 1326 note: a centidegree is 0.01 degree. There are 36000
+centidegrees in a circle. Some angle operators use centidegrees \,
+while some others use radians. To convert degrees into centidegrees
+\, multiply by 100 . To convert degrees into radians \, divide by 57.2957
+. Thus \, to convert centidegrees into radians \, divide by 5729.57
+. All the complex number operators are only for floats. VecOps are
+called VecOps because each operation happens between more than just
+two numbers. Complex VecOps are those that arise when a pair of numbers
+(A0 A1) is considered as a single number A0+A1*sqrt(-1). If you need
+complex numbers but don't know yet how they work \, learn them using
+a math tutorial and then those VecOps will begin to look familiar.
+;
+#X text 96 1268 subtraction followed by hypot \, atan two-in-one;
+#X text 96 1287 cos* \, sin* two-in-one \, followed by addition;
+#X obj 0 1084 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 1103 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1065 op ldexp;
+#X text 98 1064 A*pow(2 \, B) \, float only;
+#X text 96 184 (A * B) >> 8 \, that is \, (A * B) / 256;
+#X obj 95 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 445 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 675 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 0 54 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 52 numops;
+#X obj 0 1122 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 1120 vecops for complex numbers;
+#X obj 0 1252 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 1250 vecops for other things;
+#X connect 7 0 222 0;
+#X connect 12 0 222 0;
+#X connect 17 0 222 0;
+#X connect 22 0 222 0;
+#X connect 27 0 222 0;
+#X connect 32 0 222 0;
+#X connect 37 0 222 0;
+#X connect 41 0 222 0;
+#X connect 46 0 222 0;
+#X connect 51 0 222 0;
+#X connect 54 0 222 0;
+#X connect 57 0 222 0;
+#X connect 62 0 222 0;
+#X connect 65 0 222 0;
+#X connect 68 0 222 0;
+#X connect 71 0 222 0;
+#X connect 74 0 222 0;
+#X connect 77 0 222 0;
+#X connect 82 0 222 0;
+#X connect 87 0 222 0;
+#X connect 92 0 222 0;
+#X connect 97 0 222 0;
+#X connect 102 0 222 0;
+#X connect 105 0 222 0;
+#X connect 108 0 222 0;
+#X connect 113 0 222 0;
+#X connect 118 0 222 0;
+#X connect 121 0 222 0;
+#X connect 124 0 222 0;
+#X connect 127 0 222 0;
+#X connect 130 0 222 0;
+#X connect 133 0 222 0;
+#X connect 136 0 222 0;
+#X connect 139 0 222 0;
+#X connect 144 0 222 0;
+#X connect 149 0 222 0;
+#X connect 154 0 222 0;
+#X connect 159 0 222 0;
+#X connect 162 0 222 0;
+#X connect 165 0 222 0;
+#X connect 169 0 222 0;
+#X connect 173 0 222 0;
+#X connect 176 0 222 0;
+#X connect 179 0 222 0;
+#X connect 182 0 222 0;
+#X connect 185 0 222 0;
+#X connect 188 0 222 0;
+#X connect 191 0 222 0;
+#X connect 194 0 222 0;
+#X connect 197 0 222 0;
+#X connect 201 0 222 0;
+#X connect 204 0 222 0;
+#X connect 207 0 222 0;
+#X connect 210 0 222 0;
+#X connect 213 0 222 0;
+#X connect 216 0 222 0;
+#X connect 219 0 222 0;
+#X connect 221 0 222 0;
+#X connect 228 0 222 0;

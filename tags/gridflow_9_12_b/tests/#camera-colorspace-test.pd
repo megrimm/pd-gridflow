@@ -1,0 +1,26 @@
+#N canvas 726 142 450 300 10;
+#X obj 46 110 #camera;
+#X obj 46 38 metro 100;
+#X obj 46 21 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1 1
+;
+#X msg 156 60 colorspace rgb;
+#X msg 156 80 colorspace yuv;
+#X obj 46 129 shunt;
+#X msg 145 130 0;
+#X msg 149 156 1;
+#X obj 73 184 #yuv_to_rgb;
+#X obj 46 247 #out window;
+#X obj 73 203 #clip;
+#X connect 0 0 5 0;
+#X connect 1 0 0 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 0;
+#X connect 3 0 6 0;
+#X connect 4 0 0 0;
+#X connect 4 0 7 0;
+#X connect 5 0 9 0;
+#X connect 5 1 8 0;
+#X connect 6 0 5 1;
+#X connect 7 0 5 1;
+#X connect 8 0 10 0;
+#X connect 10 0 9 0;
