@@ -307,3 +307,7 @@ say #sprintf      "a version of gf/sprintf that directly produces a grid"
 say gf/gl         "OpenGL interface as simpler alternative to many of GEM's classes"
 say gf/class_info "query info from GF's external classes (not abstractions)"
 say doc_iemfont   "figure out correct font size to use with IEMGUI widgets"
+
+# 9.12
+say #expr         "an \[expr\] clone that will eventually support grids too"
+say #compress     "pick a set of values in a grid"
