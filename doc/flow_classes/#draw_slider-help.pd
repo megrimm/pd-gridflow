@@ -47,7 +47,7 @@ the range.;
 #X text 5 25 Draws a slider-like rectangle (or progress bar) on an
 image.;
 #X text 232 253 composition mode;
-#X obj 232 275 doc_link numop 1;
+#X obj 232 275 doc_link numop2 1;
 #X text 232 301 rgb fill colour;
 #X text 232 323 rgb outline colour;
 #X text 232 345 (y1 x1 y2 x2) position;
