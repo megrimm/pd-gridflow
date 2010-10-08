@@ -14,7 +14,7 @@
 #X obj 74 48 t b a b;
 #X obj 115 270 list append \$2;
 #X obj 9 29 route bang;
-#X msg 272 415 clear \, obj 0 0 r \$1-in \, obj 0 40 s \$1-out;
+#X msg 271 414 clear \, obj 0 0 r \$1-in \, obj 0 40 s \$1-out;
 #X obj 96 334 list prepend obj 0 20;
 #X obj 9 379 \$1;
 #X obj 115 251 makefilename #io.%s;
@@ -33,7 +33,7 @@
 #X obj 512 178 loadbang;
 #X msg 74 492 connect 0 0 2 0 \, connect 2 0 1 0 \, loadbang;
 #X msg 96 391 else obj 0 20 gf/not_open;
-#N canvas 0 0 450 449 aliases 0;
+#N canvas 331 24 450 449 aliases 0;
 #X obj 35 18 inlet;
 #X obj 35 95 class_exists;
 #X msg 35 76 symbol #io.quartz;
@@ -83,6 +83,7 @@
 #X connect 16 0 17 0;
 #X connect 17 0 18 0;
 #X connect 17 1 19 0;
+#X connect 18 0 14 0;
 #X connect 19 0 14 0;
 #X connect 20 0 21 0;
 #X connect 21 0 22 0;
@@ -94,6 +95,7 @@
 #X restore 195 105 pd aliases;
 #X obj 297 247 gf/error unknown suffix '%s';
 #X obj 93 105 gf/suffix_lookup;
+#X obj 170 370 print;
 #X connect 0 0 23 0;
 #X connect 1 0 5 0;
 #X connect 1 1 2 1;
@@ -141,6 +143,7 @@
 #X connect 32 0 11 0;
 #X connect 33 0 11 0;
 #X connect 34 0 18 0;
+#X connect 34 0 37 0;
 #X connect 36 0 19 0;
 #X connect 36 1 20 1;
 #X connect 36 2 34 0;
