@@ -116,7 +116,7 @@ map<t_atom2, int> priorities;
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
-				t_symbol *o = a.a_symbol; int e = ((Numop *)o)->arity();
+				t_symbol *o = a.a_symbol; int e = TO(Numop *,a)->arity();
 				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
 				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:A_CANT,o));
 			  } break;
