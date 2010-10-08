@@ -1,6 +1,5 @@
 #N canvas 618 63 450 300 10;
 #N canvas 0 0 450 300 (subpatch) 0;
-#X obj 129 118 #see;
 #X obj 17 81 #hello;
 #X msg 18 61 48 64;
 #X obj 209 108 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
@@ -9,22 +8,23 @@
 #X obj 26 153 t a;
 #X obj 231 107 loadbang;
 #X obj 44 119 # put 0;
-#X obj 53 101 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+#X obj 53 101 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
 1;
 #X obj 18 41 metro 666.666;
-#X obj 108 208 outlet;
-#X connect 0 0 10 0;
-#X connect 1 0 4 0;
-#X connect 2 0 1 0;
-#X connect 3 0 9 0;
-#X connect 4 0 5 0;
-#X connect 4 1 7 0;
-#X connect 5 0 0 0;
-#X connect 6 0 3 0;
-#X connect 7 0 5 0;
-#X connect 8 0 4 1;
-#X connect 9 0 2 0;
-#X connect 9 0 8 0;
+#X obj 113 208 outlet;
+#X obj 113 114 #see;
+#X connect 0 0 3 0;
+#X connect 1 0 0 0;
+#X connect 2 0 8 0;
+#X connect 3 0 4 0;
+#X connect 3 1 6 0;
+#X connect 4 0 10 0;
+#X connect 5 0 1 0;
+#X connect 6 0 4 0;
+#X connect 7 0 3 1;
+#X connect 8 0 1 0;
+#X connect 8 0 7 0;
+#X connect 10 0 9 0;
 #X coords 0 -1 1 1 128 96 1 100 100;
 #X restore 44 34 pd;
 #N canvas 0 0 450 300 (subpatch) 0;
@@ -42,6 +42,7 @@
 #X connect 2 0 3 0;
 #X connect 3 0 0 0;
 #X coords 0 -1 1 1 128 96 1 100 100;
-#X restore 245 95 pd;
+#X restore 239 31 pd;
 #X obj 44 132 display;
+#X obj 230 155 #see-test-abstr;
 #X connect 0 0 3 0;
