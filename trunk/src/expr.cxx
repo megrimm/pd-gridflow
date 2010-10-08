@@ -38,6 +38,7 @@ map<t_atom2, int> priorities;
 	#define A_OP1      t_atomtype(0x1003) /* unary prefix operator or unary function */
 	#define A_OP       t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
 	#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
+	#define A_IF	   t_atomtype(0x1007) /* if(,,) */
 	/* used for both */
         //      A_SYMBOL for [v] names and [table] names; also used between next() and parse() for function names.
         //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
@@ -116,9 +117,9 @@ map<t_atom2, int> priorities;
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
-				t_symbol *o = a.a_symbol; int e = TO(Numop *,a)->arity();
+				t_symbol *o = a.a_symbol; int e = o==gensym("if") ? 3 : TO(Numop *,a)->arity();
 				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
-				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:A_CANT,o));
+				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:e==3?A_IF:A_CANT,o));
 			  } break;
 			  case A_CLOSE: {
 				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this point");
@@ -208,6 +209,12 @@ map<t_atom2, int> priorities;
 				float a = lookup(stack.back());
 				op->map(1,&a);
 				stack.back() = a;
+			  } break;
+			  case A_IF: {
+				float c = lookup(stack.back()); stack.pop_back();
+				float b = lookup(stack.back()); stack.pop_back();
+				float a = lookup(stack.back());
+				stack.back() = a ? b : c;
 			  } break;
 			  default: {
 				string z = code[i].to_s();
