@@ -87,7 +87,7 @@ $conf={
 	:DEFINES => {:CPU => nil},
 	:CC => "g++",
 	:OBJS => [],
-	:PDLIB => ["gridflow$(PDSUF)"],
+	:PDLIB => ["gridflow","gridflow_pdp","gridflow_unicorn"],
 }
 
 def launch stdin,stdout,stderr,*command # -> returncode
@@ -336,7 +336,8 @@ Feature.add {
 	name "X11 Display Protocol"
 	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
-	produces_o ["src/x11.o"]
+	#produces_o ["src/x11.o"]
+	produces_pdlib ["gridflow_x11"]
 	test proc {c_test "
 		#include#
 		int main () {return XSetErrorHandler==0;}"}}
@@ -537,7 +538,7 @@ Feature.add {
 	tag :opengl
 	name "OpenGL/GLEW (for GEM support and [gf/gl])"
 	produces_o ["src/opengl.o"]
-	produces_pdlib ["gridflow_gem_loader$(PDSUF)","gridflow_gem9292$(PDSUF)","gridflow_gem9293$(PDSUF)","gridflow_gem9393$(PDSUF)"]
+	produces_pdlib ["gridflow_gem_loader","gridflow_gem9292","gridflow_gem9293","gridflow_gem9393"]
         uses_so $LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
@@ -727,7 +728,7 @@ File.open("./config.make","w") {|f|
   f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
-  f.puts "PDLIB = "+$conf[:PDLIB].join(" ")
+  f.puts "PDLIB = "+$conf[:PDLIB].map{|x|x+"$(PDSUF)"}.join(" ")
 } # end open config.make
 
 #--------------------------------#
