@@ -119,7 +119,7 @@ class Feature
 	attr2 :tag
 	attr2 :name
 	attr2 :status
-	attr2 :uses_pdlib
+	attr2 :produces_pdlib
 	attr2 :uses_so
 	attr2 :produces_o
 	attr2 :uses_h
@@ -535,8 +535,9 @@ Feature.add {
 		int main () {return 0;}`}}
 Feature.add {
 	tag :opengl
-	name "OpenGL/GLEW (for GEM support, etc)"
+	name "OpenGL/GLEW (for GEM support and [gf/gl])"
 	produces_o ["src/opengl.o"]
+	produces_pdlib ["gridflow_gem_loader$(PDSUF)","gridflow_gem9292$(PDSUF)","gridflow_gem9293$(PDSUF)","gridflow_gem9393$(PDSUF)"]
         uses_so $LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
@@ -683,9 +684,9 @@ def try feature
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
-	$conf[:OBJS].concat(feature.produces_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
-	$conf[:PDLIB].concat(feature.uses_pdlib||[])
+	$conf[:OBJS ].concat(feature.produces_o    ||[])
+	$conf[:PDLIB].concat(feature.produces_pdlib||[])
 	for k,v in feature.defines||{} do $conf[:DEFINES][k]=(if Proc===v then v[] else v end) end
 	true
 end
