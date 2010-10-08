@@ -1,4 +1,4 @@
-#N canvas 253 0 975 696 10;
+#N canvas 253 57 975 696 10;
 #X obj 20 231 inlet;
 #X obj 299 678 outlet;
 #X obj 435 507 receives \$0-send-;
@@ -104,12 +104,7 @@
 #N canvas 0 0 450 300 big 0;
 #X obj 19 18 inlet;
 #X obj 19 269 outlet;
-#X msg 19 37 list 0-0 0-1 0-2 0-3 0-4 0-5 0-6 1-0 1-1 1-2 1-3 1-4 1-5
-1-6 2-0 2-1 2-2 2-3 2-4 2-5 2-6 3-0 3-1 3-2 3-3 3-4 3-5 3-6 4-0 4-1
-4-2 4-3 4-4 4-5 4-6 5-0 5-1 5-2 5-3 5-4 5-5 5-6 6-0 6-1 6-2 6-3 6-4
-6-5 6-6 7-0 7-1 7-2 7-3 7-4 7-5 7-6 8-0 8-1 8-2 8-3 8-4 8-5 8-6 9-0
-9-1 9-2 9-3 9-4 9-5 9-6 10-0 10-1 10-2 10-3 10-4 10-5 10-6 11-0 11-1
-11-2 11-3 11-4 11-5 11-6 12-0 12-1 12-2 12-3 12-4 12-5 12-6;
+#X msg 19 37 list 0-0 0-1 0-2 1-0 1-1 1-2 2-0 2-1 2-2;
 #X connect 0 0 2 0;
 #X connect 2 0 1 0;
 #X restore 435 474 pd big messagebox;
@@ -241,7 +236,7 @@
 #X obj 670 322 symbol \$0-recv-0-0;
 #X obj 670 379 #fold inv+ \, seed (0 0);
 #X obj 670 360 #redim (2 2);
-#N canvas 0 0 473 297 position-boxes 0;
+#N canvas 3 55 473 297 position-boxes 0;
 #X obj 13 137 #for (0 0) ( \$2 \$3 );
 #X obj 13 156 #import (2);
 #X obj 13 175 #to_list;
@@ -267,7 +262,6 @@
 #X obj 322 106 r \$0-margins;
 #X obj 322 125 #redim (2 2);
 #X obj 322 144 #fold + \, seed (0 0);
-#X obj 323 167 display;
 #X obj 229 252 #redim (2);
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;
@@ -292,11 +286,10 @@
 #X connect 21 0 11 1;
 #X connect 21 0 18 1;
 #X connect 22 0 23 0;
-#X connect 22 0 26 0;
+#X connect 22 0 25 0;
 #X connect 23 0 24 0;
-#X connect 24 0 25 0;
 #X connect 24 0 16 1;
-#X connect 26 0 7 1;
+#X connect 25 0 7 1;
 #X restore 742 417 pd position-boxes;
 #X obj 489 333 t b b b;
 #X obj 695 543 s \$0-yeault;
@@ -431,4 +424,4 @@
 #X connect 69 0 51 0;
 #X connect 69 1 70 0;
 #X connect 71 0 40 2;
-#X coords 0 -1 1 1 139 228 2 0 0;
+#X coords 0 -1 1 1 53 53 2 0 0;
