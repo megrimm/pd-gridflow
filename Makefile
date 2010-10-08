@@ -13,7 +13,6 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/expr.o src/classes_gui.o \
 src/numop1.o src/numop2.1.o src/numop2.2.o src/numop2.3.o src/numop2.4.o src/formats.o
-PDLIB += gridflow_pdp$(PDSUF) gridflow_unicorn$(PDSUF)
 
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
@@ -102,6 +101,8 @@ gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/pdp.cxx.fcs
 gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(H) $(COMMON_DEPS)
 	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/unicorn.cxx.fcs
+gridflow_x11$(PDSUF):        src/x11.cxx.fcs        $(H) $(COMMON_DEPS)
+	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/x11.cxx.fcs
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
