@@ -95,7 +95,6 @@
 #X restore 195 105 pd aliases;
 #X obj 297 247 gf/error unknown suffix '%s';
 #X obj 93 105 gf/suffix_lookup;
-#X obj 170 370 print;
 #X connect 0 0 23 0;
 #X connect 1 0 5 0;
 #X connect 1 1 2 1;
@@ -143,7 +142,6 @@
 #X connect 32 0 11 0;
 #X connect 33 0 11 0;
 #X connect 34 0 18 0;
-#X connect 34 0 37 0;
 #X connect 36 0 19 0;
 #X connect 36 1 20 1;
 #X connect 36 2 34 0;
