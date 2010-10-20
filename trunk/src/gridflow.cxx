@@ -1095,6 +1095,7 @@ BUILTIN_SYMBOLS(FOO)
 	startup_format();
 	STARTUP_LIST()
 	// avoid linking directly to those parts (cross-platform optional-linkage)
+	sys_load_lib(0,"gridflow/gridflow_x11");
 	sys_load_lib(0,"gridflow/gridflow_gem_loader");
 	sys_load_lib(0,"gridflow/gridflow_pdp");     
 	sys_load_lib(0,"gridflow/gridflow_unicorn");
