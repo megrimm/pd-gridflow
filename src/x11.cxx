@@ -405,10 +405,8 @@ void FormatX11::call() {
 			XExposeEvent &ex = e.xexpose;
 			if (mode==2) show_section(ex.x,ex.y,ex.width,ex.height);
 		}break;
-		case ButtonPress:  {XButtonEvent &eb = e.xbutton; eb.state |=   128<<eb.button ;
-			report_pointer(eb.y,eb.x,eb.state);}break;
-		case ButtonRelease:{XButtonEvent &eb = e.xbutton; eb.state &= ~(128<<eb.button);
-			report_pointer(eb.y,eb.x,eb.state);}break;
+		case ButtonPress:  {XButtonEvent &eb = e.xbutton; report_pointer(eb.y,eb.x,eb.state | (128<<eb.button));}break;
+		case ButtonRelease:{XButtonEvent &eb = e.xbutton; report_pointer(eb.y,eb.x,eb.state &~(128<<eb.button));}break;
 		case KeyPress:
 		case KeyRelease:{
 			XKeyEvent &ek = e.xkey;
@@ -693,8 +691,9 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
-\end class FormatX11 {install_format("#io.x11",6,"");}
-void startup_x11 () {
+\end class FormatX11 {post("FormatX11 \\startup"); install_format("#io.x11",6,"");}
+extern "C" void gridflow_x11_setup () {
+	post("startup_x11");
 	\startall
 }
 
