@@ -189,7 +189,7 @@ typedef nodeid_t NID;
 			bool is_there = f.available;
 			post("  feature %d '%s' is %s",id,name.data(),is_there?"present":"absent");
 			if (!is_there) continue;
-			post("    min=%u max=%u abs_min=%u abs_max=%u",f.min,f.max,f.abs_min,f.abs_max);
+			post("    min=%u max=%u abs_min=%d abs_max=%d",f.min,f.max,double(f.abs_min),double(f.abs_max));
 		}
 		framerate_e = FRAMERATE_30;
 		height = 480;
@@ -258,9 +258,9 @@ static void rien (int) {timeout=1; post("timeout2");}
 	//signal(SIGALRM,rien);
 	if (dc1394_single_capture(rh,&camera)!=DC1394_SUCCESS) RAISE("dc1394_single_capture error");
 	//setitimer(ITIMER_REAL,0,0);
-	out=new GridOut(this,0,Dim(height,width,1));
-	//out->send(out->dim.prod(),(uint8 *)camera.capture_buffer);
-	for (int i=0; i<height; i++) out->send(out->dim.prod(1),(uint8 *)camera.capture_buffer+640*i);
+	go=new GridOut(this,0,Dim(height,width,1));
+	//go->send(out->dim.prod(),(uint8 *)camera.capture_buffer);
+	for (int i=0; i<height; i++) go->send(go->dim.prod(1),(uint8 *)camera.capture_buffer+640*i);
 	//if (dc1394_stop_iso_transmission(rh,usenode)!=DC1394_SUCCESS) RAISE("dc1394_stop_iso_transmission error");
 	//post("frame_height=%d",camera.frame_height);
 	//post("frame_width=%d" ,camera.frame_width);
