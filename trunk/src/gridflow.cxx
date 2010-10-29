@@ -46,7 +46,7 @@ extern t_class *text_class;
 };
 
 /* for exception-handling in 0.9.x and 9.x... Linux-only */
-#if !defined(MACOSX) && !defined(__WIN32__)
+#if !defined(MACOSX) && !defined(__WIN32__) && !defined(ANDROID)
 #include <exception>
 #include <execinfo.h>
 #endif
@@ -323,6 +323,12 @@ uint64 gf_timeofday () {
 #define NTIMES(_x_) \
 	for (; n>=4; n-=4) {_x_ _x_ _x_ _x_} \
 	for (; n; n--) {_x_}
+
+#ifdef ANDROID
+#undef swap16
+#undef swap32
+#undef swap64
+#endif
 
 /* this could be faster (use asm) */
 void swap64 (long n, uint64 *data) {
@@ -936,7 +942,7 @@ int handle_parens(int ac, t_atom *av_) {
 
 void blargh () {
   fprintf(stderr,"begin blargh()");
-#if defined(MACOSX) || defined(__WIN32__)
+#if defined(MACOSX) || defined(__WIN32__) || defined(ANDROID)
   fprintf(stderr,"unhandled exception\n");
 #else
   void *array[25];
@@ -949,7 +955,7 @@ void blargh () {
 }
 
 /* for debugging... linux-only */
-#if !defined(MACOSX) && !defined(__WIN32__)
+#if !defined(MACOSX) && !defined(__WIN32__) && !defined(ANDROID)
 char *short_backtrace (int start/*=3*/, int end/*=4*/) {
 	static char buf[1024]; buf[0]=0;
 	void *array[end];
@@ -1047,6 +1053,12 @@ void startup_classes_gui();
 void startup_format();
 STARTUP_LIST(void)
 
+#ifdef ANDROID
+#define PDPRE "lib"
+#else
+#define PDPRE
+#endif
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -1064,8 +1076,8 @@ extern "C" void gridflow_setup () {
 	char *nameresult;
 	char *zz=getcwd(dirname,MAXPDSTRING); /* zz only exists because gcc 4.3.3 gives me a bogus warning otherwise. */
 	if (zz<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
-	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
-	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
+	int       fd=open_via_path(dirname,"gridflow/"PDPRE"gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
+	if (fd<0) fd=open_via_path(dirname,         PDPRE"gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd>=0) close(fd); else post("%s was not found via the -path!","gridflow"PDSUF);
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
 	gridflow_folder = gensym(dirresult);
