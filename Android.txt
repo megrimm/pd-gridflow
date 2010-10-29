@@ -1,0 +1,14 @@
+cd PdCore/jni/extra
+svn checkout https://gridflow.ca/svn/trunk gridflow
+cd ../..
+ndk-build # produit libgridflow.so
+make # renomme à gridflow.pd_linux
+cd ../PdTest
+ant install
+
+
+
+il manque le diff pour le Makefile
+et le diff pour extra/Android.mk
+etc
+
