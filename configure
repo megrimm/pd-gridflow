@@ -242,7 +242,7 @@ $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
 #----------------------------------------------------------------#
 Feature.add {
-	tag :gcc3
+	tag :gcc3; status :mandatory
 	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
 	defines :GCC_VERSION => proc {
@@ -251,15 +251,6 @@ Feature.add {
 		rescue
 			"3.666" # version number unknown, sorry.
 		end
-	}
-	# how does this handle two test procs again? probably it doesn't, and the former test-proc is ignored.
-	test proc {
-		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
-		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
-		version = $1
-		pi.close
-		if version < "3" then raise "version #{version} < 3" end
-		true
 	}
 	test proc {c_test %{
 		#include <stdio.h>
@@ -566,6 +557,7 @@ def usage
 end
 
 $debug=false
+$explicit=false
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
@@ -580,6 +572,8 @@ while ARGV.length>0 do
 		else
 			puts "there is no feature called #{name}"
 		end
+	when "--explicit"
+		$explicit=true
 	when /^--force-/
 		name = arg[8..-1].untaint.intern
 		if $features_h[name] then 
@@ -656,7 +650,7 @@ def try feature
 		end
 	}
 	if feature.status==:disabled then DUAL.puts Dark+arrow+"disabled (by author)"; return end
-	if not $features_h[feature.tag] then DUAL.puts Dark+arrow+"disabled (by user)"; return end
+	if not $features_h[feature.tag] or ($explicit and feature.test and not feature.status==:mandatory) then DUAL.puts Dark+arrow+"disabled (by user)"; return end
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
 		if $conf[:FEATURES][f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
