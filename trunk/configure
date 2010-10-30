@@ -540,6 +540,13 @@ Feature.add {
                 `
         }
 }
+Feature.add {
+	tag :android
+	name "Android module"
+	produces_o ["src/android.o"]
+    test proc {raise "use --force-android if you want this"}
+}
+
 #--------------------------------#
 
 $features_h = {}
