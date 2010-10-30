@@ -242,7 +242,7 @@ $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
 #----------------------------------------------------------------#
 Feature.add {
-	tag :gcc3; status :mandatory
+	tag :gcc3; status :always_check
 	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
 	defines :GCC_VERSION => proc {
@@ -259,8 +259,8 @@ Feature.add {
 			return !(__GNUC__>=3);
 		}}}}
 Feature.add {
-	tag :stl
-	name "C++ Standard Template Library"
+	tag :stl; status :always_check
+	name "libstdc++ (GNU C++ Standard Template Library)"
 	test proc {c_test %{
 		#include <vector>
 		int main () {std::vector<int> foo;}}}}
@@ -549,7 +549,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
-	log << "[--use-cpu cpu] [--lite] [--debug]"
+	log << "[--use-cpu cpu] [--lite] [--debug] [--explicit]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -568,7 +568,7 @@ while ARGV.length>0 do
 		name = arg[5..-1].untaint.intern
 		if $features_h[name] then 
 			puts "--no: won't check for feature #{name}"
-			$features_h.delete name
+			$features_h[name].status :disabled_by_user
 		else
 			puts "there is no feature called #{name}"
 		end
@@ -650,7 +650,7 @@ def try feature
 		end
 	}
 	if feature.status==:disabled then DUAL.puts Dark+arrow+"disabled (by author)"; return end
-	if not $features_h[feature.tag] or ($explicit and feature.test and not feature.status==:mandatory) then DUAL.puts Dark+arrow+"disabled (by user)"; return end
+	if feature.status==:disabled_by_user or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark+arrow+"disabled (by user)"; return end
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
 		if $conf[:FEATURES][f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
@@ -699,7 +699,13 @@ puts Light
 
 $conf[:LDSOFLAGS].uniq!
 
-if not $conf[:FEATURES][:gcc3] then puts "You should install gcc 4 (or gcc 3 if you can't get gcc 4)"; exit 1 end
+$exit=false
+def need s
+  if not $conf[:FEATURES][s] then puts "#{Red}You need to install #{$features_h[s].name}#{Light}"; $exit=true end
+end
+need :gcc3
+need :stl
+(puts; exit 1) if $exit
 
 #--------------------------------#
 
