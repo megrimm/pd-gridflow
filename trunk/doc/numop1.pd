@@ -194,6 +194,9 @@ of numbers (A0 A1) is considered as a single number A0+A1*sqrt(-1).
 If you need complex numbers but don't know yet how they work \, learn
 them using a math tutorial and then those VecOps will begin to look
 familiar.;
+#X msg 10 488 op fact;
+#X text 97 481 factorial. this is the integral of pow(t \, $f1)*exp(-t)
+from 0 to +inf. don't confuse with op gamma.;
 #X connect 54 0 63 0;
 #X connect 56 0 63 0;
 #X connect 58 0 63 0;
@@ -223,3 +226,4 @@ familiar.;
 #X connect 113 0 63 0;
 #X connect 117 0 63 0;
 #X connect 118 0 63 0;
+#X connect 127 0 63 0;

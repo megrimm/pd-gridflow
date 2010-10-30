@@ -100,15 +100,15 @@ DEF_OP(isinf, isinf(a))
 DEF_OP(finite, finite(a))
 DEF_OP(isnan, isnan(a))
 
-Numop1 op_table_unary[] = {
-	DECL_OP(unary_minus, "unary-"),
-	DECL_OP(logic_not, "!"),
-	DECL_OP(not, "~"),
-	DECL_OP(abs, "abs"),
-	//DECL_OP(asin, "asin"),
-	//DECL_OP(acos, "acos"),
-	//DECL_OP(atan, "atan"), // but atan is already reserved by a c° function.
+static double fact (double x) {
+	int sign=0;
+	double y = exp(lgamma_r(x+1,&sign));
+	if (1/y) return y*sign; else return 0/0.f;
+}
+DEF_OP(fact, fact(a))
 
+Numop1 op_table_unary[] = {
+// moved from numop2 at 9.12
 	DECL_OP(sqrt, "sqrt"),
 	DECL_OP(rand, "rand"),
 	DECL_OP_FLOAT(sin,  "sin"),   DECL_VOP_FLOAT(cx_sin,  "C.sin",  2),
@@ -119,17 +119,26 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(tanh, "tanh"),  DECL_VOP_FLOAT(cx_tanh, "C.tanh", 2),
 	DECL_OP_FLOAT(exp,  "exp"),   DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
 	DECL_OP_FLOAT(log,  "log"),   DECL_VOP_FLOAT(cx_log,  "C.log",  2),
+// introduced at 9.12
+	DECL_OP(unary_minus, "unary-"),
+	DECL_OP(logic_not, "!"),
+	DECL_OP(not, "~"),
+	DECL_OP(abs, "abs"),
 	DECL_OP_FLOAT(erf,  "erf"),
 	DECL_OP_FLOAT(erfc, "erfc"),
 	DECL_OP_FLOAT(cbrt, "cbrt"),
 	DECL_OP_FLOAT(expm1, "expm1"),
 	DECL_OP_FLOAT(log1p, "log1p"),
-	
 	DECL_OP_FLOAT(floor, "floor"),
 	DECL_OP_FLOAT(ceil, "ceil"),
+// 9.13
+	DECL_OP(fact, "fact"),
 //	DECL_OP_FLOAT(isinf, "isinf"),
 //	DECL_OP_FLOAT(finite, "finite"),
 //	DECL_OP_FLOAT(isnan, "isnan"),
+	//DECL_OP(asin, "asin"),
+	//DECL_OP(acos, "acos"),
+	//DECL_OP(atan, "atan"), // but atan is already reserved by a c° function.
 };
 const long op_table_unary_n = COUNT(op_table_unary);
 
