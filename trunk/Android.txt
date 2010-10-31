@@ -2,6 +2,7 @@ cd PdCore/jni/extra
 svn checkout https://gridflow.ca/svn/trunk gridflow
 cd gridflow
 ./configure --no-pentium etc...
+make -j2 # suivi de Ctrl+c, juste pour produire les *.fcs
 cd ../../..
 ndk-build # produit libgridflow.so
 make # renomme à gridflow.pd_linux
