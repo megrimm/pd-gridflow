@@ -1059,6 +1059,9 @@ STARTUP_LIST(void)
 #define PDPRE
 #endif
 
+#define L post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -1067,6 +1070,7 @@ extern "C" void gridflow_setup () {
     s_loadbang = gensym("loadbang");
     post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
+return;
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
     allow_big_stack();
@@ -1105,12 +1109,14 @@ BUILTIN_SYMBOLS(FOO)
 	startup_classes4();
 	startup_classes_gui();
 	startup_format();
+	#ifndef ANDROID
 	STARTUP_LIST()
 	// avoid linking directly to those parts (cross-platform optional-linkage)
 	sys_load_lib(0,"gridflow/gridflow_x11");
 	sys_load_lib(0,"gridflow/gridflow_gem_loader");
 	sys_load_lib(0,"gridflow/gridflow_pdp");     
 	sys_load_lib(0,"gridflow/gridflow_unicorn");
+	#endif
 
 	//sys_gui("bind . <Motion> {puts %W}\n");
         sys_vgui("set gfdir {%s}\n",dirresult);
