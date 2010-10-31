@@ -34,6 +34,7 @@ import android.widget.Gallery.LayoutParams;
 public class GridFlow {
 	public static Activity activity;
 	public static ImageView iv;
+	public static int[] a;
 	public static void init (Activity acti) {
 		activity = acti;
 		Bitmap b = Bitmap.createBitmap(320, 240, Bitmap.Config.ARGB_8888);
@@ -47,17 +48,25 @@ public class GridFlow {
 		}
 		b.setPixels(a,0,320,0,0,320,240);
 		iv.setImageBitmap(b);
-		//iv.setImageDrawable(activity.getResources().getDrawable(0x7f020000));
 		//iv.setMaxWidth(320);
 		//iv.setMaxHeight(240);
 		iv.setAdjustViewBounds(true);
 		LinearLayout ll = new LinearLayout(activity);
 		iv.setLayoutParams(new Gallery.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		ll.addView(iv);
-		activity.setContentView(ll);
+		//activity.setContentView(ll);
 
 		//TextView tv = new TextView(activity);
 		//tv.setText("This is a test from the Emergency Broadcast System");
 		//activity.setContentView(tv);
 	}
+/*
+ 	public int[] getArray () {
+		iv.setImageDrawable(activity.getResources().getDrawable(0x7f020000));		
+		return a;
+	}
+	public void apply () {
+
+	}
+*/
 }
