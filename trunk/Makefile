@@ -12,7 +12,12 @@ CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/expr.o src/classes_gui.o \
-src/numop1.o src/numop2.1.o src/numop2.2.o src/numop2.3.o src/numop2.4.o src/formats.o
+  src/numop1.o src/numop2.1.o src/numop2.2.o src/numop2.3.o src/numop2.4.o src/formats.o
+
+# won't work with quartz.m
+FCS = src/gridflow.cxx.fcs src/grid.cxx.fcs src/classes1.cxx.fcs src/classes2.cxx.fcs src/classes3.cxx.fcs \
+  src/expr.cxx.fcs src/classes_gui.cxx.fcs src/numop1.cxx.fcs src/numop2.cxx.fcs src/formats.cxx.fcs \
+  $(subst .o,.cxx.fcs,$(OBJS))
 
 OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
@@ -47,6 +52,8 @@ else
 endif
 
 all:: $(PDLIB) aliases
+
+fcs:: $(FCS)
 
 .SUFFIXES:
 
