@@ -1,18 +1,15 @@
 cd PdCore/jni/extra
 svn checkout https://gridflow.ca/svn/trunk gridflow
 cd gridflow
-./configure --no-pentium etc...
-make -j2 # suivi de Ctrl+c, juste pour produire les *.fcs
+bin/conf-android
 cd ../../..
-ndk-build # produit libgridflow.so
-make # renomme à gridflow.pd_linux
+éditer Makefile pour rajouter ça dans le haut de "all" :
+	(cd jni/extra/gridflow; make fcs)
+et ça aussi (ailleurs dans "all") :
+        mv libs/armeabi-v7a/libgridflow.so res/raw/gridflow.pd_linux
+	mv libs/armeabi/libgridflow.so res/raw/gridflow.pd_linux
+make # fait ndk-build et renomme à gridflow.pd_linux
 cd ../PdTest
 ant install
-
-
-
-il manque le diff pour le Makefile
-et le diff pour extra/Android.mk
-etc
 
 
