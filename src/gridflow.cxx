@@ -188,7 +188,7 @@ void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 	}
 }
 
-// backslash is doubled here because Pd doesn't do it and Tcl's eval interprets a double backslash as a single.
+// backslash is doubled here because Pd doesn't always do it and Tcl's eval interprets a double backslash as a single.
 ostream &operator << (ostream &self, const t_atom &a) {
 	switch (int(a.a_type)) {
 		case A_FLOAT:   self << a.a_float; break;
@@ -1070,7 +1070,6 @@ extern "C" void gridflow_setup () {
     s_loadbang = gensym("loadbang");
     post("GridFlow " GF_VERSION ", Copyright (c) 2001-2010 Mathieu Bouchard");
     post("GridFlow was compiled on "__DATE__", "__TIME__);
-return;
     //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
     std::set_terminate(blargh);
     allow_big_stack();
