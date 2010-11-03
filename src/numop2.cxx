@@ -125,7 +125,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
-#define Plex std::complex
+using std::complex;
 
 // classic two-input operator
 
@@ -145,7 +145,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	DEF_OPFT(op,     expr2,neu,isneu,isorb,float64)
 
 #define  OL(O,T) OpLoops<Y##O<T>,T>
-#define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
+#define VOL(O,T) OpLoops<Y##O<complex<T> >,complex<T> >
 #define DECL_OPON(L,O,T) Numop2::On<T>( \
 	(Numop2::On<T>::Map) L(O,T)::_map,  (Numop2::On<T>::Zip) L(O,T)::_zip, \
 	(Numop2::On<T>::Fold)L(O,T)::_fold, (Numop2::On<T>::Scan)L(O,T)::_scan, \
@@ -246,20 +246,20 @@ template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
 inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
 inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
 
-template <class T> inline Plex<T>  cx_sqsub(const Plex<T>& a, const Plex<T>& b) { Plex<T> v=a-b; return v*v; }
-template <class T> inline Plex<T> cx_abssub(const Plex<T>& a, const Plex<T>& b) { Plex<T> v=a-b; return norm(v); }
+template <class T> inline complex<T>  cx_sqsub(const complex<T>& a, const complex<T>& b) { complex<T> v=a-b; return v*v; }
+template <class T> inline complex<T> cx_abssub(const complex<T>& a, const complex<T>& b) { complex<T> v=a-b; return norm(v); }
 
-template <class T> inline Plex<T> gf_c2p(const Plex<T>& a) {
-  return Plex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
+template <class T> inline complex<T> gf_c2p(const complex<T>& a) {
+  return complex<T>(hypot(a.real(),a.imag()),atan2(a.real(),a.imag())*(18000 / M_PI));
 }
-template <class T> inline Plex<T> gf_p2c(const Plex<T>& a) {
-  return Plex<T>((float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)),
+template <class T> inline complex<T> gf_p2c(const complex<T>& a) {
+  return complex<T>((float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)),
                  (float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)));
 }
 /*
-template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
+template <class T> inline complex<T> cx_atan2 (complex<T>& a, complex<T>& b) {
   if (b==0) return 0;
-  Plex<T> v=a/b;
+  complex<T> v=a/b;
   return (log(1+iz)-log(log(1-iz))/2i;
   // but this is not taking care of sign stuff...
   // and then what's the use of atan2 on complexes? (use C.log ...)
@@ -269,10 +269,10 @@ template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
 //!@#$ neutral,is_neutral,is_absorbent are impossible to use here
 DEF_OP(cx_mul,     a*b,       1, false, false)
 DEF_OP(cx_mulconj, a*conj(b), 1, false, false)
-DEF_OP(cx_div,     b==Plex<T>(0,0) ? T(0) : a/b,       1, false, false)
-DEF_OP(cx_divconj, b==Plex<T>(0,0) ? T(0) : a/conj(b), 1, false, false)
-DEF_OP(cx_vid,     a==Plex<T>(0,0) ? T(0) : b/a,       1, false, false)
-DEF_OP(cx_vidconj, a==Plex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false)
+DEF_OP(cx_div,     b==complex<T>(0,0) ? T(0) : a/b,       1, false, false)
+DEF_OP(cx_divconj, b==complex<T>(0,0) ? T(0) : a/conj(b), 1, false, false)
+DEF_OP(cx_vid,     a==complex<T>(0,0) ? T(0) : b/a,       1, false, false)
+DEF_OP(cx_vidconj, a==complex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false)
 DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
 DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
 //DEF_OP(cx_atan2,atan2(a,b), 0, false, false)
