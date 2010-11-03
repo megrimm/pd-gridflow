@@ -37,7 +37,8 @@ public:
   #undef FOO
 };
 
-#define Plex std::complex
+using std::complex;
+complex<float> operator / (const complex<float> &a, float b) {return complex<float>(a.real()/b,a.imag()/b);}
 
 #define DEF_OP_COMMON(op,expr,T) inline static T f(T a) { return (T)(expr); }
 #define DEF_OP(op,expr) template <class T> class Y##op : Op<T> { public: DEF_OP_COMMON(op,expr,T);};
@@ -49,7 +50,7 @@ public:
 	DEF_OPFT(op,     expr2,float64)
 
 #define  OL(O,T) OpLoops<Y##O<T>,T>
-#define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
+#define VOL(O,T) OpLoops<Y##O<complex<T> >,complex<T> >
 #define DECL_OPON(L,O,T) Numop1::On<T>((Numop1::On<T>::Map) L(O,T)::_map)
 #define DECLOP(        L,M,O,sym,dim) Numop1(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64)),  M(L,O,float32)   NONLITE(,M(L,O,float64)),dim)
@@ -88,6 +89,8 @@ DEF_OP(acosh, acosh(a))
 DEF_OP(atanh, atanh(a))
 DEF_OP(exp,  exp(a))		DEF_OP(cx_exp,  exp(a))
 DEF_OP(log,  log(a))		DEF_OP(cx_log,  log(a))
+DEF_OP(log10,log(a)/log(10))	DEF_OP(cx_log10,log(a)/log(10))
+DEF_OP(log2, log(a)/log(2))	DEF_OP(cx_log2, log(a)/log(2))
 
 DEF_OP(erf,  erf(a))
 DEF_OP(erfc, erfc(a))
@@ -133,6 +136,8 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(ceil, "ceil"),
 // 9.13
 	DECL_OP(fact, "fact"),
+	DECL_OP(log10, "log10"),	DECL_VOP_FLOAT(cx_log10,"C.log10",  2),
+	DECL_OP(log2, "log2"),		DECL_VOP_FLOAT(cx_log2, "C.log2",   2),
 //	DECL_OP_FLOAT(isinf, "isinf"),
 //	DECL_OP_FLOAT(finite, "finite"),
 //	DECL_OP_FLOAT(isnan, "isnan"),
