@@ -18,6 +18,8 @@
 #X obj 230 263 inlet;
 #X obj 230 285 t b f;
 #X obj 22 116 speedlim 50;
+#X obj 277 264 loadbang;
+#X msg 277 283 0;
 #X connect 0 0 8 0;
 #X connect 1 0 6 0;
 #X connect 2 0 1 1;
@@ -42,4 +44,6 @@
 #X connect 16 1 12 0;
 #X connect 16 1 14 0;
 #X connect 17 0 1 0;
+#X connect 18 0 19 0;
+#X connect 19 0 16 0;
 #X coords 0 -1 1 1 66 68 2 100 200;
