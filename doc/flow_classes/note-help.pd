@@ -14,6 +14,15 @@
 #X obj 14 291 doc_oo 0;
 #X obj 97 291 doc_m o0 float;
 #X text 232 291 note number;
+#X text 219 101 This is not final yet. If you start to use \, be ready
+to change your patch afterwards.;
+#X text 219 52 This is an abstraction based on [#see] implementing
+a slider-like object class that is meant to select a musical note on
+a staff.;
+#X text 103 323 [vsl];
+#X text 145 323 [vradio];
+#X connect 1 1 17 0;
+#X connect 1 1 18 0;
 #X connect 3 0 4 0;
 #X connect 5 0 3 0;
 #X connect 10 1 6 0;
