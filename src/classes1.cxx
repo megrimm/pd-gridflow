@@ -31,6 +31,10 @@
 //#undef GRID_INPUT
 //#define GRID_INPUT(I,V) GRID_INLET(I) {in.buf=V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FINISH
 
+#ifdef __MINGW32__
+void *alloca(size_t);
+#endif
+
 /* ---------------------------------------------------------------- */
 
 // BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
