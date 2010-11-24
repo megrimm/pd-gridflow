@@ -1,4 +1,4 @@
-#N canvas 444 135 632 419 10;
+#N canvas 0 0 632 444 10;
 #X obj 43 57 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0 1
 ;
 #X obj 43 78 metro 100;
@@ -21,15 +21,16 @@
 #X obj 3 328 doc_o 1;
 #X obj 14 358 doc_oo 0;
 #X obj 14 212 doc_cc 0;
-#X obj 0 390 doc_f;
-#X obj 97 296 doc_m i1;
-#X obj 97 274 doc_m i0;
-#X obj 97 212 doc_m c0;
+#X obj 0 410 doc_f;
 #X obj 97 358 doc_m o0 grid;
 #X text 232 358 polygon;
 #X text 232 274 position of centre;
 #X text 232 212 size (radius);
 #X obj 232 296 doc_same 0;
+#X obj 3 390 doc_also;
+#X obj 97 212 doc_m c0 float;
+#X obj 97 274 doc_m i0 grid;
+#X obj 97 296 doc_m i1 float;
 #X connect 0 0 1 0;
 #X connect 1 0 10 0;
 #X connect 3 0 2 0;
@@ -41,7 +42,7 @@
 #X connect 8 1 7 0;
 #X connect 9 0 8 0;
 #X connect 10 0 3 0;
-#X connect 21 1 28 0;
-#X connect 22 1 26 0;
-#X connect 23 1 27 0;
-#X connect 24 1 25 0;
+#X connect 21 1 22 0;
+#X connect 27 1 24 0;
+#X connect 28 1 23 0;
+#X connect 29 1 25 0;
