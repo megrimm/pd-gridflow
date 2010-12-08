@@ -118,7 +118,7 @@ public:
 	static void redraw(BLAH) {INIT1 self->show();}
 };
 #define NEWWB /* C++ doesn't have virtual static ! */ static t_widgetbehavior *newwb () { \
-	t_widgetbehavior *wb = new t_widgetbehavior; \
+	t_widgetbehavior *wb = new t_widgetbehavior; CLEAR(wb); \
 	wb->w_getrectfn    = getrectfn;  \
 	wb->w_displacefn   = displacefn; \
 	wb->w_selectfn     = selectfn;   \
