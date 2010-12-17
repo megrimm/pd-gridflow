@@ -272,6 +272,16 @@ typedef struct {
 	\decl 0 loadbang () {out[0](gensym("nogrey"),0,0);}
 //	\decl 0 raise ();
 	\grin 0 int
+// 9.13 :
+	\decl 0 query_pointer () {
+		Window root_r, child_r;
+		int root_x, root_y, win_x, win_y;
+		unsigned mask;
+		if (XQueryPointer(display,window,&root_r,&child_r,&root_x,&root_y,&win_x,&win_y,&mask))
+			report_pointer(win_y,win_x,mask);
+		else
+			out[0](gensym("oops"),0,0);
+	}
 };
 
 /* ---------------------------------------------------------------- */
