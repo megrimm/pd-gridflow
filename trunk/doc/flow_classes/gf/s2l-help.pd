@@ -1,9 +1,9 @@
-#N canvas 528 157 632 412 10;
+#N canvas 528 157 632 438 10;
 #X obj 0 0 doc_h gf/;
-#X obj 3 358 doc_also;
-#X obj 0 378 doc_f;
+#X obj 3 384 doc_also;
+#X obj 0 404 doc_f;
 #X obj 14 185 doc_ii 0;
-#X obj 103 358 gf/l2s;
+#X obj 103 384 gf/l2s;
 #X obj 3 155 doc_i 2;
 #X obj 14 207 doc_ii 1;
 #X obj 97 207 doc_m i1 symbol;
@@ -17,18 +17,19 @@ is made about multi-byte symbols. (beware of the unicode !);
 #X obj 97 269 doc_m o0 list;
 #X text 232 269 list of symbols.;
 #X text 232 291 beware: no conversion is made to float.;
-#X text 232 313 beware: multiple separators \, initial separators and
-final separators all cause empty symbols to be generated.;
-#X obj 151 358 s2l;
+#X obj 151 384 s2l;
 #X obj 3 80 doc_c 1;
 #X obj 14 110 doc_cc 0;
 #X obj 97 110 doc_m c0 symbol;
 #X obj 232 207 doc_same 0;
+#X text 232 313 beware: multiple adjacent separators \, initial separators
+and final separators all cause empty symbols to be generated \, because
+the list is cut at _every_ place that has a separator.;
 #X connect 1 1 4 0;
-#X connect 1 1 18 0;
-#X connect 7 1 22 0;
+#X connect 1 1 17 0;
+#X connect 7 1 21 0;
 #X connect 12 1 13 0;
 #X connect 14 1 15 0;
 #X connect 14 1 16 0;
-#X connect 14 1 17 0;
-#X connect 21 1 8 0;
+#X connect 14 1 22 0;
+#X connect 20 1 8 0;
