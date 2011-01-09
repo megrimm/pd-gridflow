@@ -1,0 +1,41 @@
+#N canvas 0 0 632 547 10;
+#X obj 0 0 doc_h;
+#X obj 3 493 doc_also;
+#X obj 0 513 doc_f;
+#X obj 3 90 doc_c N/A;
+#X obj 3 130 doc_i 1;
+#X obj 14 160 doc_ii 0;
+#X obj 3 393 doc_o 0;
+#X text 13 426 documented as "0 outlets" even though <hpgl>'s conventions
+can apply to a single outlet as well. there is currently no better
+way to write it in GridFlow's documentation framework (as of 9.13)
+;
+#X obj 97 226 doc_m i0 <any>;
+#X obj 97 204 doc_m i0 print_from_ascii;
+#X obj 103 493 plotter_parser;
+#X obj 199 493 plotter_control;
+#X obj 97 182 doc_m i0 print;
+#X obj 97 160 doc_m i0 other;
+#X text 102 43 set of conventions used by inlets and outlets that support
+a lot of methods abbreviated as <hpgl>.;
+#X text 232 204 arguments are ascii code floats for a LB command;
+#X text 232 182 \$1 is a symbol for a LB command;
+#X text 232 160 obsolete. don't use.;
+#X text 232 226 the selector will be taken as a HPGL command name.
+Use a HPGL manual for this. The number of arguments in the pd message
+has to be the number of arguments required for that command in the
+HPGL manual. Don't use LB directly (use one of the above replacements).
+;
+#X text 232 300 <hpgl> inlets can't know all possible commands and
+thus will accept anything whatsoever because they can't check for validity.
+It is your responsibility to make messages that will be accepted by
+the device in the end.;
+#X text 232 361 TODO: deal with the lowercase/uppercase problem;
+#X connect 1 1 10 0;
+#X connect 1 1 11 0;
+#X connect 8 1 18 0;
+#X connect 8 1 19 0;
+#X connect 8 1 20 0;
+#X connect 9 1 15 0;
+#X connect 12 1 16 0;
+#X connect 13 1 17 0;
