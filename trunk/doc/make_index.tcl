@@ -18,6 +18,8 @@ foreach {k v} {
   numop1   {a numop1 is a transformation made on one number (usually)}
   numop2   {a numop2 represents a way of combining two numbers (usually)}
   numtype  {numtypes allow you to balance precision, range, headroom and efficiency ("speed")}
+
+  hpgl     {about <hpgl> inlets and outlets}
 } {
   set k "doc_link $k 1"
   set w [string length $k]
