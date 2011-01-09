@@ -31,11 +31,11 @@ type b;
 #X obj 326 321 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -241291 -1 -1 7000 256;
 #X obj 128 82 t b b;
-#X obj 104 282 gf.oneshot;
+#X obj 104 282 gf/oneshot;
 #X obj 127 226 t b b;
 #X obj 13 349 nbx 5 14 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10
 -225271 -1 -1 0 256;
-#X obj 13 282 gf.oneshot;
+#X obj 13 282 gf/oneshot;
 #X obj 31 149 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
 -1;
 #X obj 31 166 t b b;
