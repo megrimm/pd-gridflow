@@ -119,7 +119,13 @@ GridHandler *stromgol; // remove this asap
 		if (!in[0]) in[0]=new GridInlet((FObject *)this,stromgol);
 		while (n) {
 			if (!go || !go->sender) {
-				if (per_message) go = new GridOut(this,0,in[0]->dim,in[0]->nt);
+				// the cast of per_message was changed twice, because of [hpgl_font_render]
+				// and because of something else. This suggests that there is a problem about
+				// what [#import] is expected to do in per_message mode. This could lead to a
+				// special default value of cast that wouldn't be a NumberType but instead would
+				// be "copy" or "from_message" or some similar name. But is that what we want
+				// to be using as a default instead of cast i, even when #import is not per_message ?
+				if (per_message) go = new GridOut(this,0,in[0]->dim,     cast /*in[0]->nt*/);
 				else             go = new GridOut(this,0,       dim,     cast);
 			}
 			long n2 = min((long)n,go->dim.prod()-go->dex);
