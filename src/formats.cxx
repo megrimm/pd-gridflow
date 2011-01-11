@@ -216,13 +216,16 @@ struct GridHeader {
 		if (endian != is_le()) swap32(head.dimn,(uint32 *)dimv);
 		dim = Dim(head.dimn,dimv);
 	}
-	GridOut out(this,0,dim,cast);
 	long nn = dim.prod();
 	
 #define FOO(T) {T data[nn]; size_t nnn = fread(data,1,nn*sizeof(T),f); \
-	if (nnn<nn*sizeof(T)) pd_error(bself,"can't read grid data (body): %s", feof(f) ? "end of file" : strerror(ferror(f))); \
+	if (nnn<nn*sizeof(T)) { \
+		if (headerless && !nnn) {out[0](); return;} \
+		else pd_error(bself,"can't read grid data (body): %s", feof(f) ? "end of file" : strerror(ferror(f))); \
+	} \
+	GridOut o(this,0,dim,cast); \
 	CLEAR(data+nnn/sizeof(T),nn-nnn/sizeof(T)); \
-	out.send(nn,(T *)data);}
+	o.send(nn,(T *)data);}
 TYPESWITCH(type,FOO,)
 #undef FOO
 	call_super(0,0);
