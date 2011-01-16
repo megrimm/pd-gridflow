@@ -1,0 +1,25 @@
+#N canvas 526 113 632 336 10;
+#X obj 0 0 doc_h;
+#X obj 0 302 doc_f;
+#X obj 128 72 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+1;
+#X floatatom 59 72 5 0 0 0 - - -;
+#X text 224 47 use [key] and [keyup] as a [midiin]-like interface;
+#X obj 3 118 doc_c 0;
+#X obj 3 198 doc_o 2;
+#X obj 3 158 doc_i 0;
+#X obj 14 228 doc_oo 0;
+#X obj 14 250 doc_oo 1;
+#X obj 97 228 doc_m o0 float;
+#X obj 97 250 doc_m o1 float;
+#X text 231 79 this does not work with CAPS LOCK.;
+#X obj 3 282 doc_also;
+#X text 231 68 this only works with FR (AZERTY) keyboard;
+#X obj 59 53 azerty_piano;
+#X obj 103 282 qwerty_piano;
+#X text 232 228 midi note number from 0 to 15;
+#X text 232 250 velocity: 0 (off) or 1 (on);
+#X connect 10 1 17 0;
+#X connect 11 1 18 0;
+#X connect 15 0 3 0;
+#X connect 15 1 2 0;
