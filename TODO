@@ -2,44 +2,41 @@ x = done
 
 9.13 :
 
+[ ] [gf/mouse_spy] bug with 
+[ ] C.log plante (voir zed.pd)
+[ ] #background_model plante
+[ ] rajouter les nouvelles patchs de Roman
+[ ] intégrer -lib segfault
+[ ] [#expr] still has some pretty severe parser bugs
+[ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
+
+[ ] renommer t_symbol * à symbol  (?)
+[ ] renommer t_atom2 *  à atom    (?)
+
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
-[ ] reenable numop1 isinf finite isnan (talk to alx1)
+[ ] reenable numop1 isinf finite isnan
 
 [ ] more expr :
-
-    //if() conditional  - if (condition, IfT rue-expr, IfFalse-expr) - in expr~ if 'condition' is a signal, the result will be determined on sample by sample basis (added in version 0.4)
     int ()   	convert to integer
     rint ()    	round a float to a nearby integer
-    copysign() 	copy sign of a number(added in version 0.4)
     imodf  	get signed integer value from floating point number(added in version 0.4)
     modf    	get signed fractional value from floating-point number(added in version 0.4)
-    drem    	floating-point remainder function (added in versio n 0.4)
-
-    power functions
-    	
-    pow ()	raise to the power of {e.g., pow(x,y) is x to the power of y}
+    drem    	floating-point remainder function (added in version 0.4)
     ln()    	alias for log()
-    log10()    	log base 10
-    fact()    	factorial
-    	
-    Trigonometric
-    	
     asin()    	arc sine
     acos()    	arc cosine
-    atan()    	arc tangent
+    atan()    	arc tangent (WE NEED TO RENAME THE EXISTING [# atan] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
     atan2()    	arc tangent of 2 variables
     asinh()    	inverse hyperbolic sine
     acosh()    	inverse hyperbolic cosine
-    atan()    	inverse hyperbolic tangent
+    atanh()    	inverse hyperbolic tangent
     fmod()    	 floating-point remainder function (added in version 0.4)
-
-    Table Functions
-    	
     size()    	size of a table
     sum()    	sum of all elements of a table
     Sum()    	sum of elemnets of a specified boundary of a table
 
+[ ] [fps] doesn't complain about invalid mode name
 [ ] list-attrs
 [ ] parens-msg
 [ ] make automatic documentation tables for numop... add [gf/numop_info]
@@ -174,14 +171,13 @@ x = done
     'window', 'movie', 'image', 'camera', talking about common options... (re)move superfluous parts of [#in].
 [ ] PtrOutlet() : replace error() by RAISE() if you can
 [ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
-[ ] error: [#store] inlet 0 method float: must have at least 1 dimension.
-    ~GridOut(): dex=0 prod=1
+[ ] error: [#store] inlet 0 method float: must have at least 1 dimension. ~GridOut(): dex=0 prod=1
 [ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
 [ ] merge << and pd_oprint please
 [ ] infinite loop in shoot.pd
 [ ] add more stuff to [#expr]...
 [ ] change numop to numop2 all over the documentation
----------------------------------------------------------CIBLE--------------------------------------------------
+---------------------------------------------------------CIBLE------------------------------ move this up to 125 before 9.13
 later
 
 while running #to~-help.pd :
@@ -413,7 +409,7 @@ svn propset svn:mime-type text/pure-data *.pd
 
 How to release GridFlow :
 
-dir=gridflow-9.11; tag=gridflow_9_11
+dir=gridflow-9.12; tag=gridflow_9_12_b
 svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
 svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
 chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
@@ -423,3 +419,4 @@ cd doc/homepage; pico index.html; make install
 make binaries
 pd-announce mlist : post release
 freshmeat if anyone cares (just restored my account but didn't use it)
+puredata.info release listings
