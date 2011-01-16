@@ -1,6 +1,6 @@
-#N canvas 526 113 632 401 10;
+#N canvas 526 113 632 426 10;
 #X obj 0 0 doc_h;
-#X obj 0 372 doc_f;
+#X obj 0 392 doc_f;
 #X obj 59 53 qwerty_piano;
 #X obj 128 72 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
 1;
@@ -14,7 +14,6 @@
 #X obj 97 318 doc_m o0 float;
 #X obj 97 340 doc_m o1 float;
 #X text 232 318 midi note number from 0 to 31;
-#X text 232 340 velocity: 0 or 1;
 #X text 222 113 octave 0 white: zxcvbnm;
 #X text 225 102 octave 0 black: sd ghj;
 #X text 222 83 octave 1 white: qwertyuiop[];
@@ -24,7 +23,10 @@
 #X text 231 152 likewise for other QWERTY keyboards;
 #X text 231 165 this does not work with QWERTZ and AZERTY;
 #X text 231 179 this does not work with CAPS LOCK.;
+#X obj 3 372 doc_also;
+#X obj 104 372 azerty_piano;
+#X text 232 340 velocity: 0 (off) or 1 (on);
 #X connect 2 0 4 0;
 #X connect 2 1 3 0;
 #X connect 11 1 13 0;
-#X connect 12 1 14 0;
+#X connect 12 1 25 0;

@@ -1,0 +1,22 @@
+#N canvas 193 22 570 492 10;
+#X obj 43 15 key;
+#X obj 94 178 outlet;
+#X obj 308 70 outlet;
+#X obj 194 13 keyup;
+#X obj 44 49 t f b;
+#X msg 87 38 1;
+#X obj 194 36 t f b;
+#X msg 238 36 0;
+#X obj 43 98 listfind 113 122 115 101 100 102 116 103 121 104 117 106
+107 111 108 112 109;
+#X obj 43 148 select -1;
+#X connect 0 0 4 0;
+#X connect 3 0 6 0;
+#X connect 4 0 8 0;
+#X connect 4 1 5 0;
+#X connect 5 0 2 0;
+#X connect 6 0 8 0;
+#X connect 6 1 7 0;
+#X connect 7 0 2 0;
+#X connect 8 0 9 0;
+#X connect 9 1 1 0;
