@@ -131,7 +131,7 @@ struct GemCache {
 	\grin 1 int
 	\decl 0 gem_state (...) {
 		if (argc==2) {
-			post("#to_pix gem_state %p %p",(void *)argv[0],(void *)argv[1]);
+			//post("#to_pix gem_state %p %p",(void *)argv[0],(void *)argv[1]);
 			render((GemCache *)(void *)argv[0],
 			       (GemState *)(void *)argv[1]);
 		} else {
