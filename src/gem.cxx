@@ -106,7 +106,19 @@ struct GemCache {
 \class GridToPix : FObject {
 	pixBlock *pb;
 	\attr bool yflip;
-	void render(GemState *state) {state->image = pb; pb->newimage = 1;}
+	void render (GemCache *cache, GemState *state) {
+		state->image = pb;
+		pb->newimage = 1;
+		//if (cache) post("gemcache: magic=%d, has to be %d",cache->m_magic,GEMCACHE_MAGIC);
+		if (cache && cache->m_magic==GEMCACHE_MAGIC) {
+			//imageStruct &im = pb->image;
+			//post("im.ysize=%d im.xsize=%d im.format=%d im.type=%d",im.ysize,im.xsize,im.format,im.type);
+			//post("cache->resendImage=%d, setting to 1", cache->resendImage);
+			//post("cache->dirty=%d, setting to 1", cache->dirty);
+			//cache->resendImage = 1;
+			//cache->dirty = 1;
+		}
+	}
 	void startRendering () {pb->newimage = 1;}
 	\constructor () {
 		yflip = false;
@@ -118,7 +130,14 @@ struct GemCache {
 	~GridToPix () {}
 	\grin 1 int
 	\decl 0 gem_state (...) {
-		if (argc==2) render((GemState *)(void *)argv[1]); else startRendering();
+		if (argc==2) {
+			post("#to_pix gem_state %p %p",(void *)argv[0],(void *)argv[1]);
+			render((GemCache *)(void *)argv[0],
+			       (GemState *)(void *)argv[1]);
+		} else {
+			if (argc==1) post("#to_pix gem_state %f",(float)argv[0]); else post("#to_pix gem_state ???");
+			startRendering();
+		}
 		out[0](gensym("gem_state"),argc,argv);
 	}
 };
@@ -136,7 +155,7 @@ GRID_INLET(1) {
 	im.clear(); im.ysize = in.dim[0]; im.xsize = in.dim[1]; im.type = GL_UNSIGNED_BYTE;
 	switch (in.dim[2]) {
 	case 1: im.csize = 1; im.format = GL_LUMINANCE; break;
-	case 3: im.csize = 4; im.format = GEM_RGBA;     break;
+	case 3: im.csize = 4; im.format = GEM_RGBA;     break; /* GEM_RGB hardly exists anymore */
 	case 4: im.csize = 4; im.format = GEM_RGBA;     break;
 	default: RAISE("you shouldn't see this error message.");
 	}
