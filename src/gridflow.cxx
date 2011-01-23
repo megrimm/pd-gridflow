@@ -619,7 +619,8 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
     #endif
     try {
 	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
-	int argc = handle_parens(ac,argv+2); // ought to be removed
+	//int argc = handle_parens(ac,argv+2); // ought to be removed
+	int argc = ac;
 	FMethod m;
 	FObject *self = bself->self;
 	m=method_lookup(bself,winlet,      s); if (m) {                           m(self,argc+0,argv+2); return;}

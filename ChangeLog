@@ -9,6 +9,8 @@ version 9.13 (2010.12...):
  * [#io.x11]: added query_pointer
  * added class [hpgl_from_patch]
  * [route3]: fixed bug so that this class can be used for real
+ * parens in messages are no longer parsed automatically as nested-lists
+   (parens in objectboxes still are ; otherwise use ____________________)
 
 version 9.12 (2010.10.08):
 
