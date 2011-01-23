@@ -462,7 +462,7 @@ void setsels (vector<t_symbol *> &sels, int argc, t_atom2 *argv) {
 	\decl void anything(...) {
 		t_symbol *sel = argv[1];
 		int i=0; for (i=0; i<int(sels.size()); i++) if (sel==sels[i]) break;
-		if (sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list; // what about grid,blob ?
+		if (i<int(sels.size()) && sel!=&s_bang && sel!=&s_float && sel!=&s_symbol && sel!=&s_pointer) sel=&s_list; // what about grid,blob ?
 		out[i](sel,argc-2,argv+2);
 	}
 	\decl 1 list(...) {setsels(sels,argc,argv);}
