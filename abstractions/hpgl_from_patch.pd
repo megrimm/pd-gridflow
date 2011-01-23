@@ -91,5 +91,6 @@
 #X connect 37 0 38 1;
 #X connect 38 1 40 0;
 #X connect 38 2 39 0;
+#X connect 39 0 28 0;
 #X connect 40 0 28 0;
 #X connect 41 0 32 0;
