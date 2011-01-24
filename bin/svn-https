@@ -1,0 +1,1 @@
+find | grep .svn/entries | xargs sed -i s/http:/https:/
