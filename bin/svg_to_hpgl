@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+def flip(p)
+  x,y=p.split(",")
+  x=Float(x)
+  y=Float(y)
+  y=300-y 		# changer cette valeur pour le offset de y 
+  [x,y].join(",")
+end
+
+f=File.open(ARGV[0])
+f.each {|x|
+  if /\sd="(.*)"/=~x
+    a=[]
+    $1.split(/\s+/).each {|y| a<<y if /,/=~y }
+    b=a.shift
+    puts "PU#{flip(b)};PD#{a.map{|y| flip(y) }.join(',')};"
+  end
+}
