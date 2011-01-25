@@ -1,18 +1,31 @@
-#N canvas 0 0 632 351 10;
+#N canvas 306 97 632 414 10;
 #X obj 0 0 doc_h;
-#X obj 3 177 doc_c;
-#X obj 3 217 doc_i;
-#X obj 3 257 doc_o;
-#X obj 3 297 doc_also;
-#X obj 0 317 doc_f;
-#X obj 114 114 gf/unicode_from_utf8;
-#X obj 114 133 print;
-#X msg 114 38 list allô tout l'monde ! « déjà vu »;
-#X obj 114 57 gf/l2s;
-#X obj 114 76 #import;
-#X obj 114 95 #to_f;
-#X connect 6 0 7 0;
+#X obj 3 240 doc_c;
+#X obj 3 280 doc_i;
+#X obj 3 320 doc_o;
+#X obj 3 360 doc_also;
+#X obj 0 380 doc_f;
+#X obj 120 148 gf/unicode_from_utf8;
+#X obj 120 91 gf/l2s;
+#X obj 120 110 #import;
+#X obj 120 129 #to_f;
+#X msg 119 168 add2 \$1;
+#X msg 119 187 97 108 108 244 160 33 32 171 160 100 233 106 224 160
+187;
+#X msg 305 70 set;
+#X obj 120 53 t b b;
+#X obj 120 36 bng 15 250 50 0 empty empty empty 17 7 0 10 -204786 -1
+-1;
+#X msg 120 72 list allô ! « déjà »;
+#X text 119 202 97 108 108 244 160 33 32 171 160 100 233 106 224 160
+187;
+#X connect 6 0 10 0;
+#X connect 7 0 8 0;
 #X connect 8 0 9 0;
-#X connect 9 0 10 0;
+#X connect 9 0 6 0;
 #X connect 10 0 11 0;
-#X connect 11 0 6 0;
+#X connect 12 0 11 0;
+#X connect 13 0 15 0;
+#X connect 13 1 12 0;
+#X connect 14 0 13 0;
+#X connect 15 0 7 0;
