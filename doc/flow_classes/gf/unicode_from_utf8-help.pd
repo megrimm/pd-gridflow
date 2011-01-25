@@ -1,0 +1,18 @@
+#N canvas 0 0 632 351 10;
+#X obj 0 0 doc_h;
+#X obj 3 177 doc_c;
+#X obj 3 217 doc_i;
+#X obj 3 257 doc_o;
+#X obj 3 297 doc_also;
+#X obj 0 317 doc_f;
+#X obj 114 114 gf/unicode_from_utf8;
+#X obj 114 133 print;
+#X msg 114 38 list allô tout l'monde ! « déjà vu »;
+#X obj 114 57 gf/l2s;
+#X obj 114 76 #import;
+#X obj 114 95 #to_f;
+#X connect 6 0 7 0;
+#X connect 8 0 9 0;
+#X connect 9 0 10 0;
+#X connect 10 0 11 0;
+#X connect 11 0 6 0;
