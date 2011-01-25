@@ -1,10 +1,7 @@
-#N canvas 306 97 632 414 10;
+#N canvas 306 97 632 588 10;
 #X obj 0 0 doc_h;
-#X obj 3 240 doc_c;
-#X obj 3 280 doc_i;
-#X obj 3 320 doc_o;
-#X obj 3 360 doc_also;
-#X obj 0 380 doc_f;
+#X obj 3 534 doc_also;
+#X obj 0 554 doc_f;
 #X obj 120 148 gf/unicode_from_utf8;
 #X obj 120 91 gf/l2s;
 #X obj 120 110 #import;
@@ -19,13 +16,35 @@
 #X msg 120 72 list allô ! « déjà »;
 #X text 119 202 97 108 108 244 160 33 32 171 160 100 233 106 224 160
 187;
-#X connect 6 0 10 0;
+#X obj 3 240 doc_c 0;
+#X obj 3 280 doc_i 1;
+#X obj 14 310 doc_ii 0;
+#X obj 3 394 doc_o 1;
+#X obj 14 424 doc_oo 0;
+#X obj 97 310 doc_m i0 float;
+#X obj 97 424 doc_m o0 float;
+#X obj 103 534 #import;
+#X text 232 424 a unicode codepoint. note that this might not be a
+"whole character" if a character is made of several parts that have
+different numbers : for example \, a character might be made of 2 characters
+numbers \, that are made of 5 bytes in total. But for normal writing
+in most languages \, one character has only one number (though it may
+be split over 2 or 3 bytes).;
+#X text 232 310 a byte (integer from 0 to 255) representing a codepoint
+or part or a codepoint. if the character is finished \, will output
+the corresponding codepoint. if not \, it will remember the unfinished
+part until the codepoint is finished (using a later float message).
+;
+#X connect 1 1 21 0;
+#X connect 3 0 7 0;
+#X connect 4 0 5 0;
+#X connect 5 0 6 0;
+#X connect 6 0 3 0;
 #X connect 7 0 8 0;
-#X connect 8 0 9 0;
-#X connect 9 0 6 0;
-#X connect 10 0 11 0;
-#X connect 12 0 11 0;
-#X connect 13 0 15 0;
-#X connect 13 1 12 0;
-#X connect 14 0 13 0;
-#X connect 15 0 7 0;
+#X connect 9 0 8 0;
+#X connect 10 0 12 0;
+#X connect 10 1 9 0;
+#X connect 11 0 10 0;
+#X connect 12 0 4 0;
+#X connect 19 1 23 0;
+#X connect 20 1 22 0;
