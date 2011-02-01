@@ -228,8 +228,9 @@ static void dont_handle_parens (int ac, t_atom2 *av) {for (int i=0; i<ac; i++) i
 		table[sel].resize(argc-2);
 		for (int i=2; i<argc; i++) table[sel][i-2]=argv[i];
 	}
+	\decl 1 clear () {table.clear();}
 };
-\end class {install("attr",1,1);}
+\end class {install("attr",2,1);}
 
 //****************************************************************
 
