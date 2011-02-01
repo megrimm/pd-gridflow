@@ -2,6 +2,22 @@ x = done
 
 9.13 :
 
+[ ] hpgl_from_patch-help.pd : error message from [#for] inside [#slice]
+[ ] [gf/not_open]:not open <-------- mauvais niveau (ne devrait pas écrire cet objet)
+[ ] ps3eye problem (see gridflow-dev 17 mai 2010)
+[ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
+[ ] [#redim] default
+
+[ ] http://oldwiki.mingw.org/index.php/sample%20DLL
+
+[ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
+    pourrait devenir :
+    error: [# -] inlet 0 method grid: same type please (inlet 0 has float32, inlet 1 has int32)
+    ou:
+    error: [# -] inlet 0 method grid: same type please (left is float32, right is int32)
+    (ou autre)
+
+[ ] x11 window size thing for audrey
 [ ] [gf/mouse_spy] bug with 
 [ ] C.log plante (voir zed.pd)
 [ ] #background_model plante
