@@ -558,7 +558,7 @@ bool BitPacking::is_le() {return endian==1 || (endian ^ ::is_le())==3;}
 
 vector<string> gf_data_path;
 string gf_find_file (string x) {
-	if (strchr(x.data(),'/')) return x;
+	//if (strchr(x.data(),'/')) return x;
 	int n = gf_data_path.size();
 	struct stat dummy;
 	for (int i=0; i<n; i++) {
@@ -660,7 +660,7 @@ FObject::FObject (BFObject *bself, MESSAGE) {
 	this->bself = bself;
 	bself->self = this;
 	string name = string(sel->s_name);
-	mom = (t_canvas *)canvas_getcurrent();
+	mom = canvas_getcurrent();
 	ninlets  = 1;
 	noutlets = 0;
 	inlets = new  BFProxy*[1];
@@ -1007,8 +1007,9 @@ static t_pd *text_firstinlet (t_object *self) {
 static void canvas_tolast (t_canvas *self, t_symbol *s, int argc, t_atom2 *argv) {
 	t_gobj *g = canvas_last(self); if (!g) {pd_error(self,"canvas last: there is no last object"); return;}
 	if (argc<1 || argv[0].a_type!=A_SYMBOL) {error("$1 must be a symbol"); return;}
-	//post("tolast: class=%s",pd_class(g)->c_name->s_name);
+	//post("tolast: class=%s s=%s",pd_class(g)->c_name->s_name,s->s_name);
 	t_pd *r = text_firstinlet((t_text *)g);
+	if (!r) r = (t_pd *)g;
 	pd_typedmess(r,argv[0],argc-1,argv+1);
 }
 static void canvas_last_activate (t_canvas *self, t_symbol *s, int argc, t_atom *argv) {
