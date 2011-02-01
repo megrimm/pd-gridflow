@@ -1,40 +1,49 @@
-#N canvas 473 114 632 430 10;
+#N canvas 473 114 632 621 10;
 #X obj 0 0 doc_h;
 #X obj 174 72 attr;
-#X obj 14 322 doc_oo 0;
-#X obj 14 203 doc_ii 0;
-#X obj 3 376 doc_also;
+#X obj 14 390 doc_oo 0;
+#X obj 14 201 doc_ii 0;
+#X obj 3 444 doc_also;
 #X obj 3 131 doc_c 0;
-#X obj 3 171 doc_i 1;
-#X obj 3 292 doc_o 1;
-#X obj 97 260 doc_m i0 <any>;
-#X text 232 260 set or create an attribute;
-#X obj 97 203 doc_m i0 get;
-#X text 232 203 without \$1 : get all attributes (send to outlet 0)
+#X obj 3 360 doc_o 1;
+#X obj 97 328 doc_m i0 <any>;
+#X obj 97 201 doc_m i0 get;
+#X text 232 201 without \$1 : get all attributes (send to outlet 0)
 ;
-#X text 232 225 with \$1 : get one specific attribute (and send to
+#X text 232 223 with \$1 : get one specific attribute (and send to
 outlet 0 as well);
-#X obj 103 376 args;
-#X obj 139 376 setargs;
-#X obj 97 344 doc_m o0 <any>;
-#X text 232 344 an attribute.;
+#X obj 103 444 args;
+#X obj 139 444 setargs;
+#X obj 97 412 doc_m o0 <any>;
+#X text 232 412 an attribute.;
 #X msg 145 39 get;
 #X obj 174 91 print;
 #X msg 174 39 pruneau 2 3 \, cannelle 5 7 11 13 \, perline coucou \,
 tibrin rigodon melodie;
 #X msg 49 55 get tibrin;
-#X obj 97 322 doc_m o0 bang;
-#X obj 0 396 doc_f;
-#X text 232 322 in get \$1 \, no such attribute was found.;
+#X obj 97 390 doc_m o0 bang;
+#X obj 0 464 doc_f;
+#X text 232 390 in get \$1 \, no such attribute was found.;
 #X text 161 150 creation arguments will be added eventually.;
-#X connect 1 0 18 0;
-#X connect 4 1 13 0;
-#X connect 4 1 14 0;
+#X obj 97 293 doc_m i0 set;
+#X text 232 328 set or create an attribute (whose name is the selector)
+;
+#X text 232 293 set or create an attribute (whose name is \$1) \; UNIMPLEMENTED!
+;
+#X obj 97 258 doc_m i0 remove;
+#X text 232 258 remove attribute whose name is \$1. it will not appear
+anymore in 'get' until it is recreated (if ever it is);
+#X obj 3 171 doc_i 1;
+#X connect 1 0 16 0;
+#X connect 4 1 11 0;
+#X connect 4 1 12 0;
+#X connect 7 1 24 0;
 #X connect 8 1 9 0;
-#X connect 10 1 11 0;
-#X connect 10 1 12 0;
-#X connect 15 1 16 0;
+#X connect 8 1 10 0;
+#X connect 13 1 14 0;
+#X connect 15 0 1 0;
 #X connect 17 0 1 0;
-#X connect 19 0 1 0;
-#X connect 20 0 1 0;
-#X connect 21 1 23 0;
+#X connect 18 0 1 0;
+#X connect 19 1 21 0;
+#X connect 23 1 25 0;
+#X connect 26 1 27 0;
