@@ -1,7 +1,9 @@
 /* $Id$ */
 
-version 9.13 (2010.12...):
+version 9.13 (2011.01...):
 
+ * added classes [azerty_piano], [hpgl_to_lines], [hpgl_objectbox],
+   [hpgl_messagebox], [#draw_lattice]
  * [#expr]: added functions "if", "pow" (numop ** aliased to pow)
  * numop1: added fact (factorial or "gamma function" which is not [# gamma])
  * numop1: added log2, log10, C.log2, C.log10
@@ -11,6 +13,8 @@ version 9.13 (2010.12...):
  * [route3]: fixed bug so that this class can be used for real
  * parens in messages are no longer parsed automatically as nested-lists
    (parens in objectboxes still are ; otherwise use ____________________)
+ * [gf/find_file] now looks up relative names in gridflow/images
+   even when they contain a slash (or several).
 
 version 9.12 (2010.10.08):
 
