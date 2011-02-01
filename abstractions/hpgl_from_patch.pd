@@ -1,4 +1,4 @@
-#N canvas 453 325 834 759 10;
+#N canvas 402 0 834 721 10;
 #X obj 20 15 inlet;
 #X obj 198 488 inlet;
 #X obj 20 144 textfile;
@@ -47,7 +47,6 @@
 #X obj 73 352 gf/l2s;
 #X msg 415 580 PU \$1 \$2 \, PD \$3 \$4;
 #X obj 415 561 #to_l;
-#X obj 415 609 print conn;
 #X obj 20 182 route obj msg floatatom symbolatom text connect;
 #X msg 320 267 2 2 3 # \$1 0 0 \$1 0 1 \$3 0 0 \$3 1 1;
 #X connect 0 0 3 0;
@@ -60,7 +59,7 @@
 #X connect 3 1 5 0;
 #X connect 5 0 6 0;
 #X connect 7 0 2 0;
-#X connect 8 0 49 0;
+#X connect 8 0 48 0;
 #X connect 9 0 30 0;
 #X connect 9 1 14 0;
 #X connect 10 0 30 0;
@@ -109,12 +108,11 @@
 #X connect 44 0 43 1;
 #X connect 45 0 21 0;
 #X connect 46 0 24 0;
-#X connect 46 0 48 0;
 #X connect 47 0 46 0;
-#X connect 49 0 9 0;
-#X connect 49 1 10 0;
-#X connect 49 2 11 0;
-#X connect 49 3 12 0;
-#X connect 49 4 13 0;
-#X connect 49 5 50 0;
-#X connect 50 0 43 0;
+#X connect 48 0 9 0;
+#X connect 48 1 10 0;
+#X connect 48 2 11 0;
+#X connect 48 3 12 0;
+#X connect 48 4 13 0;
+#X connect 48 5 49 0;
+#X connect 49 0 43 0;
