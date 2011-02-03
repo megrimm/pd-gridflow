@@ -1,15 +1,14 @@
 /* $Id$ */
 
-version 9.13 (2011.01...):
+version 9.13 (2011.02...):
 
  * added classes [azerty_piano], [hpgl_to_lines], [hpgl_objectbox],
-   [hpgl_messagebox], [#draw_lattice]
+   [hpgl_messagebox], [hpgl_from_patch], [#draw_lattice]
  * [#expr]: added functions "if", "pow" (numop ** aliased to pow)
  * numop1: added fact (factorial or "gamma function" which is not [# gamma])
  * numop1: added log2, log10, C.log2, C.log10
  * x11 is now a load-time option (???????????????????????????????????????)
  * [#io.x11]: added query_pointer
- * added class [hpgl_from_patch]
  * [route3]: fixed bug so that this class can be used for real
  * parens in messages are no longer parsed automatically as nested-lists
    (parens in objectboxes still are ; otherwise use ____________________)
