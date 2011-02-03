@@ -14,9 +14,9 @@
 #X obj 97 266 doc_m o0 float;
 #X text 232 327 integer coming from inlet 0 but unrecognised;
 #X text 232 204 ascii bytes (integer);
-#X floatatom 31 100 8 0 0 0 - - -;
-#X obj 90 100 display;
-#X msg 30 50 51 \, 46 \, 49 \, 52 \, 49 \, 53 \, 57 \, 51 \, 0;
+#X floatatom 31 94 8 0 0 0 - - -;
+#X obj 88 94 display;
+#X msg 31 56 51 \, 46 \, 49 \, 52 \, 49 \, 53 \, 57 \, 51 \, 0;
 #X text 232 266 float value successfully parsed. note that this is
 output only when an unrecognised character is received \, because otherwise
 \, it can't be known for sure that the number is finished.;
@@ -24,9 +24,11 @@ output only when an unrecognised character is received \, because otherwise
 \, infinities nor NaN.;
 #X obj 3 359 doc_also;
 #X obj 97 204 doc_m i0 float;
+#X obj 31 37 loadbang;
 #X connect 2 0 14 0;
 #X connect 2 1 15 0;
 #X connect 10 1 12 0;
 #X connect 11 1 17 0;
 #X connect 16 0 2 0;
 #X connect 20 1 13 0;
+#X connect 21 0 16 0;
