@@ -222,7 +222,7 @@ say #many               "\[#many\]: create and organise many identical GUI objec
 say #many-prop          "properties dialogue for \[#many\]"
 say #see                "\[#see\]: view video output within patch and collect mouse/key info"
 say #to_iem             "convert grid(3) to IEMGUI colour code"
-say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\]"
+say qwerty_piano        "imitation of \[notein\] using \[key\] and \[keyup\] (for QWERTY keyboards)"
 say doremi              "\[doremi\]: gui object for displaying midi notes"
 say gf/mouse_spy        "tell mouse/key events of a single patch window in \[#out window\] format"
 
@@ -311,3 +311,12 @@ say doc_iemfont   "figure out correct font size to use with IEMGUI widgets"
 # 9.12
 say #expr         "an \[expr\] clone that will eventually support grids too"
 say #compress     "pick a set of values in a grid"
+
+# 9.13
+say azerty_piano    "imitation of \[notein\] using \[key\] and \[keyup\] (for AZERTY keyboards)"
+say hpgl_objectbox  "make HPGL drawing of objectbox"
+say hpgl_messagebox "make HPGL drawing of messagebox"
+say hpgl_to_lines   "convert HPGL drawings to line segment grids (for #draw_polygon)"
+say hpgl_from_patch "read .pd file and try making an HPGL drawing from it"
+say #draw_lattice   "draw horizontal and vertical lines to cover an image"
+
