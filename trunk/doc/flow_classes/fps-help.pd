@@ -3,47 +3,47 @@
 #X obj 3 228 doc_c 1;
 #X obj 14 260 doc_cc 0;
 #X obj 97 260 doc_m c0 symbol;
-#X obj 3 314 doc_i 1;
-#X obj 14 346 doc_ii 0;
-#X obj 97 346 doc_m i0 bang;
-#X obj 97 407 doc_m i0 detailed;
-#X obj 97 451 doc_m i0 mode;
-#X obj 97 583 doc_m i0 period;
-#X obj 3 637 doc_o 1;
-#X obj 14 667 doc_oo 0;
-#X obj 97 667 doc_m o0 float;
-#X obj 97 689 doc_m o0 list;
-#X text 232 539 "logical" uses [timer];
-#X text 232 561 "process" uses [cputime];
-#X text 232 517 "cpu" uses [tsctime];
-#X text 232 451 "real" uses [realtime];
-#X text 232 473 "user" uses [usertime];
-#X text 232 495 "system" uses [systemtime];
-#X obj 3 782 doc_also;
-#X obj 103 782 realtime;
-#X obj 163 782 usertime;
-#X obj 223 782 systemtime;
-#X obj 295 782 tsctime;
-#X obj 349 782 timer;
-#X obj 391 782 cputime;
-#X text 232 346 Times at which bangs are received are stored until
+#X obj 3 336 doc_i 1;
+#X obj 14 366 doc_ii 0;
+#X obj 97 366 doc_m i0 bang;
+#X obj 97 427 doc_m i0 detailed;
+#X obj 97 471 doc_m i0 mode;
+#X obj 97 625 doc_m i0 period;
+#X obj 3 679 doc_o 1;
+#X obj 14 709 doc_oo 0;
+#X obj 97 709 doc_m o0 float;
+#X obj 97 731 doc_m o0 list;
+#X text 232 559 "logical" uses [timer];
+#X text 232 581 "process" uses [cputime];
+#X text 232 537 "cpu" uses [tsctime];
+#X text 232 471 "real" uses [realtime];
+#X text 232 493 "user" uses [usertime];
+#X text 232 515 "system" uses [systemtime];
+#X obj 3 824 doc_also;
+#X obj 103 824 realtime;
+#X obj 163 824 usertime;
+#X obj 223 824 systemtime;
+#X obj 295 824 tsctime;
+#X obj 349 824 timer;
+#X obj 391 824 cputime;
+#X text 232 366 Times at which bangs are received are stored until
 a large enough sample of those is accumulated. Large enough is defined
 to be whenever the timespan exceeds one second. Then a report is made
 through the outlet.;
-#X text 232 605 exceptionally \, anything else gets ignored.;
-#X text 232 667 (terse) this is the messages-per-second rating.;
-#X text 232 689 (detailed) this is: messages-per-second \, followed
+#X text 232 647 exceptionally \, anything else gets ignored.;
+#X text 232 709 (terse) this is the messages-per-second rating.;
+#X text 232 731 (detailed) this is: messages-per-second \, followed
 by five values of milliseconds-per-message: minimum \, median \, maximum
 \, average \, standard deviation.;
-#X text 232 737 (the average happens to be simply 1000 divided by the
+#X text 232 779 (the average happens to be simply 1000 divided by the
 messages-per-second \, but it is convenient to have it anyway);
-#X obj 0 802 doc_f;
-#X obj 97 605 doc_m i0 <any>;
+#X obj 0 844 doc_f;
+#X obj 97 647 doc_m i0 <any>;
 #X text 232 282 "detailed": see outlet 0 list;
 #X text 232 260 "terse": see outlet 0 float;
-#X text 232 429 1: same as arg 0 detailed;
-#X text 232 407 0: same as arg 0 terse;
-#X text 232 583 minimum time between updates;
+#X text 232 449 1: same as arg 0 detailed;
+#X text 232 427 0: same as arg 0 terse;
+#X text 232 625 minimum time between updates;
 #X text 247 26 measures frames per second... or bangs per second in
 general;
 #X obj 26 38 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0 1
@@ -72,8 +72,11 @@ general;
 #X text 165 135 compute stats on the last 2 seconds every 2 seconds.
 ;
 #X obj 26 154 #import \, cast f;
+#X text 232 603 default mode is "real".;
+#X text 232 304 default is "terse".;
 #X connect 3 1 35 0;
 #X connect 3 1 34 0;
+#X connect 3 1 62 0;
 #X connect 6 1 27 0;
 #X connect 7 1 36 0;
 #X connect 7 1 37 0;
@@ -83,6 +86,7 @@ general;
 #X connect 8 1 16 0;
 #X connect 8 1 14 0;
 #X connect 8 1 15 0;
+#X connect 8 1 61 0;
 #X connect 9 1 38 0;
 #X connect 12 1 29 0;
 #X connect 13 1 31 0;
