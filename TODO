@@ -19,7 +19,7 @@ x = done
 
 [ ] x11 window size thing for audrey
 [ ] [gf/mouse_spy] bug with 
-[ ] C.log plante (voir zed.pd)
+[ ] C.log et C.exp plantent (voir zed.pd)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
 [ ] intégrer -lib segfault
@@ -235,6 +235,7 @@ while running #to~-help.pd :
     with valgrind: Invalid read of size 4 at canvas_open (g_canvas.c:160) by 0x64705F76: ???
 	Address 0x9c is not stack'd, malloc'd or (recently) free'd
     with no further info (2008.08.17)
+[ ] canvasdelete
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
