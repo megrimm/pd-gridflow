@@ -141,9 +141,12 @@ Numop1 op_table_unary[] = {
 //	DECL_OP_FLOAT(isinf, "isinf"),
 //	DECL_OP_FLOAT(finite, "finite"),
 //	DECL_OP_FLOAT(isnan, "isnan"),
-	//DECL_OP(asin, "asin"),
-	//DECL_OP(acos, "acos"),
-	//DECL_OP(atan, "atan"), // but atan is already reserved by a c° function.
+	DECL_OP(asin, "asin"),
+	DECL_OP(acos, "acos"),
+	DECL_OP(atan, "atan"),
+	DECL_OP(asin, "asinh"),
+	DECL_OP(acos, "acosh"),
+	DECL_OP(atan, "atanh"),
 };
 const long op_table_unary_n = COUNT(op_table_unary);
 
