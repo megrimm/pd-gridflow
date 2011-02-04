@@ -87,6 +87,11 @@ void Grid::init_from_atom(const t_atom &x) {
 	}
 }
 
+void Grid::init_from_msg(int argc, t_atom *argv, NumberTypeE nt) {
+	if (argc==1) init_from_atom(argv[0]); // what do I do with nt here ? is nt being useful here anyway ?
+	else         init_from_list(argc,argv,nt);
+}
+
 // **************** GridInlet *************************************
 
 // must be set before the end of GRID_BEGIN phase, and so cannot be changed

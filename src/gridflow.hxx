@@ -625,6 +625,8 @@ struct Grid : CObject {
 	Grid(const t_atom &x) {data=0; state=1; init_from_atom(x);}
 	Grid(int n, t_atom2 *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
 	Grid(int n, t_atom  *a, NumberTypeE nt_=int32_e) {data=0; state=1; init_from_list(n,a,nt_);}
+	static Grid *from_msg(int n, t_atom2 *a) {Grid *self = new Grid; self->init_from_msg(n,a); return self;}
+	static Grid *from_msg(int n, t_atom  *a) {Grid *self = new Grid; self->init_from_msg(n,a); return self;}
 	template <class T> Grid(const Dim &dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T *)0);
@@ -655,6 +657,7 @@ EACH_NUMBER_TYPE(FOO)
 	}
 	void init_from_atom(const t_atom &x);
 	void init_from_list(int n, t_atom *a, NumberTypeE nt=int32_e);
+	void init_from_msg (int n, t_atom *a, NumberTypeE nt=int32_e);
 };
 static inline Grid *convert (const t_atom2 &r, Grid **bogus) {return new Grid(r);}
 
