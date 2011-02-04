@@ -869,7 +869,8 @@ GRID_INPUT(1,r) {} GRID_END
 		this->to  =to  ;
 		this->step=step;
 	}
-	\decl 0 set (Grid *l=0) {from=l;}
+	//\decl 0 set (Grid *l=0) {from=l;}
+	\decl 0 set (...) {from = Grid::from_msg(argc,argv);}
 	\decl 0 bang () {
 		SAME_TYPE(*from,to);
 		if (step) {SAME_TYPE(*from,step);}
