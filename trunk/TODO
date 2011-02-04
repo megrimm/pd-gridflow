@@ -3,11 +3,10 @@ x = done
 9.13 :
 
 [ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
-----------------------------------------------vous êtes ici-----------------------------------------------------
-[ ] [#redim] default
 [ ] http://oldwiki.mingw.org/index.php/sample%20DLL
 [ ] x11 window size thing for audrey
 [ ] [gf/mouse_spy] bug with .............. was it gop ? (didn't finish writing this line)
+[ ] fix grid attribute setters
 [ ] C.log et C.exp plantent (voir zed.pd)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
@@ -17,32 +16,18 @@ x = done
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
 [ ] reenable numop1 isinf finite isnan
-
-[ ] more expr :
-    int ()   	convert to integer
-    rint ()    	round a float to a nearby integer
-    imodf  	get signed integer value from floating point number(added in version 0.4)
-    modf    	get signed fractional value from floating-point number(added in version 0.4)
-    drem    	floating-point remainder function (added in version 0.4)
-    ln()    	alias for log()
-    fmod()   	 floating-point remainder function (added in version 0.4)
-    size()    	size of a table
-    sum()    	sum of all elements of a table
-    Sum()    	sum of elemnets of a specified boundary of a table
-
+[ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [fps] doesn't complain about invalid mode name
 [ ] list-attrs
-[ ] parens-msg
 [ ] make automatic documentation tables for numop... add [gf/numop_info]
 [ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
 [ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
-[ ] see people/jack/main.pd : [#see] sometimes appear when it's not supposed to.
+[ ] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] document "f 1 2 3" as a shortcut grid literal
 [ ] [#import] does the same rounding bullshit again, when we want a float grid
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
-[ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] make a clean GridOut::~GridOut. can't make one because ~GridOut often happens after the next GridOut construction.
 [ ] [shunt] [route2] [route3] should have their attr-inlet on the right (maybe) or hidden (CLASS_NOINLET) (maybe)
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
@@ -66,9 +51,7 @@ x = done
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
 [ ] [#from_pix]: rajouter un [pix_rgba] implicite... convertTo(RGBA) ...
 [ ] [#from_pix, colorspace y]
-[ ] heat.pd still sucks (?)
 [ ] accelerate [#outer ignore (0)]
-[ ] [lb]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
@@ -92,7 +75,6 @@ x = done
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
-[ ] GF objects don't have default methods like bang and list, unlike pd itself.
 [ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 [ ] [#draw_polygon] : winding-rule, et multi-rule (ce dernier utile pour dessiner plusieurs polygones à la fois)
 [ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b
@@ -103,7 +85,6 @@ x = done
 [ ] what to do with [#motion_detection] ?
 [ ] videodev,quicktime,etc: height,width vs size : standardise
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
-[ ] cellular_1d.pd: should get a variable width
 [ ] [pack] trigger_by (choose which inlets are hot)
 [ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
@@ -133,7 +114,7 @@ x = done
 [ ] [doc_o] has a bit of a sync problem when creating [doc_oo] (sometimes?)
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
-[ ] add default values in docs
+[ ] add default values in docs (at the framework level)
 [ ] use sand.pd as basis for introducing those features :
     [ ] seedless #convolve
     [ ] seedless #inner
@@ -185,6 +166,10 @@ later
 [ ] make this work in the future :
     error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
 [ ] intégrer -lib segfault
+[ ] [lb] ?
+[ ] heat.pd still sucks (?)
+[ ] cellular_1d.pd: should get a variable width
+[ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 
 while running #to~-help.pd :
 ==4308== Invalid read of size 4

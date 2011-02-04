@@ -41,13 +41,12 @@ foreach k [lsort [array names ::say *]] {
 	set v $::say($k)
 	set ok $k ;# original k
 	set sel obj
-	if {$k == "#"}          {set k "$k +"}
+	if {$k == "#"}          {set k "$k"}
 	if {$k == "#fold"}      {set k "$k +"}
 	if {$k == "#scan"}      {set k "$k +"}
 	if {$k == "#outer"}     {set k "$k +"}
 	if {$k == "hpgl_op"}    {set k "$k +"}
-	if {$k == "#for"}       {set k "$k 0 4 1"}
-	if {$k == "#redim"}     {set k "$k ()"}
+	if {$k == "#for"}       {set k "$k 0 4"}
 	if {$k == "receives"}   {set k "$k \$0-"}
 	if {$k=="#cluster_avg"} {set k "$k 4"}
 	if {$k=="cv/#KMeans"}   {set k "$k 4"}

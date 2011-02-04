@@ -115,10 +115,7 @@ beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
 
 install::
-	@echo -e "\033[0;1;33;41m"
-	@echo -e "1. move this folder to lib/pd/extra or add the folder to -path"
-	@echo -e "2. delete the old gridflow.pd_linux if you have one (from years ago)"
-	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
+	@echo "\033[0;1;33;41mjust add the parent of this folder to the -path and leave me alone\033[0m"
 
 DEPRECATED = motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
