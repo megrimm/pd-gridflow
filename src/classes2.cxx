@@ -47,6 +47,7 @@ struct _outlet {
 #define foreach(ITER,COLL) for(typeof(COLL.begin()) ITER = COLL.begin(); ITER != (COLL).end(); ITER++)
 
 /* get the owner of the result of canvas_getenv */
+/* isn't this essentially the same as canvas_getrootfor ? */
 static t_canvas *canvas_getabstop(t_canvas *x) {
     while (!x->gl_env) if (!(x = x->gl_owner)) bug("t_canvasenvironment %p", x);
     return x;
@@ -614,16 +615,23 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 \class GFError : FObject {
 	string format;
 	\constructor (...) {format = join(argc,argv);}
-	\decl 0 list (...) {
-		t_binbuf *b = mom->gl_obj.te_binbuf;
-		t_canvasenvironment *ce = canvas_getenv(canvas_getabstop(mom));
+	\decl 0 list (...) {err(0,argc,argv);}
+	\decl 0 uplevel (int level, ...) {err(level,argc-1,argv+1);}
+	void err (int level, int argc, t_atom *argv) {
+		t_canvas *canvas = canvas_getrootfor(mom);
+		for (int i=0; i<level; i++) {
+			canvas = canvas->gl_owner;
+			if (!canvas) RAISE("can't uplevel %d times",level);
+			canvas = canvas_getrootfor(canvas);
+		}
+		t_binbuf *b = canvas->gl_obj.te_binbuf;
+		t_canvasenvironment *ce = canvas_getenv(canvas);
 		ostringstream o;
 		o << "[";
 		if (b && binbuf_getnatom(b)) o<<*binbuf_getvec(b); else o<<"???";
 		if (ce) for (int i=0; i<ce->ce_argc; i++) o << " " << ce->ce_argv[i];
 		o << "]: ";
 		pd_oprintf(o,format.data(),argc,argv);
-		t_canvas *canvas = canvas_getrootfor(mom);
 		string s = o.str();
 		pd_error(canvas,"%s",s.data());
 	}
