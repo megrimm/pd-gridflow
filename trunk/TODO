@@ -2,33 +2,18 @@ x = done
 
 9.13 :
 
-[ ] hpgl_from_patch-help.pd : error message from [#for] inside [#slice]
-[ ] [gf/not_open]:not open <-------- mauvais niveau (ne devrait pas écrire cet objet)
-[ ] ps3eye problem (see gridflow-dev 17 mai 2010)
 [ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
+----------------------------------------------vous êtes ici-----------------------------------------------------
 [ ] [#redim] default
-
 [ ] http://oldwiki.mingw.org/index.php/sample%20DLL
-
-[ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
-    pourrait devenir :
-    error: [# -] inlet 0 method grid: same type please (inlet 0 has float32, inlet 1 has int32)
-    ou:
-    error: [# -] inlet 0 method grid: same type please (left is float32, right is int32)
-    (ou autre)
-
 [ ] x11 window size thing for audrey
-[ ] [gf/mouse_spy] bug with 
+[ ] [gf/mouse_spy] bug with .............. was it gop ? (didn't finish writing this line)
 [ ] C.log et C.exp plantent (voir zed.pd)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
-[ ] intégrer -lib segfault
 [ ] [#expr] still has some pretty severe parser bugs
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
-
-[ ] renommer t_symbol * à symbol  (?)
-[ ] renommer t_atom2 *  à atom    (?)
-
+[ ] gridflow_x11.pd_linux
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
 [ ] reenable numop1 isinf finite isnan
@@ -40,14 +25,7 @@ x = done
     modf    	get signed fractional value from floating-point number(added in version 0.4)
     drem    	floating-point remainder function (added in version 0.4)
     ln()    	alias for log()
-    asin()    	arc sine
-    acos()    	arc cosine
-    atan()    	arc tangent (WE NEED TO RENAME THE EXISTING [# atan] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
-    atan2()    	arc tangent of 2 variables
-    asinh()    	inverse hyperbolic sine
-    acosh()    	inverse hyperbolic cosine
-    atanh()    	inverse hyperbolic tangent
-    fmod()    	 floating-point remainder function (added in version 0.4)
+    fmod()   	 floating-point remainder function (added in version 0.4)
     size()    	size of a table
     sum()    	sum of all elements of a table
     Sum()    	sum of elemnets of a specified boundary of a table
@@ -193,8 +171,20 @@ x = done
 [ ] infinite loop in shoot.pd
 [ ] add more stuff to [#expr]...
 [ ] change numop to numop2 all over the documentation
+[ ] renommer t_symbol * à symbol  (?)
+[ ] renommer t_atom2 *  à atom    (?)
 ---------------------------------------------------------CIBLE------------------------------ move this up to 125 before 9.13
 later
+
+[ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
+    pourrait devenir :
+    error: [# -] inlet 0 method grid: same type please (inlet 0 has float32, inlet 1 has int32)
+    ou:
+    error: [# -] inlet 0 method grid: same type please (left is float32, right is int32)
+    (ou autre)
+[ ] make this work in the future :
+    error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
+[ ] intégrer -lib segfault
 
 while running #to~-help.pd :
 ==4308== Invalid read of size 4
@@ -406,6 +396,7 @@ Peines Perdues:
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
 [ ] [#many]: add support for 'floatatom' objects ?
     (no: we require method 'pos'. apart from that we could work around the lack of 'send', 'receive')
+[ ] ps3eye problem (see gridflow-dev 17 mai 2010) (wtf)
 
 ----------------------------------------------------------------------------------------------------------------
 Autres notes
