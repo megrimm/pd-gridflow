@@ -959,9 +959,9 @@ GRID_INLET(0) {
 	P<Grid> dim_grid;
 	P<Grid> temp; // temp->dim is not of the same shape as dim
 	~GridRedim() {}
-	\constructor (Grid *d) {
+	\constructor (Grid *d=0) {
 		dim_grid.but(expect_dim_dim_list);
-		dim_grid=d;
+		dim_grid=d?d:new Grid(Dim(0));
 		dim = dim_grid->to_dim();
 	//	if (!dim.prod()) RAISE("target grid size must not be zero");
 	}
