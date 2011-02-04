@@ -217,7 +217,7 @@ DEF_OP(ge,  a >= b, 0, false, (side==at_left && x==nt_greatest(&x)) || (side==at
 #ifdef PASS3
 DEF_OP(sinmul, (float64)b * sin((float64)a * (M_PI / 18000)), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
 DEF_OP(cosmul, (float64)b * cos((float64)a * (M_PI / 18000)), 0, false, false) // "LN=36000n RA=0 LA=..."
-DEF_OP(atan, atan2(a,b) * (18000 / M_PI), 0, false, false) // "LA=0"
+DEF_OP(atan2cd, atan2(a,b) * (18000 / M_PI), 0, false, false) // "LA=0"
 DEF_OP(tanhmul, (float64)b * tanh((float64)a * (M_PI / 18000)), 0, false, x==0)
 DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
 DEF_OPF(pow, ipow(a,b), pow(a,b), 0, false, false) // "RN=1"
@@ -343,7 +343,7 @@ int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(sinmul, "sin*", 0),
 	DECL_OP_NOFOLD(cosmul, "cos*", 0),
-	DECL_OP_NOFOLD(atan,   "atan", 0),
+	DECL_OP_NOFOLD(atan2cd,"atan2cd", 0),
 	DECL_OP_NOFOLD(tanhmul,"tanh*", 0),
 	DECL_OP_NOFOLD(gamma,  "gamma", 0),
 	DECL_OP_NOFOLD(pow,    "**", 0),
