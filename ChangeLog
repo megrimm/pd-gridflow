@@ -14,6 +14,11 @@ version 9.13 (2011.02...):
    (parens in objectboxes still are ; otherwise use ____________________)
  * [gf/find_file] now looks up relative names in gridflow/images
    even when they contain a slash (or several).
+ * [gf/error]: added method 'uplevel'
+ * [#in] and [#out]: in case of unknown suffix, say 'not open' afterwards
+ * [#redim]: arguments default to ()
+ * numop "atan" renamed to "atan2cd" (incompatibility!)
+ * new numops: asin acos atan asinh acosh atanh
 
 version 9.12 (2010.10.08):
 
