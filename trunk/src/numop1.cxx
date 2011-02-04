@@ -122,6 +122,7 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(tanh, "tanh"),  DECL_VOP_FLOAT(cx_tanh, "C.tanh", 2),
 	DECL_OP_FLOAT(exp,  "exp"),   DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
 	DECL_OP_FLOAT(log,  "log"),   DECL_VOP_FLOAT(cx_log,  "C.log",  2),
+	DECL_OP_FLOAT(log,  "ln"),    DECL_VOP_FLOAT(cx_log,  "C.ln",   2),
 // introduced at 9.12
 	DECL_OP(unary_minus, "unary-"),
 	DECL_OP(logic_not, "!"),
