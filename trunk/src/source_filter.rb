@@ -129,6 +129,7 @@ def handle_decl(line)
 	else
 	  Out.print "#{m.rettype} #{m.selector2}("
 	  Out.print "VA" if m.maxargs<0
+	  Out.print "," if m.maxargs<0 and m.args.length>0
 	  Out.print unparse_args m.args if m.args.length>0
 	  Out.print "); static void #{m.selector2}_wrap(#{classname} *self, VA);"
 	end
@@ -184,6 +185,7 @@ def handle_def(line,in_class_block=false)
 	Out.print classname+"::" unless in_class_block
 	Out.print m.selector2+"("
 	Out.print "VA" if m.maxargs<0
+	Out.print "," if m.maxargs<0 and m.args.length>0
 	Out.print unparse_args(n.args,false) if m.args.length>0
 	Out.print ")"+term+" "
 	qlass.methods[m.selector2].done=true
