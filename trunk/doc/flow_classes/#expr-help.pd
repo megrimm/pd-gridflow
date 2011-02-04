@@ -1,19 +1,19 @@
 #N canvas 467 24 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 3 904 doc_also;
-#X obj 0 924 doc_f;
-#X obj 3 616 doc_c 1..;
-#X obj 14 646 doc_cc any;
-#X obj 97 646 doc_m cany <atom>;
-#X text 232 646 floats and symbols (and commas and semicolons) that
+#X obj 3 943 doc_also;
+#X obj 0 963 doc_f;
+#X obj 3 649 doc_c 1..;
+#X obj 14 679 doc_cc any;
+#X obj 97 679 doc_m cany <atom>;
+#X text 232 679 floats and symbols (and commas and semicolons) that
 will be joined together to form a string which will be interpreted
 in a manner quite similar to what [expr] does.;
-#X obj 14 734 doc_ii 0;
-#X obj 97 734 doc_m i0 bang;
-#X text 232 734 evaluate expression and output result.;
-#X obj 103 904 expr;
-#X obj 139 904 expr~;
-#X obj 181 904 fexpr~;
+#X obj 14 767 doc_ii 0;
+#X obj 97 767 doc_m i0 bang;
+#X text 232 767 evaluate expression and output result.;
+#X obj 103 943 expr;
+#X obj 139 943 expr~;
+#X obj 181 943 fexpr~;
 #X obj 98 43 #expr;
 #X text 135 43 computes the result of the formula(s) you write in it.
 ;
@@ -29,23 +29,21 @@ of () for overriding operator precedence.;
 like [%].;
 #X text 96 188 it supports $f1 \, $f2 \, $f3 \, etc.;
 #X text 96 203 it does not support $s1 \, $v1 \, etc.;
-#X obj 3 704 doc_i 1..;
-#X obj 97 756 doc_m i0 float;
-#X text 232 756 set value of $f1 and then do like bang.;
-#X obj 14 734 doc_ii other;
-#X obj 97 778 doc_m iother float;
-#X text 232 778 set value of any other $f variable \, such as $f2 \,
+#X obj 3 737 doc_i 1..;
+#X obj 97 789 doc_m i0 float;
+#X text 232 789 set value of $f1 and then do like bang.;
+#X obj 14 814 doc_ii other;
+#X obj 97 814 doc_m iother float;
+#X text 232 814 set value of any other $f variable \, such as $f2 \,
 $f3 \, etc. \; for example \, a float into inlet 6 will set $f7.;
-#X obj 3 816 doc_o 1..;
-#X obj 14 846 doc_oo any;
-#X obj 97 846 doc_m oany float;
-#X text 232 846 the results \, output from right to left \, even though
+#X obj 3 855 doc_o 1..;
+#X obj 14 885 doc_oo any;
+#X obj 97 885 doc_m oany float;
+#X text 232 885 the results \, output from right to left \, even though
 they get computed left-to-right. [#expr] makes a list of the results
 and then outputs it in reverse order.;
 #X text 120 268 [#expr rand($f1)] is the same as [expr random(0 \,
 $f1)];
-#X text 96 369 it supports some functions that have two arguments \,
-which are the following : min max div rem cmp hypot atan2 avg;
 #X text 119 400 [#expr avg($f1 \, $f2)] = [expr ($f1+$f2)/2];
 #X text 119 416 [#expr hypot($f1 \, $f2)] = [expr sqrt($f1*$f1+$f2*$f2)]
 ;
@@ -59,7 +57,7 @@ name (no $s1);
 #X obj 129 577 doc_link numop2 1;
 #X text 206 576 those that have two arguments: blah($f1 \, $f2);
 #X text 392 557 blah($f1);
-#X text 208 557 those that have one argument:;
+#X text 206 557 those that have one argument:;
 #X floatatom 501 223 5 0 0 0 - - -;
 #X floatatom 499 274 5 0 0 0 - - -;
 #X floatatom 486 370 5 0 0 0 - - -;
@@ -68,15 +66,19 @@ name (no $s1);
 #X obj 498 247 #expr pow($f1 \, 3);
 #X text 97 521 all supported functions are (supposed to be) listed
 over there :;
-#X text 96 219 it supports some functions that have a single argument
-\, which are the following : sin cos tan sinh cosh tanh exp log sqrt
-abs rand fact;
 #X text 121 283 [expr fact(0)] == 0 \, which is contrary to all mathbooks
 ;
 #X text 123 316 fact($f1) works on fractional numbers in a way consistent
 with math textbooks. it is the integral of pow(t \, $f1)*exp(-t) for
 all t from 0 to +infinity.;
 #X text 121 300 [#expr fact(0)] == 1 \, which is standard;
+#X text 96 369 it supports many functions that have two arguments \,
+which are the numops whose names are alphanumeric :;
+#X text 96 219 it supports many functions that have a single argument
+\, which are the one-input numops whose names are alphanumeric. note
+the following differences :;
+#X text 99 602 there is no support for int \, rint \, imodf \, modf
+\, drem \, fmod \, size \, sum nor Sum.;
 #X connect 1 1 10 0;
 #X connect 1 1 11 0;
 #X connect 1 1 12 0;
@@ -85,7 +87,7 @@ all t from 0 to +infinity.;
 #X connect 25 1 26 0;
 #X connect 28 1 29 0;
 #X connect 32 1 33 0;
-#X connect 47 0 52 0;
-#X connect 50 0 51 0;
-#X connect 51 0 49 0;
-#X connect 52 0 48 0;
+#X connect 46 0 51 0;
+#X connect 49 0 50 0;
+#X connect 50 0 48 0;
+#X connect 51 0 47 0;
