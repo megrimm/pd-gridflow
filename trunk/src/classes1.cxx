@@ -686,7 +686,7 @@ GRID_INLET(0) {
 	\constructor (Grid *r=0) {
 		this->op = op_mul;
 		this->fold = op_add;
-		this->seed = new Grid(Dim(),int32_e,true);
+		this->seed = 0;
 		this->r    = r ? r : new Grid(Dim(),int32_e,true);
 	}
 	\grin 0
@@ -720,11 +720,11 @@ MAKE_DOT(dot_add_mul,FOO)
 #define MAX_PACKET_SIZE 4096
 GRID_INLET(0) {
 	SAME_TYPE(in,r);
-	SAME_TYPE(in,seed);
+	if (seed) SAME_TYPE(in,seed);
 	Dim &a=in.dim, &b=r->dim;
 	if (a.n<1) RAISE("a: minimum 1 dimension");
 	if (b.n<1) RAISE("b: minimum 1 dimension");
-	if (seed->dim.n != 0) RAISE("seed must be a scalar");
+	if (seed && seed->dim.n != 0) RAISE("seed must be a scalar");
 	int n = a.n+b.n-2;
 	SAME_DIM(1,a,a.n-1,b,0);
 	int32 v[n];
@@ -740,7 +740,7 @@ GRID_INLET(0) {
 	for (long i=0; i<sj; i++)
 		for (long j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*sk,rdata+i*sk,sk);
-	use_dot = op==op_mul && fold==op_add && seed->dim.n==0 && *(T *)*seed==0;
+	use_dot = op==op_mul && fold==op_add && (!seed || (seed->dim.n==0 && *(T *)*seed==0));
 } GRID_FLOW {
     long sjk=r->dim.prod(), sj=in.dim.prod(in.dim.n-1), sk=sjk/sj;
     long chunk = max(1L,MAX_PACKET_SIZE/sjk), off=chunk;
@@ -771,7 +771,7 @@ GRID_INLET(0) {
     } else {
 	while (n) {
 		if (chunk*sj>n) chunk=n/sj;
-		op_put->map(chunk*sk,buf2,*(T *)*seed);
+		op_put->map(chunk*sk,buf2, seed ? *(T *)*seed : T(0));
 		for (long i=0; i<sj; i++) {
 			switch (sk) {
 			case 1:  inner_child_b<T,1>(buf,data+i,sj,chunk); break;
