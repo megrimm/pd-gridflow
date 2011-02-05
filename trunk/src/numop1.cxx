@@ -103,12 +103,16 @@ DEF_OP(isinf, isinf(a))
 DEF_OP(finite, finite(a))
 DEF_OP(isnan, isnan(a))
 
+#define NaN (0/0.f)
+
+#ifndef __WIN32__
 static double fact (double x) {
 	int sign=0;
 	double y = exp(lgamma_r(x+1,&sign));
-	if (1/y) return y*sign; else return 0/0.f;
+	if (1/y) return y*sign; else return NaN;
 }
 DEF_OP(fact, fact(a))
+#endif
 
 Numop1 op_table_unary[] = {
 // moved from numop2 at 9.12
@@ -136,7 +140,9 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(floor, "floor"),
 	DECL_OP_FLOAT(ceil, "ceil"),
 // 9.13
+#ifndef __WIN32__
 	DECL_OP(fact, "fact"),
+#endif
 	DECL_OP(log10, "log10"),	DECL_VOP_FLOAT(cx_log10,"C.log10",  2),
 	DECL_OP(log2, "log2"),		DECL_VOP_FLOAT(cx_log2, "C.log2",   2),
 //	DECL_OP_FLOAT(isinf, "isinf"),
