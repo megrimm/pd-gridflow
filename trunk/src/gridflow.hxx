@@ -80,15 +80,17 @@ string atomtype_to_s (t_atomtype t);
 #endif
 #define DEF_OUT
 
-#ifdef MSW
+/*
+#ifdef __WIN32__
 #ifdef LIBGF
-#define EXTERN __declspec(dllexport) extern
+#define DLL __declspec(dllexport) extern
 #else
-#define EXTERN __declspec(dllimport) extern
-#endif /* PD_INTERNAL */
+#define DLL __declspec(dllimport) extern
+#endif
 #else
-#define EXTERN extern
-#endif /* MSW */
+#define DLL extern
+#endif
+*/
 
 typedef t_binbuf t_list;
 struct Grid;
