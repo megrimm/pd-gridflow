@@ -21,7 +21,7 @@
 =end
 
 require "rbconfig"
-$CFLAGS  = ""
+CFLAGS  = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
@@ -80,15 +80,13 @@ def launch2(log,*command)
 	return ret<=0
 end
 
-$conf={
-	:LDSOFLAGS => [],
-	:FEATURES => {},
-	:OPTIONS => [],
-	:DEFINES => {:CPU => nil},
-	:CC => "g++",
-	:OBJS => [],
-	:PDLIB => ["gridflow","gridflow_unicorn"],
-}
+CC = "g++"
+LDSOFLAGS = []
+FEATURES = {}
+OPTIONS = []
+DEFINES = {:CPU => nil}
+OBJS = []
+PDLIB = ["gridflow","gridflow_unicorn"]
 
 def launch stdin,stdout,stderr,*command # -> returncode
 	child = fork
@@ -132,7 +130,7 @@ class Feature
 		if name[0..0]=="/" then
 			File.exist?(name)
 		else
-			$C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
+			C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
 		end
 	end
 	def c_test code, link=nil, options=[], feature=nil
@@ -146,7 +144,7 @@ class Feature
 				raise "where is #{h} ?"
 		} if uses_h
 		ENV["LD_LIBRARY_PATH"] = ldlpath ? "./tmp:#{ldlpath}" : "./tmp"
-		link[0,0]=$conf[:LDSOFLAGS].find_all {|x| String===x and /^-L/ =~ x }.flatten
+		link[0,0]=LDSOFLAGS.find_all {|x| String===x and /^-L/ =~ x }.flatten
 		code=code.gsub(/#include#/) {
 			uses_h.map {|inc| "#include <#{inc}>\n" }.join""
 		}	
@@ -155,8 +153,8 @@ class Feature
 		binname = "tmp/#{$$}"
 		sourcename = binname+".cpp"
 		File.open(sourcename,"w") {|f| f.puts code }
-		command = ["/usr/bin/env", $conf[:CC]] +
-			$CFLAGS.split(/ /).reject{|x| x.length==0 }
+		command = ["/usr/bin/env", CC] +
+			CFLAGS.split(/ /).reject{|x| x.length==0 }
 		if not launch2 log,*(command+options+[sourcename,
 			 "-o", binname, *link.uniq])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
@@ -181,7 +179,7 @@ class Feature
 		command = ["/usr/bin/env", "nasm",
 		"tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"]
 		launch2 log,*command or return false
-		command = ["#{$conf[:CC]}","-o","tmp/#{$$}","tmp/#{$$}.o",*link]
+		command = ["#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link]
 		launch2 log,*command or return false
 		command = ["tmp/#{$$}"]
 		launch2 log,*command or return false
@@ -202,43 +200,43 @@ end
 
 def epath x; (ENV[x]||"").split(":") end
 
-$C_INCLUDE_PATH  = (epath("CPLUS_INCLUDE_PATH") + epath("C_INCLUDE_PATH") + ["/usr/include"]).uniq
-$LIBRARY_PATH    = (epath("LIBRARY_PATH")                      + ["/usr/lib","/lib"]).uniq
-$LD_LIBRARY_PATH = (epath("LD_LIBRARY_PATH") + read_ld_so_conf + ["/usr/lib","/lib"]).uniq
-$LIBX11DIR = [
+C_INCLUDE_PATH  = (epath("CPLUS_INCLUDE_PATH") + epath("C_INCLUDE_PATH") + ["/usr/include"]).uniq
+LIBRARY_PATH    = (epath("LIBRARY_PATH")                      + ["/usr/lib","/lib"]).uniq
+LD_LIBRARY_PATH = (epath("LD_LIBRARY_PATH") + read_ld_so_conf + ["/usr/lib","/lib"]).uniq
+LIBX11DIR = [
   "-L/usr/X11R6/lib",  "-L/opt/gnome/lib",
   "-L/usr/X11R6/lib64","-L/opt/gnome/lib64"]
-$LIBX11 = $LIBX11DIR + ["-lX11"]
+LIBX11 = LIBX11DIR + ["-lX11"]
 
 # making it easier for everybody I hope:
 def prepend_path base
 	bl = base+"/lib"
 	bi = base+"/include"
-	if not $LD_LIBRARY_PATH.include? bl and
-	   not $LIBRARY_PATH.include? bl then
-		$conf[:LDSOFLAGS].unshift "-L"+bl
-		$LD_LIBRARY_PATH.unshift bl
-		$LIBRARY_PATH.unshift bl
+	if not LD_LIBRARY_PATH.include? bl and
+	   not LIBRARY_PATH.include? bl then
+		LDSOFLAGS.unshift "-L"+bl
+		LD_LIBRARY_PATH.unshift bl
+		LIBRARY_PATH.unshift bl
 	end
-	#and not $CPLUS_INCLUDE_PATH.include? bi
-	if not $C_INCLUDE_PATH.include? bi then
-		$CFLAGS += " -I"+bi
-		$C_INCLUDE_PATH.unshift bi
+	#and not CPLUS_INCLUDE_PATH.include? bi
+	if not C_INCLUDE_PATH.include? bi then
+		CFLAGS << " -I"+bi
+		C_INCLUDE_PATH.unshift bi
 	end
 end
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
 prepend_path ENV["HOME"]
-$CFLAGS += " -I."
-$C_INCLUDE_PATH.unshift "."
+CFLAGS << " -I."
+C_INCLUDE_PATH.unshift "."
 
-for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+for var in [:C_INCLUDE_PATH, :LIBRARY_PATH, :LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
 end
 
 LOG.puts "-"*64
-$CFLAGS += " -I/usr/X11R6/include"
-$C_INCLUDE_PATH.unshift "/usr/X11R6/include"
+CFLAGS << " -I/usr/X11R6/include"
+C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
 #----------------------------------------------------------------#
 Feature.add {
@@ -284,7 +282,7 @@ Feature.add {
 Feature.add {
 	tag :pentium
 	name "Pentium-compatible CPU"
-	action proc { (CONFIG["arch"] =~ /i\d86/) and $conf[:DEFINES][:CPU] ||= "pentium" }
+	action proc { (CONFIG["arch"] =~ /i\d86/) and DEFINES[:CPU] ||= "pentium" }
 	options ["HAVE_PENTIUM"]
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
@@ -325,7 +323,7 @@ Feature.add {
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so $LIBX11
+	uses_so LIBX11
 	uses_h ["X11/Xlib.h"]
 	#produces_o ["src/x11.o"]
 	produces_pdlib ["gridflow_x11"]
@@ -336,7 +334,7 @@ Feature.add {
 	tag :x11_shm
 	name "X11 acceleration by shared memory (XSHM plugin)"
 	uses_feature [:x11]
-	uses_so $LIBX11+["-lXext"]
+	uses_so LIBX11+["-lXext"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	options ["HAVE_X11_SHARED_MEMORY"]
 	test proc {c_test "
@@ -466,7 +464,7 @@ Feature.add {
 Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
-	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
+	uses_so LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	produces_o ["src/mpeg3.o"]
 	test proc {|f| f.c_test "
@@ -486,9 +484,9 @@ Feature.add {
 	tag :quicktimehw
 	name "Plaum's LibQuickTime"
 	uses_so Or[
-		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"],
-		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"],
-		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-2.0","-lz"]]
+		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"],
+		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"],
+		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-2.0","-lz"]]
 	f = ["quicktime.h","colormodels.h","lqt.h","lqt_version.h","lqt_codecinfo.h"]
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
@@ -512,7 +510,7 @@ Feature.add {
 	produces_o ["src/opencv.o"]
 	uses_so ["-lcv"]
 	options ["HAVE_OPENCV"]
-	defines {{:OPENCV_SHARE_PATH => File.dirname($C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
+	defines {{:OPENCV_SHARE_PATH => File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
 	test proc {c_test %`
 			#include <opencv/cv.h>
 			int main () {return 0;}`}}
@@ -530,7 +528,7 @@ Feature.add {
 	name "OpenGL/GLEW (for GEM support and [gf/gl])"
 	produces_o ["src/opengl.o"]
 	produces_pdlib ["gridflow_gem_loader","gridflow_gem9292","gridflow_gem9293","gridflow_gem9393"]
-        uses_so $LIBX11DIR+["-lGLEW"] if not WIN
+        uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
 	options ["HAVE_OPENGL"]
@@ -539,11 +537,6 @@ Feature.add {
                 int main () {return (GLint)0;}
                 `
         }
-}
-Feature.add {
-	tag :pdp
-	name "PDP"
-	produces_pdlib ["gridflow_pdp"]
 }
 Feature.add {
 	tag :android
@@ -561,7 +554,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
-	log << "[--use-cpu cpu] [--lite] [--debug] [--explicit] [--no-pdp]"
+	log << "[--use-cpu cpu] [--lite] [--debug] [--explicit]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -597,18 +590,18 @@ while ARGV.length>0 do
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$debug=true
-		$conf[:OPTIONS].push :HAVE_DEBUG
+		OPTIONS.push :HAVE_DEBUG
 	when "--lite"
 		puts "Lite Mode (no float64, no int64)"
-		$conf[:OPTIONS].push :HAVE_LITE
+		OPTIONS.push :HAVE_LITE
 	when "--help"
 		usage; exit 0
 	when "--use-compiler"
-		$conf[:CC] = ARGV.shift
+		CC = ARGV.shift
 	when "--use-compiler-option"
-		$CFLAGS += " "+ARGV.shift
+		CFLAGS << " "+ARGV.shift
 	when "--use-cpu"
-		$conf[:DEFINES][:CPU] = ARGV.shift
+		DEFINES[:CPU] = ARGV.shift
 	when "--verbose"
 		$verbose=true
 	else puts "unknown option \"#{arg}\""; usage; exit 1
@@ -616,9 +609,9 @@ while ARGV.length>0 do
 end
 
 if $debug
-	$CFLAGS += " -O0 -fno-inline"
+	CFLAGS << " -O0 -fno-inline"
 else
-	$CFLAGS += " -O3"
+	CFLAGS << " -O3"
 end
 
 #--------------------------------#
@@ -655,7 +648,7 @@ def try feature
 	#DUAL.print Dark + arrow +Red
 	(feature.uses_feature||[]).find {|f|
 		if not (
-		  if Or===f then f.a.find {|x| $conf[:FEATURES][x] } else $conf[:FEATURES][f] end
+		  if Or===f then f.a.find {|x| FEATURES[x] } else FEATURES[f] end
 		) then 
 			DUAL.puts Red+arrow+"disabled (would need #{f})"
 			return
@@ -665,7 +658,7 @@ def try feature
 	if feature.status==:disabled_by_user or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark+arrow+"disabled (by user)"; return end
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
-		if $conf[:FEATURES][f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
+		if FEATURES[f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
 	end
 	if feature.test
 		begin tresult = feature.test.call(feature); rescue StandardError => e; end
@@ -685,16 +678,16 @@ def try feature
 		end
 	else
 		puts Green+arrow+"enabled"
-		$conf[:FEATURES][feature.tag] = feature
+		FEATURES[feature.tag] = feature
 		feature.action.call if feature.action
 	end
 	feature.action.call if feature.action
-	$conf[:FEATURES][feature.tag] = feature
-	$conf[:LDSOFLAGS].concat(feature.uses_so||[]).uniq!
-	$conf[:OPTIONS].concat(feature.options||[])
-	$conf[:OBJS ].concat(feature.produces_o    ||[])
-	$conf[:PDLIB].concat(feature.produces_pdlib||[])
-	for k,v in feature.defines||{} do $conf[:DEFINES][k]=(if Proc===v then v[] else v end) end
+	FEATURES[feature.tag] = feature
+	LDSOFLAGS.concat(feature.uses_so||[]).uniq! # if not feature.produces_pdlib
+	OPTIONS.concat(feature.options||[])
+	OBJS.concat(feature.produces_o    ||[])
+	PDLIB.concat(feature.produces_pdlib||[])
+	for k,v in feature.defines||{} do DEFINES[k]=(if Proc===v then v[] else v end) end
 	true
 end
 
@@ -709,11 +702,11 @@ end
 
 puts Light
 
-$conf[:LDSOFLAGS].uniq!
+LDSOFLAGS.uniq!
 
 $exit=false
 def need s
-  if not $conf[:FEATURES][s] then puts "#{Red}You need to install #{$features_h[s].name}#{Light}"; $exit=true end
+  if not FEATURES[s] then puts "#{Red}You need to install #{$features_h[s].name}#{Light}"; $exit=true end
 end
 need :gcc3
 need :stl
@@ -722,25 +715,30 @@ need :stl
 #--------------------------------#
 
 LOG.puts "-"*64
-for z in [:LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do LOG.puts "#{z}: #{$conf[z].inspect}" end
+LOG.puts        "#{CC}: #{CC.inspect}"
+LOG.puts "#{LDSOFLAGS}: #{LDSOFLAGS.inspect}"
+LOG.puts   "#{OPTIONS}: #{OPTIONS.inspect}"
+LOG.puts   "#{DEFINES}: #{DEFINES.inspect}"
+LOG.puts      "#{OBJS}: #{OBJS.inspect}"
+LOG.puts     "#{PDLIB}: #{PDLIB.inspect}"
 LOG.puts "-"*64
 RUBY = "$(RUBY_INSTALL_NAME)"
 
 puts "generating ./config.make"
 File.open("./config.make","w") {|f|
-  $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
-  $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
-  $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
-  $CFLAGS += " -DMACOSX" if OSX
-  f.puts "CFLAGS += " + $CFLAGS
-  f.puts "LDSOFLAGS += " + $conf[:LDSOFLAGS].flatten.join(" ")
-  for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
-  for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
-  f.puts "CXX = #{$conf[:CC]}"
-  f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
+  CFLAGS +=  " -mcpu=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] <  "4"
+  CFLAGS += " -mtune=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] >= "4"
+  CFLAGS += " -march=$(CPU)" if DEFINES[:CPU]
+  CFLAGS += " -DMACOSX" if OSX
+  f.puts "CFLAGS += " + CFLAGS
+  f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
+  for k   in OPTIONS do f.puts "#{k}=yes" end
+  for k,v in DEFINES do f.puts "#{k}=#{v}" end
+  f.puts "CXX = #{CC}"
+  f.puts "OBJS = #{OBJS.join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
-  f.puts "PDLIB = "+$conf[:PDLIB].map{|x|x+"$(PDSUF)"}.join(" ")
+  f.puts "PDLIB = "+PDLIB.map{|x|x+"$(PDSUF)"}.join(" ")
 } # end open config.make
 
 #--------------------------------#
@@ -751,19 +749,19 @@ f.puts "
 \#define __CONFIG_H
 /* this file was auto-generated by gridflow/configure */"
 f.puts "#define STARTUP_LIST(PRE) \\"
-f.puts $conf[:OBJS].map {|o|
+f.puts OBJS.map {|o|
 	oo = File.basename(o,'.o').split(/-/)[0]
 	oo.gsub!(/\$\(PDSUF\)$/,"")
 	"PRE startup_#{oo}();"
 }.join("\\\n")
-for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
-for k,v in $conf[:DEFINES] do f.puts "\#define #{k} "+v.inspect end
+for k   in OPTIONS do f.puts "\#define #{k}" end
+for k,v in DEFINES do f.puts "\#define #{k} "+v.inspect end
 
 def include_here(f,a,b,c=false)
-  return unless $conf[:FEATURES][b]
+  return unless FEATURES[b]
   f.puts "\#ifdef #{a}_INCLUDE_HERE"
   f.puts "extern \"C\" {"
-  for inc in $conf[:FEATURES][b].uses_h.to_a do
+  for inc in FEATURES[b].uses_h.to_a do
     f.puts "\#include <#{inc}>"
   end
   f.puts "};"
