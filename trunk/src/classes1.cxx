@@ -581,7 +581,7 @@ GRID_INLET(0) {
 		Numop1 *op = (Numop1 *)this->op;
 		T tada[n];
 		COPY(tada,data,n);
-		op->map(n,tada);
+		op->map(n/op->size,tada);
 		go->send(n,tada);
 	}
 } GRID_END
