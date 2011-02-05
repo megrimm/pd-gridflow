@@ -239,7 +239,7 @@ static t_symbol *s_default;
 static t_symbol *s_empty;
 
 /* because of recursion problem with pd_unbind and bindlist_anything */
-\class MouseSpyProxy : FObject {
+\class MouseSpyProxy {
 	t_clock *clock;
 	t_symbol *rcv;
 	t_pd *snd;
@@ -266,7 +266,7 @@ static t_symbol *s_empty;
 	}
 };
 \end class {install("gf/mouse_spy_proxy",1,1);}
-\class MouseSpy : FObject {
+\class MouseSpy {
 	int y,x,flags;
 	t_pd *snd;
 	BFObject *proxy;
