@@ -350,7 +350,7 @@ static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {re
 		if (!tmp) RAISE("localtime: %s",strerror(errno));
 		char tt[MAXPDSTRING];
 		strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
-		t_atom2 a[6] = {tmp->tm_year+1900,tmp->tm_mon-1,tmp->tm_mday,tmp->tm_hour,tmp->tm_min,tmp->tm_sec};
+		t_atom2 a[6] = {tmp->tm_year+1900,tmp->tm_mon+1,tmp->tm_mday,tmp->tm_hour,tmp->tm_min,tmp->tm_sec};
 		t_atom2 b[3] = {tv.tv_sec/86400,mod(tv.tv_sec,86400),tv.tv_usec};
 		out[2](6,a);
 		out[1](3,b);
