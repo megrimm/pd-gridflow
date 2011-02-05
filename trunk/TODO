@@ -1,5 +1,5 @@
 necessary for 9.13 :
-[ ] gridflow_x11.pd_linux
+
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
@@ -7,9 +7,8 @@ necessary for 9.13 :
 
 Unsorted
 
-[ ] custom m_pd.h
-[ ] runtime or compiletime check for l2ork (preferably runtime)
-[ ] dllimport/dllexport for windows
+[ ] memalign still doesn't exist on OSX and Windows ?
+[ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
     so, I didn't continue the job on [#scan] [#inner] [#convolve] (note that [#inner] already a special case related to that)
 [ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
@@ -211,6 +210,9 @@ Unsorted
 [ ] canvasdelete
 [ ] DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 [ ] DEF_OP(pingpong,  ...)
+[ ] custom m_pd.h
+[ ] runtime or compiletime check for l2ork (preferably runtime). use it in the customised m_pd.h.
+[ ] can't get dllimport/dllexport for windows to work
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
