@@ -622,10 +622,14 @@ GRID_INLET(0) {
 	T buf[n/yn];
 	long nn=n;
 	long yzn=yn*zn;
-	for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {
-		if (seed) COPY(buf+i,((T *)*seed),zn);
-		else {T neu; op->on(*buf)->neutral(&neu,at_left); op_put->map(zn,buf+i,neu);}
-		op->fold(zn,yn,buf+i,data);
+	if (!seed && yn==1) {go->send(nn/yn,data); return;}
+	/* don't know why this isn't any faster than what there was before 9.13 */
+	/* except for the yn==1 case above, which makes a huge difference */
+	if (seed)    for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {COPY(buf+i,((T *)*seed),zn); op->fold(zn,yn  ,buf+i,data);}
+	else if (yn) for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {op_put->zip(zn,buf+i,data);  op->fold(zn,yn-1,buf+i,data+zn);}
+	else {
+		T neu; op->on(*buf)->neutral(&neu,at_left); 
+		for (long i=0; n; i+=zn, data+=yzn, n-=yzn) op_put->map(zn,buf+i,neu);
 	}
 	go->send(nn/yn,buf);
 } GRID_FINISH {
