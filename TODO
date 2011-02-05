@@ -1,24 +1,31 @@
-x = done
+necessary for 9.13 :
+[ ] gridflow_x11.pd_linux
+[ ] fix grid attribute setters
+[ ] list-attrs
+[ ] multi-valued attributes in source_filter
+[ ] reform GFDP so that pd43 and l2ork become debuggable.
 
-9.13 :
+Unsorted
 
+[ ] custom m_pd.h
+[ ] runtime or compiletime check for l2ork (preferably runtime)
+[ ] dllimport/dllexport for windows
+[ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
+    so, I didn't continue the job on [#scan] [#inner] [#convolve] (note that [#inner] already a special case related to that)
 [ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
 [ ] http://oldwiki.mingw.org/index.php/sample%20DLL
 [ ] x11 window size thing for audrey
-[ ] [gf/mouse_spy] bug with .............. was it gop ? (didn't finish writing this line)
-[ ] fix grid attribute setters
+[ ] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
 [ ] C.log et C.exp plantent (voir zed.pd)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
 [ ] [#expr] still has some pretty severe parser bugs
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
-[ ] gridflow_x11.pd_linux
 [ ] [#expr] local
 [ ] numop1: [#expr] unaries don't all work.
 [ ] reenable numop1 isinf finite isnan
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [fps] doesn't complain about invalid mode name
-[ ] list-attrs
 [ ] make automatic documentation tables for numop... add [gf/numop_info]
 [ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
 [ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
@@ -115,16 +122,12 @@ x = done
     this is a [doc_make] bug because not using [gf/canvas_loadbang].
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
 [ ] add default values in docs (at the framework level)
-[ ] use sand.pd as basis for introducing those features :
-    [ ] seedless #convolve
-    [ ] seedless #inner
-    [ ] automatic type conversion
+[ ] introduce automatic type conversion (en utilisant sand.pd comme exemple)
 [ ] [route] - 1[shunt] sends a message (bug)
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
     et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
 [ ] movie api : merge "height" & "width" attributes
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
-[ ] multi-valued attributes in source_filter
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 [ ] reduce [doc_h] clock again before release !
 [ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
@@ -154,9 +157,7 @@ x = done
 [ ] change numop to numop2 all over the documentation
 [ ] renommer t_symbol * à symbol  (?)
 [ ] renommer t_atom2 *  à atom    (?)
----------------------------------------------------------CIBLE------------------------------ move this up to 125 before 9.13
-later
-
+[ ] #fold and #scan begin without seed but can't send "seed none" to [#fold +]
 [ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
     pourrait devenir :
     error: [# -] inlet 0 method grid: same type please (inlet 0 has float32, inlet 1 has int32)
@@ -170,14 +171,12 @@ later
 [ ] heat.pd still sucks (?)
 [ ] cellular_1d.pd: should get a variable width
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
-
-while running #to~-help.pd :
-==4308== Invalid read of size 4
-==4308==    at 0x80F1931: upsampling_perform_linear (d_resample.c:92)
-==4308==  Address 0x51fa2f0 is 0 bytes after a block of size 128 alloc'd
-==4308==    at 0x4023F5B: calloc (vg_replace_malloc.c:418)
-==4308==    by 0x80C7E6C: getbytes (m_memory.c:24)
-
+[ ] while running #to~-help.pd :
+	 Invalid read of size 4
+	    upsampling_perform_linear (d_resample.c:92)
+	  Address 0x51fa2f0 is 0 bytes after a block of size 128 alloc'd
+	    calloc (vg_replace_malloc.c:418)
+	    getbytes (m_memory.c:24)
 [ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
 [ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
@@ -202,7 +201,6 @@ while running #to~-help.pd :
 [ ] see [comment] from cyclone
 [ ] lqtgavl
 [ ] Dim::T = intptr_t
-
 [ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
     Program received signal SIGSEGV, Segmentation fault.
     with gdb: canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
@@ -211,14 +209,14 @@ while running #to~-help.pd :
 	Address 0x9c is not stack'd, malloc'd or (recently) free'd
     with no further info (2008.08.17)
 [ ] canvasdelete
+[ ] DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
+[ ] DEF_OP(pingpong,  ...)
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
     and is_base_sel(symbol) also would include bang and list.
-
-// was for 9.9
-//DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
-//DEF_OP(pingpong,  
+[ ] [#inner] nonscalar seeds ?
+[ ] [#scan] could use the same yn==1 optimisation that [#fold] uses
 
 Win32/Win64
 [ ] win32 color_correction.pd crash
@@ -253,7 +251,7 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] Add a video latency patch (in examples)
 [ ] Numop: warn on misalignment
 [ ] remove GridInlet* ?
-[ ] [#expr]
+[ ] [#expr] grid support
 [ ] [#line]? [#pipe]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
 [ ] #,#fold,#scan,: option swap
@@ -308,7 +306,7 @@ Computation Objects
 [ ] zero option in #convolve (as an alternative to wraparound)... sort of a built-in #border
 [ ] #convolve should allow n-D convolution
 [ ] #store: option zero (?)
-[ ] #fold, #scan: option reverse (right-to-left)
+[ ] #fold, #scan: option reverse (right-to-left) (is this useful ?)
 [ ] #join: option swap
 [ ] #matrix_solve (CV), #replace_if, #random_select, #markov_chain, #splice, full-featured #slice (in c++)
 [ ] add 2D markov example

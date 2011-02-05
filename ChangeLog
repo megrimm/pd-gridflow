@@ -10,16 +10,20 @@ version 9.13 (2011.02...):
  * x11 is now a load-time option (???????????????????????????????????????)
  * [#io.x11]: added query_pointer
  * [route3]: fixed bug so that this class can be used for real
- * parens in messages are no longer parsed automatically as nested-lists
-   (parens in objectboxes still are ; otherwise use ____________________)
+ * parens in messages are no longer parsed automatically as nested-lists.
+   (parens in objectboxes still are, of course)
  * [gf/find_file] now looks up relative names in gridflow/images
    even when they contain a slash (or several).
  * [gf/error]: added method 'uplevel'
  * [#in] and [#out]: in case of unknown suffix, say 'not open' afterwards
  * [#redim]: arguments default to ()
- * numop "atan" renamed to "atan2cd" (incompatibility!)
+ * former numop "atan" renamed to "atan2cd" (incompatibility!)
  * new numops: asin acos atan asinh acosh atanh
  * numops log and C.log aliased to ln and C.ln
+ * [#inner]: add seedless mode
+ * [#convolve]: add seedless mode
+ * [unix_time]: fixed the month number bug
+ * [#fold]: much faster in the case folding over a dim that has only 1 index
 
 version 9.12 (2010.10.08):
 
