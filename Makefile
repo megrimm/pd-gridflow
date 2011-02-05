@@ -69,17 +69,17 @@ CFLAGS += -DPDSUF=\"$(PDSUF)\"
 %.m.fcs: %.m $(COMMON_DEPS2)
 	$(FILT) $< $@
 %.o: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) -c $< -o $@
 %.1.o: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -DPASS1 -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) -DPASS1 -c $< -o $@
 %.2.o: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -DPASS2 -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) -DPASS2 -c $< -o $@
 %.3.o: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -DPASS3 -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) -DPASS3 -c $< -o $@
 %.4.o: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) -DPASS4 -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS2)
-	$(CXX) -xc++ $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 %.s: %.cxx.fcs $(COMMON_DEPS2)
 	$(CXX) $(CFLAGS) -S $< -o $@
 %.e: %.cxx.fcs $(COMMON_DEPS2)
