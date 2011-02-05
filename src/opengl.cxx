@@ -890,7 +890,7 @@ static void init_enums () {
 	;
 }
 // comments in the class body list those functions not supported by GF but supported by GEM in openGL dir.
-\class GFGL : FObject {
+\class GFGL {
 	\constructor () {}
 	~GFGL() {}
 	\decl 0 accum (t_atom op, float value) {glAccum(accum_op(op),value);}
