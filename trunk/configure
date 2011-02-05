@@ -87,7 +87,7 @@ $conf={
 	:DEFINES => {:CPU => nil},
 	:CC => "g++",
 	:OBJS => [],
-	:PDLIB => ["gridflow","gridflow_pdp","gridflow_unicorn"],
+	:PDLIB => ["gridflow","gridflow_unicorn"],
 }
 
 def launch stdin,stdout,stderr,*command # -> returncode
@@ -541,6 +541,11 @@ Feature.add {
         }
 }
 Feature.add {
+	tag :pdp
+	name "PDP"
+	produces_pdlib ["gridflow_pdp"]
+}
+Feature.add {
 	tag :android
 	name "Android module"
 	produces_o ["src/android.o"]
@@ -556,7 +561,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
-	log << "[--use-cpu cpu] [--lite] [--debug] [--explicit]"
+	log << "[--use-cpu cpu] [--lite] [--debug] [--explicit] [--no-pdp]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
