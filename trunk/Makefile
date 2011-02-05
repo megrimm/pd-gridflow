@@ -4,8 +4,8 @@
 # dlltool -D /c/Program\ Files/pd/extra/Gem/Gem.dll -d Gem.def -l libGem.a
 
 include config.make
-#COMMON_DEPS = config.make Makefile src/source_filter.rb
-#COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
+COMMON_DEPS = config.make Makefile src/source_filter.rb
+COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
 
 SHELL = /bin/sh
@@ -41,10 +41,10 @@ else
     CFLAGS += -mms-bitfields
   else
     PDSUF = .pd_linux
-    PDBUNDLEFLAGS = -shared -rdynamic
+    LDSOFLAGS = -shared -rdynamic
     ifeq ($(HAVE_GCC64),yes)
       CFLAGS += -fPIC
-      PDBUNDLEFLAGS += -fPIC
+      LDSOFLAGS += -fPIC
     endif
   endif
 endif
@@ -94,22 +94,22 @@ src/mmx.o: src/mmx.asm
 
 PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(COMMON_DEPS2)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
+	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) -xnone  -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS) $(LDSO_main)
 
 gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem_loader.cxx.fcs $(LDSOFLAGS) $(GEMFLAGS)
+	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem_loader.cxx.fcs $(LDSOFLAGS) $(LDSO_gem_loader)
 gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem.cxx.fcs        $(LDSOFLAGS) $(GEMFLAGS)
+	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem.cxx.fcs        $(LDSOFLAGS) $(LDSO_gem_loader)
 gridflow_gem9293$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(GEMFLAGS)
+	$(CXX) $(CFLAGS) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(LDSO_gem_loader)
 gridflow_gem9393$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(GEMFLAGS)
+	$(CXX) $(CFLAGS) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(LDSO_gem_loader)
 gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/pdp.cxx.fcs         $(LDSOFLAGS)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/pdp.cxx.fcs         $(LDSOFLAGS) $(LDSO_pdp)
 gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/unicorn.cxx.fcs     $(LDSOFLAGS)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/unicorn.cxx.fcs     $(LDSOFLAGS) $(LDSO_unicorn)
 gridflow_x11$(PDSUF):        src/x11.cxx.fcs        $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/x11.cxx.fcs         $(LDSOFLAGS)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/x11.cxx.fcs         $(LDSOFLAGS) $(LDSO_x11)
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
