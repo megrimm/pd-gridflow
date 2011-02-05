@@ -27,7 +27,7 @@ bool operator < (const t_atom2 &a, const t_atom2 &b) {
 	
 map<t_atom2, int> priorities;
 
-\class GFExpr : FObject {
+\class GFExpr {
 	/* only between next() and parse() */
 	#define A_OPEN    t_atomtype(0x1000) // '('
 	#define A_CLOSE   t_atomtype(0x1001) // ')'

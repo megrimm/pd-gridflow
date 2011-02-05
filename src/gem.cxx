@@ -103,7 +103,7 @@ struct GemCache {
 //  in 0: gem
 //  in 1: grid
 // out 0: gem
-\class GridToPix : FObject {
+\class GridToPix {
 	pixBlock *pb;
 	\attr bool yflip;
 	void render (GemCache *cache, GemState *state) {
@@ -207,7 +207,7 @@ GRID_INLET(1) {
 //   OsxIntel y:6409 yuv:34233
 //   OsxPPC   y:6409 yuv:
 
-\class GridFromPix : FObject {
+\class GridFromPix {
 	P<BitPacking> bp_rgba;
 	P<BitPacking> bp_bgra;
 	\attr bool yflip;
@@ -299,7 +299,7 @@ GRID_INLET(1) {
 GemState::GemState() {}
 #endif
 
-\class GemDead : FObject {
+\class GemDead {
 	GemState *state;
 	GemCache *cache;
 	\constructor () {
