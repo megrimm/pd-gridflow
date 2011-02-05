@@ -537,13 +537,14 @@ GRID_INLET(1) {
 	\constructor (Numop *op=0, Grid *r=0) {
 		this->op=op?op:TO(Numop2*,gensym("ignore"));
 		this->r=r?r:new Grid(Dim(),int32_e,true);
+		//post("op->name=%s op->size=%d op->arity=%d",op->name,op->size,op->arity());
 	}
 	\grin 0
 	\grin 1
 };
 GRID_INLET(0) {
 	snap_backstore(r);
-	SAME_TYPE(in,r);
+	if (op->arity()==2) SAME_TYPE(in,r);
 	if (op->size>1 && (in.dim[in.dim.n-1]!=op->size || r->dim[r->dim.n-1]!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in.dim.to_s(),r->dim.to_s());
@@ -961,13 +962,12 @@ GRID_INLET(0) {
 \class GridRedim {
 	/*\attr*/ Dim dim;
 	P<Grid> dim_grid;
-	P<Grid> temp; // temp->dim is not of the same shape as dim
+	P<Grid> temp; // temp->dim != dim
 	~GridRedim() {}
 	\constructor (Grid *d=0) {
 		dim_grid.but(expect_dim_dim_list);
 		dim_grid=d?d:new Grid(Dim(0));
 		dim = dim_grid->to_dim();
-	//	if (!dim.prod()) RAISE("target grid size must not be zero");
 	}
 	\grin 0
 	\grin 1 int32
@@ -995,7 +995,6 @@ GRID_INLET(0) {
 
 GRID_INPUT(1,dim_grid) {
 	Dim d = dim_grid->to_dim();
-//	if (!d.prod()) RAISE("target grid size must not be zero"); else post("d.prod=%d",d.prod());
 	dim = d;
 } GRID_END
 
