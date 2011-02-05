@@ -86,7 +86,8 @@ FEATURES = {}
 OPTIONS = []
 DEFINES = {:CPU => nil}
 OBJS = []
-PDLIB = ["gridflow","gridflow_unicorn"]
+PDLIB = ["unicorn"]
+LDSO = {}
 
 def launch stdin,stdout,stderr,*command # -> returncode
 	child = fork
@@ -116,8 +117,8 @@ class Feature
 	end
 	attr2 :tag
 	attr2 :name
-	attr2 :status
 	attr2 :produces_pdlib
+	attr2 :status
 	attr2 :uses_so
 	attr2 :produces_o
 	attr2 :uses_h
@@ -326,7 +327,7 @@ Feature.add {
 	uses_so LIBX11
 	uses_h ["X11/Xlib.h"]
 	#produces_o ["src/x11.o"]
-	produces_pdlib ["gridflow_x11"]
+	produces_pdlib ["x11"]
 	test proc {c_test "
 		#include#
 		int main () {return XSetErrorHandler==0;}"}}
@@ -335,6 +336,7 @@ Feature.add {
 	name "X11 acceleration by shared memory (XSHM plugin)"
 	uses_feature [:x11]
 	uses_so LIBX11+["-lXext"]
+	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	options ["HAVE_X11_SHARED_MEMORY"]
 	test proc {c_test "
@@ -436,7 +438,7 @@ Feature.add {
 	name "Video4linux I Driver Interface Library"
 	uses_h ["libv4l1.h"]
 	uses_so ["-lv4l1"]
-	defines ["HAVE_LIBV4L1"]
+	options ["HAVE_LIBV4L1"]
 	test proc {c_test "
 		#include <linux/videodev.h>
 		#include <sys/types.h>
@@ -527,7 +529,7 @@ Feature.add {
 	tag :opengl
 	name "OpenGL/GLEW (for GEM support and [gf/gl])"
 	produces_o ["src/opengl.o"]
-	produces_pdlib ["gridflow_gem_loader","gridflow_gem9292","gridflow_gem9293","gridflow_gem9393"]
+	produces_pdlib ["gem_loader","gem9292","gem9293","gem9393"]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
@@ -683,10 +685,12 @@ def try feature
 	end
 	feature.action.call if feature.action
 	FEATURES[feature.tag] = feature
-	LDSOFLAGS.concat(feature.uses_so||[]).uniq! # if not feature.produces_pdlib
+	category = "main"
+	category = feature.produces_pdlib[0] if feature.produces_pdlib
+	(LDSO[category]||=[]).concat(feature.uses_so||[]).uniq!
 	OPTIONS.concat(feature.options||[])
 	OBJS.concat(feature.produces_o    ||[])
-	PDLIB.concat(feature.produces_pdlib||[])
+	PDLIB.concat(feature.produces_pdlib||[]).uniq!
 	for k,v in feature.defines||{} do DEFINES[k]=(if Proc===v then v[] else v end) end
 	true
 end
@@ -715,21 +719,24 @@ need :stl
 #--------------------------------#
 
 LOG.puts "-"*64
-LOG.puts        "#{CC}: #{CC.inspect}"
-LOG.puts "#{LDSOFLAGS}: #{LDSOFLAGS.inspect}"
-LOG.puts   "#{OPTIONS}: #{OPTIONS.inspect}"
-LOG.puts   "#{DEFINES}: #{DEFINES.inspect}"
-LOG.puts      "#{OBJS}: #{OBJS.inspect}"
-LOG.puts     "#{PDLIB}: #{PDLIB.inspect}"
+LOG.puts        "$CC: #{CC.inspect}"
+LOG.puts "$LDSOFLAGS: #{LDSOFLAGS.inspect}"
+LOG.puts   "$OPTIONS: #{OPTIONS.inspect}"
+LOG.puts   "$DEFINES: #{DEFINES.inspect}"
+LOG.puts      "$OBJS: #{OBJS.inspect}"
+LOG.puts     "$PDLIB: #{PDLIB.inspect}"
+for k in LDSO.keys.sort do
+  LOG.puts "$LDSO[#{k.inspect}]: #{LDSO[k].inspect}"
+end
 LOG.puts "-"*64
 RUBY = "$(RUBY_INSTALL_NAME)"
 
 puts "generating ./config.make"
 File.open("./config.make","w") {|f|
-  CFLAGS +=  " -mcpu=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] <  "4"
-  CFLAGS += " -mtune=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] >= "4"
-  CFLAGS += " -march=$(CPU)" if DEFINES[:CPU]
-  CFLAGS += " -DMACOSX" if OSX
+  CFLAGS <<  " -mcpu=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] <  "4"
+  CFLAGS << " -mtune=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] >= "4"
+  CFLAGS << " -march=$(CPU)" if DEFINES[:CPU]
+  CFLAGS << " -DMACOSX" if OSX
   f.puts "CFLAGS += " + CFLAGS
   f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
   for k   in OPTIONS do f.puts "#{k}=yes" end
@@ -738,7 +745,10 @@ File.open("./config.make","w") {|f|
   f.puts "OBJS = #{OBJS.join(" ")}"
   f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
-  f.puts "PDLIB = "+PDLIB.map{|x|x+"$(PDSUF)"}.join(" ")
+  f.puts "PDLIB = gridflow$(PDSUF) "+PDLIB.map{|x|"gridflow_#{x}$(PDSUF)"}.join(" ")
+  for k in LDSO.keys.sort do
+    f.puts "LDSO_#{k} = "+LDSO[k].join(" ") if LDSO[k]
+  end
 } # end open config.make
 
 #--------------------------------#
