@@ -56,7 +56,7 @@ def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	/^(\w+)(?:\s*[:<]\s*(\w+))?\s*(\{.*)?/.match line or raise "syntax error #{where}"
 	classname = $1
-	superclassname = $2
+	superclassname = $2; superclassname = "FObject" if not superclassname and classname!="FObject"
 	rest = $3
 	q=ClassDecl.new(classname,superclassname,{},{},{},false)
 	$stack << q
