@@ -24,7 +24,7 @@
 
 #define C(x) ((fftwf_complex *)x)
 
-\class GridFFT : FObject {
+\class GridFFT {
 	fftwf_plan plan;
 	Dim lastdim; /* of last input (for plan cache) */
 	bool haslastdim;

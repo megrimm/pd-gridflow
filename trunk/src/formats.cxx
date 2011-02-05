@@ -65,7 +65,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {string ss = s; suffix_table[ss]=name2;}
 }
 
-\class SuffixLookup : FObject {
+\class SuffixLookup {
   \constructor () {}
   \decl 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);

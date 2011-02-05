@@ -194,7 +194,7 @@ CvScalar convert (const t_atom2 &a, CvScalar *)  {USELIST; return cvScalar(GETF(
 
 /* ******************************** CLASSES ******************************** */
 
-\class CvOp1 : FObject {
+\class CvOp1 {
 	\attr CvMode mode;
 	\constructor (...) {mode = cv_mode_auto;}
 	/* has no default \grin 0 handler so far. */
@@ -301,7 +301,7 @@ GRID_INLET(0) {
 } GRID_END
 \end class {install("cv/#SVD",1,3);}
 
-\class CvEllipse : FObject {
+\class CvEllipse {
 	\grin 0
 	\attr CvPoint center;
 	\attr CvSize axes;
@@ -414,7 +414,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 };
 \end class {}
 
-\class CvHaarDetectObjects : FObject {
+\class CvHaarDetectObjects {
 	\attr double scale_factor; /*=1.1*/
 	\attr int min_neighbors;   /*=3*/
 	\attr int flags;           /*=0*/
