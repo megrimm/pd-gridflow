@@ -33,6 +33,7 @@ else
     PDBUNDLEFLAGS = -shared
     LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
     #CFLAGS += -DDES_BUGS
+    # -mms-bitfields is necessary because of t_object and the way Miller compiles pd.
     CFLAGS += -mms-bitfields
   else
     PDSUF = .pd_linux
@@ -80,11 +81,6 @@ CFLAGS += -DPDSUF=\"$(PDSUF)\"
 	$(CXX) -xc++ -DLIBGF $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS2)
 	$(CXX) -xc++ -DLIBGF $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
-%.s: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS) -S $< -o $@
-%.e: %.cxx.fcs $(COMMON_DEPS2)
-	$(CXX) $(CFLAGS) -E $< -o $@
-
 .PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
 
 src/mmx.asm src/mmx_loader.cxx: src/mmx.rb
