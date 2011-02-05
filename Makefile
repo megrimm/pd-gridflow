@@ -1,12 +1,14 @@
 #!/usr/bin/make
 
+# pexports /c/Program\ Files/pd/extra/Gem/Gem.dll > Gem.def
+# dlltool -D /c/Program\ Files/pd/extra/Gem/Gem.dll -d Gem.def -l libGem.a
+
 include config.make
-COMMON_DEPS = config.make Makefile src/source_filter.rb
-COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
+#COMMON_DEPS = config.make Makefile src/source_filter.rb
+#COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
 RUBY = ruby
 
 SHELL = /bin/sh
-LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
 
@@ -23,15 +25,17 @@ OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
 FILT = $(RUBY) -w src/source_filter.rb
 ifeq ($(OS),Darwin)
   CFLAGS += -mmacosx-version-min=10.4 -fPIC
-  LDSOFLAGS += -headerpad_max_install_names
+  LDSOFLAGS += -headerpad_max_install_names -bundle -flat_namespace -undefined suppress
   PDSUF = .pd_darwin
-  PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
   # -undefined dynamic_lookup # is used by smlib. this might be a good idea for future use.
 else
   ifeq ($(OS),nt)
     PDSUF = .dll
-    PDBUNDLEFLAGS = -shared
-    LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
+    LDSOFLAGS += -shared
+    LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd 
+    #GEMFLAGS += -L/c/Program\ Files/pd/extra/Gem -lGem
+    GEMFLAGS += -xnone libGem.a
+    
     #CFLAGS += -DDES_BUGS
     # -mms-bitfields is necessary because of t_object and the way Miller compiles pd.
     CFLAGS += -mms-bitfields
@@ -89,23 +93,23 @@ src/mmx.o: src/mmx.asm
 	nasm -f elf src/mmx.asm -o src/mmx.o
 
 PDLIB1 = gridflow$(PDSUF)
-$(PDLIB1): $(OBJS2) $(OBJS) $(H) $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
+$(PDLIB1): $(OBJS2) $(OBJS) $(COMMON_DEPS2)
+	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
 
-gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem_loader.cxx.fcs
-gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem.cxx.fcs
-gridflow_gem9293$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs
-gridflow_gem9393$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs
-gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/pdp.cxx.fcs
-gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/unicorn.cxx.fcs
-gridflow_x11$(PDSUF):        src/x11.cxx.fcs        $(H) $(COMMON_DEPS)
-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/x11.cxx.fcs
+gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem_loader.cxx.fcs $(LDSOFLAGS) $(GEMFLAGS)
+gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem.cxx.fcs        $(LDSOFLAGS) $(GEMFLAGS)
+gridflow_gem9293$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(GEMFLAGS)
+gridflow_gem9393$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs         $(LDSOFLAGS) $(GEMFLAGS)
+gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/pdp.cxx.fcs         $(LDSOFLAGS)
+gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/unicorn.cxx.fcs     $(LDSOFLAGS)
+gridflow_x11$(PDSUF):        src/x11.cxx.fcs        $(COMMON_DEPS2)
+	$(CXX) $(CFLAGS)                              -o $@ -xc++ src/x11.cxx.fcs         $(LDSOFLAGS)
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
