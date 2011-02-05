@@ -62,7 +62,7 @@ static CONSTRAINT(expect_max_one_dim) {if (d.n>1 ) RAISE("expecting Dim[] or Dim
 //static CONSTRAINT(expect_exactly_one_dim) {if (d.n!=1) RAISE("expecting Dim[n], got %s",d.to_s());}
 
 //****************************************************************
-\class GridCast : FObject {
+\class GridCast {
 	\attr NumberTypeE cast;
 	\constructor (NumberTypeE nt=int32_e) {this->cast = nt;}
 	\grin 0
@@ -79,7 +79,7 @@ GRID_INLET(0) {
 GridHandler *stromgol; // remove this asap
 //{ ?,Dim[B] -> Dim[*Cs] }
 // out0 nt to be specified explicitly
-\class GridImport : FObject {
+\class GridImport {
 	\attr NumberTypeE cast;
 	/*\attr*/ Dim dim; // size of grids to send
 	\attr bool per_message;
@@ -154,7 +154,7 @@ GRID_INPUT(1,dim_grid) {
 //****************************************************************
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
-\class GridToFloat : FObject {
+\class GridToFloat {
 	\constructor () {}
 	\grin 0
 };
@@ -164,7 +164,7 @@ GRID_INLET(0) {
 } GRID_END
 \end class {install("#to_float",1,1); add_creator("#to_f"); add_creator("#export"); add_creator("@export");}
 
-\class GridToSymbol : FObject {
+\class GridToSymbol {
 	\constructor () {}
 	\grin 0
 };
@@ -180,7 +180,7 @@ GRID_INLET(0) {
 
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
-\class GridToList : FObject {
+\class GridToList {
 	\constructor () {}
 	int n;
 	\grin 0
@@ -198,7 +198,7 @@ GRID_INLET(0) {
 \end class {install("#to_list",1,1); add_creator("#to_l"); add_creator("#export_list"); add_creator("@export_list");}
 
 /* **************************************************************** */
-\class GridPrint : FObject {
+\class GridPrint {
 	\attr t_symbol *name;
 	\attr int maxrows;
 	\constructor (t_symbol *name=0) {
@@ -344,7 +344,7 @@ GRID_INLET(0) {
 // in0: integer nt
 // in1: whatever nt
 // out0: same nt as in1
-\class GridStore : FObject {
+\class GridStore {
 	P<Grid> r; // can't be \attr (why ?)
 	P<Grid> put_at; // can't be //\attr (why ?)
 	\attr Numop2 *op;
@@ -531,7 +531,7 @@ GRID_INLET(1) {
 //****************************************************************
 //{ Dim[*As]<T> -> Dim[*As]<T> } or
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
-\class GridOp : FObject {
+\class GridOp {
 	\attr Numop *op;
 	P<Grid> r;
 	\constructor (Numop *op=0, Grid *r=0) {
@@ -588,7 +588,7 @@ GRID_INPUT2(1,r) {} GRID_END
 \end class {install("#",2,1); add_creator("@");}
 
 //****************************************************************
-\class GridFold : FObject {
+\class GridFold {
 	\attr Numop2 *op;
 	\attr P<Grid> seed;
 	\constructor (Numop2 *op) {this->op=op;}
@@ -637,7 +637,7 @@ GRID_INLET(0) {
 
 \end class {install("#fold",1,1);}
 
-\class GridScan : FObject {
+\class GridScan {
 	\attr Numop2 *op;
 	\attr P<Grid> seed;
 	\constructor (Numop2 *op) {this->op = op;}
@@ -680,7 +680,7 @@ GRID_INLET(0) {
 // Seed   is a Dim[           *ss]<T>
 // result is a Dim[*si,   *sk,*ss]<T>
 // Currently *ss can only be = Dim[]
-\class GridInner : FObject {
+\class GridInner {
 	\attr Numop2 *op;
 	\attr Numop2 *fold;
 	\attr P<Grid> seed;
@@ -802,7 +802,7 @@ GRID_INPUT(1,r) {} GRID_END
 
 /* **************************************************************** */
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
-\class GridOuter : FObject {
+\class GridOuter {
 	\attr Numop2 *op;
 	P<Grid> r;
 	\constructor (Numop2 *op, Grid *r=0) {
@@ -861,7 +861,7 @@ GRID_INPUT(1,r) {} GRID_END
 //****************************************************************
 //{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> } or
 //{ Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }
-\class GridFor : FObject {
+\class GridFor {
 	\attr P<Grid> from;
 	\attr P<Grid> to  ;
 	\attr P<Grid> step;
@@ -930,13 +930,13 @@ GRID_INPUT(0,from) {_0_bang();} GRID_END
 \end class {install("#for",3,1); add_creator("@for");}
 
 //****************************************************************
-\class GridFinished : FObject {
+\class GridFinished {
 	\constructor () {}
 	\grin 0
 };
 GRID_INLET(0) {} GRID_FINISH {out[0]();} GRID_END
 \end class {install("#finished",1,1); add_creator("@finished");}
-\class GridDim : FObject {
+\class GridDim {
 	\constructor () {}
 	\grin 0
 };
@@ -945,7 +945,7 @@ GRID_INLET(0) {
 	go.send(in.dim.n,in.dim.v);
 } GRID_END
 \end class {install("#dim",1,1); add_creator("@dim");}
-\class GridType : FObject {
+\class GridType {
 	\attr bool abbr;
 	\constructor () {}
 	\grin 0
@@ -958,7 +958,7 @@ GRID_INLET(0) {
 
 //****************************************************************
 //{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
-\class GridRedim : FObject {
+\class GridRedim {
 	/*\attr*/ Dim dim;
 	P<Grid> dim_grid;
 	P<Grid> temp; // temp->dim is not of the same shape as dim

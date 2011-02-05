@@ -391,7 +391,7 @@ static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {re
 
 struct ParallelPort;
 void ParallelPort_call(ParallelPort *self);
-\class ParallelPort : FObject {
+\class ParallelPort {
 	FILE *f;
 	int fd;
 	int status;
@@ -445,7 +445,7 @@ void setsels (vector<t_symbol *> &sels, int argc, t_atom2 *argv) {
 	sels.resize(argc); for (int i=0; i<argc; i++) sels[i]=argv[i];
 }
 
-\class Route2 : FObject {
+\class Route2 {
 	vector<t_symbol *> sels;
 	\constructor (...) {_1_list(argc,argv); noutlets_set(1+argc);}
 	\decl void anything(...) {
@@ -457,7 +457,7 @@ void setsels (vector<t_symbol *> &sels, int argc, t_atom2 *argv) {
 };
 \end class {install("route2",1,1);}
 
-\class Route3 : FObject {
+\class Route3 {
 	vector<t_symbol *> sels;
 	\constructor (...) {_1_list(argc,argv); noutlets_set(1+argc);}
 	\decl void anything(...) {
@@ -472,7 +472,7 @@ void setsels (vector<t_symbol *> &sels, int argc, t_atom2 *argv) {
 
 template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 
-\class Shunt : FObject {
+\class Shunt {
 	int n;
 	\attr int index;
 	\attr int mode;
@@ -500,7 +500,7 @@ struct ReceivesProxy {
 };
 t_class *ReceivesProxy_class;
 
-\class Receives : FObject {
+\class Receives {
 	vector<ReceivesProxy> rp;
 	t_symbol *prefix;
 	t_symbol *local (t_symbol *suffix) {return symprintf("%s%s",prefix->s_name,suffix->s_name);}
@@ -538,13 +538,13 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 }
 
 /* this can't report on bang,float,symbol,pointer,blob,list because zgetfn can't either */
-\class ClassExists : FObject {
+\class ClassExists {
 	\constructor () {}
 	\decl 0 symbol(t_symbol *s) {out[0](!!zgetfn(&pd_objectmaker,s));}
 };
 \end class {install("class_exists",1,1);}
 
-\class ListEqual : FObject {
+\class ListEqual {
 	vector<t_atom2> list;
 	\constructor (...) { _1_list(argc,argv);}
 	\decl 1 list (...) {list.resize(argc); for (int i=0; i<argc; i++) list[i]=argv[i];}
@@ -578,21 +578,21 @@ void ReceivesProxy_anything (ReceivesProxy *self, t_symbol *s, int argc, t_atom 
 uint64 cpu_hertz;
 int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
-\class UserTime : FObject {
+\class UserTime {
 	clock_t time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_utime;}
 	\decl 1 bang () {NOWIN; struct tms t; times(&t); out[0]((t.tms_utime-time)*1000/HZ);}
 };
 \end class {install("usertime",2,1);}
-\class SystemTime : FObject {
+\class SystemTime {
 	clock_t time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {NOWIN; struct tms t; times(&t); time = t.tms_stime;}
 	\decl 1 bang () {NOWIN; struct tms t; times(&t); out[0]((t.tms_stime-time)*1000/HZ);}
 };
 \end class {install("systemtime",2,1);}
-\class TSCTime : FObject {
+\class TSCTime {
 	uint64 time;
 	\constructor () {_0_bang();}
 	\decl 0 bang () {time=rdtsc();}
@@ -612,7 +612,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	cpu_hertz = estimates[1];
 }
 
-\class GFError : FObject {
+\class GFError {
 	string format;
 	\constructor (...) {format = join(argc,argv);}
 	\decl 0 list (...) {err(0,argc,argv);}
@@ -638,7 +638,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \end class {install("gf/error",1,0);}
 
-\class GFSprintf : FObject {
+\class GFSprintf {
 	string format;
 	\constructor (...) {format = join(argc,argv);}
 	\decl 1 list (...) {format = join(argc,argv);}
@@ -648,7 +648,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	}
 };
 \end class {install("gf/sprintf",2,1);}
-\class GridSprintf : FObject {
+\class GridSprintf {
 	string format;
 	\attr NumberTypeE cast;
 	\constructor (...) {format = join(argc,argv); cast = int32_e;}
@@ -660,7 +660,7 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \end class {install("#sprintf",2,1);}
 
-\class ForEach : FObject {
+\class ForEach {
 	\constructor () {}
 	\decl 0 list (...) {for (int i=0; i<argc; i++) out[0](argv[i]);}
 };
@@ -670,25 +670,25 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 #define MOM t_canvas *m = mom; for (int i=0; i<n; i++) {m=m->gl_owner; if (!m) RAISE("no such canvas");}
 
-\class GFCanvasFileName : FObject {
+\class GFCanvasFileName {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; out[0](m->gl_name ? m->gl_name : gensym("empty"));}
 };
 \end class {install("gf/canvas_filename",1,1);}
-\class GFCanvasDollarZero : FObject {
+\class GFCanvasDollarZero {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; out[0](canvas_getenv(m)->ce_dollarzero);}
 };
 \end class {install("gf/canvas_dollarzero",1,1);}
-\class GFCanvasGetPos : FObject {
+\class GFCanvasGetPos {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; t_atom2 a[2] = {m->gl_obj.te_xpix, m->gl_obj.te_ypix}; out[0](2,a);}
 };
 \end class {install("gf/canvas_getpos",1,1);}
-\class GFCanvasSetPos : FObject {
+\class GFCanvasSetPos {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 list (...) {MOM;
@@ -703,13 +703,13 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 	}
 };
 \end class {install("gf/canvas_setpos",1,0);}
-\class GFCanvasEditMode : FObject {
+\class GFCanvasEditMode {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; out[0](int(m->gl_edit));}
 };
 \end class {install("gf/canvas_edit_mode",1,1);}
-\class GFCanvasIsSelected : FObject {
+\class GFCanvasIsSelected {
 	/* contributed by "rumence" of Slovakia, on IRC */
 	/* bugfix by matju */
 	int n;
@@ -721,13 +721,13 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 };
 \end class {install("gf/canvas_isselected",1,1);}
 extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
-\class GFCanvasSetGOP : FObject {
+\class GFCanvasSetGOP {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 float (float gop) {MOM; canvas_setgraph(m,int(gop),0);}
 };
 \end class {install("gf/canvas_setgop",1,0);}
-\class GFCanvasXID : FObject {
+\class GFCanvasXID {
 	int n;
 	t_symbol *name;
 	\constructor (int n_=0) {
@@ -745,7 +745,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \end class {install("gf/canvas_xid",1,3);}
 
-\class GFCanvasHeHeHe : FObject {
+\class GFCanvasHeHeHe {
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 float (float y) {MOM;
@@ -762,7 +762,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 
 #define DASHRECT "-outline #80d4b2 -dash {2 6 2 6}"
 
-\class GFCanvasHoHoHo : FObject {
+\class GFCanvasHoHoHo {
 	int n;
 	t_canvas *last;
 	\constructor (int n) {this->n=n; last=0;}
@@ -777,13 +777,13 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 \end class {install("gf/canvas_hohoho",1,0);}
 
 #define canvas_each(y,x) for (t_gobj *y=x->gl_list; y; y=y->g_next)
-\class GFCanvasCount : FObject {
+\class GFCanvasCount {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {MOM; int k=0; canvas_each(y,m) k++; out[0](k);}
 };
 \end class {install("gf/canvas_count",1,1);}
-\class GFCanvasIndex : FObject {
+\class GFCanvasIndex {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 bang () {
@@ -797,7 +797,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \end class {install("gf/canvas_index",1,1);}
 
-\class GFCanvasLoadbang : FObject {
+\class GFCanvasLoadbang {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 float (float z) {MOM;
@@ -810,7 +810,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 };
 \end class {install("gf/canvas_loadbang",1,0);};
 
-\class GFCanvasSend : FObject {
+\class GFCanvasSend {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl void anything (...) {MOM; typedmess((t_pd *)m,argv[1],argc-2,argv+2);}
@@ -825,7 +825,7 @@ extern "C" void canvas_setgraph(t_glist *x, int flag, int nogoprect);
 
 #define wire_each(wire,ouchlet) for (t_outconnect *wire = ouchlet->connections; wire; wire=wire->next)
 
-\class GFLOL : FObject {
+\class GFLOL {
 	int n;
 	\constructor (int n) {this->n=n;}
 	\decl 0 wire_dotted  (int r, int g, int b) {BEGIN
@@ -957,7 +957,7 @@ static int canvas_find_index (t_canvas *x, t_gobj *y) {
 static bool canvas_contains  (t_canvas *x, t_gobj *y) {return canvas_find_index(x,y)>=0;}
 
 t_widgetbehavior *class_getwidget (t_class *x) {return (t_widgetbehavior *)((long *)x)[properties_offset-3];}
-\class GFObjectBBox : FObject {
+\class GFObjectBBox {
 	\constructor () {}
 	void look_at (t_gobj *o) {
 		t_widgetbehavior *wb = class_getwidget(pd_class((t_pd *)o));
@@ -992,7 +992,7 @@ string string_replace (string victim, string from, string to) {
 	return victim;
 }
 
-\class GFStringReplace : FObject {
+\class GFStringReplace {
 	t_symbol *from;
 	t_symbol *to;
 	\constructor (t_symbol *from=&s_, t_symbol *to=&s_) {this->from=from; this->to=to;}
@@ -1003,7 +1003,7 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/string_replace",1,1);}
 
-\class GFStringLessThan : FObject {
+\class GFStringLessThan {
 	t_symbol *than;
 	\constructor (t_symbol *than=&s_) {this->than=than;}
 	\decl 0 symbol (t_symbol *it) {out[0](strcmp(it->s_name,than->s_name)<0);}
@@ -1011,13 +1011,13 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/string_<",2,1); class_sethelpsymbol(fclass->bfclass,gensym("gf/string_0x3c"));}
 
-\class GFStringLength : FObject {
+\class GFStringLength {
 	\constructor () {}
 	\decl 0 symbol (t_symbol *it) {out[0](strlen(it->s_name));}
 };
 \end class {install("gf/string_length",1,1);}
 
-\class GFGetPid : FObject {
+\class GFGetPid {
 	static t_symbol *sym;
 	\constructor () {}
 	\decl 0 bang () {
@@ -1030,7 +1030,7 @@ string string_replace (string victim, string from, string to) {
 	}
 };
 \end class {install("gf/getpid",1,2);}
-\class GFGetCwd : FObject {
+\class GFGetCwd {
 	static t_symbol *sym;
 	\constructor () {}
 	\decl 0 bang () {
@@ -1041,13 +1041,13 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/getcwd",1,1);}
 
-\class GFSelector : FObject {
+\class GFSelector {
 	\constructor () {}
 	\decl void anything (...) {out[0](argv[1]);}
 };
 \end class {install("gf/selector",1,1);}
 
-\class FindFile : FObject {
+\class FindFile {
 	int n;
 	\constructor (int n=0) {this->n=n;}
 	\decl 0 symbol (t_symbol *s) {MOM
@@ -1074,7 +1074,7 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/find_file",1,2);}
 
-\class GFL2S : FObject {
+\class GFL2S {
 	t_symbol *sep;
 	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
 	\decl 0 list (...) {out[0](gensym(join(argc,argv,sep->s_name).data()));}
@@ -1082,7 +1082,7 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/l2s",2,1);}
 
-\class GFS2L : FObject {
+\class GFS2L {
 	t_symbol *sep;
 	\constructor (t_symbol *sep=0) {this->sep=sep?sep:gensym(" ");}
 	\decl 0 symbol (t_symbol *s) {
@@ -1101,13 +1101,13 @@ string string_replace (string victim, string from, string to) {
 };
 \end class {install("gf/s2l",2,1);}
 
-\class GFSysGui : FObject {
+\class GFSysGui {
 	\constructor () {}
 	\decl 0 list (...) {sys_gui(join(argc,argv," ","\n").data());}
 };
 \end class {install("gf/sys_gui",1,0);}
 
-\class GFWrap : FObject {
+\class GFWrap {
 	float b;
 	\constructor (float f=1) {b=f;}
 	\decl 1 float (float f)  {b=f;}
@@ -1116,13 +1116,13 @@ string string_replace (string victim, string from, string to) {
 \end class {install("gf/wrap",2,1);}
 
 /* hack because hexloader is a myth */
-\class InvPlus : FObject {
+\class InvPlus {
 	float b;
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a) {out[0](b-a);}
 	\decl 1 float (float b) {this->b=b;}};
 \end class {install("inv+",2,1); class_sethelpsymbol(fclass->bfclass,gensym("inv0x2b"));}
-\class InvTimes : FObject {
+\class InvTimes {
 	float b;
 	\constructor (float b=1) {this->b=b;}
 	\decl 0 float (float a) {out[0](b/a);}
@@ -1142,7 +1142,7 @@ string string_replace (string victim, string from, string to) {
 extern t_symbol *gridflow_folder;
 extern char *pd_version;
 
-\class GridFlowClass : FObject {
+\class GridFlowClass {
 	\constructor () {}
 	\decl 0 get (t_symbol *s=0) {
 		if (!s) {
@@ -1166,7 +1166,7 @@ extern char *pd_version;
 \end class {install("gridflow",1,1);}
 
 map<t_canvas *, map<t_gobj *, int> > propertybang_map;
-\class PropertyBang : FObject {
+\class PropertyBang {
 	\constructor () {propertybang_map[canvas_getabstop(mom)][(t_gobj *)bself]=1;}
 	~PropertyBang () {propertybang_map[canvas_getabstop(mom)].erase((t_gobj *)bself);}
 	void properties () {out[0]();}
@@ -1187,7 +1187,7 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 	class_setpropertiesfn(canvas_class,canvas_properties2); // phoque
 }
 
-\class GFClassInfo : FObject {
+\class GFClassInfo {
 	\constructor () {}
 	\decl 0 symbol (t_symbol *s) {
 		if (fclasses.find(s)==fclasses.end()) {out[0](); return;}

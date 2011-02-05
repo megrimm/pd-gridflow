@@ -31,7 +31,7 @@ template <>    struct SCopy<0> {template <class T> static inline void __attribut
 template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memcpy(r,m,sizeof(T)*n); return r;}
 
 //****************************************************************
-\class GridToTilde : FObject {
+\class GridToTilde {
 	P<Grid> blah;
 	t_outlet **sigout;
 	int chans; /* number of channels */
@@ -86,7 +86,7 @@ GRID_INLET(0) {
 	class_addmethod(fclass->bfclass,(t_method)GridToTilde::dsp_,gensym("dsp"),A_CANT,0);
 }
 //****************************************************************
-\class GridFromTilde : FObject {
+\class GridFromTilde {
 	P<Grid> blah;
 	t_inlet **sigin;
 	int chans; /* number of channels */
@@ -127,7 +127,7 @@ GRID_INLET(0) {
 }
 
 //****************************************************************
-\class GridJoin : FObject {
+\class GridJoin {
 	\attr int which_dim;
 	P<Grid> r;
 	\grin 0
@@ -194,7 +194,7 @@ GRID_INPUT(1,r) {} GRID_END
 \end class {install("#join",2,1); add_creator("@join");}
 
 //****************************************************************
-\class GridGrade : FObject {
+\class GridGrade {
 	\constructor () {}
 	\grin 0
 };
@@ -233,7 +233,7 @@ GRID_INLET(0) {
 //\class GridMedian : FObject
 //****************************************************************
 
-\class GridTranspose : FObject {
+\class GridTranspose {
 	\attr int dim1;
 	\attr int dim2;
 	int d1,d2,na,nb,nc,nd; // temporaries
@@ -285,7 +285,7 @@ GRID_INLET(0) {
 \end class {install("#transpose",3,1); add_creator("@transpose");}
 
 //****************************************************************
-\class GridReverse : FObject {
+\class GridReverse {
 	\attr int dim1; // dimension to act upon
 	int d; // temporaries
 	\constructor (int dim1=0) {this->dim1 = dim1;}
@@ -312,7 +312,7 @@ GRID_INLET(0) {
 \end class {install("#reverse",2,1);}
 
 //****************************************************************
-\class GridCentroid : FObject {
+\class GridCentroid {
 	\constructor () {}
 	\grin 0 int
 	int sumx,sumy,sum,y; // temporaries
@@ -350,7 +350,7 @@ GRID_INLET(0) {
 //****************************************************************
 static CONSTRAINT(expect_pair) {if (d.prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
 
-\class GridMoment : FObject {
+\class GridMoment {
 	\constructor (int order=1) {
 		offset.but(expect_pair);
 		t_atom2 a[2] = {t_atom2(0),t_atom2(0)};
@@ -425,7 +425,7 @@ GRID_INPUT(1,offset) {} GRID_END
 \end class {install("#moment",2,1);}
 
 //****************************************************************
-\class GridLabelling : FObject {
+\class GridLabelling {
 	\grin 0
 	\attr int form();
 	\attr int form_val;
@@ -508,7 +508,7 @@ GRID_INLET(0) {
 \end class {install("#labelling",1,0); add_creator("#labeling");}
 
 //****************************************************************
-\class GridPerspective : FObject {
+\class GridPerspective {
 	\attr int32 z;
 	\grin 0
 	\constructor (int32 z=256) {this->z=z;}
@@ -531,7 +531,7 @@ GRID_INLET(0) {
 \end class {install("#perspective",1,1); add_creator("@perspective");}
 
 //****************************************************************
-\class GridBorder : FObject {
+\class GridBorder {
 	/*\attr */ Dim diml;
 	/*\attr */ Dim dimr;
 	P<Grid> diml_grid;
@@ -591,7 +591,7 @@ static CONSTRAINT(expect_convolution_matrix) {
 }
 
 
-\class GridConvolve : FObject {
+\class GridConvolve {
 	// entry in a compiled convolution kernel
 	struct  PlanEntry {long y; long x; bool neutral;
 		PlanEntry (long y, long x, bool neutral) : y(y), x(x), neutral(neutral) {}
@@ -717,7 +717,7 @@ static CONSTRAINT(expect_scale_factor) {
 	if (d.prod()!=1 && d.prod()!=2) RAISE("expecting only one or two numbers");
 }
 
-\class GridScaleBy : FObject {
+\class GridScaleBy {
 	\attr P<Grid> scale; // integer scale factor
 	int scaley;
 	int scalex;
@@ -767,7 +767,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 
 // ----------------------------------------------------------------
 //{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }
-\class GridDownscaleBy : FObject {
+\class GridDownscaleBy {
 	\attr P<Grid> scale;
 	\attr bool smoothly;
 	int scaley;
@@ -853,7 +853,7 @@ GRID_INPUT(1,scale) {prepare_scale_factor();} GRID_END
 \end class {install("#downscale_by",2,1); add_creator("@downscale_by");}
 
 //****************************************************************
-\class GridLayer : FObject {
+\class GridLayer {
 	P<Grid> r;
 	\constructor () {r.but(expect_rgb_picture); r=new Grid(Dim(1,1,3),int32_e,true);}
 	\grin 0 int
@@ -908,7 +908,7 @@ OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	if (s==gensym("odd"))  return OMIT_ODD;
 	RAISE("unknown OmitMode '%s' (want none or last or odd)",s->s_name);
 }
-\class DrawPolygon : FObject {
+\class DrawPolygon {
 	\attr Numop2 *op;
 	\attr P<Grid> color;
 	\attr P<Grid> polygon;
@@ -1049,7 +1049,7 @@ static CONSTRAINT(expect_position) {
 	if (d[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d[0]);
 }
 
-\class DrawImage : FObject {
+\class DrawImage {
 	\attr Numop2 *op;
 	\attr P<Grid> image;
 	\attr P<Grid> position;
@@ -1154,7 +1154,7 @@ GRID_INPUT(2,position) {} GRID_END
 // Dim[*A],Dim[*B],Dim[C,size(A)-size(B)] -> Dim[*A]
 
 /* NOT FINISHED */
-\class GridDrawPoints : FObject {
+\class GridDrawPoints {
 	\attr Numop2 *op;
 	\attr P<Grid> color;
 	\attr P<Grid> points;
@@ -1193,7 +1193,7 @@ GRID_INLET(0) {
 \end class {install("#draw_points",3,1);}
 
 //****************************************************************
-\class GridNoiseGateYuvs : FObject {
+\class GridNoiseGateYuvs {
 	\grin 0
 	int thresh;
 	\decl 1 float(int v) {thresh=v;}
@@ -1221,7 +1221,7 @@ GRID_INLET(0) {
 
 //****************************************************************
 
-\class GridPack : FObject {
+\class GridPack {
 	int n;
 	P<Grid> a;
 	\attr NumberTypeE cast;
@@ -1252,7 +1252,7 @@ GRID_INLET(0) {
 };
 \end class {install("#pack",1,1); add_creator("@pack");}
 
-\class GridUnpack : FObject {
+\class GridUnpack {
 	\constructor (int n=2) {
 		if (n<1) RAISE("n=%d must be at least 1",n);
 		if (n>32) RAISE("n=%d is too many?",n);
@@ -1270,7 +1270,7 @@ GRID_INLET(0) {
 
 //****************************************************************
 
-\class GridRotatificator : FObject {
+\class GridRotatificator {
 	int angle;
 	int from, to, n;
 	\attr NumberTypeE cast;
@@ -1300,7 +1300,7 @@ static CONSTRAINT(expect_min_one_dim) {
 	if (d.n<1) RAISE("expecting at least one dimension, got %s",d.to_s());}
 
 #define OP(x) dynamic_cast<Numop2 *>(op_dict[string(#x)])
-\class GridClusterAvg : FObject {
+\class GridClusterAvg {
 	\attr int numClusters;
 	\attr P<Grid> r;
 	\attr P<Grid> sums;
@@ -1351,7 +1351,7 @@ GRID_INPUT(2,r) {
 //****************************************************************
 
 static Numop *op_os8;
-\class GridLopSpace : FObject {
+\class GridLopSpace {
 	\attr bool reverse;
 	\attr int which_dim;
 	\attr P<Grid> r;
@@ -1404,7 +1404,7 @@ GRID_INPUT(1,r) {} GRID_END
 
 //****************************************************************
 
-\class GridTabread : FObject {
+\class GridTabread {
 	t_symbol *t;
 	\constructor (t_symbol *table=&s_) {
 		t = table;
@@ -1433,7 +1433,7 @@ GRID_INLET(0) {
 
 //****************************************************************
 
-\class GridTabwrite : FObject {
+\class GridTabwrite {
 	t_symbol *t;
 	P<Grid> r;
 	\constructor (t_symbol *table=&s_) {
@@ -1469,7 +1469,7 @@ GRID_INPUT(1,r) {} GRID_END
 \end class {install("#tabwrite",2,0);}
 
 //****************************************************************
-\class GridCompress : FObject {
+\class GridCompress {
 	void *tmp;
 	P<Grid> r;
 	\constructor (Grid *r=0) {
