@@ -545,7 +545,7 @@ GRID_INLET(1) {
 GRID_INLET(0) {
 	snap_backstore(r);
 	if (op->arity()==2) SAME_TYPE(in,r);
-	if (op->size>1 && (in.dim[in.dim.n-1]!=op->size || r->dim[r->dim.n-1]!=op->size))
+	if (op->size>1 && (in.dim[in.dim.n-1]!=op->size || (op->arity()==2 && r->dim[r->dim.n-1]!=op->size)))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
 			op->name,op->size,in.dim.to_s(),r->dim.to_s());
 	go=new GridOut(this,0,in.dim,in.nt);
