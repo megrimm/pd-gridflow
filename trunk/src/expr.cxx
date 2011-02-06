@@ -95,8 +95,9 @@ map<t_atom2, int> priorities;
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if (o==gensym("+") || o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
+			if (o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
 			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("unary-")));}
+			else if (o==gensym("+")) {parse(context,t_atom2(A_OP1,gensym("unary+")));}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
@@ -238,7 +239,7 @@ void startup_classes4 () {
 	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
 	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
 	// all functions() are supposed to have priority 2
-	PR1(+) = PR1(unary-) = PR1(~) = PR1(!) = 3; // all unaries are supposed to have priority 3
+	PR1(+) = PR1(unary+) = PR1(unary-) = PR1(~) = PR1(!) = 3; // all unaries are supposed to have priority 3
 	PR(*) = PR(/) = PR(%) = 5;
 	PR(+) = PR(-) = 6;
 	PR(<<) = PR(>>) = 7;
