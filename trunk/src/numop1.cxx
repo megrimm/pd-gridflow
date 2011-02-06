@@ -69,6 +69,7 @@ complex<float> operator / (const complex<float> &a, float b) {return complex<flo
 
 DEF_OP(logic_not, !a);
 DEF_OP(not, -1-a); // because ~a doesn't exist for T=float
+DEF_OP(unary_plus, a);   // for use by #expr
 DEF_OP(unary_minus, -a); // for use by #expr
 DEF_OP(abs, a<0 ? -a : a);
 
@@ -129,6 +130,7 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(log,  "ln"),    DECL_VOP_FLOAT(cx_log,  "C.ln",   2),
 // introduced at 9.12
 	DECL_OP(unary_minus, "unary-"),
+	DECL_OP(unary_plus,  "unary+"),
 	DECL_OP(logic_not, "!"),
 	DECL_OP(not, "~"),
 	DECL_OP(abs, "abs"),
