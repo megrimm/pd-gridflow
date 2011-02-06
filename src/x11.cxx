@@ -80,6 +80,7 @@ typedef struct {
 	int32 pos[2];
 	P<BitPacking> bit_packing;
 	Dim dim;
+	int minsy,minsx;
 	t_clock *clock;
 	string title;
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -117,6 +118,7 @@ typedef struct {
 #ifdef HAVE_X11_SHARED_MEMORY
 		shm_info=0;
 #endif
+		minsy=16; minsx=16;
 		int sy=240, sx=320; // defaults
 		argv++, argc--;
 		t_symbol *domain = argc<1 ? gensym("here") : (t_symbol *)argv[0];
@@ -221,7 +223,8 @@ typedef struct {
 		}
 	}
 	void call ();
-	\decl 0 out_size (int sy, int sx) {resize_window(sx,sy);}
+	\decl 0 out_size         (int sy, int sx) {resize_window(sx,sy);}
+	\decl 0 out_size_minimum (int sy, int sx) {minsy=max(1,sy); minsx=max(1,sx);}
 	\decl 0 setcursor (int shape) {
 		if (shape<0 || shape>=77) RAISE("unknown shape number (should be at least 0 but less than 77)");
 		Cursor c = XCreateFontCursor(display,2*shape);
@@ -558,8 +561,8 @@ void FormatX11::dealloc_image () {
 }
 
 void FormatX11::resize_window (int sx, int sy) {
-	if (sy<16) sy=16; if (sy>4096) RAISE("height too big");
-	if (sx<16) sx=16; if (sx>4096) RAISE("width too big");
+	if (sy<minsy) sy=minsy; if (sy>4096) RAISE("height too big");
+	if (sx<minsx) sx=minsx; if (sx>4096) RAISE("width too big");
 	alloc_image(sx,sy);
 	if (window) {
 		if (is_owner && !lock_size) {
