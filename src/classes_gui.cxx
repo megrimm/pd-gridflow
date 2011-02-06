@@ -379,17 +379,14 @@ static t_pd *seesend;
 		sys_vgui("encoding system iso8859-1; image create photo %s -data \"P6\\n%d %d\\n255\\n",rsym->s_name,xs,ys);
 		char fub[xs*ys*3+1]; fub[xs*ys*3]=0;
 		static char tab[256];
-		for (int k=0; k<256; k++) tab[k]=k;
-		tab[0]=1; tab[10]=9; tab[34]=33; tab[36]=35; tab[91]=90; tab[92]=90; tab[93]=94; tab[123]=122; tab[125]=126;
-		//for (int k=192; k<223; k++) tab[k]=191;
-		#define FUX(i,j) fub[j]=tab[unsigned(data[i])&255];
+		#define FUX(i,j) fub[j]=data[i];
 		#define FOO(T) {T *data = (T *)*buf; \
 		  if(chans>2) for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=3) {FUX(i+0,j+0)FUX(i+1,j+1)FUX(i+2,j+2)}\
 		  else        for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=3) {FUX(i  ,j+0)FUX(i  ,j+1)FUX(i  ,j+2)}}
 		TYPESWITCH(buf->nt,FOO,)
 		#undef FOO
 		sys_gui(fub);
-		sys_gui("\"\n");
+		sys_gui("[read $::gridsee_socket]\"\n");
 	    } else {
 		char fub[xs*ys*6+1]; fub[xs*ys*6]=0;
 		sys_gui("set zut ");
@@ -457,14 +454,15 @@ GRID_INLET(0) {
 	"$c create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
 	"$c create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
-/*
- * 	sys_gui("set gridsee_socket [socket -server -port 9999]\n");
+	/*
+  	sys_gui("set ::gridsee_server [socket -server {puts HELLO} 9999]\n");
+  	//sys_gui("set ::gridsee_socket [accept $::gridsee_server ]");
 	pd_anything(&pd_objectmaker,gensym("netsend"),0,0);
 	seesend = (t_pd *)pd_newest(); if (!seesend) post("no seesend?"); else post("seesend!");
 	post("preconnect");
 	t_atom2 a[2] = {gensym("localhost"),9999}; pd_anything((t_pd *)seesend,gensym("connect"),2,a);
 	post("postconnect");
-*/
+	*/
 }
 
 //****************************************************************
