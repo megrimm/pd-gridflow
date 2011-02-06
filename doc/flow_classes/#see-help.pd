@@ -1,121 +1,133 @@
-#N canvas 231 0 632 717 10;
+#N canvas 295 0 632 717 10;
 #X obj 0 0 doc_h;
-#X obj 0 1093 doc_f;
-#X obj 53 37 loadbang;
-#X obj 53 95 #in violoncelle.mov;
-#X obj 53 115 #scale_to (120 160);
-#X obj 53 135 #see;
-#X text 197 40 Video output from within a patch;
-#X obj 3 442 doc_i 1;
-#X obj 3 648 doc_o 1;
-#X obj 14 472 doc_ii 0;
-#X obj 14 678 doc_oo 0;
-#X obj 97 472 doc_m i0 grid;
-#X text 232 472 Dim(rows columns rgb);
-#X text 232 862 See [#io.x11] for more info.;
-#X text 232 840 Same as keypress but when a key gets released instead.
+#X obj 0 1143 doc_f;
+#X obj 13 67 loadbang;
+#X obj 13 125 #in violoncelle.mov;
+#X obj 303 35 #see;
+#X text 54 36 Video output from within a patch;
+#X obj 3 502 doc_i 1;
+#X obj 3 708 doc_o 1;
+#X obj 14 532 doc_ii 0;
+#X obj 14 738 doc_oo 0;
+#X obj 97 532 doc_m i0 grid;
+#X text 232 532 Dim(rows columns rgb);
+#X text 232 912 See [#io.x11] for more info.;
+#X text 232 890 Same as keypress but when a key gets released instead.
 ;
-#X text 232 792 See [#io.x11] for more info.;
-#X text 232 980 See [#io.x11] for more info.;
-#X obj 97 735 doc_m o0 keypress;
-#X obj 97 840 doc_m o0 keyrelease;
-#X obj 97 910 doc_m o0 position;
-#X text 232 932 This is emitted every time the cursor moves inside
+#X text 232 842 See [#io.x11] for more info.;
+#X text 232 1030 See [#io.x11] for more info.;
+#X obj 97 785 doc_m o0 keypress;
+#X obj 97 890 doc_m o0 keyrelease;
+#X obj 97 960 doc_m o0 position;
+#X text 232 982 This is emitted every time the cursor moves inside
 the object. However \, button press/release handling is only supported
 for button 1 (left click).;
-#X text 232 735 \$1 = y \, \$2 = x \, \$3 = button1 \, \$4 = keyname
+#X text 232 785 \$1 = y \, \$2 = x \, \$3 = button1 \, \$4 = keyname
 ;
-#X obj 97 1028 doc_m o0 shown;
-#X text 232 757 This is emitted when a keyboard key is pressed while
+#X obj 97 1078 doc_m o0 shown;
+#X text 232 807 This is emitted when a keyboard key is pressed while
 the mouse cursor is inside the object.;
-#X text 232 910 \$1 = y \, \$2 = x \, \$3 = button1;
-#X text 232 1028 This is emitted each time the grid is updated (for
+#X text 232 960 \$1 = y \, \$2 = x \, \$3 = button1;
+#X text 232 1078 This is emitted each time the grid is updated (for
 every frame).;
-#X text 232 494 Displays a frame.;
-#X obj 53 269 route bang shown;
-#X obj 99 308 f;
-#X obj 123 308 + 1;
-#X floatatom 99 327 5 0 0 0 - - -;
-#X obj 53 345 f;
-#X obj 77 345 + 1;
-#X floatatom 53 364 5 0 0 0 - - -;
-#X text 133 327 frames actually shown;
-#X text 90 373 (not supported yet);
-#X text 91 360 frames received \, like [#out window] shows;
-#X obj 146 288 display;
-#X text 148 302 mouse/keyboard events;
-#X obj 386 286 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+#X text 232 554 Displays a frame.;
+#X obj 133 274 route bang shown;
+#X obj 179 363 f;
+#X obj 203 363 + 1;
+#X floatatom 179 382 5 0 0 0 - - -;
+#X obj 133 400 f;
+#X obj 157 400 + 1;
+#X floatatom 133 419 5 0 0 0 - - -;
+#X text 213 382 frames actually shown;
+#X text 165 433 (not supported yet);
+#X text 166 420 frames received \, like [#out window] shows;
+#X obj 226 293 display;
+#X text 228 307 mouse/keyboard events;
+#X obj 406 320 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
-#X obj 350 257 #mouse \, \, \, \, \,;
-#X obj 377 309 display;
-#X obj 368 329 display;
-#X obj 359 349 display;
-#X obj 350 369 display;
-#X text 398 369 clicked;
-#X text 407 349 dragged;
-#X text 416 329 unclicked;
-#X text 425 309 moved;
-#X text 404 284 only left button is supported;
-#X obj 3 402 doc_c 0;
-#X obj 3 1073 doc_also;
-#X obj 97 516 doc_m i0 margins;
-#X text 232 516 \$1=top \, \$2=left \, \$3=bottom \, \$4=right;
-#X text 232 538 amount of space on each side of the embedded window.
+#X obj 370 291 #mouse \, \, \, \, \,;
+#X obj 397 343 display;
+#X obj 388 363 display;
+#X obj 379 383 display;
+#X obj 370 403 display;
+#X text 418 403 clicked;
+#X text 427 383 dragged;
+#X text 436 363 unclicked;
+#X text 445 343 moved;
+#X text 424 318 only left button is supported;
+#X obj 3 462 doc_c 0;
+#X obj 3 1123 doc_also;
+#X obj 97 576 doc_m i0 margins;
+#X text 232 576 \$1=top \, \$2=left \, \$3=bottom \, \$4=right;
+#X text 232 598 amount of space on each side of the embedded window.
 a top and bottom value of 5 will show the inlet and outlet distinctly.
 a top and bottom value of 1 will hide them completely. "margins 1 1
 1 1" will surround the embedded window with a 1px border \, while "margins
 0 0 0 0" will not surround the embedded window at all (see [doc_link]
 for an example);
-#X obj 53 75 metro 33.3333;
-#X obj 53 57 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1 1
+#X obj 13 105 metro 33.3333;
+#X obj 13 87 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1 1
 ;
-#X obj 97 678 doc_m o0 bang;
-#X text 232 678 FOR FUTURE USE;
-#X text 232 700 will do the same as [#finished] does. (also supported
+#X obj 97 738 doc_m o0 bang;
+#X text 232 728 FOR FUTURE USE;
+#X text 232 750 will do the same as [#finished] does. (also supported
 in [#out window]);
-#X obj 103 1073 gf/mouse_spy;
-#X obj 187 1073 doc_link #io.x11;
-#X obj 232 814 doc_link #io.x11;
-#X obj 232 884 doc_link #io.x11;
-#X obj 232 1002 doc_link #io.x11;
-#X connect 2 0 56 0;
-#X connect 3 0 4 0;
-#X connect 4 0 5 0;
-#X connect 5 0 27 0;
-#X connect 11 1 12 0;
-#X connect 11 1 26 0;
-#X connect 17 1 21 0;
-#X connect 17 1 23 0;
-#X connect 17 1 15 0;
+#X obj 103 1123 gf/mouse_spy;
+#X obj 187 1123 doc_link #io.x11;
+#X obj 232 864 doc_link #io.x11;
+#X obj 232 934 doc_link #io.x11;
+#X obj 232 1052 doc_link #io.x11;
+#X obj 194 315 fps;
+#X floatatom 194 334 5 0 0 0 - - -;
+#X obj 13 165 #downscale_by 2 smoothly;
+#X obj 13 145 shunt;
+#X obj 50 146 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0
+1;
+#X obj 13 185 t a;
+#X connect 2 0 55 0;
+#X connect 3 0 67 0;
+#X connect 4 0 26 0;
+#X connect 10 1 11 0;
+#X connect 10 1 25 0;
+#X connect 16 1 20 0;
+#X connect 16 1 22 0;
+#X connect 16 1 14 0;
+#X connect 16 1 61 0;
+#X connect 17 1 13 0;
+#X connect 17 1 12 0;
 #X connect 17 1 62 0;
-#X connect 18 1 14 0;
-#X connect 18 1 13 0;
+#X connect 18 1 23 0;
+#X connect 18 1 19 0;
+#X connect 18 1 15 0;
 #X connect 18 1 63 0;
-#X connect 19 1 24 0;
-#X connect 19 1 20 0;
-#X connect 19 1 16 0;
-#X connect 19 1 64 0;
-#X connect 22 1 25 0;
-#X connect 27 0 31 0;
-#X connect 27 1 28 0;
-#X connect 27 2 37 0;
-#X connect 27 2 40 0;
-#X connect 28 0 29 0;
-#X connect 28 0 30 0;
-#X connect 29 0 28 1;
-#X connect 31 0 32 0;
-#X connect 31 0 33 0;
-#X connect 32 0 31 1;
-#X connect 40 0 44 0;
-#X connect 40 1 43 0;
-#X connect 40 2 42 0;
-#X connect 40 3 41 0;
-#X connect 40 4 39 0;
-#X connect 51 1 60 0;
-#X connect 51 1 61 0;
-#X connect 52 1 53 0;
-#X connect 52 1 54 0;
-#X connect 55 0 3 0;
-#X connect 56 0 55 0;
-#X connect 57 1 58 0;
-#X connect 57 1 59 0;
+#X connect 21 1 24 0;
+#X connect 26 0 30 0;
+#X connect 26 1 27 0;
+#X connect 26 1 64 0;
+#X connect 26 2 36 0;
+#X connect 26 2 39 0;
+#X connect 27 0 28 0;
+#X connect 27 0 29 0;
+#X connect 28 0 27 1;
+#X connect 30 0 31 0;
+#X connect 30 0 32 0;
+#X connect 31 0 30 1;
+#X connect 39 0 43 0;
+#X connect 39 1 42 0;
+#X connect 39 2 41 0;
+#X connect 39 3 40 0;
+#X connect 39 4 38 0;
+#X connect 50 1 59 0;
+#X connect 50 1 60 0;
+#X connect 51 1 52 0;
+#X connect 51 1 53 0;
+#X connect 54 0 3 0;
+#X connect 55 0 54 0;
+#X connect 56 1 57 0;
+#X connect 56 1 58 0;
+#X connect 64 0 65 0;
+#X connect 66 0 69 0;
+#X connect 67 0 66 0;
+#X connect 67 1 69 0;
+#X connect 68 0 67 1;
+#X connect 69 0 4 0;
