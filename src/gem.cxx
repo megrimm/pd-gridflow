@@ -203,6 +203,8 @@ GRID_INLET(1) {
 
 //------------------------------------------------------------------------
 
+typedef t_symbol *Colorspace;
+
 // LinuxIntel y:6409 yuv:34233
 //   OsxIntel y:6409 yuv:34233
 //   OsxPPC   y:6409 yuv:
@@ -213,6 +215,8 @@ GRID_INLET(1) {
 	\attr bool yflip;
 	\attr NumberTypeE cast;
 	int channels;
+	\attr Colorspace colorspace();
+	t_symbol *m_colorspace;
 	\constructor () {
 		yflip = false;
 		cast = int32_e;
@@ -220,7 +224,6 @@ GRID_INLET(1) {
 	}
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
-	\decl 0 colorspace (t_symbol *s);
 	void render_really(imageStruct &im) {
 		//im.convertTo(im,GEM_RGBA);
 		BitPacking *bp;
@@ -229,8 +232,8 @@ GRID_INLET(1) {
 		  #ifdef GL_VERSION_1_2
 		  case GL_BGRA: bp = bp_bgra; break;
 		  #endif
-		  //case GL_LUMINANCE: bp=bp_grey; break;
-		  //case 0x85b9: break;
+		  case GL_LUMINANCE: break;
+		  case 0x85b9 /*GL_YCBCR_422_APPLE*/: break;
 		  default: ::post("can't produce grid from pix format %d (0x%x)",im.format,im.format); return;}
 		switch (im.type) {
 		  case GL_UNSIGNED_BYTE: break; /*ok*/
@@ -247,6 +250,8 @@ GRID_INLET(1) {
 		bool f = yflip^im.upsidedown;
 		if (channels==4 && im.format==GL_RGBA) {
 			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+		} else if (channels==1 && im.format==GL_LUMINANCE) {
+			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
 		} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
@@ -262,6 +267,7 @@ GRID_INLET(1) {
 		render_really(pb->image);
 	}
 };
+\def void colorspace () {return m_colorspace;}
 \def 0 colorspace (t_symbol *s) {// 3 2 1 0 (numéro de byte)
 	uint32 rgba[4] = {0x000000ff,
 			  0x0000ff00,
@@ -286,8 +292,8 @@ GRID_INLET(1) {
 		channels=1;
 		bp_rgba = 0;
 		bp_bgra = 0;
-	} else
-		RAISE("unknown colorspace '%s'",s->s_name);
+	} else RAISE("unknown colorspace '%s'",s->s_name);
+	m_colorspace = s;
 }
 \def 0 gem_state (...) {if (argc==2) render((GemState *)(void *)argv[1]);}
 \end class {install("#from_pix",1,1); add_creator("#import_pix");}
