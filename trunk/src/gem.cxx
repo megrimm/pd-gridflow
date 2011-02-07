@@ -20,6 +20,7 @@
 */
 
 #include "gridflow.hxx.fcs"
+#include "colorspace.hxx"
 #include <GL/gl.h>
 
 
@@ -252,6 +253,15 @@ typedef t_symbol *Colorspace;
 			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
 		} else if (channels==1 && im.format==GL_LUMINANCE) {
 			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+		} else if (channels==1) {
+			#define FOO(T) {uint8 buf[sxc*4]; \
+			    for (int y=0; y<v[0]; y++) { \
+				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
+				bp->unpack(im.xsize,data,buf); \
+				for (int i=0,j=0; i<sxc; i++,j+=3) buf[i]=RGB2Y(buf[j],buf[j+1],buf[j+2]); \
+				out.send(sxc,buf);}}
+			TYPESWITCH(cast,FOO,)
+			#undef FOO
 		} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
@@ -278,7 +288,7 @@ typedef t_symbol *Colorspace;
 			  0xff000000,
 			  0x000000ff}; // really argb 
 	if (!is_le()) {swap32(4,rgba); swap32(4,bgra);}
-	if (s==gensym("rgb" )) {
+	if (s==gensym("rgb")) {
 		channels=3;
 		bp_rgba = new BitPacking(is_le(),4,3,rgba);
 		bp_bgra = new BitPacking(is_le(),4,3,bgra);
@@ -289,9 +299,9 @@ typedef t_symbol *Colorspace;
 		bp_bgra = new BitPacking(is_le(),4,4,bgra);
 	} else
 	if (s==gensym("y")) {
-		channels=1;
-		bp_rgba = 0;
-		bp_bgra = 0;
+		channels=1; // will reduce from 3 to 1 channels after bitpacking
+		bp_rgba = new BitPacking(is_le(),4,3,rgba);
+		bp_bgra = new BitPacking(is_le(),4,3,bgra);
 	} else RAISE("unknown colorspace '%s'",s->s_name);
 	m_colorspace = s;
 }
