@@ -91,15 +91,17 @@ map<t_atom2, int> priorities;
 	}
 	// context: 0=outside, 1=plain parens; 2=func parens; 3=brackets
 	int parse (int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
-           	next();
+		int commas=0;
+	  next:	next();
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if (o==gensym("!") || o==gensym("~")) {parse(context,t_atom2(A_OP1,o));}
-			else if (o==gensym("-")) {parse(context,t_atom2(A_OP1,gensym("unary-")));}
-			else if (o==gensym("+")) {parse(context,t_atom2(A_OP1,gensym("unary+")));}
+			if (o==gensym("!") || o==gensym("~"))   {prevop=t_atom2(A_OP1,o); goto next;}
+			else if (o==gensym("-")) {prevop=t_atom2(A_OP1,gensym("unary-")); goto next;}
+			else if (o==gensym("+")) {prevop=t_atom2(A_OP1,gensym("unary+")); goto next;}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
+		  case A_OPEN: {parse(1); goto infix;}
 		  case A_FLOAT: case A_SYMBOL: case A_VAR:
 			add(tok);
 		  infix: // this section could become another method
@@ -109,8 +111,8 @@ map<t_atom2, int> priorities;
 				int priority1 = prevop.a_type!=A_NULL ? priorities[prevop] : 42;
 				int priority2 =                         priorities[tok];
 				if (!priority2) RAISE("unknown operator '%s'",tok.a_symbol->s_name);
-				if (priority1 <= priority2) {add(prevop); parse(context,tok);}
-				else {parse(context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
+				if (priority1 <= priority2) {add(prevop); prevop=tok; goto next;}
+				else {commas+=parse(context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
 			  } break;
 			  case A_OPEN: { // function (1 or 2 args)
 				t_atom2 a = code.back(); code.pop_back();
@@ -119,7 +121,8 @@ map<t_atom2, int> priorities;
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
 				}
 				t_symbol *o = a.a_symbol; int e = o==gensym("if") ? 3 : TO(Numop *,a)->arity();
-				if (parse(2)!=e) RAISE("wrong number of arguments for '%s'",o->s_name);
+				int n = parse(2)+1;
+				if (n!=e) RAISE("wrong number of arguments for '%s': got %d instead of %d",o->s_name,n,e);
 				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:e==3?A_IF:A_CANT,o));
 			  } break;
 			  case A_CLOSE: {
@@ -145,7 +148,8 @@ map<t_atom2, int> priorities;
 			  }  break;
 			  case A_COMMA: {
 			  	if (context!=2) RAISE("can't use comma in this context");
-				return 1+parse(context);
+			  	if (prevop.a_type!=A_NULL) add(prevop);
+				commas++; prevop=t_atom2(A_NULL,0); goto next;
 			  }
 			  default: {
 				string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
@@ -153,15 +157,15 @@ map<t_atom2, int> priorities;
 			  }
 			}
 		  break;
-		  case A_OPEN: {parse(1); goto infix;}
 		  default: {
 			  string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 			  RAISE("syntax error (a) tok=%s type=%s",z.data(),zt.data());
 		  }
 		};
-		return 1;
+		return commas;
 	}
 	\constructor (...) {
+		post("----------------------------------------------------------------");
 		//toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
