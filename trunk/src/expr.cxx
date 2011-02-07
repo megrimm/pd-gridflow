@@ -126,13 +126,14 @@ map<Atom, int> priorities;
 				int n = parse(2)+1;
 				if (n!=e) RAISE("wrong number of arguments for '%s': got %d instead of %d",o->s_name,n,e);
 				code.push_back(Atom(e==1?A_OP1:e==2?A_OP:e==3?A_IF:A_CANT,o));
+				goto infix;
 			  } break;
 			  case A_CLOSE: {
 				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this point");
 				if (prevop.a_type!=A_NULL) add(prevop);
 			  } break;
 			  case A_NULL: case A_SEMI: {
-				if (context!=0) RAISE("unexpected end of expression");
+				if (context!=0) RAISE("unexpected end of expression: context=%d",context);
 				if (prevop.a_type!=A_NULL) add(prevop);
 				if (tok.a_type==A_SEMI) {add(tok); /*int elems=*/parse(0); /*post("A_SEMI: elems=%d",elems);*/}
 			  } break;
