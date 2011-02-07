@@ -23,6 +23,16 @@
 #include <math.h>
 #include <complex>
 
+static inline uint64 weight(uint64 x) {uint64 k;
+	k=0x5555555555555555ULL; x = (x&k) + ((x>> 1)&k); //(2**64-1)/(2**2**0-1)
+	k=0x3333333333333333ULL; x = (x&k) + ((x>> 2)&k); //(2**64-1)/(2**2**1-1)
+	k=0x0f0f0f0f0f0f0f0fULL; x = (x&k) + ((x>> 4)&k); //(2**64-1)/(2**2**2-1)
+	k=0x00ff00ff00ff00ffULL; x = (x&k) + ((x>> 8)&k); //(2**64-1)/(2**2**3-1)
+	k=0x0000ffff0000ffffULL; x = (x&k) + ((x>>16)&k); //(2**64-1)/(2**2**4-1)
+	k=0x00000000ffffffffULL; x = (x&k) + ((x>>32)&k); //(2**64-1)/(2**2**5-1)
+	return x;
+}
+
 template <class T> class Op {
 public:
 	// I call abort() on those because I can't say they're purevirtual.
@@ -104,6 +114,8 @@ DEF_OP(isinf, isinf(a))
 DEF_OP(finite, finite(a))
 DEF_OP(isnan, isnan(a))
 
+DEF_OP(weight,weight((uint64)a & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),0,false,false)
+
 #define NaN (0/0.f)
 
 #ifndef __WIN32__
@@ -128,6 +140,8 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(exp,  "exp"),   DECL_VOP_FLOAT(cx_exp,  "C.exp",  2),
 	DECL_OP_FLOAT(log,  "log"),   DECL_VOP_FLOAT(cx_log,  "C.log",  2),
 	DECL_OP_FLOAT(log,  "ln"),    DECL_VOP_FLOAT(cx_log,  "C.ln",   2),
+// moved from numop2 at 9.12
+	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 // introduced at 9.12
 	DECL_OP(unary_minus, "unary-"),
 	DECL_OP(unary_plus,  "unary+"),

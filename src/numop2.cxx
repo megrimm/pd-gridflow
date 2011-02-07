@@ -28,16 +28,6 @@
 #include <assert.h>
 //using namespace std;
 
-static inline uint64 weight(uint64 x) {uint64 k;
-	k=0x5555555555555555ULL; x = (x&k) + ((x>> 1)&k); //(2**64-1)/(2**2**0-1)
-	k=0x3333333333333333ULL; x = (x&k) + ((x>> 2)&k); //(2**64-1)/(2**2**1-1)
-	k=0x0f0f0f0f0f0f0f0fULL; x = (x&k) + ((x>> 4)&k); //(2**64-1)/(2**2**2-1)
-	k=0x00ff00ff00ff00ffULL; x = (x&k) + ((x>> 8)&k); //(2**64-1)/(2**2**3-1)
-	k=0x0000ffff0000ffffULL; x = (x&k) + ((x>>16)&k); //(2**64-1)/(2**2**4-1)
-	k=0x00000000ffffffffULL; x = (x&k) + ((x>>32)&k); //(2**64-1)/(2**2**5-1)
-	return x;
-}
-
 #ifdef PASS1
 NumberType number_type_table[] = {
 #define FOO(ABBR,SYM,SIZE,FLAGS) NumberType(#ABBR,#SYM,SIZE,FLAGS),
@@ -231,7 +221,6 @@ DEF_OP(sqsub,   (a-b)*(a-b), 0, false, false)
 DEF_OP(avg,         (a+b)/2, 0, false, false)
 DEF_OPF(hypot, floor(sqrt(a*a+b*b)), sqrt(a*a+b*b), 0, false, false)
 //DEF_OP(erf,"erf*", 0)
-DEF_OP(weight,weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),0,false,false)
 #define BITS(T) (sizeof(T)*8)
 DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
 DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
@@ -356,7 +345,6 @@ Numop2 op_table3[] = {
 	DECL_OP(avg,   "avg",  OP_COMM),
 	DECL_OP(hypot, "hypot",OP_COMM), // huh, almost OP_ASSOC
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
-	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
 	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
 	DECL_OP_NOFOLD_FLOAT(atan2,"atan2", 0),
