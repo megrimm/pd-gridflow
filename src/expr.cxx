@@ -20,12 +20,14 @@
 
 #include "gridflow.hxx.fcs"
 
-bool operator < (const t_atom2 &a, const t_atom2 &b) {
+typedef t_atom2 Atom;
+
+bool operator < (const Atom &a, const Atom &b) {
 	if (a.a_type!=b.a_type) return a.a_type<b.a_type;
 	return uintptr_t(a.a_symbol)<uintptr_t(b.a_symbol);
 }
 	
-map<t_atom2, int> priorities;
+map<Atom, int> priorities;
 
 \class GFExpr {
 	/* only between next() and parse() */
@@ -44,10 +46,10 @@ map<t_atom2, int> priorities;
         //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
         /* end */
 	string args;
-	//vector<t_atom2> toks;
-	vector<t_atom2> code;
-	vector<t_atom2> inputs;
-	t_atom2 tok;   // which token was last produced by next()
+	//vector<Atom> toks;
+	vector<Atom> code;
+	vector<Atom> inputs;
+	Atom tok;   // which token was last produced by next()
 	const char *s; // an iterator through the args variable
 	void next () {
 		while (*s && isspace(*s)) s++;
@@ -57,7 +59,7 @@ map<t_atom2, int> priorities;
 			char t[3]={0,0,0};
 			t[0]=*s++;
 			if (*s==s[-1] || *s=='=') t[1]=*s++;
-			tok = t_atom2(A_OP,gensym(t));
+			tok = Atom(A_OP,gensym(t));
 		}
 		else if (*s=='(') {s++; tok.a_type=A_OPEN;}
 		else if (*s==')') {s++; tok.a_type=A_CLOSE;}
@@ -71,7 +73,7 @@ map<t_atom2, int> priorities;
 			char *e; long i = strtol(s+2,&e,10); s=(const char *)e;
 			if (i<1) RAISE("$ var index must be greater than 0");
 			if (i>32) RAISE("$ var index is bigger than 32, which is probably a mistake");
-			tok = t_atom2(A_VAR,int(i-1+256*'f'));
+			tok = Atom(A_VAR,int(i-1+256*'f'));
 			if (int(inputs.size())<i) {inputs.resize(i); ninlets_set(i);}
 		}
 		else if (isalpha(*s)) {
@@ -82,23 +84,23 @@ map<t_atom2, int> priorities;
 		else RAISE("syntax error at character '%c'",*s);
 		//toks.push_back(tok);
 	}
-	void add (const t_atom2 &a) {
+	void add (const Atom &a) {
 		if (a.a_type==A_SEMI) {noutlets_set(noutlets+1); return;}
 		if (a.a_type==A_OP1 && a.a_symbol==gensym("~")) {
 			code.push_back(-1);
-			code.push_back(t_atom2(A_OP,gensym("^")));
+			code.push_back(Atom(A_OP,gensym("^")));
 		} else code.push_back(a);
 	}
 	// context: 0=outside, 1=plain parens; 2=func parens; 3=brackets
-	int parse (int context, t_atom2 prevop=t_atom2(A_NULL,0)) {
+	int parse (int context, Atom prevop=Atom(A_NULL,0)) {
 		int commas=0;
 	  next:	next();
 		switch (int(tok.a_type)) {
 		  case A_OP: { // unary
 			t_symbol *o = tok.a_symbol;
-			if (o==gensym("!") || o==gensym("~"))   {prevop=t_atom2(A_OP1,o); goto next;}
-			else if (o==gensym("-")) {prevop=t_atom2(A_OP1,gensym("unary-")); goto next;}
-			else if (o==gensym("+")) {prevop=t_atom2(A_OP1,gensym("unary+")); goto next;}
+			if (o==gensym("!") || o==gensym("~"))   {prevop=Atom(A_OP1,o); goto next;}
+			else if (o==gensym("-")) {prevop=Atom(A_OP1,gensym("unary-")); goto next;}
+			else if (o==gensym("+")) {prevop=Atom(A_OP1,gensym("unary+")); goto next;}
 			else RAISE("can't use '%s' as a unary prefix operator",tok.a_symbol->s_name);
 		  } break;
 		  case A_OPEN: {parse(1); goto infix;}
@@ -115,7 +117,7 @@ map<t_atom2, int> priorities;
 				else {commas+=parse(context,tok); if (prevop.a_type!=A_NULL) add(prevop);}
 			  } break;
 			  case A_OPEN: { // function (1 or 2 args)
-				t_atom2 a = code.back(); code.pop_back();
+				Atom a = code.back(); code.pop_back();
 				if (a.a_type!=A_SYMBOL) {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 					RAISE("syntax error (c) tok=%s type=%s",z.data(),zt.data());
@@ -123,7 +125,7 @@ map<t_atom2, int> priorities;
 				t_symbol *o = a.a_symbol; int e = o==gensym("if") ? 3 : TO(Numop *,a)->arity();
 				int n = parse(2)+1;
 				if (n!=e) RAISE("wrong number of arguments for '%s': got %d instead of %d",o->s_name,n,e);
-				code.push_back(t_atom2(e==1?A_OP1:e==2?A_OP:e==3?A_IF:A_CANT,o));
+				code.push_back(Atom(e==1?A_OP1:e==2?A_OP:e==3?A_IF:A_CANT,o));
 			  } break;
 			  case A_CLOSE: {
 				if (int(tok.a_type)==A_CLOSE && context!=1 && context!=2) RAISE("can't close a parenthesis at this point");
@@ -132,16 +134,16 @@ map<t_atom2, int> priorities;
 			  case A_NULL: case A_SEMI: {
 				if (context!=0) RAISE("unexpected end of expression");
 				if (prevop.a_type!=A_NULL) add(prevop);
-				if (tok.a_type==A_SEMI) {add(tok); int elems=parse(0); post("A_SEMI: elems=%d",elems);}
+				if (tok.a_type==A_SEMI) {add(tok); /*int elems=*/parse(0); /*post("A_SEMI: elems=%d",elems);*/}
 			  } break;
 			  case A_SQOPEN: {
-				t_atom2 a = code.back();
+				Atom a = code.back();
 				if (a.a_type!=A_SYMBOL) {
 					string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
 					RAISE("syntax error (d) tok=%s type=%s",z.data(),zt.data());
 				}
 				parse(3);
-				code.push_back(t_atom2(A_VAR_A,0));
+				code.push_back(Atom(A_VAR_A,0));
 			  }  break;
 			  case A_SQCLOSE: {
 				if (context!=3) RAISE("can't close a bracket at this point");
@@ -149,7 +151,7 @@ map<t_atom2, int> priorities;
 			  case A_COMMA: {
 			  	if (context!=2) RAISE("can't use comma in this context");
 			  	if (prevop.a_type!=A_NULL) add(prevop);
-				commas++; prevop=t_atom2(A_NULL,0); goto next;
+				commas++; prevop=Atom(A_NULL,0); goto next;
 			  }
 			  default: {
 				string z=tok.to_s(), zt=atomtype_to_s(tok.a_type);
@@ -165,7 +167,7 @@ map<t_atom2, int> priorities;
 		return commas;
 	}
 	\constructor (...) {
-		post("----------------------------------------------------------------");
+		//post("----------------------------------------------------------------");
 		//toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
@@ -175,7 +177,7 @@ map<t_atom2, int> priorities;
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
 		if (*s) RAISE("expression not finished parsing");
 	}
-	t_atom2 lookup (const t_atom2 &a) {
+	Atom lookup (const Atom &a) {
 		if (a.a_type!=A_SYMBOL) return a;
 		float f; t_symbol *s=a;
 		if (value_getfloat(s,&f)) RAISE("unknown variable '%s'",s->s_name);
@@ -185,7 +187,7 @@ map<t_atom2, int> priorities;
 		//post("----------------------------------------------------------------");
 		//string t = join(toks.size(),toks.data()); post("#expr toks: %s",t.data());
 		//string c = join(code.size(),code.data()); post("#expr code: %s",c.data());
-		vector<t_atom2> stack;
+		vector<Atom> stack;
 		int n = code.size();
 		for (int i=0; i<n; i++) {
 			//{string z = code[i].to_s(); post("interpreting %s",z.data());}
@@ -203,14 +205,14 @@ map<t_atom2, int> priorities;
 				stack.push_back(inputs[code[i].a_index & 255]);
 			  } break;
 			  case A_OP: {
-				Numop2 *op = TO(Numop2 *,t_atom2(code[i].a_symbol->s_name));
+				Numop2 *op = TO(Numop2 *,Atom(code[i].a_symbol->s_name));
 				float b = lookup(stack.back()); stack.pop_back();
 				float a = lookup(stack.back());
 				op->map(1,&a,b);
 				stack.back() = a;
 			  } break;
 			  case A_OP1: {
-				Numop1 *op = TO(Numop1 *,t_atom2(code[i].a_symbol->s_name));
+				Numop1 *op = TO(Numop1 *,Atom(code[i].a_symbol->s_name));
 				float a = lookup(stack.back());
 				op->map(1,&a);
 				stack.back() = a;
@@ -240,8 +242,8 @@ map<t_atom2, int> priorities;
 \end class {install("#expr",1,1,CLASS_NOPARENS|CLASS_NOCOMMA);}
 
 void startup_classes4 () {
-	#define PR1(SYM) priorities[t_atom2(A_OP1,gensym(#SYM))]
-	#define PR(SYM)  priorities[t_atom2(A_OP ,gensym(#SYM))]
+	#define PR1(SYM) priorities[Atom(A_OP1,gensym(#SYM))]
+	#define PR(SYM)  priorities[Atom(A_OP ,gensym(#SYM))]
 	// all functions() are supposed to have priority 2
 	PR1(+) = PR1(unary+) = PR1(unary-) = PR1(~) = PR1(!) = 3; // all unaries are supposed to have priority 3
 	PR(*) = PR(/) = PR(%) = 5;
