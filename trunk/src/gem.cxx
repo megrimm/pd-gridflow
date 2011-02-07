@@ -245,16 +245,16 @@ GRID_INLET(1) {
 		long sxc = im.xsize*channels;
 		long sy = v[0];
 		bool f = yflip^im.upsidedown;
-		//if (channels==4 && im.format==GL_RGBA) {
-		//	for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
-		//} else {
+		if (channels==4 && im.format==GL_RGBA) {
+			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+		} else {
 			#define FOO(T) {T buf[sxc]; \
 			    for (int y=0; y<v[0]; y++) { \
 				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
 				bp->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
-		//}
+		}
 	}
 	void render (void *state) {
 		pixBlock *pb = ((GemState *)state)->image;
