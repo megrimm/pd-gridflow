@@ -6,18 +6,18 @@ version 9.13 (2011.02...):
    [hpgl_messagebox], [hpgl_from_patch], [#draw_lattice]
  * [#expr]: added functions "if", "pow" (numop ** aliased to pow)
  * numop1: added fact (factorial or "gamma function" which is not [# gamma])
- * numop1: added log2, log10, C.log2, C.log10
+ * numop1: added log2, log10, C.log2, C.log10, unary+
  * x11 is now a load-time option
- * [#io.x11]: added query_pointer
- * [route3]: fixed bug so that this class can be used for real
+ * [#io.x11]: added methods 'query_pointer' and 'out_size_minimum'
+ * [route3]: fixed right outlet bug
  * parens in messages are no longer parsed automatically as nested-lists.
    (parens in objectboxes still are, of course)
  * [gf/find_file] now looks up relative names in gridflow/images
    even when they contain a slash (or several).
  * [gf/error]: added method 'uplevel'
  * [#in] and [#out]: in case of unknown suffix, say 'not open' afterwards
- * [#redim]: arguments default to ()
- * former numop "atan" renamed to "atan2cd" (incompatibility!)
+ * [#redim]: argument defaults to ()
+ * former numop "atan" renamed to "atan2cd"
  * new numops: asin acos atan asinh acosh atanh
  * numops log and C.log aliased to ln and C.ln
  * [#inner]: add seedless mode
@@ -28,6 +28,11 @@ version 9.13 (2011.02...):
  * [#]: don't check type of right-grid when one-input operator
  * [#]: fix one-input vecop support (complex numbers)
  * [#]: don't ask for N elements in right inlet for a one-input operator
+ * [#expr]: fixed several parsing bugs
+ * two-input numop "weight" becomes a one-input numop
+ * [#from_pix]: much faster rgba->rgba conversion
+ * [#from_pix]: added conversion to colorspace y
+ * [#from_pix]: added conversion from [pix_grey] mode
 
 version 9.12 (2010.10.08):
 
