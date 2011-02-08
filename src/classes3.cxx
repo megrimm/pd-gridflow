@@ -609,7 +609,7 @@ static CONSTRAINT(expect_convolution_matrix) {
 		b.but(expect_convolution_matrix);
 		this->op = op_mul;
 		this->fold = op_add;
-		this->seed = new Grid(Dim(),int32_e,true);
+		this->seed = 0;//new Grid(Dim(),int32_e,true);
 		this->b= r ? r : new Grid(Dim(1,1),int32_e,true);
 		this->wrap = true;
 		this->anti = true;
@@ -657,12 +657,11 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 
 GRID_INLET(0) {
 	SAME_TYPE(in,b);
-	SAME_TYPE(in,seed);
+	if (seed) SAME_TYPE(in,seed);
 	Dim &da=in.dim, &db=b->dim;
-	if (!seed) RAISE("seed missing");
 	if (db.n != 2) RAISE("right grid must have two dimensions");
 	if (da.n < 2) RAISE("left grid has less than two dimensions");
-	if (seed->dim.n != 0) RAISE("seed must be scalar");
+	if (seed && seed->dim.n) RAISE("seed must be scalar");
 	if (da[0] < db[0]) RAISE("grid too small (y): %d < %d", da[0], db[0]);
 	if (da[1] < db[1]) RAISE("grid too small (x): %d < %d", da[1], db[1]);
 	margy = (db[0]-1)/2;
@@ -685,7 +684,7 @@ GRID_INLET(0) {
 	T buf2[sxc];
 	T orh=0;
 	for (long ay=0; ay<day; ay++) {
-		op_put->map(n,buf,*(T *)*seed);
+		op_put->map(n,buf, seed ? *(T *)*seed : T(0));
 		for (size_t i=0; i<plan.size(); i++) {
 			long by = plan[i].y;
 			long bx = plan[i].x;
