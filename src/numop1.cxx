@@ -114,7 +114,7 @@ DEF_OP(isinf, isinf(a))
 DEF_OP(finite, finite(a))
 DEF_OP(isnan, isnan(a))
 
-DEF_OP(weight,weight((uint64)a & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),0,false,false)
+DEF_OP(weight,weight((uint64)a & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))))
 
 #define NaN (0/0.f)
 
@@ -141,7 +141,7 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(log,  "log"),   DECL_VOP_FLOAT(cx_log,  "C.log",  2),
 	DECL_OP_FLOAT(log,  "ln"),    DECL_VOP_FLOAT(cx_log,  "C.ln",   2),
 // moved from numop2 at 9.12
-	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
+	DECL_OP_NOFLOAT(weight,"weight"),
 // introduced at 9.12
 	DECL_OP(unary_minus, "unary-"),
 	DECL_OP(unary_plus,  "unary+"),
