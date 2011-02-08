@@ -1,11 +1,11 @@
 #N canvas 601 0 625 694 10;
 #X obj 52 399 # + 128;
-#X obj 322 193 hsl 222 15 0 442 0 0 empty empty tolerance 0 8 0 8 -260818
--173441 -1 9800 1;
+#X obj 322 193 hsl 222 15 0 442 0 1 empty empty tolerance 0 8 0 8 -260818
+-173441 -1 6400 1;
 #X obj 52 380 # tanh* 127;
 #X obj 58 123 #store;
 #X obj 285 234 tgl 15 1 empty empty empty 0 -6 0 8 -261689 -258699
--1 1 1;
+-1 0 1;
 #X obj 10 32 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
 #X obj 10 397 # << 8;
 #X obj 346 414 loadbang;
@@ -178,7 +178,7 @@ channel;
 #X restore 37 443 pd sort_of_feather;
 #X obj 415 620 #mouse \, \, \,;
 #X obj 319 136 #color;
-#N canvas 524 44 554 260 square_diff 0;
+#N canvas 31 166 554 260 square_diff 0;
 #X obj 30 181 # inv+;
 #X obj 72 181 # sq-;
 #X obj 30 27 inlet;
@@ -252,6 +252,8 @@ channel;
 #X connect 14 0 3 0;
 #X connect 17 0 4 1;
 #X restore 124 282 pd square_diff_old;
+#X obj 505 46 loadbang;
+#X msg 505 65 255 192 128;
 #X connect 0 0 84 0;
 #X connect 1 0 39 0;
 #X connect 2 0 0 0;
@@ -345,3 +347,5 @@ channel;
 #X connect 108 0 6 0;
 #X connect 109 0 89 1;
 #X connect 110 0 10 1;
+#X connect 113 0 114 0;
+#X connect 114 0 105 0;
