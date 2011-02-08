@@ -31,6 +31,8 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   virtual void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
+  virtual void convertFrom(imageStruct*from, GLenum dest_format=0);
+  virtual void convertTo  (imageStruct*from, GLenum dest_format=0);
 };
 #else // older
 struct imageStruct {
@@ -38,6 +40,8 @@ struct imageStruct {
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
   void clear(); imageStruct(); ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
+  void convertFrom(imageStruct*from, GLenum dest_format=0);
+  void convertTo  (imageStruct*from, GLenum dest_format=0);
 };
 #endif
 struct pixBlock {imageStruct image; int newimage, newfilm; pixBlock(){newimage=newfilm=0;}};
@@ -226,7 +230,6 @@ typedef t_symbol *Colorspace;
 	virtual ~GridFromPix () {}
 	\decl 0 gem_state (...);
 	void render_really(imageStruct &im) {
-		//im.convertTo(im,GEM_RGBA);
 		BitPacking *bp;
 		switch (im.format) {
 		  case GL_RGBA: bp = bp_rgba; break;
@@ -234,7 +237,7 @@ typedef t_symbol *Colorspace;
 		  case GL_BGRA: bp = bp_bgra; break;
 		  #endif
 		  case GL_LUMINANCE: break;
-		  case 0x85b9 /*GL_YCBCR_422_APPLE*/: break;
+		//  case 0x85b9 /*GL_YCBCR_422_APPLE*/: break;
 		  default: ::post("can't produce grid from pix format %d (0x%x)",im.format,im.format); return;}
 		switch (im.type) {
 		  case GL_UNSIGNED_BYTE: break; /*ok*/
@@ -250,12 +253,23 @@ typedef t_symbol *Colorspace;
 		long sy = v[0];
 		bool f = yflip^im.upsidedown;
 		if (channels==4 && im.format==GL_RGBA) {
-			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+			for (int y=0; y<sy; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
 		} else if (channels==1 && im.format==GL_LUMINANCE) {
-			for (int y=0; y<v[0]; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+			for (int y=0; y<sy; y++) out.send(sxc,(uint8 *)im.data+sxc*(f?y:sy-1-y));
+		} else if (im.format==GL_LUMINANCE) {
+			#define FOO(T) {T buf[sxc]; \
+			    for (int y=0; y<sy; y++) { \
+				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
+				if      (m_colorspace==gensym("rgb"))  for (int i=v[1]-1,j=sxc-3; i>=0; i--, j-=3) {buf[j]=buf[j+1]=buf[j+2]=data[i];} \
+				else if (m_colorspace==gensym("rgba")) for (int i=v[1]-1,j=sxc-4; i>=0; i--, j-=4) {buf[j]=buf[j+1]=buf[j+2]=data[i]; buf[3]=255;} \
+				else if (m_colorspace==gensym("yuv"))  for (int i=v[1]-1,j=sxc-3; i>=0; i--, j-=3) {buf[j]=data[i]; buf[j+1]=buf[j+2]=128;} \
+				else RAISE("euh"); \
+				out.send(sxc,buf);}}
+			TYPESWITCH(cast,FOO,)
+			#undef FOO
 		} else if (channels==1) {
 			#define FOO(T) {uint8 buf[sxc*4]; \
-			    for (int y=0; y<v[0]; y++) { \
+			    for (int y=0; y<sy; y++) { \
 				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
 				bp->unpack(im.xsize,data,buf); \
 				for (int i=0,j=0; i<sxc; i++,j+=3) buf[i]=RGB2Y(buf[j],buf[j+1],buf[j+2]); \
@@ -263,9 +277,12 @@ typedef t_symbol *Colorspace;
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
 		} else {
+			imageStruct mi;
+			uint8 *dada = (uint8 *)im.data;
+			if (im.format==0x85b9) {im.convertTo(&mi,GLenum(GL_RGBA)); dada=(uint8 *)mi.data;}
 			#define FOO(T) {T buf[sxc]; \
-			    for (int y=0; y<v[0]; y++) { \
-				uint8 *data = (uint8 *)im.data+im.xsize*im.csize*(f?y:sy-1-y); \
+			    for (int y=0; y<sy; y++) { \
+				uint8 *data = dada+im.xsize*im.csize*(f?y:sy-1-y); \
 				bp->unpack(im.xsize,data,buf); out.send(sxc,buf);}}
 			TYPESWITCH(cast,FOO,)
 			#undef FOO
