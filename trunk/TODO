@@ -1,5 +1,6 @@
 necessary for 9.13 :
 
+[ ] do domain name transfer
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
@@ -11,23 +12,14 @@ Unsorted
 [ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
     so, I didn't continue the job on [#scan] [#inner] [#convolve] (note that [#inner] already a special case related to that)
-[ ] voir si la performance de [#see] a à voir avec [info complete] (vérifier que c'est pas 43 seulement, etc)
-[ ] http://oldwiki.mingw.org/index.php/sample%20DLL
-[ ] x11 window size thing for audrey
+[ ] [#see] shm : http://wiki.tcl.tk/2999
 [ ] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
-[ ] C.log et C.exp plantent (voir zed.pd)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
-[ ] [#expr] still has some pretty severe parser bugs
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
 [ ] [#expr] local
-[ ] numop1: [#expr] unaries don't all work.
-[ ] reenable numop1 isinf finite isnan
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [fps] doesn't complain about invalid mode name
-[ ] make automatic documentation tables for numop... add [gf/numop_info]
-[ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
-[ ] missing GL/gl.h should cause --no-gem but ./configure doesn't know about GEM anymore
 [ ] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] document "f 1 2 3" as a shortcut grid literal
@@ -49,14 +41,13 @@ Unsorted
 [ ] [#many]: spacing and margins don't get saved when properties-dialogue has not been used
 [ ] [#many]: doesn't show little star indicating that file hasn't been saved
 [ ] [#many]: add support for [hsl] and [vsl]
-[ ] figure out domain name transfer problem
 [ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
-[ ] \decl 0 foo (int bar, ...) doesn't work (anymore ?)
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
-[ ] [#from_pix]: rajouter un [pix_rgba] implicite... convertTo(RGBA) ...
-[ ] [#from_pix, colorspace y]
+[ ] [#from_pix]: yuv in support, yuv out support
+[ ] [#from_pix, colorspace y] may have different contrast/brightness because of differences between the two definitions of Y
+[ ] when [#from_pix] uses [pix_rgba] or [pix_grey], there is one empty frame of size (0 0 4) instead of the 1st frame. why ?
 [ ] accelerate [#outer ignore (0)]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] reduce the amount of sys_gui() to be done by GFDP while idle.
@@ -72,7 +63,7 @@ Unsorted
 [ ] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] turtle.pd
-[ ] [#remap_image, cache]
+[ ] [#remap_image, cache]. also, if the left-grid of [#store] could be cached in such a case, it could be very much faster.
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm (easy to do in #scale_by-help.pd)
 [ ] bug: see #fft*-test.pd
@@ -92,7 +83,7 @@ Unsorted
 [ ] videodev,quicktime,etc: height,width vs size : standardise
 [ ] [#swap]: convertir un littéral de grille en grille avant de la passer à l'outlet de droite
 [ ] [pack] trigger_by (choose which inlets are hot)
-[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case, and don't check type of r in that case.
+[ ] remove last outlet of [#] when it's irrelevant, and don't have a $2 in that case.
 [ ] set_mode(6) was removed on 2008.07.11 and never compensated for. what do we do now?
 [ ] error: [#io.quicktime in gf_spirals_and_moire.avi]: unknown colorspace 'yuv' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)
 [ ] doc attributes: [doc_a] [doc_aa] ?
@@ -152,7 +143,6 @@ Unsorted
 [ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
 [ ] merge << and pd_oprint please
 [ ] infinite loop in shoot.pd
-[ ] add more stuff to [#expr]...
 [ ] change numop to numop2 all over the documentation
 [ ] renommer t_symbol * à symbol  (?)
 [ ] renommer t_atom2 *  à atom    (?)
@@ -167,7 +157,6 @@ Unsorted
     error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
 [ ] intégrer -lib segfault
 [ ] [lb] ?
-[ ] heat.pd still sucks (?)
 [ ] cellular_1d.pd: should get a variable width
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] while running #to~-help.pd :
@@ -183,7 +172,6 @@ Unsorted
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] [#in unicap] and/or [#in videojack] ?
 [ ] test accuracy of RGB2Y etc
-[ ] [range] name conflict.
 [ ] [#camera] [#cast] setting ? or not ?
 [ ] fix SDL modifiers
 [ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
@@ -198,7 +186,6 @@ Unsorted
     but can also serve other purposes. And/or start from waves.pd's mask system to make a patch that recycles the wave data
     to make a CHDH-like animations using [gf/gl].
 [ ] see [comment] from cyclone
-[ ] lqtgavl
 [ ] Dim::T = intptr_t
 [ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
     Program received signal SIGSEGV, Segmentation fault.
@@ -212,18 +199,20 @@ Unsorted
 [ ] DEF_OP(pingpong,  ...)
 [ ] custom m_pd.h
 [ ] runtime or compiletime check for l2ork (preferably runtime). use it in the customised m_pd.h.
-[ ] can't get dllimport/dllexport for windows to work
+[ ] can't get dllimport/dllexport for windows to work (should look at http://oldwiki.mingw.org/index.php/sample%20DLL )
+[ ] win32 color_correction.pd crash
+[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
+[ ] win32 x11 support
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
     and is_base_sel(symbol) also would include bang and list.
 [ ] [#inner] nonscalar seeds ?
 [ ] [#scan] could use the same yn==1 optimisation that [#fold] uses
-
-Win32/Win64
-[ ] win32 color_correction.pd crash
-[ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
-[ ] win32 x11
+[ ] reenable numop1 isinf finite isnan
+[ ] [gf/numop_info]
+[ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
+[ ] heat.pd still sucks (?)
 
 OpenCV
 [ ] cvOpticalFlow
@@ -264,7 +253,6 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
-[ ] when file not found, mpeg error messages are wrong, they say the filename is "".
 [ ] "unsupported codec" bogus errors.
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [ ] some seeds aren't typechecked
@@ -330,7 +318,6 @@ Computation Objects
 [ ] multilinear interpolation (n-dimensional?)
 [ ] #perlin
 [ ] #moment could support more than 2 dimensions
-[ ] note in the helpfiles what is meant by YUV in gridflow (what colorspace that is)
 
 Input/Output
 [ ] a #store that is persistent (saved in .pd) ?
@@ -340,9 +327,9 @@ Input/Output
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: double buffering using a Pixmap remote-object, sync frames at constant rate, optionally with the actual vsync of the monitor
 [ ] support for audio in the mpeg streams
-[ ] synchronized audio with the video when using mpeg1 & 2
 [ ] full screen mode (without the menu bars or frames)
 [ ] support for audio in cameras / videodev ... see field vcaps.audios
+[ ] lqtgavl
 
 Format
 [ ] remaining number type support in formats
