@@ -1,0 +1,18 @@
+#N canvas 0 0 632 332 10;
+#X obj 0 0 doc_h;
+#X obj 3 278 doc_also;
+#X obj 0 298 doc_f;
+#X obj 103 278 doc_link #many;
+#X obj 3 198 doc_i 0;
+#X obj 3 238 doc_o 0;
+#X obj 3 84 doc_c 1;
+#X obj 14 114 doc_cc 0;
+#X obj 97 114 doc_m c0 float;
+#X text 191 44 properties dialogue for [#many].;
+#X text 232 114 the \$0 of the [#many] it was created by. It will be
+used to construct the receive-symbol \$1-propin and the send-symbol
+\$1-propout \, which are used to open the dialogue and apply the settings
+\, respectively. (closing the window also uses the send-symbol \, with
+selector 'cancel').;
+#X connect 1 1 3 0;
+#X connect 8 1 10 0;

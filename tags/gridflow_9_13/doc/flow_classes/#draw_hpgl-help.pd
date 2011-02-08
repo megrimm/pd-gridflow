@@ -1,0 +1,47 @@
+#N canvas 576 129 632 458 10;
+#X obj 0 0 doc_h;
+#X obj 0 424 doc_f;
+#X obj 103 51 #draw_hpgl;
+#X obj 3 320 doc_o 2;
+#X obj 3 131 doc_i 5;
+#X obj 3 91 doc_c 0;
+#X obj 14 350 doc_oo 0;
+#X obj 14 372 doc_oo 1;
+#X obj 14 161 doc_ii 0;
+#X obj 14 183 doc_ii 1;
+#X obj 14 205 doc_ii 2;
+#X obj 14 266 doc_ii 3;
+#X obj 14 288 doc_ii 4;
+#X obj 97 266 doc_m i3 grid;
+#X obj 97 288 doc_m i4 grid;
+#X text 232 266 (x y) start;
+#X text 232 288 (x y) end;
+#X obj 97 161 doc_m i0 grid;
+#X obj 97 183 doc_m i1 grid;
+#X obj 97 372 doc_m o1 bang;
+#X obj 97 350 doc_m o0 grid;
+#X text 232 372 time to draw;
+#X text 232 350 image drawn on;
+#X obj 3 404 doc_also;
+#X obj 103 404 hpgl_font_render;
+#X obj 97 205 doc_m i2 <hpgl>;
+#X obj 211 404 doc_link hpgl 1;
+#X text 232 205 command: PU \, PD \, PA \, PR. If you need to print
+text \, use [hpgl_font_render]. If you need anything else \, find a
+way to reduce it to PU/PD/PA (PR is supported here but often not supported
+by other <hpgl> inlets);
+#X text 232 161 image: dim(rows \, columns \, channels);
+#X text 232 183 color: dim(channels);
+#X text 176 52 is the slow way to plot hpgl on an image. for a fast
+way \, use [hpgl_to_lines].;
+#X obj 265 404 hpgl_to_lines;
+#X connect 13 1 15 0;
+#X connect 14 1 16 0;
+#X connect 17 1 28 0;
+#X connect 18 1 29 0;
+#X connect 19 1 21 0;
+#X connect 20 1 22 0;
+#X connect 23 1 24 0;
+#X connect 23 1 26 0;
+#X connect 23 1 31 0;
+#X connect 25 1 27 0;

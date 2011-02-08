@@ -1,0 +1,65 @@
+#N canvas 480 0 620 717 10;
+#X obj 0 0 doc_demo;
+#X obj 0 817 doc_f;
+#X text 20 51 the default format of an image in GridFlow is a grid
+that has three dimensions \, in which the first one is for the rows
+\, the second one is for the columns \, and the third one is for channels.
+Thus they are often numbered like this (starting at 0) :;
+#X text 20 170 However \, they don't need to be represented like that
+\, so \, you can change the order of dimensions \, but this changes
+the order of the data in memory \, and most of all \, it won't work
+with any classes that assume the default numbering of the dimensions.
+In several cases \, though \, the class doesn't care about the numbering
+\, and it is up to the user to know which dimension is which \, and
+it is in this context that it is possible to use alternate representations.
+;
+#X text 279 310 Channels for the YUV color model are :;
+#X text 14 309 Channels for the RGB color model are :;
+#X text 280 371 Channels for the Y color model are :;
+#X text 382 383 (only one channel !);
+#X text 14 371 Channels for the RGBA color model are :;
+#X text 280 406 Channels for the YA color model are :;
+#X obj 3 797 doc_also;
+#X obj 3 27 doc_section About Images;
+#X text 38 123 0: rows;
+#X text 38 136 1: columns;
+#X text 38 150 2: channels;
+#X obj 3 289 doc_section Channels and Color Models;
+#X text 39 322 0: red;
+#X text 39 334 1: green;
+#X text 39 347 2: blue;
+#X text 39 384 0: red;
+#X text 39 396 1: green;
+#X text 39 409 2: blue;
+#X text 39 421 3: opacity;
+#X text 305 322 0: grey;
+#X text 305 335 1: blue/yellow (blue minus grey);
+#X text 305 348 2: red/cyan (red minus grey);
+#X text 311 382 0: grey;
+#X text 311 417 0: grey;
+#X text 311 430 1: opacity;
+#X obj 3 580 doc_section Number Range;
+#X obj 103 797 doc_link grid 1;
+#X text 17 450 You can also invent your own color models \, with as
+many channels as you want.;
+#X text 18 479 Many classes only support RGB \, or RGB and RGBA \,
+or a small set of colour models. Many others accept anything but will
+assume that it's working on RGB (thus with other colour models it will
+do something wrong \, which might be weird \, confusing \, or really
+really interesting). Many others don't even know what a channel is
+and so you're supposed to know what you're doing.;
+#X text 18 602 Because Grids are made of 32-bit integers \, a three-channel
+picture uses 96 bpp (bits per pixel) \, and have to be downscaled to
+24 bpp (or 16 bpp) for display. That huge amount of slack is there
+because when you create your own effects you often have intermediate
+results that need to be of higher precision than a normal picture.
+Especially \, results of multiplications are big and should not overflow
+before you divide them back to normal \; and similarly \, you can have
+negative values all over \, as long as you take care of them before
+they get to the display. In the final conversion \, high bits are just
+ignored. This means: black is 0 \, maximum is 255 \, and values wrap
+like with [# % 256] or [# & 255]. If you want to clip them \, you may
+use [# max 0] and [# min 255] objects.;
+#X obj 157 797 doc_link indexmap 1;
+#X connect 10 1 30 0;
+#X connect 10 1 34 0;

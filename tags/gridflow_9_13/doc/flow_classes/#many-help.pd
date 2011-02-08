@@ -1,0 +1,163 @@
+#N canvas 458 0 632 642 10;
+#X obj 58 33 loadbang;
+#X obj 58 71 #in;
+#X obj 6 88 #store;
+#X msg 6 52 list \$1;
+#X obj 0 0 doc_h;
+#X obj 0 1273 doc_f;
+#X floatatom 6 34 5 0 0 0 - - -;
+#X msg 58 52 load lucida-typewriter-12.grid;
+#X obj 6 107 #fold +;
+#X obj 14 498 doc_cc 0;
+#X obj 14 612 doc_cc 1;
+#X obj 14 634 doc_cc 2;
+#X obj 97 498 doc_m c0 symbol;
+#X obj 97 612 doc_m c1 float;
+#X obj 97 634 doc_m c2 float;
+#X text 232 612 number of rows;
+#X text 232 634 number of columns;
+#X obj 3 666 doc_i 2;
+#X obj 3 1060 doc_o 2;
+#X obj 14 696 doc_ii 0;
+#X obj 14 1028 doc_ii 1;
+#X obj 14 1090 doc_oo 0;
+#X obj 14 1125 doc_oo 1;
+#X obj 97 1028 doc_m i1 <none>;
+#X obj 97 696 doc_m i0 grid;
+#X obj 6 126 #cast i;
+#X obj 254 277 # ^ 1;
+#X obj 97 1090 doc_m o0 grid;
+#X text 232 1090 the complete grid is output every time any element
+in it gets changed;
+#X floatatom 375 309 5 0 0 0 - - -;
+#X floatatom 409 309 5 0 0 0 - - -;
+#X msg 360 334 to \$1 \$2 color 15 22 0;
+#X obj 97 1125 doc_m o1 list;
+#X obj 97 844 doc_m i0 delegate;
+#X obj 97 980 doc_m i0 to;
+#X text 232 844 sends \$1 \, \$2 \, \$3 \, ... as a message to each
+contained gui-object. \$1 becomes selector \, while \$2 becomes \$1
+\, etc.;
+#X text 232 980 sends \$3 \, \$4 \, \$5 \, ... as a message to one
+contained gui-object \, whose position is specified by \$1 (row) and
+\$2 (column). \$3 becomes selector \, while \$4 becomes \$1 \, etc.
+;
+#X text 232 1125 \$1=row \, \$2=column \, \$3=new_state of element
+being modified;
+#X obj 375 290 unpack 0 0 0;
+#X floatatom 444 309 5 0 0 0 - - -;
+#X text 232 1028 (for future use);
+#X text 402 353 will colour only toggles clicked;
+#X text 232 1182 this outlet's whole behaviour might change anytime
+in the future until further notice. please help matju and pboivin define
+the protocol for customisation extensions to this object-class.;
+#X obj 3 1253 doc_also;
+#X text 232 696 stuff to put in (all widgets at once). This has to
+be a two-dimensional grid. Any smaller or bigger grid will cause problems
+(and ought to be rejected... one day).;
+#X text 232 1147 currently output after the outlet 0 message has been
+sent \, but won't stay like that in the future.;
+#X msg 92 234 bgcolor \$1;
+#X obj 92 215 #to_iem;
+#X obj 92 158 #color;
+#X obj 92 120 loadbang;
+#X msg 92 139 0 144 192;
+#X obj 97 744 doc_m i0 bgcolor;
+#X obj 232 818 doc_link #to_iem;
+#X obj 103 1253 #to_iem;
+#X text 232 744 background colour in IEM24 format. the background is
+all the spacing between the boxes as well as the spacing around the
+outer boxes (the inner border of [#many]). In the above example \,
+there is no spacing between the boxes \, thus the border is only the
+space around.;
+#X obj 3 416 doc_section Special;
+#X text 82 441 Right-Click Properties : opens;
+#X obj 271 442 doc_link #many-prop;
+#X obj 157 1253 doc_link #many-prop;
+#X obj 254 296 s \$0-b;
+#X obj 379 33 r \$0-b;
+#X obj 254 33 r \$0-a;
+#X obj 212 296 s \$0-a;
+#X obj 360 353 s \$0-a;
+#X obj 375 267 print R;
+#X obj 260 258 print L;
+#X obj 3 468 doc_c 3;
+#X obj 97 914 doc_m i0 spacing;
+#X text 232 914 sets the amount of vertical spacing to \$1;
+#X text 232 936 sets the amount of horizontal spacing to \$2;
+#X text 232 958 then resizes the GOP and repositions all components.
+;
+#X obj 211 382 s \$0-b;
+#X text 232 498 class name of component objects (default: tgl);
+#X text 232 520 currently supported: bng tgl nbx hradio vradio cnv
+;
+#X text 232 542 (although bng and cnv don't allow producing a sensible
+output on outlet 0... but bng can be quite useful with right outlet)
+;
+#X text 232 590 future support: hsl vsl and abstractions;
+#X msg 39 363 margins \$1 \$2 \$3 \$4;
+#X obj 39 382 s \$0-b;
+#X obj 39 344 #to_list;
+#X msg 212 363 spacing \$1 \$2;
+#X obj 212 344 #to_list;
+#X obj 97 879 doc_m i0 margins;
+#X text 232 879 sets top margin to \$1=top \$2=left \$3=bottom \$4=right
+just like [#see] \, but unlike [#see] \, the default is 4 4 4 4;
+#X obj 254 52 #many tgl 13 7 \, spacing 0 0;
+#X obj 39 306 #many nbx 2 2;
+#X obj 212 320 #many nbx 1 2;
+#X obj 379 52 #many tgl 13 7 \, margins 4 4 4 4 \, spacing 0 0;
+#X connect 0 0 7 0;
+#X connect 1 0 2 1;
+#X connect 2 0 8 0;
+#X connect 3 0 2 0;
+#X connect 6 0 3 0;
+#X connect 7 0 1 0;
+#X connect 8 0 25 0;
+#X connect 12 1 72 0;
+#X connect 12 1 73 0;
+#X connect 12 1 75 0;
+#X connect 12 1 74 0;
+#X connect 13 1 15 0;
+#X connect 14 1 16 0;
+#X connect 23 1 40 0;
+#X connect 24 1 44 0;
+#X connect 25 0 83 0;
+#X connect 26 0 59 0;
+#X connect 27 1 28 0;
+#X connect 31 0 63 0;
+#X connect 32 1 37 0;
+#X connect 32 1 45 0;
+#X connect 32 1 42 0;
+#X connect 33 1 35 0;
+#X connect 34 1 36 0;
+#X connect 38 0 29 0;
+#X connect 38 1 30 0;
+#X connect 38 2 39 0;
+#X connect 43 1 53 0;
+#X connect 43 1 58 0;
+#X connect 46 0 59 0;
+#X connect 46 0 62 0;
+#X connect 47 0 46 0;
+#X connect 48 0 47 0;
+#X connect 49 0 50 0;
+#X connect 50 0 48 0;
+#X connect 51 1 54 0;
+#X connect 51 1 52 0;
+#X connect 60 0 86 0;
+#X connect 61 0 83 0;
+#X connect 67 1 68 0;
+#X connect 67 1 69 0;
+#X connect 67 1 70 0;
+#X connect 76 0 77 0;
+#X connect 78 0 76 0;
+#X connect 79 0 71 0;
+#X connect 80 0 79 0;
+#X connect 81 1 82 0;
+#X connect 83 0 26 0;
+#X connect 83 0 65 0;
+#X connect 83 1 31 0;
+#X connect 83 1 38 0;
+#X connect 83 1 64 0;
+#X connect 84 0 78 0;
+#X connect 85 0 80 0;

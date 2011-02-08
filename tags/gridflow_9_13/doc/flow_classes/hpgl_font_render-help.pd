@@ -1,0 +1,45 @@
+#N canvas 95 268 632 484 10;
+#X obj 0 0 doc_h;
+#X obj 3 95 doc_c 1;
+#X obj 3 157 doc_i 2;
+#X obj 3 368 doc_o 1;
+#X obj 14 398 doc_oo 0;
+#X obj 14 187 doc_ii 0;
+#X obj 14 336 doc_ii 1;
+#X obj 14 125 doc_cc 0;
+#X obj 0 450 doc_f;
+#X obj 97 125 doc_m c0 symbol;
+#X obj 97 187 doc_m i0 <hpgl>;
+#X obj 97 398 doc_m o0 <hpgl>;
+#X text 232 187 containing LB or print_from_ascii commands;
+#X text 232 398 NOT containing LB or print_from_ascii commands anymore
+;
+#X obj 97 336 doc_m i1 symbol;
+#X obj 232 336 doc_same 0;
+#X obj 3 430 doc_also;
+#X text 232 125 font folder (default: "hershey");
+#X obj 97 209 doc_m i0 rowheight;
+#X obj 97 257 doc_m i0 scaling;
+#X obj 97 292 doc_m i0 spacing;
+#X obj 97 314 doc_m i0 wrap;
+#X text 232 209 total vertical amount of space considered necessary
+for a row (including tails up \, tails down \, accents on top \, accents
+below \, and interligne);
+#X text 232 257 scaling to apply to the font files (you must adjust
+rowheight accordingly by yourself);
+#X text 232 292 horizontal spacing to add between characters' bounding
+boxes;
+#X text 232 314 maximum width of a line to aim for;
+#X obj 103 430 plotter_parser;
+#X obj 228 48 doc_link hpgl_to_lines;
+#X text 136 50 see example in;
+#X text 330 50 help file;
+#X connect 9 1 17 0;
+#X connect 10 1 12 0;
+#X connect 11 1 13 0;
+#X connect 14 1 15 0;
+#X connect 16 1 26 0;
+#X connect 18 1 22 0;
+#X connect 19 1 23 0;
+#X connect 20 1 24 0;
+#X connect 21 1 25 0;

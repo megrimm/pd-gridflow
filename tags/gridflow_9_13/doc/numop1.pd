@@ -1,0 +1,229 @@
+#N canvas 0 0 916 640 10;
+#X obj 0 0 doc_demo;
+#X obj 0 30 cnv 15 906 22 empty empty empty 20 12 0 14 -195568 -66577
+0;
+#X text 10 30 op name;
+#X text 96 30 description;
+#X text 526 30 effect on pixels;
+#X text 726 30 effect on coords;
+#X obj 0 70 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 89 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 108 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 127 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 146 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 165 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 184 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 203 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 222 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 241 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 260 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 279 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 298 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 317 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 336 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 355 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 374 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 393 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 412 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 431 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 450 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 469 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 488 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 507 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 526 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 545 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 564 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 583 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 602 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 621 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 640 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 659 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 678 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 697 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 716 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 735 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 754 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 773 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 792 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 811 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 830 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 849 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 868 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 887 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 906 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 943 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 962 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 981 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 981 op C.sin;
+#X obj 0 1000 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1000 op C.cos;
+#X obj 0 1019 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1019 op C.tanh;
+#X obj 0 1038 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 1038 op C.exp;
+#X obj 0 1057 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 1057 op C.log;
+#X obj 10 1076 outlet;
+#X obj 95 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 525 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 725 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
+0;
+#X obj 0 54 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 52 numops;
+#X obj 0 926 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 924 vecops for complex numbers;
+#X msg 10 70 op sqrt;
+#X msg 10 89 op rand;
+#X msg 10 108 op sin;
+#X msg 10 127 op cos;
+#X msg 10 146 op tan;
+#X text 96 89 random integer >= 0 and < A;
+#X text 96 108 sine of A as radians \, float only;
+#X text 96 127 cosine of A as radians \, float only;
+#X text 96 146 tangent of A as radians \, float only;
+#X msg 10 165 op sinh;
+#X msg 10 184 op cosh;
+#X msg 10 203 op tanh;
+#X text 96 164 hyperbolic sine of A as radians \, float only;
+#X text 96 183 hyperbolic cosine of A as radians \, float only;
+#X text 96 202 hyperbolic tangent of A as radians \, float only;
+#X msg 10 222 op !;
+#X text 96 222 A != 0;
+#X text 96 241 -A;
+#X msg 10 241 op unary-;
+#X msg 10 259 op ~;
+#X text 96 260 -1-A \, in other words \, A ^ -1 (that's xor);
+#X msg 10 279 op abs;
+#X text 96 279 absolute value \, just like abs- with 0 on the right
+;
+#X msg 10 298 op floor;
+#X msg 10 317 op ceil;
+#X text 96 298 biggest integer not bigger than A (in same type as A)
+;
+#X text 96 317 lowest integer not lower than A (in same type as A)
+;
+#X msg 10 336 op erf;
+#X msg 10 355 op erfc;
+#X text 96 336 integral of exp(-x*x)*2/sqrt(pi) when x goes from 0
+to A;
+#X text 96 355 1-erf(A);
+#X msg 10 374 op cbrt;
+#X text 96 70 square root of A \, like A**0.5;
+#X text 96 374 cubic root of A;
+#X msg 10 393 op expm1;
+#X text 440 337 (float only);
+#X msg 10 412 op log1p;
+#X text 96 393 higher-precision version of exp(A)-1 \, float only;
+#X text 440 353 (float only);
+#X text 96 412 higher-precision version of log(1+A) \, float only;
+#X msg 10 431 op isnan;
+#X msg 10 450 op isinf;
+#X msg 10 469 op finite;
+#X text 96 469 future use (float only);
+#X text 96 450 future use (float only);
+#X text 96 431 future use (float only);
+#X msg 10 962 op C.abs;
+#X msg 10 943 op C.sq;
+#X text 96 943 future use;
+#X text 96 962 future use;
+#X text 96 1019 hyperbolic tangent of A as radians;
+#X text 96 981 sine of A as radians;
+#X text 96 1000 cosine of A as radians;
+#X text 96 1038 natural exponential of A as radians;
+#X text 96 1057 natural logarithm of A as radians;
+#X text 10 1096 All the complex number operators are only for floats.
+VecOps are called VecOps because each operation happens between more
+than just two numbers. Complex VecOps are those that arise when a pair
+of numbers (A0 A1) is considered as a single number A0+A1*sqrt(-1).
+If you need complex numbers but don't know yet how they work \, learn
+them using a math tutorial and then those VecOps will begin to look
+familiar.;
+#X msg 10 488 op fact;
+#X text 97 481 factorial. this is the integral of pow(t \, $f1)*exp(-t)
+from 0 to +inf. don't confuse with op gamma.;
+#X connect 54 0 63 0;
+#X connect 56 0 63 0;
+#X connect 58 0 63 0;
+#X connect 60 0 63 0;
+#X connect 62 0 63 0;
+#X connect 71 0 63 0;
+#X connect 72 0 63 0;
+#X connect 73 0 63 0;
+#X connect 74 0 63 0;
+#X connect 75 0 63 0;
+#X connect 80 0 63 0;
+#X connect 81 0 63 0;
+#X connect 82 0 63 0;
+#X connect 86 0 63 0;
+#X connect 89 0 63 0;
+#X connect 90 0 63 0;
+#X connect 92 0 63 0;
+#X connect 94 0 63 0;
+#X connect 95 0 63 0;
+#X connect 98 0 63 0;
+#X connect 99 0 63 0;
+#X connect 102 0 63 0;
+#X connect 105 0 63 0;
+#X connect 107 0 63 0;
+#X connect 111 0 63 0;
+#X connect 112 0 63 0;
+#X connect 113 0 63 0;
+#X connect 117 0 63 0;
+#X connect 118 0 63 0;
+#X connect 127 0 63 0;

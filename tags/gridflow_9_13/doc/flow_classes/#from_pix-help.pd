@@ -1,0 +1,138 @@
+#N canvas 609 0 632 685 10;
+#X text 232 785 Grid with 4 channels;
+#X obj 48 273 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+;
+#X msg 65 272 yflip \$1;
+#X obj 22 177 pix_image;
+#X text 240 401 Note : The fps is dependent on the gemwin framerate
+;
+#X text 232 688 Has to be a 'pix' gemlist;
+#X text 232 807 Passthrough outlet for gem chain;
+#X obj 0 0 doc_h;
+#X obj 3 530 doc_c 0;
+#X obj 3 755 doc_o 2;
+#X obj 3 839 doc_also;
+#X obj 14 785 doc_oo 0;
+#X obj 14 807 doc_oo 1;
+#X obj 14 600 doc_ii 0;
+#X obj 97 710 doc_m i0 yflip;
+#X obj 97 785 doc_m o0 grid;
+#X obj 0 859 doc_f;
+#X msg 216 160 open \$1;
+#X obj 216 141 openpanel;
+#X obj 216 124 bng 15 250 50 0 empty empty empty 17 7 0 10 -4034 -1
+-1;
+#X obj 28 138 loadbang;
+#X obj 22 485 fps;
+#X floatatom 22 504 5 0 0 0 - - -;
+#X msg 158 211 cast b;
+#X msg 158 249 cast i;
+#X obj 97 600 doc_m i0 cast;
+#X text 232 600 numbertype of grid to be output;
+#X msg 158 230 cast s;
+#X obj 97 622 doc_m i0 colorspace;
+#X text 232 644 colorspace rgb: output 3 channels;
+#X text 232 622 colorspace rgba: output 4 channels;
+#X msg 158 290 colorspace rgba;
+#X text 232 666 (default: rgba);
+#X obj 97 688 doc_m i0 gem_state;
+#X obj 97 807 doc_m o1 gem_state;
+#X msg 28 157 open ../../images/babbage.jpg;
+#X text 259 205 NOTE: you don't actually need to do anything else with
+the pix on the GEM-side (like [pix_texture] or other) \, but you do
+need to have an active [gemhead] \, by creating a [gemwin] even if
+you don't display anything in it. (or you could figure out to do a
+dummy off-screen rendering to get rid of the window \, and send it
+on gridflow-dev \, at artengine.ca);
+#X text 232 710 With one boolean argument that selects the order in
+which the y dimension of the Grid will be read \, defaults to '0';
+#X text 256 289 if you use win32 with sdl \, DON'T click this;
+#X text 183 384 <-- extracts pix from gemlist and produces grid;
+#X msg 158 269 colorspace rgb;
+#X obj 3 570 doc_i 1;
+#X obj 283 839 #to_pix;
+#X text 103 839 examples/game_of_life_gem.pd;
+#X obj 82 406 #dim;
+#X obj 82 425 display;
+#X obj 49 446 #reverse -1;
+#X obj 22 427 shunt;
+#X obj 59 428 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+;
+#X obj 35 253 pix_rgba;
+#X text 263 433 you can use this with [pix_image] \, [pix_video] \,
+[pix_film] \, etc \, as long as the pix format is RGBA. You can enforce
+that using [pix_rgba].;
+#X obj 337 839 pix_rgba;
+#X obj 397 839 gemhead;
+#X obj 22 66 gemdead;
+#X obj 451 839 gemdead;
+#X obj 23 30 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1;
+#X obj 126 273 t a;
+#X obj 22 196 shunt 4;
+#X obj 48 234 pix_grey;
+#X obj 61 215 pix_yuv;
+#X obj 71 197 hradio 15 1 0 4 empty empty empty 0 -8 0 10 -241291 -1
+-1 0;
+#X text 70 66 is a [gemhead]-like thing that doesn't need a [gemwin].
+but you may also use a [gemhead] with a [gemwin] as long as the window
+is created and [gemhead] is activated.;
+#X obj 363 159 gemwin 20;
+#X msg 363 140 dimen 160 120 \, create \, 1;
+#X text 363 123 you don't need this if you use [gemdead];
+#X obj 22 466 #out window \, title imported_pix;
+#X obj 22 47 metro 100;
+#X obj 22 385 #from_pix \, colorspace rgba;
+#X msg 158 310 colorspace y;
+#X msg 158 330 colorspace yuv;
+#X msg 158 350 colorspace auto;
+#X connect 1 0 2 0;
+#X connect 2 0 67 0;
+#X connect 3 0 57 0;
+#X connect 10 1 43 0;
+#X connect 10 1 42 0;
+#X connect 10 1 51 0;
+#X connect 10 1 52 0;
+#X connect 10 1 54 0;
+#X connect 14 1 37 0;
+#X connect 15 1 0 0;
+#X connect 17 0 3 0;
+#X connect 18 0 17 0;
+#X connect 19 0 18 0;
+#X connect 20 0 35 0;
+#X connect 21 0 22 0;
+#X connect 23 0 56 0;
+#X connect 24 0 56 0;
+#X connect 25 1 26 0;
+#X connect 27 0 56 0;
+#X connect 28 1 29 0;
+#X connect 28 1 30 0;
+#X connect 28 1 32 0;
+#X connect 31 0 67 0;
+#X connect 33 1 5 0;
+#X connect 34 1 6 0;
+#X connect 35 0 3 0;
+#X connect 40 0 67 0;
+#X connect 44 0 45 0;
+#X connect 46 0 65 0;
+#X connect 47 0 65 0;
+#X connect 47 1 46 0;
+#X connect 48 0 47 1;
+#X connect 49 0 67 0;
+#X connect 53 0 3 0;
+#X connect 55 0 66 0;
+#X connect 56 0 67 0;
+#X connect 57 0 67 0;
+#X connect 57 1 49 0;
+#X connect 57 2 58 0;
+#X connect 57 3 59 0;
+#X connect 58 0 67 0;
+#X connect 59 0 67 0;
+#X connect 60 0 57 1;
+#X connect 63 0 62 0;
+#X connect 65 0 21 0;
+#X connect 66 0 53 0;
+#X connect 67 0 47 0;
+#X connect 67 0 44 0;
+#X connect 68 0 67 0;
+#X connect 69 0 67 0;
+#X connect 70 0 67 0;

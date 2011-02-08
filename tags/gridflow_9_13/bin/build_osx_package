@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# run from outside gridflow-svn/
+# with version number as $1
+#
+# ex: build_osx_package 0.9.7
+
+
+if [ -z "$1" ]; then
+    echo Usage: $0  version_no  [arch]
+    exit
+fi
+
+if [ "$2" = "ppc" ]; then
+    ARCH="ppc"
+else
+    ARCH="i386"
+fi
+
+
+VERSION="gridflow-$1"
+PACKAGE="gridflow-$1-macosx104-$ARCH.tar.gz"
+GF_README="/usr/src/gridflow/GRIDFLOW_BIN/README-$ARCH.txt"
+
+mkdir $VERSION
+cd $VERSION
+cp -R ../gridflow-svn ./gridflow
+cd gridflow
+
+
+rm -rf Makefile TODO bin bundled config* src tests tmp
+
+for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do 
+    rm -rf $i
+done
+
+
+#-------------------------------------------------------------------------------
+if [ "$ARCH" = "ppc" ]; then
+    EXTRALIBS="/sw/lib/libpng.3.dylib /sw/lib/libfftw3f.3.dylib /sw/lib/libfftw3.3.dylib /sw/lib/libncurses.5.dylib"
+else
+    EXTRALIBS="/usr/local/lib/libfftw3f.3.dylib /usr/local/lib/libfftw3.3.dylib /sw/lib/ncurses/libncurses.5.dylib"
+fi
+
+BUNDLED_PREFIX="/Library/Pd/gridflow/libs"
+BUNDLED_LIBS=" /sw/lib/libaa.1.dylib /sw/lib/libnetpbm.10.dylib /usr/X11/lib/libpng12.0.dylib \
+/sw/lib/libjpeg.62.dylib /sw/lib/libSDL-1.2.0.dylib $EXTRALIBS"
+
+mkdir libs
+cp $BUNDLED_LIBS ./libs/
+
+for LIB in $BUNDLED_LIBS; do
+    FILENAME=`echo $LIB | sed 's/.*\///'`
+    install_name_tool -id $BUNDLED_PREFIX/$FILENAME ./libs/$FILENAME
+    install_name_tool -change $LIB $BUNDLED_PREFIX/$FILENAME gridflow.pd_darwin
+done
+
+# should do a 2nd pass of install_name_tool for all libs that might depend on other libs...
+if [ "$ARCH" = "ppc" ]; then
+install_name_tool -change  /sw/lib/libncurses.5.dylib  $BUNDLED_PREFIX/libncurses.5.dylib  ./libs/libaa.1.dylib
+else
+install_name_tool -change  /sw/lib/ncurses/libncurses.5.dylib  $BUNDLED_PREFIX/libncurses.5.dylib  ./libs/libaa.1.dylib
+fi
+
+#-------------------------------------------------------------------------------
+
+
+cd ..
+cp $GF_README .
+cd ..
+
+
+tar -czf $PACKAGE $VERSION
+
+echo
+echo Done !

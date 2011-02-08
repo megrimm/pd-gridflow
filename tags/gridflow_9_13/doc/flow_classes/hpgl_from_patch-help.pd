@@ -1,0 +1,88 @@
+#N canvas 604 8 632 672 10;
+#X obj 0 0 doc_h;
+#X obj 3 622 doc_also;
+#X obj 0 642 doc_f;
+#X obj 103 622 hpgl_messagebox;
+#X obj 14 445 doc_ii 0;
+#X obj 14 568 doc_oo 0;
+#X obj 97 445 doc_m i0 load;
+#X text 232 445 loads patch whose filename is \$1 and turns it into
+a sequence of hpgl codes using [hpgl_objectbox] \, [hpgl_messagebox]
+\, etc.;
+#X obj 97 568 doc_m o0 <hpgl>;
+#X text 232 568 hpgl codes not using LB/print/print_from_ascii;
+#X obj 3 415 doc_i 2;
+#X obj 14 493 doc_ii 1;
+#X obj 3 538 doc_o 2;
+#X obj 14 590 doc_oo 1;
+#X obj 97 493 doc_m i1 <hpgl>;
+#X obj 97 590 doc_m o1 <hpgl>;
+#X text 232 590 hpgl codes including print_from_ascii;
+#X text 232 493 hpgl codes without print_from_ascii \, from the font
+renderer (usually [hpgl_font_render]);
+#X obj 14 335 doc_cc 0;
+#X text 232 370 scaling value to give to [hpgl_objectbox] and [hpgl_messagebox]
+;
+#X obj 205 622 hpgl_font_render;
+#X obj 313 622 hpgl_find_bbox;
+#X obj 97 335 doc_m c0 float;
+#X text 232 335 scaling value between pd patch coordinates and hpgl
+coordinates;
+#X obj 14 48 bng 15 250 50 0 empty empty empty 17 7 0 10 -204786 -1
+-1;
+#X obj 14 269 #out window;
+#X obj 14 65 t b b b;
+#X obj 94 132 hpgl_to_lines;
+#X obj 3 305 doc_c 2;
+#X obj 14 370 doc_cc 1;
+#X obj 97 370 doc_m c1 float;
+#X text 7 32 may take several seconds to run this bang;
+#X msg 94 56 symbol hpgl_from_patch-help.pd;
+#X obj 94 75 gf/find_file;
+#X msg 94 94 load \$1;
+#X obj 409 622 hpgl_objectbox;
+#X obj 94 151 # / 10;
+#X obj 94 113 hpgl_from_patch 15 15;
+#X obj 14 212 #lop_space 1 (16 256 64);
+#X obj 14 193 #draw_polygon put (3 # 4095) \, draw line \, omit odd
+;
+#X obj 14 231 # >> 4;
+#X msg 14 174 1024 960 3 #;
+#X obj 94 170 # + (40 20);
+#X msg 48 115 bang;
+#X obj 116 286 #out;
+#X obj 14 250 #gamma 768;
+#X msg 116 267 open hpgl_from_patch.png \, autoclose \, grid \$1;
+#X obj 234 113 hpgl_font_render hershey \, spacing 30 \, scaling 0.35
+\, rowheight 150 \, wrap 4000;
+#X connect 1 1 3 0;
+#X connect 1 1 20 0;
+#X connect 1 1 21 0;
+#X connect 1 1 35 0;
+#X connect 6 1 7 0;
+#X connect 8 1 9 0;
+#X connect 14 1 17 0;
+#X connect 15 1 16 0;
+#X connect 22 1 23 0;
+#X connect 24 0 26 0;
+#X connect 26 0 41 0;
+#X connect 26 1 27 0;
+#X connect 26 2 32 0;
+#X connect 27 0 36 0;
+#X connect 30 1 19 0;
+#X connect 32 0 33 0;
+#X connect 33 0 34 0;
+#X connect 34 0 37 0;
+#X connect 36 0 42 0;
+#X connect 37 0 27 0;
+#X connect 37 1 47 0;
+#X connect 38 0 40 0;
+#X connect 39 0 38 0;
+#X connect 40 0 45 0;
+#X connect 41 0 39 0;
+#X connect 42 0 39 2;
+#X connect 43 0 27 0;
+#X connect 45 0 25 0;
+#X connect 45 0 46 0;
+#X connect 46 0 44 0;
+#X connect 47 0 37 1;

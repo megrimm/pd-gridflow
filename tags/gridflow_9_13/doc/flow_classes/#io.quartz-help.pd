@@ -1,0 +1,70 @@
+#N canvas 630 22 632 752 10;
+#X obj 0 0 doc_h;
+#X obj 3 66 doc_c;
+#X obj 0 724 doc_f;
+#X obj 44 37 #out quartz;
+#X obj 3 106 doc_i 1;
+#X obj 3 449 doc_o 1;
+#X obj 14 136 doc_ii 0;
+#X obj 97 136 doc_m i0 grid;
+#X text 134 37 video output for OSX (when running without Apple X11)
+;
+#X obj 14 479 doc_oo 0;
+#X obj 97 479 doc_m o0 grid;
+#X text 232 479 grid(rows columns rgb);
+#X obj 3 704 doc_also;
+#X obj 103 704 doc_link #io.sdl;
+#X obj 175 704 doc_link #io.x11;
+#X obj 97 628 doc_m o0 keypress;
+#X obj 97 650 doc_m o0 keyrelease;
+#X obj 97 672 doc_m o0 position;
+#X obj 97 395 doc_m i0 title;
+#X obj 97 294 doc_m i0 move;
+#X text 232 395 \$1=title;
+#X text 232 294 \$1=y_position \, \$2=x_position;
+#X obj 97 180 doc_m i0 menubar;
+#X text 232 593 The values must be in range 0-255 \, or else they will
+be "wrapped".;
+#X text 232 501 Resizes the window to the size of the grid \; Encodes
+that grid in the display's pixel format \; Also displays it if autodraw
+is greater than 0 \;;
+#X text 232 571 Also displays it if autodraw is greater than 0 \;;
+#X text 232 549 Encodes that grid in the display's pixel format \;
+;
+#X text 232 259 This behaviour is only effective when a GridFlow window
+is active and not when another Pd window is.;
+#X obj 259 650 doc_link #io.x11;
+#X text 252 630 see also:;
+#X obj 236 625 doc_accolade;
+#X obj 97 158 doc_m i0 hidecursor;
+#X obj 97 338 doc_m i0 setcursor;
+#X text 232 136 With [#out] \, displays a frame.;
+#X text 232 158 Hide mouse cursor for any GridFlow window.;
+#X text 232 180 \$1=1 \, Show system menubar. (default);
+#X text 232 202 \$1=0 \, Hide system menubar.;
+#X text 232 224 \$1=-1 \, Show system menubar only if the user moves
+the mouse into the screen area where it would ordinarily be.;
+#X text 232 316 Move window.;
+#X text 232 417 Set window title.;
+#X text 232 338 \$1=any float;
+#X text 232 360 If the mouse cursor is hidden \, "setcursor 0" will
+bring it back.;
+#X connect 7 1 33 0;
+#X connect 10 1 11 0;
+#X connect 10 1 24 0;
+#X connect 10 1 23 0;
+#X connect 10 1 26 0;
+#X connect 10 1 25 0;
+#X connect 12 1 13 0;
+#X connect 12 1 14 0;
+#X connect 18 1 20 0;
+#X connect 18 1 39 0;
+#X connect 19 1 21 0;
+#X connect 19 1 38 0;
+#X connect 22 1 35 0;
+#X connect 22 1 36 0;
+#X connect 22 1 37 0;
+#X connect 22 1 27 0;
+#X connect 31 1 34 0;
+#X connect 32 1 40 0;
+#X connect 32 1 41 0;

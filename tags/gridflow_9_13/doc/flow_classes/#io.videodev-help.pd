@@ -1,0 +1,156 @@
+#N canvas 596 0 632 642 10;
+#X obj 0 0 doc_h;
+#X obj 3 349 doc_i 1;
+#X obj 3 1340 doc_o 1;
+#X obj 3 1437 doc_also;
+#X obj 14 379 doc_ii 0;
+#X obj 97 401 doc_m i0 brightness;
+#X obj 97 887 doc_m i0 hue;
+#X obj 97 672 doc_m i0 colour;
+#X obj 97 729 doc_m i0 contrast;
+#X obj 97 1295 doc_m i0 whiteness;
+#X obj 97 786 doc_m i0 get;
+#X obj 97 423 doc_m i0 channel;
+#X obj 97 1172 doc_m i0 tuner;
+#X obj 97 944 doc_m i0 norm;
+#X obj 97 751 doc_m i0 frequency;
+#X obj 97 1054 doc_m i0 transfer symbol;
+#X obj 97 1251 doc_m i0 white_red;
+#X obj 97 1207 doc_m i0 white_blue;
+#X obj 97 1273 doc_m i0 white_speed;
+#X obj 97 1229 doc_m i0 white_delay;
+#X obj 97 379 doc_m i0 auto_gain;
+#X obj 97 909 doc_m i0 noise_reduction;
+#X obj 97 694 doc_m i0 compression;
+#X obj 97 484 doc_m i0 colorspace;
+#X obj 97 1032 doc_m i0 size;
+#X text 232 1032 \$1=y \$2=x;
+#X text 232 821 "min": minimum values for "size";
+#X text 232 843 "max": maximum values for "size";
+#X text 232 865 default: gets all attributes.;
+#X text 232 786 gets a specific attribute. a message is sent through
+right outlet.;
+#X text 232 1124 In case of mmap \, the extra numeric argument sets
+the queue length in number of frames \, so you can select an appropriate
+tradeoff between efficiency and latency.;
+#X obj 0 1457 doc_f;
+#X obj 14 1370 doc_oo 0;
+#X obj 97 1370 doc_m o0 grid;
+#X obj 97 1392 doc_m o0 <any>;
+#X text 232 1370 image coming out;
+#X text 232 1392 most any inlet 0 message is also an outlet 0 message
+whose output can be triggered using 'get'.;
+#X text 353 27 get images from a V4L1 camera interface.;
+#X text 353 42 this is for Linux only.;
+#X obj 41 153 print;
+#X obj 3 198 doc_c ...;
+#X msg 29 237 open videodev /dev/video0;
+#X text 224 232 you can send this to an [#in] \, but you could use
+[#camera] instead.;
+#X msg 32 94 open videodev /dev/video0 \, get;
+#X text 223 93 for any V4L1 camera;
+#X msg 38 114 open videodev /dev/video0 \, pwc \, get;
+#X text 257 113 for PWC V4L1 cameras only;
+#X text 258 127 (this can cause problems with some non-PWC drivers)
+;
+#X obj 26 134 #in;
+#X obj 26 74 metro 100;
+#X obj 26 57 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0 1
+;
+#X text 232 379 0..65535: some other kind of contrast setting (PWC
+only);
+#X text 232 423 connector selector : for example \, BTTV cards might
+have channel 1 as the RCA Composite input \, but have channels numbered
+0 \, 2 and 3 \, with different kinds of plugs. do not confuse this
+name with the channels in a colorspace.;
+#X text 232 484 "y": 1 channel: grey;
+#X text 232 528 "rgb": 3 channels: red \, green \, blue.;
+#X text 232 550 "magic": 3 channels like "yuv" \, with two exceptions
+: pixel values go from 16 to 239 (as given by video cards) instead
+of 0 to 255 \, and also \, picture size is half-width \, half-height
+\, as Y is shrunk to fit UV \, instead of UV being stretched to fit
+Y. this is designed to be used with the YUV420P (palette 15) mode only.
+;
+#X text 232 672 0..65535: also called "saturation";
+#X text 232 729 0..65535: the main contrast setting;
+#X text 232 751 0..65535: for picking up a station on a TV channel.
+you need to find country-specific tunings for this.;
+#X text 232 887 0..65535: the main hueshift setting;
+#X text 232 694 0..3: a PWC-only setting \, but I don't have a PWC
+camera that actually supports this.;
+#X text 232 909 0..3: a PWC-only setting \, but I don't have a PWC
+camera that actually supports this.;
+#X text 232 944 0: PAL;
+#X text 232 966 1: NTSC;
+#X text 232 988 2: SECAM;
+#X text 232 1010 3: auto;
+#X text 232 1054 "read": Some cameras/drivers only support this instead
+of mmap.;
+#X text 232 1089 "mmap": \$1=nframes (default:2) is the normal (and
+fast) way of transferring pictures from the camera.;
+#X text 232 1172 to pick UHF \, VHF \, ... or something like that.
+usually unused.;
+#X text 232 1207 0..65535: offset for the V channel (blue-yellow balance)
+;
+#X text 232 1251 0..65535: offset for the U channel (red-cyan balance)
+;
+#X text 232 1229 i don't really know this;
+#X text 232 1273 i don't really know this;
+#X text 232 1295 0..65535: another setting similar to brightness and
+contrast.;
+#X text 232 401 0..65535: the main brightness setting;
+#X text 232 506 "yuv": 3 channels: grey \, blue/yellow \, red/cyan.
+;
+#X text 232 637 "rgba": 4 channels: red \, green \, blue \, alpha \,
+in which alpha is always set to 255;
+#X obj 103 1437 #camera;
+#X obj 157 1437 doc_link #io.dc1394;
+#X obj 247 1437 doc_link #io.quicktimecamera;
+#X msg 29 267 open videodev /dev/video0 1;
+#X text 225 265 this one uses libv4l1 (the v4l1 library) \, instead
+of using classic v4l1 (the kernel interface). this allows virtualisation
+such as using a v4l2-only driver in a v4l1-only programme \, and such
+as auto-converting pixel formats between the driver and the programme.
+;
+#X connect 3 1 77 0;
+#X connect 3 1 78 0;
+#X connect 3 1 79 0;
+#X connect 5 1 74 0;
+#X connect 6 1 59 0;
+#X connect 7 1 56 0;
+#X connect 8 1 57 0;
+#X connect 9 1 73 0;
+#X connect 10 1 29 0;
+#X connect 10 1 26 0;
+#X connect 10 1 27 0;
+#X connect 10 1 28 0;
+#X connect 11 1 52 0;
+#X connect 12 1 68 0;
+#X connect 13 1 62 0;
+#X connect 13 1 63 0;
+#X connect 13 1 64 0;
+#X connect 13 1 65 0;
+#X connect 14 1 58 0;
+#X connect 15 1 66 0;
+#X connect 15 1 67 0;
+#X connect 15 1 30 0;
+#X connect 16 1 70 0;
+#X connect 17 1 69 0;
+#X connect 18 1 72 0;
+#X connect 19 1 71 0;
+#X connect 20 1 51 0;
+#X connect 21 1 61 0;
+#X connect 22 1 60 0;
+#X connect 23 1 53 0;
+#X connect 23 1 75 0;
+#X connect 23 1 54 0;
+#X connect 23 1 55 0;
+#X connect 23 1 76 0;
+#X connect 24 1 25 0;
+#X connect 33 1 35 0;
+#X connect 34 1 36 0;
+#X connect 43 0 48 0;
+#X connect 45 0 48 0;
+#X connect 48 1 39 0;
+#X connect 49 0 48 0;
+#X connect 50 0 49 0;

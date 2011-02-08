@@ -1,0 +1,45 @@
+#N canvas 0 21 632 559 10;
+#X obj 0 0 doc_h;
+#X obj 3 144 doc_c;
+#X obj 3 184 doc_i;
+#X obj 0 525 doc_f;
+#X obj 62 76 gf/mouse_spy;
+#X obj 62 99 display;
+#X obj 3 224 doc_o 1;
+#X obj 14 254 doc_oo 0;
+#X obj 97 254 doc_m o0 keypress;
+#X obj 97 333 doc_m o0 keyrelease;
+#X obj 97 377 doc_m o0 position;
+#X text 232 473 See [#io.x11] for more info.;
+#X text 232 333 Same as keypress but when a key gets released instead.
+;
+#X text 232 311 See [#io.x11] for more info.;
+#X text 232 276 This is emitted when a keyboard key is pressed while
+the patch window is active.;
+#X text 232 254 \$1 = y \, \$2 = x \, \$3 = button1 \, \$4 = keyname
+;
+#X text 232 377 \$1 = y \, \$2 = x \, \$3 = button1;
+#X text 232 355 See [#io.x11] for more info.;
+#X text 36 42 Reports mouse and keyboard events inside a patch;
+#X text 232 399 This is emitted every time the cursor moves inside
+the patch window. This is also emitted when the cursor is dragging
+from inside to outside the window. However \, button press/release
+handling is only supported for button 1 (left click) \, Control key
+\, and Alt key.;
+#X obj 3 505 doc_also;
+#X obj 103 505 doc_link #see;
+#X obj 279 505 gemmouse;
+#X obj 157 505 #mouse;
+#X obj 205 505 doc_link #io.x11;
+#X connect 4 0 5 0;
+#X connect 8 1 15 0;
+#X connect 8 1 14 0;
+#X connect 8 1 13 0;
+#X connect 9 1 12 0;
+#X connect 9 1 17 0;
+#X connect 10 1 16 0;
+#X connect 10 1 19 0;
+#X connect 10 1 11 0;
+#X connect 20 1 21 0;
+#X connect 20 1 23 0;
+#X connect 20 1 24 0;

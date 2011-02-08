@@ -1,0 +1,41 @@
+#N canvas 604 0 624 613 10;
+#X obj 0 0 doc_demo;
+#X obj 0 674 doc_f;
+#X text 32 121 In other words the user should have total freedom and
+total responsibility. The software is there to provide a mechanism
+\, and not a policy. Thus it is a more appropriate tool for the DIY
+(Do-It-Yourself) ethic than much other audiovisual software usually
+is.;
+#X obj 3 27 doc_section Introduction;
+#X text 31 625 Finally \, by avoiding the use of global variables and
+rather closely mimicking the flow of PureData atoms \, GridFlow is
+closer to PureData's nature than GEM is.;
+#X text 32 195 The core of GridFlow closely follows that principle
+: although it was made as a video tool \, it first defines a manner
+of managing information in general \, and a large set of mathematical
+operations \, and only after that \, it uses these things in order
+to implement an image-processing a video-processing tool.;
+#X text 33 51 The philosophy that guides PureData is a simple but powerful
+one : the software must first provide the user with generic flexible
+tools rather than with readymade specialised components that embody
+a certain audiovisual æsthetic.;
+#X text 476 142 Do It Yourself;
+#X text 463 71 maximise flexibility;
+#X text 414 313 bridging a gap in language levels;
+#X text 32 282 Thus when working at "the math level" you can design
+your own effects in a quite flexible way without having to code externals
+in C++. You can spend time worrying about the math instead of having
+to worry about both the math and C++. Thus you are working at a middle
+level between C++ and readymade components.;
+#X text 476 395 unification;
+#X text 427 409 (some kind of polymorphism);
+#X text 263 465 NOTE: the words "vector" "matrix" "array" "object"
+"polymorphism" etc \, have multiple different specialised meanings
+\, so \, the former paragraph may be hard to read the right way.;
+#X text 32 368 GridFlow provides a unifying view of multimedia information.
+Several kinds of data -- raster graphics in any number of channels
+\, coordinate transforms \, matrices \, vectors \, sound recordings
+\, etc -- may all be represented by Grids (also known as multi-dimensional
+arrays). Grids exist in several ways: they are usually streamed from
+object to object \, but they can also be stored in memory \, or stored
+into a file.;
