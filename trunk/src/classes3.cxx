@@ -32,18 +32,22 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 
 //****************************************************************
 \class GridToTilde {
+	int capacity;
 	P<Grid> blah;
 	t_outlet **sigout;
 	int chans; /* number of channels */
 	int start;
 	int size;
 	t_sample **sam;
-	\constructor (int chans=1) {
+	\constructor (int chans=1, int capacity=16384) {
 		if (chans<0) RAISE("need nonnegative number of channels");
+		if (capacity<1) RAISE("capacity must be at least 1");
+		if ((capacity&-capacity)!=capacity) RAISE("capacity must be a power of two");
 		sigout = new t_outlet *[chans];
 		for (int i=0; i<chans; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
 		this->chans = chans;
-		blah=new Grid(Dim(16384,chans),float32_e);
+		this->capacity = capacity;
+		blah=new Grid(Dim(capacity,chans),float32_e);
 		start=0; size=0; sam=0;
 	}
 	~GridToTilde () {delete[] sigout; if (sam) delete[] sam;}
@@ -52,7 +56,7 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 		for (int i=0; i<n; i++) {
 			if (size) {
 				for (int j=0; j<chans; j++) sam[j][i]=data[start*chans+j];
-				start=(start+1)&16383;
+				start=(start+1)&(capacity-1);
 				size--;
 			} else for (int j=0; j<chans; j++) sam[j][i]=0;
 		}
@@ -71,15 +75,15 @@ GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
 	if (in.dim[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in.dim[1],chans);
 } GRID_FLOW {
-	if (size==16384) return;
-	while (n && size<16384) {
-		int i = ((start+size)&16383) * chans;
+	if (size==capacity) return;
+	while (n && size<capacity) {
+		int i = ((start+size)&(capacity-1)) * chans;
 		COPY((T *)*blah+i,data,chans);
 		data+=chans; n-=chans; size++;
 	}
-	if (n>0) post("[#to~] buffer full: dropped %ld samples",long(n/chans));
+	if (n>0) post("[#to~] buffer full: dropped %ld samples. will not report further till it's not full anymore.",long(n/chans));
 } GRID_FINISH {
-	//post("[#to~] buffer size : %d out of 16384",size);
+	//post("[#to~] buffer size : %d out of %d",size,capacity);
 } GRID_END
 \end class {
 	install("#to~",1,0); // actually it has outlets that are not registered with GF
