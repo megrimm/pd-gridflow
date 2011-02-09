@@ -48,6 +48,12 @@ public:
 	static bool is_neutral  (T x, LeftRight side) {assert(!"Op::is_neutral called?");   return false;}
 	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
+template <> class Op<  uint8> {typedef   uint8 V __attribute__ ((vector_size(16)));};
+template <> class Op<  int16> {typedef   int16 V __attribute__ ((vector_size(16)));};
+template <> class Op<  int32> {typedef   int32 V __attribute__ ((vector_size(16)));};
+template <> class Op<  int64> {typedef   int64 V __attribute__ ((vector_size(16)));};
+template <> class Op<float32> {typedef float32 V __attribute__ ((vector_size(16)));};
+template <> class Op<float64> {typedef float64 V __attribute__ ((vector_size(16)));};
 
 template <class O, class T> class OpLoops: public Numop2::On<T> {
 public:
@@ -80,6 +86,20 @@ public:
       for (int i=0; i<an; i++, as++, bs++) *bs=f(*as,*bs);
     }
   }
+};
+
+//#define UNROLL_8V(MACRO,N,PTR,ARGS...) \
+//	int n__=(-N)&7; PTR-=n__; N+=n__; \
+//	switch (n__) { start: \
+//		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
+//		case 4:MACRO(4); case 5:MACRO(5); case 6:MACRO(6); case 7:MACRO(7); \
+//		PTR+=8; N-=8; ARGS; if (N) goto start; }
+
+template <class O, class T> class OpLoopsV: public OpLoops<O,T> {
+public:
+  #define FOO(I) as[I]=f(as[I],as[ba+I]);
+  static void _zip (long n, T *as, T *bs) {if (!n) return; ptrdiff_t ba=bs-as; UNROLL_8V(FOO,n,as); post("OpLoopsV");}
+  #undef FOO
 };
 
 template <class T>
