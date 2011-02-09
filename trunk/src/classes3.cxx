@@ -632,15 +632,64 @@ template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x)
 	}
 }
 
+#define UNROLL_8B(MACRO,LABEL,N,A,B,ARGS...) \
+	int n__=(-N)&7; A-=n__; B-=n__; N+=n__; \
+	switch (n__) { LABEL: \
+		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
+		case 4:MACRO(4); case 5:MACRO(5); case 6:MACRO(6); case 7:MACRO(7); \
+		A+=8; B+=8; N-=8; ARGS; /*fprintf(stderr,"n=%d\n",N);*/ if (N) goto LABEL; }
+
 // map * then zip +
+// UNROLL_8 and UNROLL_8B seem to be pretty useless nowadays (gcc 4.x)
+// and even the whole muladd,mul business seems to not have so much effect.
 template <class T> void muladd (int n, T *as, T *bs, T c) {
-	if (c==1) while (n--) *as++ += *bs++    ;
-	else      while (n--) *as++ += *bs++ * c;
+	//fprintf(stderr,"muladd n=%d as=%p bs=%p c=%d\n",n,as,bs,c);
+	if (!n) return;
+	if (c==-1) {
+		#define FOO(I) as[I] -= bs[I]
+		UNROLL_8B(FOO,L1,n,as,bs)
+		#undef FOO
+	} else if (c==1) {
+		#define FOO(I) as[I] += bs[I]
+		UNROLL_8B(FOO,L2,n,as,bs)
+		#undef FOO
+	} else {
+		#define FOO(I) as[I] += bs[I] * c
+		UNROLL_8B(FOO,L3,n,as,bs)
+		#undef FOO
+	}
 }
 template <class T> void mul    (int n, T *as, T *bs, T c) {
-	if (c==1) while (n--) *as++  = *bs++    ;
-	else      while (n--) *as++  = *bs++ * c;
+	//fprintf(stderr,"mul    n=%d as=%p bs=%p c=%d\n",n,as,bs,c);
+	if (!n) return;
+	if (c==-1) {
+		#define FOO(I) as[I] =-bs[I]
+		UNROLL_8B(FOO,L1,n,as,bs)
+		#undef FOO
+	} else if (c==1) {
+		#define FOO(I) as[I] = bs[I]
+		UNROLL_8B(FOO,L2,n,as,bs)
+		#undef FOO
+	} else {
+		#define FOO(I) as[I] = bs[I] * c
+		UNROLL_8B(FOO,L3,n,as,bs)
+		#undef FOO
+	}
 }
+
+// map * then zip +
+/*
+template <class T> void muladd (int n, T *as, T *bs, T c) {
+	if (c==-1)     while (n--) *as++ -= *bs++    ; else
+	if (c==1)      while (n--) *as++ += *bs++    ; else
+	else           while (n--) *as++ += *bs++ * c;
+}
+template <class T> void mul    (int n, T *as, T *bs, T c) {
+	if (c==-1)     while (n--) *as++  = -*bs++   ; else
+	if (c==1)      while (n--) *as++  = *bs++    ; else
+	               while (n--) *as++  = *bs++ * c;
+}
+*/
 
 template <class T> void GridConvolve::muladd_row (T *buf, long sx, long y, long x, T m) {
 	long day = a->dim[0], dax = a->dim[1], dac = a->dim.prod(2);
@@ -709,9 +758,8 @@ GRID_INLET(0) {
 	long sxc = go->dim.prod(2)*sx;
 	T buf[n];
 	T buf2[sxc];
-	if (op==op_mul && fold==op_add) {
+	if (op==op_mul && fold==op_add && (!seed || *(T *)*seed == T(0))) {
 		for (long ay=0; ay<day; ay++) {
-			op_put->map(n,buf, seed ? *(T *)*seed : T(0));
 			for (size_t i=0; i<plan.size(); i++) {
 				long by = plan[i].y, bx = plan[i].x; T rh = ((T *)*b)[plan[i].k];
 				if (i) {
