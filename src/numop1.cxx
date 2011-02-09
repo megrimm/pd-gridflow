@@ -118,7 +118,7 @@ DEF_OP(weight,weight((uint64)a & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))))
 
 #define NaN (0/0.f)
 
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(MACOSX)
 static double fact (double x) {
 	int sign=0;
 	double y = exp(lgamma_r(x+1,&sign));
@@ -156,7 +156,7 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(floor, "floor"),
 	DECL_OP_FLOAT(ceil, "ceil"),
 // 9.13
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(MACOSX)
 	DECL_OP(fact, "fact"),
 #endif
 	DECL_OP(log10, "log10"),	DECL_VOP_FLOAT(cx_log10,"C.log10",  2),
