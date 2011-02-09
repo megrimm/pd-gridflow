@@ -94,12 +94,20 @@ GRID_INLET(0) {
 	int chans; /* number of channels */
 	t_sample **sam;
 	t_clock *clock;
-	\constructor (int chans=1) {
+	int size;
+	bool custom;
+	\constructor (int chans=1, int capacity=0) {
 		sigin = new t_inlet *[chans];
 		for (int i=0; i<chans; i++) sigin[i] = inlet_new((t_object *)bself,(t_pd *)bself,&s_signal,&s_signal);
 		this->chans = chans;
 		sam=0;
+		size=0;
 		clock = clock_new(bself,(void(*)())clock_bang_);
+		custom = !!capacity;
+		if (custom) {
+			if ((capacity&-capacity) != capacity) RAISE("capacity must be a power of two (or zero for auto)");
+			blah=new Grid(Dim(capacity,chans),float32_e);
+		}
 	}
 	void clock_bang () {
 		GridOut go(this,0,blah->dim,blah->nt);
@@ -109,8 +117,9 @@ GRID_INLET(0) {
 	~GridFromTilde () {clock_free(clock); delete[] sigin; if (sam) delete[] sam;}
 	void perform (int n) {
 		float32 *data = (float32 *)*blah;
-		for (int i=0; i<n; i++) for (int j=0; j<chans; j++) data[i*chans+j]=sam[j][i];
-		clock_delay(clock,0);
+		for (int i=0; i<n; i++, size=(size+1)&(blah->dim[0]-1))
+			for (int j=0; j<chans; j++) data[size*chans+j]=sam[j][i];
+		if (!size) clock_delay(clock,0);
 	}
 	static t_int *perform_ (t_int *w) {((GridFromTilde *)w[1])->perform(int(w[2])); return w+3;}
 	void dsp (t_signal **sp) {
@@ -118,7 +127,7 @@ GRID_INLET(0) {
 		sam = new t_sample *[chans];
 		for (int i=0; i<chans; i++) sam[i] = sp[i]->s_vec;
 		dsp_add(perform_,2,this,sp[0]->s_n);
-		blah=new Grid(Dim(sp[0]->s_n,chans),float32_e);
+		if (!custom) blah=new Grid(Dim(sp[0]->s_n,chans),float32_e);
 	}
 	static void dsp_ (BFObject *bself, t_signal **sp) {((GridFromTilde *)bself->self)->dsp(sp);}
 };
