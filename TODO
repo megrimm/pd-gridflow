@@ -1,13 +1,17 @@
-necessary for 9.13 :
+Unsorted
 
 [ ] do domain name transfer
+[ ] [gf/error] can't take a list. (see [#is])
+[ ] mmx not properly detected anymore (bug in ruby ?)
+[ ] [#rzero_space]
+[ ] rename [#lop_space] to [#rpole_space] ?
+[ ] [#convolve]: remove "a" ?
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
 [ ] reform GFDP so that pd43 and l2ork become debuggable.
-
-Unsorted
-
+[ ] in [#convolve]'s muladd, use a+b*(-1) = a-b
+[ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] memalign still doesn't exist on OSX and Windows ?
 [ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
@@ -17,6 +21,8 @@ Unsorted
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
+[ ] [#from~]: pick your own blocksize (default = use same as pd)
+[ ] fix warnings in config.log on OSX
 [ ] [#expr] local
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [fps] doesn't complain about invalid mode name
@@ -72,7 +78,6 @@ Unsorted
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
-[ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 [ ] [#draw_polygon] : winding-rule, et multi-rule (ce dernier utile pour dessiner plusieurs polygones à la fois)
 [ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
@@ -144,8 +149,7 @@ Unsorted
 [ ] merge << and pd_oprint please
 [ ] infinite loop in shoot.pd
 [ ] change numop to numop2 all over the documentation
-[ ] renommer t_symbol * à symbol  (?)
-[ ] renommer t_atom2 *  à atom    (?)
+[ ] renommer t_symbol * à symbol ou Symbol, et t_atom2 à atom ou Atom ? (peux pas renommer t_atom2 *)
 [ ] #fold and #scan begin without seed but can't send "seed none" to [#fold +]
 [ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
     pourrait devenir :
@@ -157,20 +161,12 @@ Unsorted
     error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
 [ ] intégrer -lib segfault
 [ ] [lb] ?
-[ ] cellular_1d.pd: should get a variable width
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
-[ ] while running #to~-help.pd :
-	 Invalid read of size 4
-	    upsampling_perform_linear (d_resample.c:92)
-	  Address 0x51fa2f0 is 0 bytes after a block of size 128 alloc'd
-	    calloc (vg_replace_malloc.c:418)
-	    getbytes (m_memory.c:24)
 [ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
 [ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
 [ ] regular dc1394 options
 [ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
-[ ] [#in unicap] and/or [#in videojack] ?
 [ ] test accuracy of RGB2Y etc
 [ ] [#camera] [#cast] setting ? or not ?
 [ ] fix SDL modifiers
@@ -187,13 +183,6 @@ Unsorted
     to make a CHDH-like animations using [gf/gl].
 [ ] see [comment] from cyclone
 [ ] Dim::T = intptr_t
-[ ] creating a [pd~] while -lib Gem -lib gridflow are loaded. (it looked like related to GF, but in the end, probably not)
-    Program received signal SIGSEGV, Segmentation fault.
-    with gdb: canvas_getenv (x=0x8188868, name=0x819f558 "pd~", ext=0x8126d74 ".l_i386",
-	dirresult=0xbfffb634 "", nameresult=0xbfffb630, size=4096, bin=1) at g_canvas.c:160
-    with valgrind: Invalid read of size 4 at canvas_open (g_canvas.c:160) by 0x64705F76: ???
-	Address 0x9c is not stack'd, malloc'd or (recently) free'd
-    with no further info (2008.08.17)
 [ ] canvasdelete
 [ ] DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 [ ] DEF_OP(pingpong,  ...)
@@ -213,6 +202,9 @@ Not Important
 [ ] [gf/numop_info]
 [ ] algebraïc properties of some numop2s are not written down (0,false,false instead)
 [ ] heat.pd still sucks (?)
+[ ] cellular_1d.pd: should get a variable width
+[ ] [#in unicap] and/or [#in videojack] ?
+[ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
 
 OpenCV
 [ ] cvOpticalFlow
@@ -240,8 +232,8 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level (?)
 [ ] Add a video latency patch (in examples)
-[ ] Numop: warn on misalignment
-[ ] remove GridInlet* ?
+[ ] check whether we could benefit more from alignment of data (currently not much)
+[ ] rearrange FObject,GridInlet,GridOut structures in a different manner ?
 [ ] [#expr] grid support
 [ ] [#line]? [#pipe]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
@@ -284,9 +276,8 @@ Architecture
 [ ] accounting: grids packets numbers bytes copybytes
 [ ] memory profiling
 [ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
-[ ] add a GridFlow::LaterException or something (which tells to retry later with the same packet because another
-    grid reception is not completed yet.) 
-[ ] SSE, liboil
+[ ] add a way to handle missing data so that we don't have to ever use [#t].
+[ ] MMX/SSE in C (remove Asm/Ruby code)
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] read http://en.wikipedia.org/wiki/Tacit_programming
@@ -389,7 +380,7 @@ svn propset svn:mime-type text/pure-data *.pd
 
 How to release GridFlow :
 
-dir=gridflow-9.12; tag=gridflow_9_12_b
+dir=gridflow-9.14; tag=gridflow_9_14
 svn copy svn+ssh://gridflow.ca/home/svn/gridflow/trunk svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/
 svn export svn+ssh://gridflow.ca/home/svn/gridflow/tags/$tag/ $dir
 chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
