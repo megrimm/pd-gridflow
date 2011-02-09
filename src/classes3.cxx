@@ -74,16 +74,14 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
 	if (in.dim[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in.dim[1],chans);
+	long samples = in.dim.prod()/chans;
+	if (samples+size>capacity) post("[#to~] buffer full: dropping %ld samples.",samples+size-capacity);
 } GRID_FLOW {
-	if (size==capacity) return;
 	while (n && size<capacity) {
 		int i = ((start+size)&(capacity-1)) * chans;
 		COPY((T *)*blah+i,data,chans);
 		data+=chans; n-=chans; size++;
 	}
-	if (n>0) post("[#to~] buffer full: dropped %ld samples. will not report further till it's not full anymore.",long(n/chans));
-} GRID_FINISH {
-	//post("[#to~] buffer size : %d out of %d",size,capacity);
 } GRID_END
 \end class {
 	install("#to~",1,0); // actually it has outlets that are not registered with GF
