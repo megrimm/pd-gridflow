@@ -593,8 +593,8 @@ static CONSTRAINT(expect_convolution_matrix) {
 
 \class GridConvolve {
 	// entry in a compiled convolution kernel
-	struct  PlanEntry {long y; long x; bool neutral;
-		PlanEntry (long y, long x, bool neutral) : y(y), x(x), neutral(neutral) {}
+	struct  PlanEntry {long y; long x; long k; bool neutral;
+		PlanEntry (long y, long x, long k, bool neutral) : y(y), x(x), k(k), neutral(neutral) {}
 	};
 	\attr Numop2 *op;
 	\attr Numop2 *fold;
@@ -616,20 +616,48 @@ static CONSTRAINT(expect_convolution_matrix) {
 	}
 	\grin 0
 	\grin 1
-	template <class T> void copy_row (T *buf, long sx, long y, long x);
+	template <class T> void   copy_row (T *buf, long sx, long y, long x);
+	template <class T> void muladd_row (T *buf, long sx, long y, long x, T m);
+	template <class T> void    mul_row (T *buf, long sx, long y, long x, T m);
 	template <class T> void make_plan (T bogus);
 };
 
 template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x) {
 	long day = a->dim[0], dax = a->dim[1], dac = a->dim.prod(2);
-	y=mod(y,day); x=mod(x,dax);
-	T *ap = (T *)*a + y*dax*dac;
+	y=mod(y,day); x=mod(x,dax); T *ap = (T *)*a + y*dax*dac;
 	while (sx) {
 		long sx1 = min(sx,dax-x);
 		COPY(buf,ap+x*dac,sx1*dac);
-		x=0;
-		buf += sx1*dac;
-		sx -= sx1;
+		x=0; buf += sx1*dac; sx -= sx1;
+	}
+}
+
+// map * then zip +
+template <class T> void muladd (int n, T *as, T *bs, T c) {
+	if (c==1) while (n--) *as++ += *bs++    ;
+	else      while (n--) *as++ += *bs++ * c;
+}
+template <class T> void mul    (int n, T *as, T *bs, T c) {
+	if (c==1) while (n--) *as++  = *bs++    ;
+	else      while (n--) *as++  = *bs++ * c;
+}
+
+template <class T> void GridConvolve::muladd_row (T *buf, long sx, long y, long x, T m) {
+	long day = a->dim[0], dax = a->dim[1], dac = a->dim.prod(2);
+	y=mod(y,day); x=mod(x,dax); T *ap = (T *)*a + y*dax*dac;
+	while (sx) {
+		long sx1 = min(sx,dax-x);
+		muladd(sx1*dac,buf,ap+x*dac,m);
+		x=0; buf += sx1*dac; sx -= sx1;
+	}
+}
+template <class T> void GridConvolve::mul_row (T *buf, long sx, long y, long x, T m) {
+	long day = a->dim[0], dax = a->dim[1], dac = a->dim.prod(2);
+	y=mod(y,day); x=mod(x,dax); T *ap = (T *)*a + y*dax*dac;
+	while (sx) {
+		long sx1 = min(sx,dax-x);
+		mul(sx1*dac,buf,ap+x*dac,m);
+		x=0; buf += sx1*dac; sx -= sx1;
 	}
 }
 
@@ -650,7 +678,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 				absorbent = fold->on(rh)->is_neutral(foo[0],at_right);
 			}
 			if (absorbent) continue;
-			plan.push_back(PlanEntry(y,x,neutral));
+			plan.push_back(PlanEntry(y,x,k,neutral));
 		}
 	}
 }
@@ -675,30 +703,43 @@ GRID_INLET(0) {
 } GRID_FINISH {
 	make_plan((T)0);
 	long dbx = b->dim[1];
-	long dby = b->dim[0];
 	long day = go->dim[0];
-	long n =   go->dim.prod(1);
-	long sx =  go->dim[1]+dbx-1;
+	long n   = go->dim.prod(1);
+	long sx  = go->dim[1]+dbx-1;
 	long sxc = go->dim.prod(2)*sx;
 	T buf[n];
 	T buf2[sxc];
-	T orh=0;
-	for (long ay=0; ay<day; ay++) {
-		op_put->map(n,buf, seed ? *(T *)*seed : T(0));
-		for (size_t i=0; i<plan.size(); i++) {
-			long by = plan[i].y;
-			long bx = plan[i].x;
-			long k = anti ? by*dbx+bx : (dby-1-by)*dbx+(dbx-1-bx);
-			T rh = ((T *)*b)[k];
-			if (i==0 || by!=plan[i-1].y || orh!=rh) {
-				if (wrap) copy_row(buf2,sx,ay+by-margy,-margx);
-				else      copy_row(buf2,sx,ay+by,0);
-				if (!plan[i].neutral) op->map(sxc,buf2,rh);
+	if (op==op_mul && fold==op_add) {
+		for (long ay=0; ay<day; ay++) {
+			op_put->map(n,buf, seed ? *(T *)*seed : T(0));
+			for (size_t i=0; i<plan.size(); i++) {
+				long by = plan[i].y, bx = plan[i].x; T rh = ((T *)*b)[plan[i].k];
+				if (i) {
+					if (wrap) muladd_row(buf,sx,ay+by-margy,bx-margx,rh);
+					else      muladd_row(buf,sx,ay+by      ,0       ,rh);
+				} else {
+					if (wrap) mul_row(   buf,sx,ay+by-margy,bx-margx,rh);
+					else      mul_row(   buf,sx,ay+by      ,0       ,rh);
+				}
 			}
-			fold->zip(n,buf,buf2+bx*go->dim.prod(2));
-			orh=rh;
+			go->send(n,buf);
 		}
-		go->send(n,buf);
+	} else {
+		T orh=0;
+		for (long ay=0; ay<day; ay++) {
+			op_put->map(n,buf, seed ? *(T *)*seed : T(0));
+			for (size_t i=0; i<plan.size(); i++) {
+				long by = plan[i].y, bx = plan[i].x; T rh = ((T *)*b)[plan[i].k];
+				if (i==0 || by!=plan[i-1].y || orh!=rh) {
+					if (wrap) copy_row(buf2,sx,ay+by-margy,-margx);
+					else      copy_row(buf2,sx,ay+by      ,0     );
+					if (!plan[i].neutral) op->map(sxc,buf2,rh);
+				}
+				fold->zip(n,buf,buf2+bx*go->dim.prod(2));
+				orh=rh;
+			}
+			go->send(n,buf);
+		}
 	}
 	//a=0; // comment this out when trying to recycle a (use the dim.equal above)
 } GRID_END
