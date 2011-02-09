@@ -1,6 +1,14 @@
 /* $Id$ */
 
-version 9.13 (2011.02...):
+version 9.14 (2011.02...):
+
+ * [#convolve] runs somewhat faster (when using default op/fold/seed)
+ * [#to~]: add second argument for buffer size (in samples)
+ * [#to~]: report "buffer full" at most once per incoming grid.
+ * [#from]: fix crash upon deleting object
+ * [#from]: add second argument for buffer size (in samples)
+
+version 9.13 (2011.02.08):
 
  * added classes [azerty_piano], [hpgl_to_lines], [hpgl_objectbox],
    [hpgl_messagebox], [hpgl_from_patch], [#draw_lattice]
@@ -20,8 +28,7 @@ version 9.13 (2011.02...):
  * former numop "atan" renamed to "atan2cd"
  * new numops: asin acos atan asinh acosh atanh
  * numops log and C.log aliased to ln and C.ln
- * [#inner]: add seedless mode
- * [#convolve]: add seedless mode
+ * [#inner] and [#convolve]: add seedless mode (without typecheck annoyance)
  * [unix_time]: fixed the month number bug
  * [#fold]: much faster in the case folding over a dim that has only 1 index
  * some more work on the Win32 port
