@@ -108,7 +108,7 @@ GRID_INLET(0) {
 		go.send(blah->dim.prod(),(float32 *)*blah);
 	}
 	static void clock_bang_ (BFObject *bself) {((GridFromTilde *)bself->self)->clock_bang();}
-	~GridFromTilde () {delete[] sigin; if (sam) delete[] sam;}
+	~GridFromTilde () {clock_free(clock); delete[] sigin; if (sam) delete[] sam;}
 	void perform (int n) {
 		float32 *data = (float32 *)*blah;
 		for (int i=0; i<n; i++) for (int j=0; j<chans; j++) data[i*chans+j]=sam[j][i];
