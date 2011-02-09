@@ -32,7 +32,6 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 
 //****************************************************************
 \class GridToTilde {
-	int capacity;
 	P<Grid> blah;
 	t_outlet **sigout;
 	int chans; /* number of channels */
@@ -46,7 +45,6 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 		sigout = new t_outlet *[chans];
 		for (int i=0; i<chans; i++) sigout[i] = outlet_new((t_object *)bself,&s_signal);
 		this->chans = chans;
-		this->capacity = capacity;
 		blah=new Grid(Dim(capacity,chans),float32_e);
 		start=0; size=0; sam=0;
 	}
@@ -56,7 +54,7 @@ template <class T> T *DUP(T *m, size_t n) {T *r = (T *)malloc(sizeof(T)*n); memc
 		for (int i=0; i<n; i++) {
 			if (size) {
 				for (int j=0; j<chans; j++) sam[j][i]=data[start*chans+j];
-				start=(start+1)&(capacity-1);
+				start=(start+1)&(blah->dim[0]-1);
 				size--;
 			} else for (int j=0; j<chans; j++) sam[j][i]=0;
 		}
@@ -75,8 +73,10 @@ GRID_INLET(0) {
 	if (in.dim.n!=2) RAISE("expecting two dimensions: signal samples, signal channels");
 	if (in.dim[1]!=chans) RAISE("grid has %d channels, but this object has %d outlets",in.dim[1],chans);
 	long samples = in.dim.prod()/chans;
+	int capacity = blah->dim[0];
 	if (samples+size>capacity) post("[#to~] buffer full: dropping %ld samples.",samples+size-capacity);
 } GRID_FLOW {
+	int capacity = blah->dim[0];
 	while (n && size<capacity) {
 		int i = ((start+size)&(capacity-1)) * chans;
 		COPY((T *)*blah+i,data,chans);
