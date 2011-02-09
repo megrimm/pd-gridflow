@@ -22,9 +22,9 @@
 #ifndef __GRIDFLOW_H
 #define __GRIDFLOW_H
 
-#define GF_VERSION "9.13"
+#define GF_VERSION "9.14"
 #define GF_VERSION_A  9
-#define GF_VERSION_B 13
+#define GF_VERSION_B 14
 #define GF_VERSION_C  0
 
 #include "bundled/m_pd.h"
