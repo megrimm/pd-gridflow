@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 =begin
 	GridFlow
-	Copyright (c) 2001-2010 by Mathieu Bouchard
+	Copyright (c) 2001-2011 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -130,7 +130,7 @@ def handle_decl(line)
 	  Out.print "#{m.rettype} #{m.selector2}("
 	  Out.print "VA" if m.maxargs<0
 	  Out.print "," if m.maxargs<0 and m.args.length>0
-	  Out.print unparse_args m.args if m.args.length>0
+	  Out.print unparse_args(m.args) if m.args.length>0
 	  Out.print "); static void #{m.selector2}_wrap(#{classname} *self, VA);"
 	end
 end
