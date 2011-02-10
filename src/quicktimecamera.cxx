@@ -329,7 +329,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 		OSErr e = VDGetDigitizerInfo(vdc,&di);
 		if (e!=noErr) RAISE("VDGetDigitizerInfo error");
 		if (DEBUG) {
-			post("vdigType=%d inputCapabilityFlags=0x%08x outputCapabilityFlags=0x%08x inputCurrentFlags=0x%08x outputCurrentFlags=0x%08x",
+			post("vdigType=%d inputCapabilityFlags=0x%08lx outputCapabilityFlags=0x%08lx inputCurrentFlags=0x%08lx outputCurrentFlags=0x%08lx",
 				di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
 			post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
 			post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
