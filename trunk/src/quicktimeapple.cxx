@@ -267,9 +267,9 @@ GRID_INLET(0) {
 		compErr = SCSetInfo(component, scTemporalSettingsType, &temporal);
 		compErr = SCSetInfo(component, scSpatialSettingsType, &spatial);
 		compErr = SCSetInfo(component, scDataRateSettingsType, &datarate);
-		if (compErr != noErr) RAISE("(SCSetInfo)\nerror #%d : %s", compErr, oserr_find(compErr));
+		if (compErr != noErr) RAISE("(SCSetInfo)\nerror #%d : %s", int(compErr), oserr_find(compErr));
 		compErr = SCCompressSequenceBegin(component, GetPortPixMap(gw), &r, &imagedesc);
-		if (compErr != noErr) RAISE("(SCCompressSequenceBegin)\nerror #%d : %s", compErr, oserr_find(compErr));
+		if (compErr != noErr) RAISE("(SCCompressSequenceBegin)\nerror #%d : %s", int(compErr), oserr_find(compErr));
 		err = BeginMediaEdits(media);
 		if (err != noErr) ERR("BeginMediaEdits");
 	}
