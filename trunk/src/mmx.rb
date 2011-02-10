@@ -106,6 +106,7 @@ def make_fun_map(op,type)
 	sym = $opcodes[op][0]
 	opcode = $opcodes[op][1]
 	mopcode = $opcodes[op][size+(size<4 ? 1 : 0)]
+	STDERR.puts "mopcode=#{mopcode}"
 	return if not mopcode
 	AsmFunction.make(s) {|a|
 		puts "mov ecx,[ebp+8]", "mov esi,[ebp+12]", "mov eax,[ebp+16]"
@@ -144,10 +145,10 @@ def make_fun_zip(op,type)
 	sym = $opcodes[op][0]
 	opcode = $opcodes[op][1]
 	mopcode = $opcodes[op][size+(size<4 ? 1 : 0)]
+	STDERR.puts "mopcode=#{mopcode}"
 	return if not mopcode
 	AsmFunction.make(s) {|a|
-		puts "mov ecx,[ebp+8]",  "mov edi,[ebp+12]",
-		     "mov esi,[ebp+16]"#, "mov ebx,[ebp+20]"
+		puts "mov ecx,[ebp+8]",  "mov edi,[ebp+12]", "mov esi,[ebp+16]"
 		foo = proc {|n|
 			a.make_until("cmp ecx,#{8/size*n}","jb near") {
 				0.step(n,4) {|k|
@@ -158,10 +159,8 @@ def make_fun_zip(op,type)
 				for i in 0...nn do puts "#{mopcode} mm#{i},mm#{i+4}" end
 				for i in 0...nn do puts "movq [edi+#{o[i]}],mm#{i}" end
 				}
-				#for i in 0...n do puts "movq [ebx+#{8*i}],mm#{i}" end
 				puts "lea edi,[edi+#{8*n}]"
 				puts "lea esi,[esi+#{8*n}]"
-				#puts "lea ebx,[ebx+#{8*n}]"
 				puts "lea ecx,[ecx-#{8/size*n}]"
 			}
 		}
@@ -171,17 +170,12 @@ def make_fun_zip(op,type)
 			# requires commutativity ??? fails with shl, shr
 			puts "mov #{accum},[esi]"
 			puts "#{opcode} #{$asm_type[type]} [edi],#{accum}"
-			#puts "mov #{accum},[edi]"
-			#puts "#{opcode} #{accum},[esi]"
-			#puts "mov [ebx],#{accum}"
 			puts "lea edi,[edi+#{size}]"
 			puts "lea esi,[esi+#{size}]"
-			#puts "lea ebx,[ebx+#{size}]"
 			puts "dec ecx"
 		}
 		puts "emms"
 	}
-	#$decls << "void #{s}(long,#{type}*,#{type}*,#{type}*);\n"
 	$decls << "void #{s}(long,#{type}*,#{type}*);\n"
 	$install << "((Numop2 *)op_dict[string(\"#{sym}\")])->on_#{type}.zip = #{s};\n"
 	$count += 1
