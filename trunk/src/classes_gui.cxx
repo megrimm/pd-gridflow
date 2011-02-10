@@ -320,34 +320,36 @@ static t_symbol *s_empty;
 	KEYS_ARE(127,"Delete");
 }
 
-struct t_netsend : t_object {
-    int fd;
-    int protocol;
-};
-
-static t_netsend *seesend;
 \class GridSee : GUI_FObject {
 	BFObject *spy;
 	P<Grid> buf;
 	bool hold;
-	//\attr bool fast;
-	bool fast; // does not work
+	bool fast;
+	string filename;
+	FILE *file;
 	\decl 0 fast (bool fast=1) {this->fast=fast;}
 	t_clock *clock; // pitiééééééééééééééé
 	int my1,mx1,my2,mx2; // margins
-	\constructor () {
+	\constructor (bool fast=false) {
 		clock = clock_new(bself,(void(*)())doh);
 		my1=5; my2=5; mx1=3; mx2=3;
+		file = 0;
 		compute_size();
 		hold = false;
 		sys_vgui("image create photo %s -width %d -height %d\n",rsym->s_name,sx,sy);
-		fast=false;
-		//fast=true;
+		this->fast=fast;
 		changed();
 		t_atom2 a[1] = {s_empty};
 		pd_anything(&pd_objectmaker,gensym("gf/mouse_spy"),1,a);
 		spy = (BFObject *)pd_newest(); if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
+		if (fast) open_file();
+	}
+	void open_file () {
+		char buf[64];
+		sprintf(buf,"/tmp/%d-x%lx.ppm",getpid(),long(this));
+		file = fopen(buf,"w+");
+		filename = buf;
 	}
 	void compute_size () { /* 1 is a fudge due to how Tk sizes work vis-à-vis pixel counting */
 		sy = my1 + (buf ? buf->dim[0] : 48) + my2 - 1;
@@ -389,13 +391,11 @@ static t_netsend *seesend;
 		  else        for(int y=0; y<ys; y++) for(int x=0; x<xs; x++,i+=chans,j+=3) {FUX(i  ,j+0)FUX(i  ,j+1)FUX(i  ,j+2)}}
 		TYPESWITCH(buf->nt,FOO,)
 		#undef FOO
-		if (!seesend) post("[#see]: missing [netsend]");
-		if (seesend->fd<0) post("[#see]: [netsend] not connected");
-		// this needs to be sent right away.
-		fprintf(stderr,"1\n");
-		sys_vgui("image create photo %s -data \"P6\\n%d %d\\n255\\n[read $::gridsee_socket %d]\"\n",rsym->s_name,xs,ys,xs*ys*3);
-		fprintf(stderr,"2\n");
-		write(seesend->fd,fub,xs*ys*3);
+		fprintf(file,"P6\n%d %d\n255\n",xs,ys);
+		fwrite(fub,1,xs*ys*3,file);
+		fflush(file);
+		rewind(file);
+		sys_vgui("image create photo %s -file %s\n",rsym->s_name,filename.data());
 	    } else {
 		char fub[xs*ys*6+1]; fub[xs*ys*6]=0;
 		sys_gui("set zut ");
@@ -443,12 +443,6 @@ GRID_INLET(0) {
 	changed();
 } GRID_END
 
-extern t_class *glob_pdobject;
-void pd_initgridsee () {
-	post("preconnect");
-	t_atom2 a[2] = {gensym("localhost"),9999}; pd_anything((t_pd *)seesend,gensym("connect"),2,a);
-	post("postconnect");
-}
 \end class {
 	install("#see",1,1);
 	class_setwidget(fclass->bfclass,GridSee::newwb());
@@ -470,14 +464,6 @@ void pd_initgridsee () {
 	"$c create rectangle $x3 $y3 $x4 $y4 -fill black -tags [list $self ${self}RR] -outline black\n"
 	"$c create image  [expr {$x1+$mx1}] [expr {$y1+$my1}] -tags [list $self ${self}IMAGE] -image $self -anchor nw\n"
 	"}\n");
-	/*
-	pd_anything(&pd_objectmaker,gensym("netsend"),0,0);
-	seesend = (t_netsend *)pd_newest(); if (!seesend) post("no seesend?"); else post("seesend!");
-	class_addmethod(glob_pdobject,pd_initgridsee,gensym("init#see"),A_NULL);
-	sys_gui("proc gridsee_accept {sock ip port} {pdtk_post \"\ngridsee_accept\"; set ::gridsee_socket $sock}\n");
-  	sys_gui("set ::gridsee_server [socket -server gridsee_accept 9999]\n");
-  	sys_gui("after 0 {pd pd init#see bang}\n");
-  	*/
 }
 
 //****************************************************************
