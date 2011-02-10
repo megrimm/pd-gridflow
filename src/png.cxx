@@ -48,7 +48,7 @@ GRID_INLET(0) {
 	if (!png) RAISE("!png");
 	info = png_create_info_struct(png);
 	if (!info) {if (png) png_destroy_write_struct(&png, NULL); RAISE("!info");}
-	if (setjmp(png->jmpbuf)) {png_destroy_write_struct(&png, &info); RAISE("png write error");}
+	if (setjmp(png_jmpbuf(png))) {png_destroy_write_struct(&png, &info); RAISE("png write error");}
 	png_init_io(png, f);
 	static int color_type[] = {
 		PNG_COLOR_TYPE_GRAY,
