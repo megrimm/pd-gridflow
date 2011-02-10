@@ -85,8 +85,8 @@ $opcodes = {
 #	:min     => %w[ min    _      pminub  pminsw  _       _                          ], # not plain MMX !!! (req.Katmai)
 #	:eq      => %w[ ==     _      pcmpeqb pcmpeqw pcmpeqd _                          ],
 #	:gt      => %w[ >      _      pcmpgtb pcmpgtw pcmpgtd _                          ],
-	:shl     => %w[ <<     shl    _       psllw   pslld   psllq                      ], # noncommutative
-	:shr     => %w[ >>     sar    _       psraw   psrad   _                          ], # noncommutative
+#	:shl     => %w[ <<     shl    _       psllw   pslld   psllq                      ], # noncommutative
+#	:shr/sar => %w[ >>     sar    _       psraw   psrad   _                          ], # noncommutative
 #	:clipadd => %w[ clip+  _      paddusb paddsw  _       _                          ], # future use
 #	:clipsub => %w[ clip-  _      psubusb psubsw  _       _                          ], # future use
 #	:andnot  => %w[ &not   _      pandn   pandn   pandn   pandn                      ], # not planned
