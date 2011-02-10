@@ -983,12 +983,13 @@ GRID_INPUT(1,r) {} GRID_END
 
 // ****************************************************************
 // pad1,pad2 only are there for 32-byte alignment
-struct Line {int32 y1,x1,y2,x2,x,m,ox,pad2;};
+struct Line {int32 y1,x1,y2,x2,x,m,ox,dir;};
 
 static CONSTRAINT(expect_polygon) {if (d.n!=2 || d[1]!=2) RAISE("expecting Dim[n,2] polygon");}
 
 enum DrawMode {DRAW_FILL,DRAW_LINE,DRAW_POINT};
 enum OmitMode {OMIT_NONE,OMIT_LAST,OMIT_ODD};
+enum Rule {RULE_ODDEVEN,RULE_WINDING,RULE_MULTI};
 DrawMode convert(const t_atom2 &x, DrawMode *foo) {
 	t_symbol *s = convert(x,(t_symbol **)0);
 	if (s==gensym("fill")) return DRAW_FILL;
@@ -1003,12 +1004,20 @@ OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	if (s==gensym("odd"))  return OMIT_ODD;
 	RAISE("unknown OmitMode '%s' (want none or last or odd)",s->s_name);
 }
+Rule convert(const t_atom2 &x, Rule *foo) {
+	t_symbol *s = convert(x,(t_symbol **)0);
+	if (s==gensym("oddeven")) return RULE_ODDEVEN;
+	if (s==gensym("winding")) return RULE_WINDING;
+	if (s==gensym("multi"))    return RULE_MULTI;
+	RAISE("unknown Rule '%s' (want oddeven or winding or multi)",s->s_name);
+}
 \class DrawPolygon {
 	\attr Numop2 *op;
 	\attr P<Grid> color;
 	\attr P<Grid> polygon;
 	\attr DrawMode draw;
 	\attr OmitMode omit;
+	\attr Rule rule; // unimplemented
 	P<Grid> color2;
 	P<Grid> lines;
 	int lines_start;
@@ -1016,6 +1025,7 @@ OmitMode convert(const t_atom2 &x, OmitMode *foo) {
 	\constructor (Numop2 *op=op_put, Grid *color=0, Grid *polygon=0) {
 		draw=DRAW_FILL;
 		omit=OMIT_NONE;
+		rule=RULE_ODDEVEN;
 		this->color  .but(expect_one_dim);
 		this->polygon.but(expect_polygon);
 		this->op = op;
@@ -1042,6 +1052,7 @@ void DrawPolygon::init_lines () {
 		j=(j+2)%(2*tnl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
+		ld[i].dir = cmp(ld[i].y1,ld[i].y2);
 		if (omit==OMIT_ODD) j=(j+2)%(2*tnl);
 		if (draw!=DRAW_POINT) if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
 		long dy = ld[i].y2-ld[i].y1;
@@ -1098,12 +1109,26 @@ GRID_INLET(0) {
 			}
 			if (draw!=DRAW_POINT) qsort(ld+lines_start,lines_stop-lines_start,sizeof(Line),order_by_column);
 			if (draw==DRAW_FILL) {
-				for (int i=lines_start; i<lines_stop-1; i+=2) {
-					int xs = max(ld[i].x,(int32)0);
-					int xe = min(ld[i+1].x,xl);
-					if (xs>=xe) continue;
-					while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
-					op->zip((xe-xs)*cn,data2+cn*xs,cd);
+				if (rule==RULE_ODDEVEN) {
+					for (int i=lines_start; i<lines_stop-1; i+=2) {
+						int xs = max(ld[i].x,(int32)0);
+						int xe = min(ld[i+1].x,xl);
+						if (xs<xe) {
+							while (xe-xs>=16) {op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
+							op->zip((xe-xs)*cn,data2+cn*xs,cd);
+						}
+					}
+				} else {
+					for (int k=0,i=lines_start; i<lines_stop-1; i++) {
+						int xs = max(ld[i].x,(int32)0);
+						int xe = min(ld[i+1].x,xl);
+						k += ld[i].dir;
+						if (xs<xe) {
+							int q = abs(k);
+							while (xe-xs>=16) {for (int w=0; w<q; w++) op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
+							for (int w=0; w<q; w++) op->zip((xe-xs)*cn,data2+cn*xs,cd);
+						}
+					}
 				}
 			} else if (draw==DRAW_LINE) {
 				for (int i=lines_start; i<lines_stop; i++) {
