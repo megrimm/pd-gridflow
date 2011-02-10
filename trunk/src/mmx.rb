@@ -34,9 +34,9 @@ class AsmFunction
 	end
 	def self.make(name)
 		puts "", "GLOBAL #{name}", "#{name}:"
-		puts "push ebp", "mov ebp,esp", "push esi", "push edi", "push ebx"
+		puts "push ebp", "mov ebp,esp", "push esi", "push edi"
 		yield AsmFunction.new(name)
-		puts "pop ebx", "pop edi", "pop esi", "leave", "ret", ""
+		puts "pop edi", "pop esi", "leave", "ret", ""
 	end
 	def make_until(*ops)
 		a = @label_count
@@ -81,12 +81,13 @@ $opcodes = {
 	:and     => %w[ &      and    pand    pand    pand    pand                       ],
 	:xor     => %w[ ^      xor    pxor    pxor    pxor    pxor                       ],
 	:or      => %w[ |      or     por     por     por     por                        ],
+#	:mul     => %w[ *      imul?  _       pmullw  _       _                          ],
 #	:max     => %w[ max    _      pmaxub  pmaxsw  _       _                          ], # not plain MMX !!! (req.Katmai)
 #	:min     => %w[ min    _      pminub  pminsw  _       _                          ], # not plain MMX !!! (req.Katmai)
 #	:eq      => %w[ ==     _      pcmpeqb pcmpeqw pcmpeqd _                          ],
 #	:gt      => %w[ >      _      pcmpgtb pcmpgtw pcmpgtd _                          ],
-#	:shl     => %w[ <<     shl    _       psllw   pslld   psllq                      ], # noncommutative
-#	:shr/sar => %w[ >>     sar    _       psraw   psrad   _                          ], # noncommutative
+#	:shl     => %w[ <<     shl    _       psllw   pslld   psllq                      ], # noncommutative; non-zip
+#	:shr     => %w[ >>     sar    _       psraw   psrad   _                          ], # noncommutative; non-zip
 #	:clipadd => %w[ clip+  _      paddusb paddsw  _       _                          ], # future use
 #	:clipsub => %w[ clip-  _      psubusb psubsw  _       _                          ], # future use
 #	:andnot  => %w[ &not   _      pandn   pandn   pandn   pandn                      ], # not planned
@@ -109,7 +110,7 @@ def make_fun_map(op,type)
 	STDERR.puts "mopcode=#{mopcode}"
 	return if not mopcode
 	AsmFunction.make(s) {|a|
-		puts "mov ebx,[ebp+8]", "mov esi,[ebp+12]", "mov eax,[ebp+16]"
+		puts "mov ecx,[ebp+8]", "mov esi,[ebp+12]", "mov eax,[ebp+16]"
 		if opcode=="shl" or opcode=="sar" then
 			puts "push dword 0", "push eax", "movq mm7,[esp]", "add esp,8"
 		else
@@ -118,7 +119,7 @@ def make_fun_map(op,type)
 			puts "push eax", "push eax", "movq mm7,[esp]", "add esp,8"
 		end
 		foo = proc {|n|
-			a.make_until("cmp ebx,#{8/size*n}","jb near") {
+			a.make_until("cmp ecx,#{8/size*n}","jb near") {
 				0.step(n,4) {|k|
 				nn=[n-k,4].min
 				o=(0..3).map{|x| 8*(x+k) }
@@ -126,20 +127,20 @@ def make_fun_map(op,type)
 				for i in 0...nn do puts "#{mopcode} mm#{i},mm7" end
 				for i in 0...nn do puts "movq [esi+#{o[i]}],mm#{i}" end
 				}
-				puts "lea esi,[esi+#{8*n}]", "lea ebx,[ebx-#{8 / size*n}]"
+				puts "lea esi,[esi+#{8*n}]", "lea ecx,[ecx-#{8 / size*n}]"
 			}
 		}
 		foo.call 4
 		foo.call 1
-		a.make_until("test ebx,ebx", "jz") {
-			if opcode=="shl" or opcode=="sar" then
-				puts "mov cl,al"
-				puts "#{opcode} #{$asm_type[type]} [esi],cl"
-			else
-				puts "#{opcode} #{$asm_type[type]} [esi],#{accum}"
-			end
+		a.make_until("test ecx,ecx", "jz") {
+			#if opcode=="shl" or opcode=="sar" then
+			#	puts "mov cl,al"
+			#	puts "#{opcode} #{$asm_type[type]} [esi],cl"
+			#else
+			puts "#{opcode} #{$asm_type[type]} [esi],#{accum}"
+			#end
 			puts "lea esi,[esi+#{size}]"
-			puts "dec ebx"
+			puts "dec ecx"
 		}
 		puts "emms"
 	}
@@ -158,9 +159,9 @@ def make_fun_zip(op,type)
 	STDERR.puts "mopcode=#{mopcode}"
 	return if not mopcode
 	AsmFunction.make(s) {|a|
-		puts "mov ebx,[ebp+8]",  "mov edi,[ebp+12]", "mov esi,[ebp+16]"
+		puts "mov ecx,[ebp+8]",  "mov edi,[ebp+12]", "mov esi,[ebp+16]"
 		foo = proc {|n|
-			a.make_until("cmp ebx,#{8/size*n}","jb near") {
+			a.make_until("cmp ecx,#{8/size*n}","jb near") {
 				0.step(n,4) {|k|
 				nn=[n-k,4].min
 				o=(0..3).map{|x| 8*(x+k) }
@@ -171,23 +172,17 @@ def make_fun_zip(op,type)
 				}
 				puts "lea edi,[edi+#{8*n}]"
 				puts "lea esi,[esi+#{8*n}]"
-				puts "lea ebx,[ebx-#{8/size*n}]"
+				puts "lea ecx,[ecx-#{8/size*n}]"
 			}
 		}
 		foo.call 4
 		foo.call 1
-		a.make_until("test ebx,ebx", "jz") {
-			# requires commutativity ??? fails with shl, shr
+		a.make_until("test ecx,ecx", "jz") {
 			puts "mov #{accum},[esi]"
-			if opcode=="shl" or opcode=="sar" then
-				puts "mov cl,al"
-				puts "#{opcode} #{$asm_type[type]} [edi],cl"
-			else
-				puts "#{opcode} #{$asm_type[type]} [edi],#{accum}"
-			end
+			puts "#{opcode} #{$asm_type[type]} [edi],#{accum}"
 			puts "lea edi,[edi+#{size}]"
 			puts "lea esi,[esi+#{size}]"
-			puts "dec ebx"
+			puts "dec ecx"
 		}
 		puts "emms"
 	}
@@ -197,7 +192,7 @@ def make_fun_zip(op,type)
 end
 
 for op in $opcodes.keys do
-	for type in [:uint8, :int16#, :int32
+	for type in [:uint8, :int16, :int32
 	] do
 		make_fun_map(op,type)
 		make_fun_zip(op,type)
