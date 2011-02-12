@@ -1,40 +1,35 @@
 #N canvas 596 22 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 3 413 doc_c 1;
-#X obj 3 477 doc_i 2;
-#X obj 3 823 doc_o 1;
+#X obj 3 490 doc_i 2;
+#X obj 3 893 doc_o 1;
 #X obj 14 445 doc_cc 0;
-#X obj 14 509 doc_ii 0;
-#X obj 14 791 doc_ii 1;
-#X obj 14 853 doc_oo 0;
-#X text 232 509 Splits the Dim(anyA... \, lastA) left-hand grid into
+#X obj 14 520 doc_ii 0;
+#X obj 14 861 doc_ii 1;
+#X obj 14 923 doc_oo 0;
+#X text 232 520 Splits the Dim(anyA... \, lastA) left-hand grid into
 Dim(anyA...) pieces of Dim(lastA) size.;
-#X text 232 544 Splits the Dim(firstB \, anyB...) right-hand grid into
+#X text 232 555 Splits the Dim(firstB \, anyB...) right-hand grid into
 Dim(anyB...) pieces of Dim(firstB) size.;
-#X text 232 579 On every piece pair \, does [#] using the specified
-op_para operation \, followed by a [#fold] using the specified op_fold
-operator and base value.;
-#X text 232 627 creates a Dim(anyA... \, anyB...) grid by assembling
+#X text 232 638 creates a Dim(anyA... \, anyB...) grid by assembling
 all the results together.;
-#X text 232 662 (note: lastA must be equal to firstB.);
-#X obj 232 791 doc_same 0;
-#X text 232 732 the operation that combines the values from the two
+#X obj 232 861 doc_same 0;
+#X text 232 791 the operation that combines the values from the two
 grids together. this defaults to "*" (as in the matrix product);
-#X text 232 684 the operation that combines the result of the "op"
+#X text 232 743 the operation that combines the result of the "op"
 operations together. this defaults to "+" (as in the matrix product)
 ;
-#X text 232 767 the base value for the fold;
-#X obj 0 905 doc_f;
-#X obj 97 509 doc_m i0 grid;
+#X obj 0 988 doc_f;
+#X obj 97 520 doc_m i0 grid;
 #X obj 97 445 doc_m c0 grid;
-#X obj 97 732 doc_m i0 op;
-#X obj 97 767 doc_m i0 seed;
-#X obj 97 791 doc_m i1 grid;
-#X obj 97 853 doc_m o0 grid;
-#X obj 97 684 doc_m i0 fold;
-#X obj 3 885 doc_also;
-#X obj 103 885 #outer *;
-#X obj 163 885 #fold +;
+#X obj 97 791 doc_m i0 op;
+#X obj 97 826 doc_m i0 seed;
+#X obj 97 861 doc_m i1 grid;
+#X obj 97 923 doc_m o0 grid;
+#X obj 97 743 doc_m i0 fold;
+#X obj 3 968 doc_also;
+#X obj 103 968 #outer *;
+#X obj 163 968 #fold +;
 #X obj 62 89 #inner;
 #X text 178 36 think of this one as a special combination of [#outer]
 \, [#] and [#fold]. this is one of the most complex operations. It
@@ -44,9 +39,9 @@ is done by something called matrix multiplication \, which happens
 to be [#inner]. [#inner] also does dot product and other funny operations.
 ;
 #X obj 14 445 doc_cc 0;
-#X obj 14 509 doc_ii 0;
-#X obj 14 791 doc_ii 1;
-#X obj 14 853 doc_oo 0;
+#X obj 14 520 doc_ii 0;
+#X obj 14 861 doc_ii 1;
+#X obj 14 923 doc_oo 0;
 #X obj 54 274 #inner;
 #X obj 277 263 #many nbx 3 3;
 #X obj 97 323 #many nbx 3 3;
@@ -66,29 +61,47 @@ to be [#inner]. [#inner] also does dot product and other funny operations.
 0;
 #X obj 103 396 cnv 12 12 12 empty a empty 20 12 0 14 -24198 -262144
 0;
-#X connect 18 1 8 0;
-#X connect 18 1 9 0;
-#X connect 18 1 10 0;
-#X connect 18 1 11 0;
-#X connect 18 1 12 0;
-#X connect 20 1 14 0;
-#X connect 21 1 16 0;
-#X connect 22 1 13 0;
-#X connect 24 1 15 0;
-#X connect 25 1 26 0;
-#X connect 25 1 27 0;
-#X connect 34 0 37 0;
-#X connect 35 0 34 1;
-#X connect 36 0 34 0;
-#X connect 40 0 41 0;
+#X text 232 590 On every piece pair \, does [#] using the specified
+"op" operation \, followed by a [#fold] using the specified "fold"
+operator and "seed" base value.;
+#X text 232 673 (note: lastA must be equal to firstB \, and this is
+enforced \, unlike with the behaviour of the real [#] class);
+#X obj 217 968 # *;
+#X text 232 708 given the defaults \, every number will be the result
+of a dot product (that's what a matrix product is);
+#X text 232 923 a grid of size (anyA... \, anyB...). The two dimensions
+lastA and firstB have disappeared due to folding.;
+#X text 232 826 the base value for the fold (default: none \, which
+acts like 0 in the case where fold is +);
+#X text 232 445 grid with at least one dimension. (the first dimension
+will be special \, and called firstB below).;
+#X connect 15 1 8 0;
+#X connect 15 1 9 0;
+#X connect 15 1 48 0;
+#X connect 15 1 10 0;
+#X connect 15 1 49 0;
+#X connect 15 1 51 0;
+#X connect 16 1 54 0;
+#X connect 17 1 12 0;
+#X connect 18 1 53 0;
+#X connect 19 1 11 0;
+#X connect 20 1 52 0;
+#X connect 21 1 13 0;
+#X connect 22 1 23 0;
+#X connect 22 1 24 0;
+#X connect 22 1 50 0;
+#X connect 31 0 34 0;
+#X connect 32 0 31 1;
+#X connect 33 0 31 0;
+#X connect 37 0 38 0;
+#X connect 38 0 39 0;
+#X connect 38 1 40 0;
+#X connect 39 0 33 0;
+#X connect 40 0 32 0;
 #X connect 41 0 42 0;
-#X connect 41 1 43 0;
-#X connect 42 0 36 0;
-#X connect 43 0 35 0;
+#X connect 41 0 43 0;
+#X connect 42 0 32 0;
+#X connect 43 0 33 0;
+#X connect 44 0 41 0;
 #X connect 44 0 45 0;
-#X connect 44 0 46 0;
-#X connect 45 0 35 0;
-#X connect 46 0 36 0;
-#X connect 47 0 44 0;
-#X connect 47 0 48 0;
-#X connect 48 0 37 0;
+#X connect 45 0 34 0;

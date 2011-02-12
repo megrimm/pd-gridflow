@@ -1,24 +1,24 @@
 #N canvas 596 0 632 642 10;
 #X obj 0 0 doc_h;
 #X obj 3 349 doc_i 1;
-#X obj 3 1340 doc_o 1;
-#X obj 3 1437 doc_also;
+#X obj 3 1406 doc_o 1;
+#X obj 3 1503 doc_also;
 #X obj 14 379 doc_ii 0;
 #X obj 97 401 doc_m i0 brightness;
 #X obj 97 887 doc_m i0 hue;
 #X obj 97 672 doc_m i0 colour;
 #X obj 97 729 doc_m i0 contrast;
-#X obj 97 1295 doc_m i0 whiteness;
+#X obj 97 1339 doc_m i0 whiteness;
 #X obj 97 786 doc_m i0 get;
 #X obj 97 423 doc_m i0 channel;
 #X obj 97 1172 doc_m i0 tuner;
 #X obj 97 944 doc_m i0 norm;
 #X obj 97 751 doc_m i0 frequency;
 #X obj 97 1054 doc_m i0 transfer symbol;
-#X obj 97 1251 doc_m i0 white_red;
+#X obj 97 1273 doc_m i0 white_red;
 #X obj 97 1207 doc_m i0 white_blue;
-#X obj 97 1273 doc_m i0 white_speed;
-#X obj 97 1229 doc_m i0 white_delay;
+#X obj 97 1317 doc_m i0 white_speed;
+#X obj 97 1251 doc_m i0 white_delay;
 #X obj 97 379 doc_m i0 auto_gain;
 #X obj 97 909 doc_m i0 noise_reduction;
 #X obj 97 694 doc_m i0 compression;
@@ -33,12 +33,12 @@ right outlet.;
 #X text 232 1124 In case of mmap \, the extra numeric argument sets
 the queue length in number of frames \, so you can select an appropriate
 tradeoff between efficiency and latency.;
-#X obj 0 1457 doc_f;
-#X obj 14 1370 doc_oo 0;
-#X obj 97 1370 doc_m o0 grid;
-#X obj 97 1392 doc_m o0 <any>;
-#X text 232 1370 image coming out;
-#X text 232 1392 most any inlet 0 message is also an outlet 0 message
+#X obj 0 1523 doc_f;
+#X obj 14 1436 doc_oo 0;
+#X obj 97 1436 doc_m o0 grid;
+#X obj 97 1458 doc_m o0 <any>;
+#X text 232 1436 image coming out;
+#X text 232 1458 most any inlet 0 message is also an outlet 0 message
 whose output can be triggered using 'get'.;
 #X text 353 27 get images from a V4L1 camera interface.;
 #X text 353 42 this is for Linux only.;
@@ -90,36 +90,40 @@ of mmap.;
 fast) way of transferring pictures from the camera.;
 #X text 232 1172 to pick UHF \, VHF \, ... or something like that.
 usually unused.;
-#X text 232 1207 0..65535: offset for the V channel (blue-yellow balance)
+#X text 232 1229 0..65535: offset for the V channel (blue-yellow balance)
 ;
-#X text 232 1251 0..65535: offset for the U channel (red-cyan balance)
+#X text 232 1295 0..65535: offset for the U channel (red-cyan balance)
 ;
-#X text 232 1229 i don't really know this;
-#X text 232 1273 i don't really know this;
-#X text 232 1295 0..65535: another setting similar to brightness and
+#X text 232 1361 0..65535: another setting similar to brightness and
 contrast.;
 #X text 232 401 0..65535: the main brightness setting;
 #X text 232 506 "yuv": 3 channels: grey \, blue/yellow \, red/cyan.
 ;
 #X text 232 637 "rgba": 4 channels: red \, green \, blue \, alpha \,
 in which alpha is always set to 255;
-#X obj 103 1437 #camera;
-#X obj 157 1437 doc_link #io.dc1394;
-#X obj 247 1437 doc_link #io.quicktimecamera;
+#X obj 103 1503 #camera;
+#X obj 157 1503 doc_link #io.dc1394;
+#X obj 247 1503 doc_link #io.quicktimecamera;
 #X msg 29 267 open videodev /dev/video0 1;
 #X text 225 265 this one uses libv4l1 (the v4l1 library) \, instead
 of using classic v4l1 (the kernel interface). this allows virtualisation
 such as using a v4l2-only driver in a v4l1-only programme \, and such
 as auto-converting pixel formats between the driver and the programme.
 ;
+#X text 232 1207 PWC-specific;
+#X text 232 1251 PWC-specific. i don't really know this option.;
+#X text 232 1317 PWC-specific. i don't really know this option.;
+#X text 232 1273 PWC-specific.;
+#X text 232 1339 PWC-specific.;
+#X connect 3 1 75 0;
+#X connect 3 1 76 0;
 #X connect 3 1 77 0;
-#X connect 3 1 78 0;
-#X connect 3 1 79 0;
-#X connect 5 1 74 0;
+#X connect 5 1 72 0;
 #X connect 6 1 59 0;
 #X connect 7 1 56 0;
 #X connect 8 1 57 0;
-#X connect 9 1 73 0;
+#X connect 9 1 71 0;
+#X connect 9 1 84 0;
 #X connect 10 1 29 0;
 #X connect 10 1 26 0;
 #X connect 10 1 27 0;
@@ -135,17 +139,19 @@ as auto-converting pixel formats between the driver and the programme.
 #X connect 15 1 67 0;
 #X connect 15 1 30 0;
 #X connect 16 1 70 0;
+#X connect 16 1 83 0;
 #X connect 17 1 69 0;
-#X connect 18 1 72 0;
-#X connect 19 1 71 0;
+#X connect 17 1 80 0;
+#X connect 18 1 82 0;
+#X connect 19 1 81 0;
 #X connect 20 1 51 0;
 #X connect 21 1 61 0;
 #X connect 22 1 60 0;
 #X connect 23 1 53 0;
-#X connect 23 1 75 0;
+#X connect 23 1 73 0;
 #X connect 23 1 54 0;
 #X connect 23 1 55 0;
-#X connect 23 1 76 0;
+#X connect 23 1 74 0;
 #X connect 24 1 25 0;
 #X connect 33 1 35 0;
 #X connect 34 1 36 0;
