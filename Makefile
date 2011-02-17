@@ -27,6 +27,7 @@ ifeq ($(OS),Darwin)
   CFLAGS += -mmacosx-version-min=10.4 -fPIC
   LDSOFLAGS += -headerpad_max_install_names -bundle -flat_namespace -undefined suppress
   PDSUF = .pd_darwin
+  EXECTYPE = macho
   # -undefined dynamic_lookup # is used by smlib. this might be a good idea for future use.
 else
   ifeq ($(OS),nt)
@@ -39,12 +40,15 @@ else
     #CFLAGS += -DDES_BUGS
     # -mms-bitfields is necessary because of t_object and the way Miller compiles pd.
     CFLAGS += -mms-bitfields
+    EXECTYPE = notdefined # not a real name
   else
     PDSUF = .pd_linux
     LDSOFLAGS = -shared -rdynamic
+    EXECTYPE = elf
     ifeq ($(HAVE_GCC64),yes)
       CFLAGS += -fPIC
       LDSOFLAGS += -fPIC
+      EXECTYPE = elf64
     endif
   endif
 endif
@@ -87,10 +91,15 @@ CFLAGS += -DPDSUF=\"$(PDSUF)\"
 	$(CXX) -xc++ -DLIBGF $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
 .PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
 
+# dur de comprenure...
+# found a case where 'make' would pick only the first %.o rule when the 2nd ought to apply.
+src/quartz.o: src/quartz.m.fcs $(COMMON_DEPS2)
+	$(CXX) -xc++ -DLIBGF $(CFLAGS) $(SNAFU) -xobjective-c++ -c src/quartz.m.fcs -o src/quartz.o
+
 src/mmx.asm src/mmx_loader.cxx: src/mmx.rb
 	$(RUBY) src/mmx.rb src/mmx.asm src/mmx_loader.cxx
 src/mmx.o: src/mmx.asm
-	nasm -f elf src/mmx.asm -o src/mmx.o
+	nasm -f $(EXECTYPE) src/mmx.asm -o src/mmx.o
 
 PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(COMMON_DEPS2)
