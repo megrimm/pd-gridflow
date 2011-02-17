@@ -155,7 +155,7 @@ template <class T> static T gcd2 (T a, T b) {
 }
 
 // least common multiple; this runs in log(a+b) like gcd.
-template <class T> static inline T lcm (T a, T b) {return a*b/gcd(a,b);}
+template <class T> static inline T lcm (T a, T b) {return (int64)a*b/gcd(a,b);}
 
 // returns the position (0..63) of highest bit set in a word, or 0 if none.
 #define Z(N) if ((x>>N)&(((typeof(x))1<<N)-1)) { x>>=N; i+=N; }
