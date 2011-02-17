@@ -511,6 +511,8 @@ Feature.add {
 	name "Intel OpenCV"
 	produces_o ["src/opencv.o"]
 	uses_so ["-lcv"]
+        uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
+       #uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
 	options ["HAVE_OPENCV"]
 	defines {{:OPENCV_SHARE_PATH => File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
 	test proc {c_test %`
