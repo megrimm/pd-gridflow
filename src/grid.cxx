@@ -201,6 +201,14 @@ GridOut::GridOut(FObject *parent_, int woutlet, const Dim &dim_, NumberTypeE nt_
 void GridOut::create_buf () {
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
+	if (!lcm_factor) {
+		int32 lcm_factor = 1;
+		for (uint32 i=0; i<inlets.size(); i++) {
+			lcm_factor = lcm(lcm_factor,inlets[i]->factor());
+			post("inlets[%d]->factor():%d, lcm_factor:%d",i,inlets[i]->factor(),lcm_factor);
+		}
+		RAISE("big trouble !");
+	}
 	//size_t ntsz = number_type_table[nt].size;
 	// biggest packet size divisible by lcm_factor
 	int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
