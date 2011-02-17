@@ -1,5 +1,6 @@
 Unsorted
 
+[ ] [#downscale_by 4 smoothly] on 1024x1024x3 image in patch_dans_patch_l.pd modifiée
 [ ] [args] loadbang order really, really sucks.
 [ ] [gf/error] can't take a list. (see [#is])
 [ ] mmx not properly detected anymore (bug in ruby ?)
@@ -15,9 +16,6 @@ Unsorted
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] memalign still doesn't exist on OSX and Windows ?
 [ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
-[ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
-    so, I didn't continue the job on [#scan] [#inner] (note that [#inner] already a special case related to that)
-[ ] [#see] shm : http://wiki.tcl.tk/2999
 [ ] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
@@ -100,7 +98,6 @@ Unsorted
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
 [ ] use [args] everywhere it should be used: e.g. [#background_model] but also many more
-[ ] [#fold] is slowwww
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
@@ -159,18 +156,14 @@ Unsorted
     (ou autre)
 [ ] make this work in the future :
     error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
-[ ] intégrer -lib segfault
-[ ] [lb] ?
+[ ] [lb] ? [m] ?
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
 [ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
 [ ] test accuracy of RGB2Y etc
 [ ] [#camera] [#cast] setting ? or not ?
 [ ] fix SDL modifiers
-[ ] GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 [ ] DimConstraint could become a lot better than just the current CONSTRAINT() thing.
 [ ] [#out x11]: add 'rootsize' ro attr
@@ -183,7 +176,6 @@ Unsorted
     to make a CHDH-like animations using [gf/gl].
 [ ] see [comment] from cyclone
 [ ] Dim::T = intptr_t
-[ ] canvasdelete
 [ ] DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 [ ] DEF_OP(pingpong,  ...)
 [ ] custom m_pd.h
@@ -192,6 +184,7 @@ Unsorted
 [ ] win32 color_correction.pd crash
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11 support
+[ ] malloc alignment = 4 mod 8 (en utilisant valgrind)
 
 Not Important
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
@@ -208,6 +201,15 @@ Not Important
 [ ] fix warnings in config.log on OSX
 [ ] [#find]
 [ ] http://claudiusmaximus.goto10.org/cm/2010-12-15_histogram_equalization.html
+[ ] canvasdelete
+[ ] regular dc1394 options
+[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
+[ ] make libdc1394 work again
+[ ] make libdc1394 work in colour
+[ ] [#see] shm : http://wiki.tcl.tk/2999
+[ ] intégrer -lib segfault ?
+[ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
+    so, I didn't continue the job on [#scan] [#inner] (note that [#inner] already a special case related to that)
 
 OpenCV
 [ ] cvOpticalFlow
@@ -223,16 +225,10 @@ OpenCV
 [ ] SnakeImage
 [ ] on doit aussi commencer à rajouter des types non-grid. Le premier sera CvHistogram et est requis pour tous les objets dont le nom contient "Hist".
 
-malloc alignment = 4 mod 8 (en utilisant valgrind)
-
-ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids of floats as coordinates and
-interpolates using 4-point interpolation, eg, right inlet -> (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5)
-outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
-
+Other
 [ ] add Minesweeper example based on [#many]
 [ ] OpenCL
 [ ] encoding of quicktime RGBA (PNG) does not work at all!
-[ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level (?)
 [ ] Add a video latency patch (in examples)
 [ ] check whether we could benefit more from alignment of data (currently not much)
@@ -240,17 +236,15 @@ outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inle
 [ ] [#expr] grid support
 [ ] [#line]? [#pipe]?
 [ ] rewrite [#rgb_to_rgba] [#rgba_to_rgb] in C++ if I'm not going to rework [#inner] soon enough.
-[ ] #,#fold,#scan,: option swap
+[ ] #,#fold,#scan,...: option swap
 [ ] re-test int64,float64 and make sure it works
-[ ] Copy-on-Write (COW)
-[ ] internal grid protocol redesigned
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
 [ ] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] "unsupported codec" bogus errors.
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
-[ ] some seeds aren't typechecked
+[ ] some seeds aren't typechecked (which ones ?)
 [ ] GRID_FINISH triggered while backstore ???
 [ ] what would be a way to make GF work well with Pd's idea of a list?
 [ ] write unit tests about required functionality
@@ -278,14 +272,18 @@ Architecture
 	specified part of the grid is received.
 [ ] accounting: grids packets numbers bytes copybytes
 [ ] memory profiling
-[ ] add a "query" class for debugging other objects? (would be able to extract extra info from each object/class)
 [ ] add a way to handle missing data so that we don't have to ever use [#t].
-[ ] MMX/SSE in C (remove Asm/Ruby code)
+[ ] MMX/SSE in C (remove Asm/Ruby code). seems to be damn hard.
 [ ] find a good profiler to use with GridFlow; did I look at http://oprofile.sourceforge.net/about/ ?
     what about: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] read http://en.wikipedia.org/wiki/Tacit_programming
+[ ] Copy-on-Write (COW)
+[ ] internal grid protocol redesigned
 
 Computation Objects
+[ ] ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids of floats as coordinates and
+    interpolates using 4-point interpolation, eg, right inlet -> (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5)
+    outputs (0.5 0.5 0.5) (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
 [ ] #counter (similar to #for)
 [ ] zero option in #convolve (as an alternative to wraparound)... sort of a built-in #border
 [ ] #convolve should allow n-D convolution
@@ -367,6 +365,8 @@ Peines Perdues:
 ----------------------------------------------------------------------------------------------------------------
 Autres notes
 
+look at GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
+
 -mfpmath=sse2
 
 Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
@@ -394,3 +394,7 @@ make binaries
 pd-announce mlist : post release
 freshmeat if anyone cares (just restored my account but didn't use it)
 puredata.info release listings
+
+-----
+
+/Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/code/gridflow-9.13 -lib gridflow
