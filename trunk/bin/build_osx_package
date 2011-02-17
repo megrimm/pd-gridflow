@@ -1,10 +1,12 @@
 #!/bin/bash
-
-# run from outside gridflow-svn/
+#
+# Originally by Patrick Boivin, 2009-2010
+# Modified by Mathieu Bouchard, 2011
+#
+# run from gridflow/..
 # with version number as $1
 #
-# ex: build_osx_package 0.9.7
-
+# ex: gridflow/bin/build_osx_package 9.13
 
 if [ -z "$1" ]; then
     echo Usage: $0  version_no  [arch]
@@ -17,34 +19,43 @@ else
     ARCH="i386"
 fi
 
-
 VERSION="gridflow-$1"
 PACKAGE="gridflow-$1-macosx104-$ARCH.tar.gz"
-GF_README="/usr/src/gridflow/GRIDFLOW_BIN/README-$ARCH.txt"
+DIR="$HOME/code/gridflow-$1"
+GF_README="$DIR/README-$ARCH.txt"
 
-mkdir $VERSION
-cd $VERSION
-cp -R ../gridflow-svn ./gridflow
-cd gridflow
-
-
-rm -rf Makefile TODO bin bundled config* src tests tmp
-
-for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do 
-    rm -rf $i
-done
-
+if [ "$(PWD)" != "$HOME/code" ]; then echo "t'es pas dans l'bon dossier"; exit 1; fi
+if [ ! -e "$GF_README"        ]; then echo "j'ai pas trouvé l'README";    exit 1; fi
 
 #-------------------------------------------------------------------------------
-if [ "$ARCH" = "ppc" ]; then
+echo "copie de $DIR/gridflow à $HOME/code/gridflow"
+rm -rf "$DIR/gridflow"
+cp -r "$HOME/code/gridflow" "$DIR"
+
+echo "effaçage de fichiers source et fichiers temporaires qui sont dans cette copie"
+cd "$DIR/gridflow"
+rm -rf Makefile TODO bin bundled config* src tests tmp
+for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do rm -rf $i; done
+#-------------------------------------------------------------------------------
+echo "configuration des bibliothèques"
+
+#if [ "$ARCH" = "ppc" ]; then
     EXTRALIBS="/sw/lib/libpng.3.dylib /sw/lib/libfftw3f.3.dylib /sw/lib/libfftw3.3.dylib /sw/lib/libncurses.5.dylib"
-else
-    EXTRALIBS="/usr/local/lib/libfftw3f.3.dylib /usr/local/lib/libfftw3.3.dylib /sw/lib/ncurses/libncurses.5.dylib"
-fi
+#else
+#    EXTRALIBS="/usr/local/lib/libfftw3f.3.dylib /usr/local/lib/libfftw3.3.dylib /sw/lib/ncurses/libncurses.5.dylib"
+#fi
 
 BUNDLED_PREFIX="/Library/Pd/gridflow/libs"
-BUNDLED_LIBS=" /sw/lib/libaa.1.dylib /sw/lib/libnetpbm.10.dylib /usr/X11/lib/libpng12.0.dylib \
-/sw/lib/libjpeg.62.dylib /sw/lib/libSDL-1.2.0.dylib $EXTRALIBS"
+#BUNDLED_PREFIX="/Users/pddev/code/gridflow-$1/gridflow/libs"
+
+BUNDLED_LIBS="\
+/sw/lib/libaa.1.dylib \
+/sw/lib/libnetpbm.10.dylib \
+/sw/lib/libpng12.0.dylib \
+/sw/lib/libjpeg.8.dylib \
+/sw/lib/libSDL-1.2.0.dylib \
+"$HOME/lib/libcv.dylib" \
+$EXTRALIBS"
 
 mkdir libs
 cp $BUNDLED_LIBS ./libs/
@@ -62,15 +73,14 @@ else
 install_name_tool -change  /sw/lib/ncurses/libncurses.5.dylib  $BUNDLED_PREFIX/libncurses.5.dylib  ./libs/libaa.1.dylib
 fi
 
+#echo "on teste l'exécutable et on quitte sans produire l'archive"
+#exec /Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/code/gridflow-9.13 -lib gridflow
+
 #-------------------------------------------------------------------------------
+echo "archivage des fichiers : production de $PACKAGE"
+cd ../..
+tar -czf "$PACKAGE" "$VERSION"
+echo "envoi de l'archive à gridflow.ca"
+scp "$PACKAGE" gridflow@gridflow.ca:public_html/download/packages
 
-
-cd ..
-cp $GF_README .
-cd ..
-
-
-tar -czf $PACKAGE $VERSION
-
-echo
-echo Done !
+echo fini!
