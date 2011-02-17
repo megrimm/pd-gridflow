@@ -7,6 +7,8 @@ version 9.14 (2011.02...):
  * [#to~]: report "buffer full" at most once per incoming grid.
  * [#from]: fix crash upon deleting object
  * [#from]: add second argument for buffer size (in samples)
+ * [#see]: experimental version goes about 5 times faster. (use [#see 1])
+ * [#draw_polygon]: added "rule winding" and "rule multi"
 
 version 9.13 (2011.02.08):
 
@@ -15,6 +17,13 @@ version 9.13 (2011.02.08):
  * [#expr]: added functions "if", "pow" (numop ** aliased to pow)
  * numop1: added fact (factorial or "gamma function" which is not [# gamma])
  * numop1: added log2, log10, C.log2, C.log10, unary+
+ * numop1: aliased log and C.log to ln and C.ln
+ * numop1: added asin acos atan asinh acosh atanh
+ * [#]: don't check type of right-grid when one-input operator
+ * [#]: fix one-input vecop support (complex numbers)
+ * [#]: don't ask for N elements in right inlet for a one-input operator
+ * [#expr]: fixed several parsing bugs
+ * numop2 weight becomes a numop1 (single inlet)
  * x11 is now a load-time option
  * [#io.x11]: added methods 'query_pointer' and 'out_size_minimum'
  * [route3]: fixed right outlet bug
@@ -26,17 +35,10 @@ version 9.13 (2011.02.08):
  * [#in] and [#out]: in case of unknown suffix, say 'not open' afterwards
  * [#redim]: argument defaults to ()
  * former numop "atan" renamed to "atan2cd"
- * new numops: asin acos atan asinh acosh atanh
- * numops log and C.log aliased to ln and C.ln
  * [#inner] and [#convolve]: add seedless mode (without typecheck annoyance)
  * [unix_time]: fixed the month number bug
  * [#fold]: much faster in the case folding over a dim that has only 1 index
  * some more work on the Win32 port
- * [#]: don't check type of right-grid when one-input operator
- * [#]: fix one-input vecop support (complex numbers)
- * [#]: don't ask for N elements in right inlet for a one-input operator
- * [#expr]: fixed several parsing bugs
- * two-input numop "weight" becomes a one-input numop
  * [#from_pix]: much faster rgba->rgba conversion
  * [#from_pix]: added conversion to colorspace y
  * [#from_pix]: added conversion from [pix_grey] mode
