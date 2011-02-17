@@ -1,28 +1,27 @@
 Unsorted
 
-[ ] do domain name transfer
+[ ] [args] loadbang order really, really sucks.
 [ ] [gf/error] can't take a list. (see [#is])
 [ ] mmx not properly detected anymore (bug in ruby ?)
 [ ] [#rzero_space]
-[ ] rename [#lop_space] to [#rpole_space] ?
-[ ] [#convolve]: remove "a" ?
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
+[ ] <pob> matju: [hidecursor( marche aussi dans windows contrairement à ce que dit le fichier d'aide.
+[ ] <pob> matju: Dans l'index [#to~] apparaît comme hyperlien et non comme objet. Je ne sais pas si c'est volontaire.
+[ ] <pob> matju: dans le fichier d'aide de [#posterize] il y a deux [#out window] du coup l'image traitée n'est pas
+    affichée. Il n'y a qu'un fenêtre de crée (nommée 'modified') mais c'est l'image d'origine qui y est affichée.
 [ ] reform GFDP so that pd43 and l2ork become debuggable.
-[ ] in [#convolve]'s muladd, use a+b*(-1) = a-b
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] memalign still doesn't exist on OSX and Windows ?
 [ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
-    so, I didn't continue the job on [#scan] [#inner] [#convolve] (note that [#inner] already a special case related to that)
+    so, I didn't continue the job on [#scan] [#inner] (note that [#inner] already a special case related to that)
 [ ] [#see] shm : http://wiki.tcl.tk/2999
 [ ] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
-[ ] [#from~]: pick your own blocksize (default = use same as pd)
-[ ] fix warnings in config.log on OSX
 [ ] [#expr] local
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [fps] doesn't complain about invalid mode name
@@ -121,6 +120,7 @@ Unsorted
 [ ] [route] - 1[shunt] sends a message (bug)
 [ ] on n'a pas un vrai [getargs] au niveau du binbuf (ce qui, en soi, n'est pas évident)
     et ça va être compliqué d'éditer les args pour y rajouter vraiment ce qu'on veut.
+    (qu'est-ce qu'on fait avec les virgules ?)
 [ ] movie api : merge "height" & "width" attributes
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
@@ -205,6 +205,9 @@ Not Important
 [ ] cellular_1d.pd: should get a variable width
 [ ] [#in unicap] and/or [#in videojack] ?
 [ ] [#draw_polygon] : some more weirdnesses in rendering. play a bit with #draw_polygon-test2.pd to see.
+[ ] fix warnings in config.log on OSX
+[ ] [#find]
+[ ] http://claudiusmaximus.goto10.org/cm/2010-12-15_histogram_equalization.html
 
 OpenCV
 [ ] cvOpticalFlow
