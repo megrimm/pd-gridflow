@@ -1,4 +1,4 @@
-#N canvas 684 0 632 568 10;
+#N canvas 684 0 632 593 10;
 #X obj 0 0 doc_h;
 #X obj 3 67 doc_c;
 #X msg 48 109 open aalib X11;
@@ -33,8 +33,12 @@ and the rest are ints.;
 #X obj 97 397 doc_m i0 dump;
 #X text 232 397 produces a Dim[y \, x \, 2] grid whose two channels
 are ascii character codes and character attributes.;
-#X obj 0 539 doc_f;
+#X obj 0 559 doc_f;
 #X text 232 507 result of 'dump';
+#X obj 3 539 doc_also;
+#X obj 48 128 #out;
+#X obj 103 539 #out;
+#X connect 2 0 25 0;
 #X connect 9 1 23 0;
 #X connect 10 1 11 0;
 #X connect 10 1 12 0;
@@ -43,3 +47,4 @@ are ascii character codes and character attributes.;
 #X connect 15 1 17 0;
 #X connect 18 1 19 0;
 #X connect 20 1 21 0;
+#X connect 24 1 26 0;
