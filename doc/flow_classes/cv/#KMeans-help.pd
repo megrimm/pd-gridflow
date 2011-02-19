@@ -1,4 +1,4 @@
-#N canvas 642 52 560 437 10;
+#N canvas 642 52 632 594 10;
 #X obj 20 190 #out window;
 #X obj 20 63 #in babbage.jpg;
 #X obj 20 46 bng 15 250 50 0 empty empty empty 17 7 0 10 -24198 -1
@@ -12,12 +12,29 @@
 #X obj 20 121 cv/#KMeans 8 \, termcrit (8 nil);
 #X obj 0 0 doc_h cv/;
 #X obj 3 221 doc_c 1;
-#X obj 3 280 doc_i 2;
+#X obj 3 283 doc_i 2;
 #X obj 3 369 doc_o 1;
-#X obj 14 304 doc_ii 0;
-#X obj 14 328 doc_ii 1;
-#X obj 14 393 doc_oo 0;
-#X obj 14 245 doc_cc 0;
+#X obj 14 313 doc_ii 0;
+#X obj 14 335 doc_ii 1;
+#X obj 14 399 doc_oo 0;
+#X obj 14 251 doc_cc 0;
+#X obj 3 540 doc_also;
+#X obj 0 560 doc_f;
+#X obj 103 540 #cluster_avg 1;
+#X obj 97 251 doc_m c0 float;
+#X text 232 251 number of clusters.;
+#X obj 97 335 doc_m i1 float;
+#X obj 232 335 doc_same 0;
+#X obj 97 313 doc_m i0 grid;
+#X text 232 313 grid to analyse. Dim(... \, channels);
+#X obj 97 399 doc_m o0 grid;
+#X text 232 399 grid analysed. Dim(... \, 1);
+#X text 232 421 where each number is number from 0 to number of clusters
+- 1 \, which is the id of a cluster.;
+#X text 232 456 from there \, you may use [#cluster_avg] to find the
+average of all values in a cluster. You may use [#store] to build again
+a grid of size Dim(... \, channels) where each chunk (pixel or whatever)
+has been replaced by the average of its cluster.;
 #X connect 1 0 3 0;
 #X connect 1 0 7 0;
 #X connect 2 0 1 0;
@@ -27,3 +44,10 @@
 #X connect 8 0 9 0;
 #X connect 9 0 5 0;
 #X connect 9 0 6 0;
+#X connect 18 1 20 0;
+#X connect 21 1 22 0;
+#X connect 23 1 24 0;
+#X connect 25 1 26 0;
+#X connect 27 1 28 0;
+#X connect 27 1 29 0;
+#X connect 27 1 30 0;
