@@ -32,60 +32,60 @@
 1;
 #X obj 50 416 #fade (16 4 1);
 #X obj 0 0 doc_h;
-#X obj 3 425 doc_c 0..3;
-#X obj 3 570 doc_i 3;
-#X obj 3 891 doc_o 1;
-#X obj 14 921 doc_oo 0;
-#X obj 14 600 doc_ii 0;
-#X obj 14 837 doc_ii 1;
-#X obj 14 859 doc_ii 2;
-#X obj 14 455 doc_cc 0;
-#X obj 14 503 doc_cc 1;
-#X obj 14 525 doc_cc 2;
-#X text 232 600 Picture on which the polygon will be superimposed.
+#X obj 3 474 doc_c 0..3;
+#X obj 3 619 doc_i 3;
+#X obj 3 940 doc_o 1;
+#X obj 14 970 doc_oo 0;
+#X obj 14 649 doc_ii 0;
+#X obj 14 886 doc_ii 1;
+#X obj 14 908 doc_ii 2;
+#X obj 14 504 doc_cc 0;
+#X obj 14 552 doc_cc 1;
+#X obj 14 574 doc_cc 2;
+#X text 232 649 Picture on which the polygon will be superimposed.
 ;
-#X text 232 921 Resulting picture.;
-#X obj 97 455 doc_m c0 symbol/numop;
-#X obj 97 503 doc_m c1 grid;
-#X obj 97 525 doc_m c2 grid;
-#X obj 97 600 doc_m i0 grid;
-#X obj 97 837 doc_m i1 grid;
-#X obj 97 859 doc_m i2 grid;
-#X obj 97 921 doc_m o0 grid;
-#X obj 0 973 doc_f;
+#X text 232 970 Resulting picture.;
+#X obj 97 504 doc_m c0 symbol/numop;
+#X obj 97 552 doc_m c1 grid;
+#X obj 97 574 doc_m c2 grid;
+#X obj 97 649 doc_m i0 grid;
+#X obj 97 886 doc_m i1 grid;
+#X obj 97 908 doc_m i2 grid;
+#X obj 97 970 doc_m o0 grid;
+#X obj 0 1022 doc_f;
 #X msg 51 273 op *;
 #X msg 56 313 op ^;
 #X msg 53 293 op +;
-#X obj 232 837 doc_same 1;
-#X obj 232 859 doc_same 2;
-#X obj 97 815 doc_m i0 op;
-#X obj 97 688 doc_m i0 omit;
-#X obj 97 622 doc_m i0 draw;
-#X obj 232 815 doc_same 0;
-#X text 232 688 only makes sense in line mode.;
-#X text 232 710 none: draw complete perimetre of polygon;
-#X text 232 732 last: omit last edge \, so that it makes a "polygonal
+#X obj 232 886 doc_same 1;
+#X obj 232 908 doc_same 2;
+#X obj 97 864 doc_m i0 op;
+#X obj 97 737 doc_m i0 omit;
+#X obj 97 671 doc_m i0 draw;
+#X obj 232 864 doc_same 0;
+#X text 232 737 only makes sense in line mode.;
+#X text 232 759 none: draw complete perimetre of polygon;
+#X text 232 781 last: omit last edge \, so that it makes a "polygonal
 line" instead of a polygon;
-#X text 232 767 odd: drawing only even-numbered edges means drawing
+#X text 232 816 odd: drawing only even-numbered edges means drawing
 a set of separate lines instead of a polygon. you should provide an
 even number of vertices in this case.;
-#X text 232 622 fill: draw a filled polygon;
-#X text 232 666 point: draw vertices only (as single pixels);
-#X text 232 644 line: draw lines (see option 'omit') of minimal width
+#X text 232 671 fill: draw a filled polygon;
+#X text 232 715 point: draw vertices only (as single pixels);
+#X text 232 693 line: draw lines (see option 'omit') of minimal width
 ;
-#X obj 3 953 doc_also;
-#X obj 103 953 #draw_image;
-#X obj 181 953 #draw_rect;
-#X obj 3 953 doc_also;
+#X obj 3 1002 doc_also;
+#X obj 103 1002 #draw_image;
+#X obj 181 1002 #draw_rect;
+#X obj 3 1002 doc_also;
 #X msg 89 382 4 2 # 0 0 0 100 100 0 100 100;
 #X obj 59 333 r \$0-a;
 #X obj 362 400 s \$0-a;
 #X obj 20 359 #draw_polygon + (1);
-#X text 232 525 Vertices of the polygon. default is (0 2 #) \, the
+#X text 232 574 Vertices of the polygon. default is (0 2 #) \, the
 "zerogon" \, such that nothing will be drawn.;
-#X text 232 455 Normally \, you would use the "put" operator \; but
+#X text 232 504 Normally \, you would use the "put" operator \; but
 the + and ^ can be interesting for color effects. (default: put);
-#X text 232 503 Color of the polygon. default is (1 #).;
+#X text 232 552 Color of the polygon. default is (1 #).;
 #X obj 415 334 vradio 15 1 0 3 empty empty empty 0 -8 0 10 -241291
 -1 -1 0;
 #X msg 415 400 rule \$1;
