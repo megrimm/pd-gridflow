@@ -332,7 +332,7 @@ static OSErr callback(ComponentInstanceRecord*, char*, long int, long int*, long
 			post("vdigType=%d inputCapabilityFlags=0x%08lx outputCapabilityFlags=0x%08lx inputCurrentFlags=0x%08lx outputCurrentFlags=0x%08lx",
 				di.vdigType, di.inputCapabilityFlags, di.outputCapabilityFlags, di.inputCurrentFlags, di.outputCurrentFlags);
 			post("slot=%d gdh=%p maskgdh=%p",di.slot,di.gdh,di.maskgdh);
-			post("minDestHeight=%d minDestWidth=%d maxDestHeight=%d maxDestWidth=%d",
+			post("minDestHeight=%ld minDestWidth=%ld maxDestHeight=%ld maxDestWidth=%ld",
 				di.minDestHeight, di.minDestWidth, di.maxDestHeight, di.maxDestWidth);
 			post("blendLevels=%d reserved=%d",di.blendLevels,di.reserved);
 		}
