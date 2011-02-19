@@ -1,15 +1,19 @@
 Unsorted
 
-[ ] [#downscale_by 4 smoothly] on 1024x1024x3 image in patch_dans_patch_l.pd modifiée
+[ ] add [#delay_image]
+[ ] -lpng12 OSX (commit it)
+[ ] (y x) as type in a [doc_m] somewhere
+[ ] Claude L. on OSX 10.5.8 with GF 9.13-test6, [#io.png]: inlet -1 method grid: !png
+[*] rgb_delay5.pd crashes ([#convolve] 5x5 or even 3x5)
 [ ] [args] loadbang order really, really sucks.
-[ ] [gf/error] can't take a list. (see [#is])
+[*] [gf/error] can't take a list of atoms because it has to go through a fixed-number sprintf. (see [#is])
 [ ] mmx not properly detected anymore (bug in ruby ?)
 [ ] [#rzero_space]
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
-[ ] <pob> matju: [hidecursor( marche aussi dans windows contrairement à ce que dit le fichier d'aide.
-[ ] <pob> matju: Dans l'index [#to~] apparaît comme hyperlien et non comme objet. Je ne sais pas si c'est volontaire.
+[*] <pob> matju: [hidecursor( marche aussi dans windows contrairement à ce que dit le fichier d'aide.
+[*] <pob> matju: Dans l'index [#to~] apparaît comme hyperlien et non comme objet. Je ne sais pas si c'est volontaire.
 [ ] <pob> matju: dans le fichier d'aide de [#posterize] il y a deux [#out window] du coup l'image traitée n'est pas
     affichée. Il n'y a qu'un fenêtre de crée (nommée 'modified') mais c'est l'image d'origine qui y est affichée.
 [ ] reform GFDP so that pd43 and l2ork become debuggable.
@@ -22,7 +26,7 @@ Unsorted
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
 [ ] [#expr] local
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
-[ ] [fps] doesn't complain about invalid mode name
+[*] [fps] doesn't complain about invalid mode name
 [ ] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] document "f 1 2 3" as a shortcut grid literal
@@ -63,7 +67,7 @@ Unsorted
     generally, be a lot more careful about exception handling, because
     assuming an operation works, is as troublesome when using throw/catch as when you don't,
     because if you assume an operation works, you're not really _using_ throw/catch.
-[ ] unify [print] and [display] source code
+[*] unify [print] and [display] source code
 [ ] isn't .str().data() evil ?
 [ ] turtle.pd
 [ ] [#remap_image, cache]. also, if the left-grid of [#store] could be cached in such a case, it could be very much faster.
@@ -75,8 +79,8 @@ Unsorted
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
-[ ] [#draw_polygon] : winding-rule, et multi-rule (ce dernier utile pour dessiner plusieurs polygones à la fois)
-[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b
+[ ] [#draw_polygon] : winding-rule
+[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -143,12 +147,12 @@ Unsorted
 [ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
 [ ] error: [#store] inlet 0 method float: must have at least 1 dimension. ~GridOut(): dex=0 prod=1
 [ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
-[ ] merge << and pd_oprint please
-[ ] infinite loop in shoot.pd
+[*] merge << and pd_oprint please
+[ ] near-infinite loop in shoot.pd
 [ ] change numop to numop2 all over the documentation
 [ ] renommer t_symbol * à symbol ou Symbol, et t_atom2 à atom ou Atom ? (peux pas renommer t_atom2 *)
 [ ] #fold and #scan begin without seed but can't send "seed none" to [#fold +]
-[ ] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
+[*] error: [# -] inlet 0 method grid: same type please (in has float32\; r has int32)
     pourrait devenir :
     error: [# -] inlet 0 method grid: same type please (inlet 0 has float32, inlet 1 has int32)
     ou:
@@ -186,7 +190,7 @@ Unsorted
 [ ] win32 x11 support
 [ ] malloc alignment = 4 mod 8 (en utilisant valgrind)
 
-Not Important
+Not Urgent
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
     and is_base_sel(symbol) also would include bang and list.
 [ ] [#inner] nonscalar seeds ?
@@ -279,6 +283,7 @@ Architecture
 [ ] read http://en.wikipedia.org/wiki/Tacit_programming
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
+[ ] use of lcm() in grid.cxx could be avoided. it's useless.
 
 Computation Objects
 [ ] ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids of floats as coordinates and
@@ -390,7 +395,7 @@ chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
 scp $dir.tar.gz gridflow@artengine.ca:public_html/download
 mv $dir.tar.gz /home/matju/GridFlow
 cd doc/homepage; pico index.html; make install
-make binaries
+make binaries (remember to use : otool -L gridflow.pd_darwin)
 pd-announce mlist : post release
 freshmeat if anyone cares (just restored my account but didn't use it)
 puredata.info release listings
@@ -398,3 +403,6 @@ puredata.info release listings
 -----
 
 /Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/code/gridflow-9.13 -lib gridflow
+
+note: alx a 10.6.5...
+
