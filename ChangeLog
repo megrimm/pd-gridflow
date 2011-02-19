@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 9.14 (2011.02...):
+version 9.14 (2011.03.XX):
 
  * [#convolve] runs somewhat faster (when using default op/fold/seed)
  * [#to~]: add second argument for buffer size (in samples)
@@ -9,6 +9,7 @@ version 9.14 (2011.02...):
  * [#from]: add second argument for buffer size (in samples)
  * [#see]: experimental version goes about 5 times faster. (use [#see 1])
  * [#draw_polygon]: added "rule winding" and "rule multi"
+ * removed example threshold.pd
 
 version 9.13 (2011.02.08):
 
@@ -25,7 +26,7 @@ version 9.13 (2011.02.08):
  * [#expr]: fixed several parsing bugs
  * numop2 weight becomes a numop1 (single inlet)
  * x11 is now a load-time option
- * [#io.x11]: added methods 'query_pointer' and 'out_size_minimum'
+ * [#io.x11]: added methods "query_pointer" and "out_size_minimum"
  * [route3]: fixed right outlet bug
  * parens in messages are no longer parsed automatically as nested-lists.
    (parens in objectboxes still are, of course)
@@ -38,10 +39,12 @@ version 9.13 (2011.02.08):
  * [#inner] and [#convolve]: add seedless mode (without typecheck annoyance)
  * [unix_time]: fixed the month number bug
  * [#fold]: much faster in the case folding over a dim that has only 1 index
- * some more work on the Win32 port
  * [#from_pix]: much faster rgba->rgba conversion
  * [#from_pix]: added conversion to colorspace y
  * [#from_pix]: added conversion from [pix_grey] mode
+ * osx package gets MMX support (on Intel)
+ * osx package gets libquicktime support (including encoding)
+ * the win32 package is back !
 
 version 9.12 (2010.10.08):
 
