@@ -7,10 +7,16 @@
 # with version number as $1
 #
 # ex: gridflow/bin/build_osx_package 9.13
+#
+#
+#
+# sur macosx104-i386.idmi.poly.edu
+# libcv 1.1 est bâti avec :
+# ./configure --prefix=$HOME --without-python --without-carbon --without-imageio --without-gtk --without-gthread --without-quicktime
 
 if [ -z "$1" ]; then
     echo Usage: $0  version_no  [arch]
-    exit
+    exit 1
 fi
 
 if [ "$2" = "ppc" ]; then
@@ -39,23 +45,25 @@ for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do rm -rf $i; done
 #-------------------------------------------------------------------------------
 echo "configuration des bibliothèques"
 
-#if [ "$ARCH" = "ppc" ]; then
-    EXTRALIBS="/sw/lib/libpng.3.dylib /sw/lib/libfftw3f.3.dylib /sw/lib/libfftw3.3.dylib /sw/lib/libncurses.5.dylib"
-#else
-#    EXTRALIBS="/usr/local/lib/libfftw3f.3.dylib /usr/local/lib/libfftw3.3.dylib /sw/lib/ncurses/libncurses.5.dylib"
-#fi
-
 BUNDLED_PREFIX="/Library/Pd/gridflow/libs"
 #BUNDLED_PREFIX="/Users/pddev/code/gridflow-$1/gridflow/libs"
 
+# /sw/lib/libpng14.14.dylib
+
 BUNDLED_LIBS="\
 /sw/lib/libaa.1.dylib \
-/sw/lib/libnetpbm.10.dylib \
-/sw/lib/libpng12.0.dylib \
+/Users/pddev/lib/libpng12.dylib \
 /sw/lib/libjpeg.8.dylib \
 /sw/lib/libSDL-1.2.0.dylib \
-"$HOME/lib/libcv.dylib" \
-$EXTRALIBS"
+$HOME/lib/libcv.2.dylib \
+/sw/lib/libfftw3f.3.dylib \
+/sw/lib/libfftw3.3.dylib \
+/sw/lib/libncurses.5.dylib \
+/sw/lib/libGLEW.1.dylib \
+/sw/lib/libquicktime.1.dylib \
+/sw/lib/libglib-1.2.0.dylib \
+/sw/lib/libiconv.2.dylib \
+/sw/lib/libintl.8.dylib"
 
 mkdir libs
 cp $BUNDLED_LIBS ./libs/
@@ -63,7 +71,9 @@ cp $BUNDLED_LIBS ./libs/
 for LIB in $BUNDLED_LIBS; do
     FILENAME=`echo $LIB | sed 's/.*\///'`
     install_name_tool -id $BUNDLED_PREFIX/$FILENAME ./libs/$FILENAME
-    install_name_tool -change $LIB $BUNDLED_PREFIX/$FILENAME gridflow.pd_darwin
+    for ZZZ in gridflow*.pd_darwin libs/libquicktime.1.dylib; do
+        install_name_tool -change $LIB $BUNDLED_PREFIX/$FILENAME $ZZZ
+    done
 done
 
 # should do a 2nd pass of install_name_tool for all libs that might depend on other libs...
