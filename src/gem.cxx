@@ -29,7 +29,7 @@
 struct imageStruct {
   GLint xsize, ysize, csize; GLenum type, format; int notowned;
   unsigned char *data; unsigned char *pdata; size_t datasize; GLboolean upsidedown;
-  virtual void clear(); imageStruct(); ~imageStruct();
+  virtual void clear(); imageStruct(); virtual ~imageStruct();
   unsigned char *allocate(size_t size); unsigned char *allocate();
   virtual void convertFrom(imageStruct*from, GLenum dest_format=0);
   virtual void convertTo  (imageStruct*from, GLenum dest_format=0);
