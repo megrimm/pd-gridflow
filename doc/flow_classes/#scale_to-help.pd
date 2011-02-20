@@ -35,12 +35,12 @@ y values passed. Initial creation arguments are mandatory (0 0) otherwise.
 #X obj 14 345 doc_ii 0;
 #X obj 14 380 doc_ii 1;
 #X obj 14 270 doc_cc 0;
-#X obj 97 270 doc_m c0 (int int);
 #X obj 97 345 doc_m i0 grid;
 #X obj 232 380 doc_same 0;
-#X obj 97 380 doc_m i1 (int int);
 #X obj 97 442 doc_m o0 grid;
 #X obj 0 494 doc_f;
+#X obj 97 380 doc_m i1 grid;
+#X obj 97 270 doc_m c0 grid;
 #X text 232 270 A (height width) pair of integers indicating the size
 to scale to image to. (default: (0 0)).;
 #X connect 0 0 1 0;
@@ -60,7 +60,7 @@ to scale to image to. (default: (0 0)).;
 #X connect 14 0 12 0;
 #X connect 25 1 20 0;
 #X connect 25 1 8 0;
-#X connect 31 1 37 0;
-#X connect 32 1 18 0;
-#X connect 34 1 33 0;
-#X connect 35 1 17 0;
+#X connect 31 1 18 0;
+#X connect 33 1 17 0;
+#X connect 35 1 32 0;
+#X connect 36 1 37 0;
