@@ -12,14 +12,14 @@
 #X obj 64 163 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
 ;
 #X obj 52 106 s orig;
-#X obj 66 312 r orig;
+#X obj 69 312 r orig;
 #X obj 13 331 #out window;
 #X obj 13 274 # + 128;
 #X obj 13 293 #clip;
 #X obj 13 125 #outer * (1 0);
 #X obj 13 255 #inner (1 0);
-#X text 89 255 convert complex to real (kicking dummy imaginary);
-#X text 100 125 convert real to complex (introducing dummy imaginary=0)
+#X text 90 247 convert complex to real (kicking dummy imaginary);
+#X text 103 117 convert real to complex (introducing dummy imaginary=0)
 ;
 #X obj 13 217 # / (f # 16);
 #X obj 0 0 doc_h;
@@ -28,7 +28,7 @@
 #X obj 3 589 doc_o 1;
 #X obj 14 619 doc_oo 0;
 #X obj 14 425 doc_ii 0;
-#X obj 0 651 doc_f;
+#X obj 0 671 doc_f;
 #X obj 13 312 #join 1;
 #X obj 97 619 doc_m o0 grid;
 #X obj 97 425 doc_m i0 grid;
@@ -45,6 +45,13 @@ and x);
 #X text 232 469 1: real fft;
 #X text 232 425 grid to apply fft on;
 #X text 232 619 grid that fft was applied on;
+#X obj 3 651 doc_also;
+#X obj 103 651 #polygon_comparator;
+#X obj 229 651 #convolve;
+#X obj 295 651 fft~;
+#X text 105 130 this step is useless when using the "real" mode.;
+#X text 90 259 this step is useless when using the "real" mode.;
+#X obj 331 651 #lop_space;
 #X connect 0 0 6 0;
 #X connect 1 0 16 0;
 #X connect 2 0 5 0;
@@ -71,3 +78,7 @@ and x);
 #X connect 31 1 35 0;
 #X connect 34 1 39 0;
 #X connect 34 1 38 0;
+#X connect 42 1 43 0;
+#X connect 42 1 44 0;
+#X connect 42 1 45 0;
+#X connect 42 1 48 0;

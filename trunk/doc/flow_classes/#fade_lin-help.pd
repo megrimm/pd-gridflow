@@ -1,4 +1,4 @@
-#N canvas 684 0 632 543 10;
+#N canvas 684 0 632 568 10;
 #X obj 0 0 doc_h;
 #X obj 3 212 doc_c 2;
 #X obj 77 134 #fade_lin;
@@ -24,13 +24,16 @@ produced that is at most 2 more or 4 less than the previous output.
 #X obj 97 422 doc_m i2 grid;
 #X obj 232 400 doc_same 0;
 #X obj 232 422 doc_same 1;
-#X obj 0 514 doc_f;
+#X obj 0 534 doc_f;
 #X text 16 33 non-linear temporal lowpass filter;
 #X text 16 47 (piecewise-constant);
 #X text 14 61 it is named "lin" because it has an output similar to
 [line] \, though the input is much different.;
+#X obj 3 514 doc_also;
+#X obj 103 514 #fade;
 #X connect 11 1 13 0;
 #X connect 12 1 14 0;
 #X connect 15 1 16 0;
 #X connect 17 1 19 0;
 #X connect 18 1 20 0;
+#X connect 25 1 26 0;
