@@ -2,7 +2,7 @@
 
 source ../../tcl/pd_parser.tcl
 
-foreach fname [glob *-help.pd] {
+foreach fname [lsort [glob *-help.pd cv/*-help.pd gf/*-help.pd]] {
   set f [open $fname]
   set elements {doc_h doc_c doc_i doc_o doc_also doc_f}
   foreach e $elements {set count($e) 0}
