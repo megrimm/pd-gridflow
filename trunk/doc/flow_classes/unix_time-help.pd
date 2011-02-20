@@ -1,67 +1,70 @@
 #N canvas 648 22 632 642 10;
-#X obj 139 116 unix_time;
-#X obj 120 97 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 139 146 unix_time;
+#X obj 120 127 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 139 79 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+#X obj 139 109 tgl 15 0 empty empty empty 0 -6 0 8 -4034 -1 -1 1 1
 ;
-#X obj 140 189 display;
-#X obj 139 97 metro 500;
-#X text 145 152 <-- Ascii format for the date;
-#X obj 360 134 display;
-#X obj 165 136 display;
-#X obj 360 114 display;
-#X obj 359 94 sprintf %04d%02d%02d-%02d%02d%02d;
+#X obj 140 219 display;
+#X text 145 182 <-- Ascii format for the date;
+#X obj 360 164 display;
+#X obj 164 166 display;
+#X obj 360 144 display;
+#X obj 359 124 sprintf %04d%02d%02d-%02d%02d%02d;
 #X obj 0 0 doc_h;
-#X obj 3 225 doc_c 0;
-#X obj 3 265 doc_i 1;
-#X obj 3 340 doc_o 3;
-#X obj 14 295 doc_ii 0;
-#X obj 14 370 doc_oo 0;
-#X obj 14 392 doc_oo 1;
-#X obj 14 471 doc_oo 2;
-#X text 232 295 A bang at the left inlet will tell [unix_time] to get
+#X obj 3 245 doc_c 0;
+#X obj 3 285 doc_i 1;
+#X obj 3 360 doc_o 3;
+#X obj 14 315 doc_ii 0;
+#X obj 14 390 doc_oo 0;
+#X obj 14 412 doc_oo 1;
+#X obj 14 491 doc_oo 2;
+#X text 232 315 A bang at the left inlet will tell [unix_time] to get
 the current Unix timestamp and send it to the outlets.;
-#X obj 97 295 doc_m i0 bang;
-#X obj 97 392 doc_m o1 list;
-#X obj 97 471 doc_m o2 list;
-#X obj 0 613 doc_f;
-#X text 232 370 the time and date in ASCII format.;
-#X text 232 414 \$2 = number of seconds since last midnight;
-#X text 232 392 \$1 = the day number \, where 0 stands for 1 january
+#X obj 97 315 doc_m i0 bang;
+#X obj 97 412 doc_m o1 list;
+#X obj 97 491 doc_m o2 list;
+#X obj 0 653 doc_f;
+#X text 232 390 the time and date in ASCII format.;
+#X text 232 434 \$2 = number of seconds since last midnight;
+#X text 232 412 \$1 = the day number \, where 0 stands for 1 january
 1970;
-#X obj 139 169 #to_symbol;
-#X obj 97 370 doc_m o0 list;
-#X obj 62 83 loadbang;
+#X obj 139 199 #to_symbol;
+#X obj 97 390 doc_m o0 list;
+#X obj 139 89 loadbang;
 #X text 9 32 This object returns a Unix timestamp for the current time
 \, which means it's the amount of time since 1 january 1970 at midnight.
 This is provided in three different ways (see below).;
-#X text 232 436 \$3 = number of microseconds since last second boundary
+#X text 232 456 \$3 = number of microseconds since last second boundary
 (probably not precise to the closest microsecond);
-#X text 232 493 \$2 = month number (1 stands for january);
-#X text 232 471 \$1 = year number (2009 stands for 2009);
-#X text 232 515 \$3 = day number (1 stands for 1st);
-#X text 232 537 \$4 = hour number (0 stands for midnight \, 23 for
+#X text 232 513 \$2 = month number (1 stands for january);
+#X text 232 491 \$1 = year number (2009 stands for 2009);
+#X text 232 535 \$3 = day number (1 stands for 1st);
+#X text 232 557 \$4 = hour number (0 stands for midnight \, 23 for
 11 PM);
-#X text 232 559 \$5 = minutes (0 to 59);
-#X text 232 581 \$6 = seconds (0 to 59);
-#X connect 0 0 26 0;
-#X connect 0 1 7 0;
-#X connect 0 2 6 0;
-#X connect 0 2 9 0;
+#X text 232 579 \$5 = minutes (0 to 59);
+#X text 232 601 \$6 = seconds (0 to 59);
+#X obj 3 633 doc_also;
+#X obj 103 633 realtime;
+#X obj 139 127 metro 1500;
+#X connect 0 0 25 0;
+#X connect 0 1 6 0;
+#X connect 0 2 5 0;
+#X connect 0 2 8 0;
 #X connect 1 0 0 0;
-#X connect 2 0 4 0;
-#X connect 4 0 0 0;
-#X connect 9 0 8 0;
-#X connect 19 1 18 0;
-#X connect 20 1 25 0;
-#X connect 20 1 24 0;
+#X connect 2 0 38 0;
+#X connect 8 0 7 0;
+#X connect 18 1 17 0;
+#X connect 19 1 24 0;
+#X connect 19 1 23 0;
+#X connect 19 1 29 0;
+#X connect 20 1 31 0;
 #X connect 20 1 30 0;
-#X connect 21 1 32 0;
-#X connect 21 1 31 0;
-#X connect 21 1 33 0;
-#X connect 21 1 34 0;
-#X connect 21 1 35 0;
-#X connect 21 1 36 0;
-#X connect 26 0 3 0;
-#X connect 27 1 23 0;
-#X connect 28 0 0 0;
+#X connect 20 1 32 0;
+#X connect 20 1 33 0;
+#X connect 20 1 34 0;
+#X connect 20 1 35 0;
+#X connect 25 0 3 0;
+#X connect 26 1 22 0;
+#X connect 27 0 2 0;
+#X connect 36 1 37 0;
+#X connect 38 0 0 0;
