@@ -1,16 +1,16 @@
-#N canvas 648 0 632 552 10;
-#X text 176 92 opacity channel file;
-#X text 52 62 foreground file;
-#X text 383 83 background file;
-#X text 157 176 a picture that has an opacity level will be used as
+#N canvas 648 0 632 572 10;
+#X text 146 88 opacity channel file;
+#X text 41 64 foreground file;
+#X text 345 74 background file;
+#X text 167 156 a picture that has an opacity level will be used as
 foreground vs a picture that has no opacity channel. the output is
 a picture that has no opacity channel;
-#X msg 202 40 load b001.jpg;
-#X obj 179 67 #in;
-#X obj 205 67 #rgb_to_greyscale;
-#X obj 351 83 #in;
-#X msg 374 58 load g001.jpg;
-#X msg 42 38 load r001.jpg;
+#X msg 149 43 load b001.jpg;
+#X obj 149 63 #in;
+#X obj 175 63 #rgb_to_greyscale;
+#X obj 321 73 #in;
+#X msg 321 53 load g001.jpg;
+#X msg 19 43 load r001.jpg;
 #X obj 19 63 #in;
 #X obj 19 175 #layer;
 #X obj 19 206 #out window;
@@ -32,9 +32,11 @@ is seen in the result.;
 #X obj 97 315 doc_m i0 grid;
 #X obj 97 350 doc_m i1 grid;
 #X obj 97 460 doc_m o0 grid;
-#X obj 0 518 doc_f;
+#X obj 0 538 doc_f;
 #X text 232 385 default is (1 1 3 #) \, which is useless. please supply
 an image.;
+#X obj 3 518 doc_also;
+#X obj 103 518 #draw_image;
 #X connect 4 0 5 0;
 #X connect 5 0 6 0;
 #X connect 6 0 23 1;
@@ -48,3 +50,4 @@ an image.;
 #X connect 25 1 21 0;
 #X connect 25 1 28 0;
 #X connect 26 1 22 0;
+#X connect 29 1 30 0;
