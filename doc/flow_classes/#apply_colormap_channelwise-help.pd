@@ -1,18 +1,17 @@
-#N canvas 651 0 632 598 10;
+#N canvas 651 0 632 642 10;
 #X obj 25 293 #in;
-#X obj 25 342 #out window;
-#X text 232 537 Outputs the modified data as a grid.;
+#X obj 25 341 #out window;
 #X text 12 27 This object is useful for color correction. for each
 pixel it takes it apart \, looks up each part separately in the colormap
 and constructs a new pixel from that.;
-#X obj 213 235 #for 0 256;
+#X obj 213 265 #for 0 256;
 #X obj 213 305 #outer gamma;
 #X msg 25 267 load bluemarble.jpg;
 #X obj 25 248 t b b;
 #X obj 289 261 #color 0 1024 1;
-#X msg 354 209 1024 512 256;
-#X obj 354 190 loadbang;
-#X obj 25 323 #apply_colormap_channelwise;
+#X msg 289 219 1024 512 256;
+#X obj 289 200 loadbang;
+#X obj 25 322 #apply_colormap_channelwise;
 #X obj 25 219 metro 100;
 #X obj 25 202 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
 ;
@@ -20,10 +19,10 @@ and constructs a new pixel from that.;
 #X obj 0 0 doc_h;
 #X obj 3 383 doc_c 0;
 #X obj 3 423 doc_i 2;
-#X obj 3 507 doc_o 1;
+#X obj 3 546 doc_o 1;
 #X obj 14 453 doc_ii 0;
-#X obj 14 475 doc_ii 1;
-#X obj 14 537 doc_oo 0;
+#X obj 14 501 doc_ii 1;
+#X obj 14 576 doc_oo 0;
 #X obj 97 453 doc_m i0 grid;
 #X text 12 70 currently works only with 3 channels at a time!;
 #X text 15 89 it also works on non-images \, for example on colormaps
@@ -32,24 +31,31 @@ must be three channels.;
 #X text 14 136 Note: if you just need to apply a palette on an indexed-color
 picture or greyscale picture \, you don't need this. Just use #store
 instead.;
-#X obj 0 569 doc_f;
-#X text 232 453 grid that will be modified by the colormap;
-#X text 232 475 Colormap (aka palette) is a grid[intensity \, channels]
-;
-#X obj 97 475 doc_m i1 grid;
-#X obj 97 537 doc_m o0 grid;
-#X connect 0 0 11 0;
-#X connect 4 0 5 0;
-#X connect 5 0 11 1;
-#X connect 6 0 0 0;
-#X connect 7 0 6 0;
-#X connect 7 1 4 0;
-#X connect 8 0 5 1;
+#X obj 0 628 doc_f;
+#X obj 97 501 doc_m i1 grid;
+#X obj 97 576 doc_m o0 grid;
+#X obj 3 608 doc_also;
+#X obj 103 608 #store;
+#X text 232 501 dim(intensities \, channels): Colormap (aka palette)
+\, as one color-correction curve per channel.;
+#X text 232 576 dim(... \, channels): grid of the same size as the
+input.;
+#X text 232 453 dim(... \, channels): grid that will be modified by
+the colormap. This can be a image or anything else that is made of
+pixels (a palette \, a group of images \, etc);
+#X connect 0 0 10 0;
+#X connect 3 0 4 0;
+#X connect 4 0 10 1;
+#X connect 5 0 0 0;
+#X connect 6 0 5 0;
+#X connect 6 1 3 0;
+#X connect 7 0 4 1;
+#X connect 8 0 7 0;
 #X connect 9 0 8 0;
-#X connect 10 0 9 0;
-#X connect 11 0 1 0;
-#X connect 12 0 7 0;
-#X connect 13 0 12 0;
-#X connect 22 1 27 0;
-#X connect 29 1 28 0;
-#X connect 30 1 2 0;
+#X connect 10 0 1 0;
+#X connect 11 0 6 0;
+#X connect 12 0 11 0;
+#X connect 21 1 32 0;
+#X connect 26 1 30 0;
+#X connect 27 1 31 0;
+#X connect 28 1 29 0;
