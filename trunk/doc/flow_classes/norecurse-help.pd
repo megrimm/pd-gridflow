@@ -1,7 +1,7 @@
-#N canvas 335 118 632 297 10;
+#N canvas 335 118 632 324 10;
 #X obj 0 0 doc_h;
 #X obj 3 80 doc_c;
-#X obj 0 268 doc_f;
+#X obj 0 290 doc_f;
 #X obj 76 48 norecurse;
 #X text 237 45 this will stop any control-recursion.;
 #X obj 3 120 doc_i 1;
@@ -13,4 +13,12 @@
 #X text 232 150 any incoming message will be copied as-is to the output.
 but only if a message is not currently "being sent" by this same object.
 thus this prevents any "strange loops".;
+#X obj 3 270 doc_also;
+#X text 232 238 any incoming message \, as is. (this is just a [spigot])
+;
+#X obj 103 270 spigot;
+#X obj 151 270 gf/oneshot;
 #X connect 9 1 11 0;
+#X connect 10 1 13 0;
+#X connect 12 1 14 0;
+#X connect 12 1 15 0;
