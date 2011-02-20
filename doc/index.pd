@@ -24,7 +24,7 @@
 #X obj 114 384 doc_link hpgl 1;
 #X text 180 384 about <hpgl> inlets and outlets;
 #X obj 3 436 doc_section Object Classes;
-#X obj 138 468 # +;
+#X obj 138 468 #;
 #X text 180 468 plain numeric operators on grids: + - * / etc;
 #X obj -6 500 #apply_colormap_channelwise;
 #X text 180 500 apply color correction tables separately on each channel;
@@ -88,7 +88,7 @@
 #X text 180 1467 bang when grid transmission has ended;
 #X obj 114 1499 #fold +;
 #X text 180 1499 compute the sum of each row \,  product of each row \,  and other similar operations;
-#X obj 96 1531 #for 0 4 1;
+#X obj 108 1531 #for 0 4;
 #X text 180 1531 make a grid from all numbers or coordinates in a certain range;
 #X obj 102 1563 #from_pdp;
 #X text 180 1563 convert pdp image/*/* to grid;
@@ -112,7 +112,7 @@
 #X text 180 1851 open file or device for reading or download;
 #X obj 120 1883 #inner;
 #X text 180 1883 scalar ("dot") product \,  matrix product \,  tensor contraction \,  image channel remapping \,  etc.;
-#X obj 114 1915 doc_link #in~;
+#X obj 132 1915 #in~;
 #X text 180 1915 open file or device for reading or download \,  with sound (experimental);
 #X obj 84 1947 doc_link #io.aalib;
 #X text 180 1947 open an aalib window;
@@ -198,7 +198,7 @@
 #X text 180 3264 do #redim so that a grid keeps same number of elements but just one dimension;
 #X obj 114 3296 #record;
 #X text 180 3296 wrapper around [#in quicktime];
-#X obj 102 3328 #redim ();
+#X obj 120 3328 #redim;
 #X text 180 3328 change the size of a grid by restreaming contents into a new shape;
 #X obj 90 3360 #reinterval;
 #X text 180 3360 change the scale of values from one interval to another;
@@ -266,7 +266,7 @@
 #X text 180 4392 convert grid to pix (GEM);
 #X obj 96 4424 #to_symbol;
 #X text 180 4424 convert grid of ASCII codes to symbol;
-#X obj 114 4456 doc_link #to~;
+#X obj 132 4456 #to~;
 #X text 180 4456 convert grid to signal;
 #X obj 96 4488 #transpose;
 #X text 180 4488 swap two dimensions out of any \,  in a grid;
