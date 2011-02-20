@@ -1,6 +1,6 @@
-#N canvas 335 118 632 372 10;
+#N canvas 335 118 632 397 10;
 #X obj 0 0 doc_h;
-#X obj 0 343 doc_f;
+#X obj 0 363 doc_f;
 #X obj 114 54 doc_bottom;
 #X obj 3 162 doc_i 2;
 #X obj 3 281 doc_o 1;
@@ -20,8 +20,11 @@
 #X text 232 214 used for sorting by name (id);
 #X text 232 236 node whose direct children should be queried (specified
 without the \$0);
+#X obj 3 343 doc_also;
+#X obj 103 343 doc_link doc_layout;
 #X connect 8 1 9 0;
 #X connect 10 1 19 0;
 #X connect 11 1 13 0;
 #X connect 12 1 18 0;
 #X connect 16 1 17 0;
+#X connect 20 1 21 0;

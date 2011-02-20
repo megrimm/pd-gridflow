@@ -1,6 +1,6 @@
-#N canvas 283 161 632 333 10;
+#N canvas 283 161 632 358 10;
 #X obj 0 0 doc_h;
-#X obj 0 304 doc_f;
+#X obj 0 324 doc_f;
 #X obj 108 45 doc_add;
 #X obj 3 154 doc_i 2;
 #X obj 3 264 doc_o 0;
@@ -12,12 +12,15 @@
 #X obj 14 122 doc_cc 0;
 #X obj 97 122 doc_m c0 symbol;
 #X text 195 37 add one [doc_m] to a given subsection.;
-#X text 194 57 for use by [doc_c] [doc_i] [doc_o] only.;
 #X text 232 184 add one [doc_m] with a blank \$2 (will show up as "~unspecified~")
 ;
 #X text 232 219 y position of top of the parent (as given by outlet
 1 of [doc_layout]);
 #X text 232 122 subsection id \, such as "c0" \, "i3" or "oany".;
-#X connect 7 1 15 0;
-#X connect 8 1 14 0;
-#X connect 11 1 16 0;
+#X obj 3 304 doc_also;
+#X text 194 57 for use by [doc_cc] [doc_ii] [doc_oo] only.;
+#X obj 103 304 doc_link doc_make;
+#X connect 7 1 14 0;
+#X connect 8 1 13 0;
+#X connect 11 1 15 0;
+#X connect 16 1 18 0;
