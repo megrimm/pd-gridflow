@@ -1,79 +1,55 @@
-#N canvas 673 0 632 642 10;
-#X text 1 25 makes noise;
-#X obj 207 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X obj 221 134 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0
-1;
-#X floatatom 368 241 5 0 0 0 - - -;
-#X floatatom 78 163 5 0 0 0 - - -;
-#X obj 20 88 until;
-#X obj 20 51 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X msg 20 69 65536;
-#X obj 61 88 float;
-#X obj 101 88 + 1;
-#X text 219 308 we limit here \, because the values might go out of
-range;
-#X obj 149 73 metro 50;
-#X obj 149 51 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
-;
-#X obj 20 129 #import (256 256 2);
-#X obj 195 269 #store;
-#X obj 195 341 #out window;
-#X obj 310 341 #out window;
-#X obj 310 291 #clip;
-#X obj 148 124 #in;
-#X obj 249 247 shunt;
+#N canvas 673 0 632 553 10;
+#X obj 18 85 #in;
 #X obj 0 0 doc_h;
-#X obj 3 491 doc_c 1;
-#X obj 3 633 doc_o 1;
-#X obj 3 551 doc_i 2;
-#X text 210 147 switch displays \, use this to get an image into the
-#store;
-#X obj 14 663 doc_oo 0;
-#X obj 14 581 doc_ii 0;
-#X obj 14 601 doc_ii 1;
-#X obj 14 521 doc_cc 0;
-#X obj 97 581 doc_m i0 grid;
-#X obj 97 663 doc_m o0 grid;
-#X text 326 33 typically you plug a [#for] into this object \, and
-you plug this object into the left side of a [#store]. it will scatter
-pixels around \, giving an "unpolished glass" effec.t;
-#X text 326 89 if you put a picture in it \, however \, it will add
+#X obj 3 291 doc_c 1;
+#X obj 3 437 doc_o 1;
+#X obj 3 353 doc_i 2;
+#X obj 14 467 doc_oo 0;
+#X obj 14 383 doc_ii 0;
+#X obj 14 405 doc_ii 1;
+#X obj 14 321 doc_cc 0;
+#X obj 97 383 doc_m i0 grid;
+#X obj 97 467 doc_m o0 grid;
+#X text 246 89 if you put a picture in it \, however \, it will add
 noise. The resulting values may be out of range \, so you may need
 to clip them using min/max.;
-#X text 54 364 [#spread] scatters the pixels in an image. Not all original
-pixels will appear \, and some may get duplicated (triplicated \, etc)
-randomly. Some wrap-around effect will occur close to the edges.;
-#X text 52 425 Sending an integer to inlet 1 sets the amount of spreading
+#X text 244 202 Sending an integer to inlet 1 sets the amount of spreading
 in maximum number of pixels + 1 even values translate the whole image
 by half a pixel due to rounding .;
-#X obj 0 693 doc_f;
-#X obj 97 601 doc_m i1 grid;
-#X obj 97 521 doc_m c0 grid;
-#X obj 232 601 doc_same 0;
-#X obj 20 197 #spread 1;
-#X obj 310 270 #spread 1;
-#X msg 207 89 load r001.jpg;
-#X connect 1 0 41 0;
-#X connect 2 0 19 1;
-#X connect 3 0 40 1;
-#X connect 4 0 39 1;
-#X connect 5 0 8 0;
-#X connect 6 0 7 0;
-#X connect 7 0 5 0;
-#X connect 8 0 9 0;
-#X connect 8 0 13 0;
-#X connect 9 0 8 1;
-#X connect 11 0 18 0;
-#X connect 12 0 11 0;
-#X connect 13 0 39 0;
-#X connect 14 0 15 0;
-#X connect 17 0 16 0;
-#X connect 18 0 19 0;
-#X connect 19 0 14 1;
-#X connect 19 1 40 0;
-#X connect 36 1 38 0;
-#X connect 39 0 14 0;
-#X connect 40 0 17 0;
-#X connect 41 0 18 0;
+#X obj 0 519 doc_f;
+#X obj 97 405 doc_m i1 grid;
+#X obj 97 321 doc_m c0 grid;
+#X obj 232 405 doc_same 0;
+#X msg 18 65 load r001.jpg;
+#X obj 3 499 doc_also;
+#X text 17 35 add noise to a grid;
+#X text 246 141 [#remap_image]x[#spread] scatters the pixels in an
+image. Not all original pixels will appear \, and some may get duplicated
+(triplicated \, etc) randomly. Some wrap-around effect will occur close
+to the edges.;
+#X obj 18 105 #remap_image;
+#X obj 18 196 #in;
+#X msg 18 176 load r001.jpg;
+#X obj 18 125 #out window \, title spread_positions;
+#X obj 18 256 #out window \, title spread_colors;
+#X obj 18 236 #clip;
+#X text 55 236 ensure 0..255;
+#X obj 18 216 #spread 100;
+#X obj 104 105 #spread 10;
+#X obj 103 499 #remap_image;
+#X text 246 33 typically you plug a [#remap_image] together with this
+object. it will scatter pixels around \, giving an "unpolished glass"
+effect.;
+#X obj 187 499 # rand;
+#X connect 0 0 21 0;
+#X connect 14 1 16 0;
+#X connect 17 0 0 0;
+#X connect 18 1 30 0;
+#X connect 18 1 32 0;
+#X connect 21 0 24 0;
+#X connect 21 1 29 0;
+#X connect 22 0 28 0;
+#X connect 23 0 22 0;
+#X connect 26 0 25 0;
+#X connect 28 0 26 0;
+#X connect 29 0 21 1;

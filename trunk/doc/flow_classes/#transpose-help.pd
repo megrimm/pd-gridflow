@@ -1,4 +1,4 @@
-#N canvas 674 0 632 444 10;
+#N canvas 674 0 632 469 10;
 #X obj 3 150 doc_c 2;
 #X obj 36 65 #transpose;
 #X obj 3 234 doc_i 3;
@@ -22,16 +22,21 @@ are as in [#join].;
 #X text 232 202 dimension number;
 #X obj 232 299 doc_same 0;
 #X obj 232 321 doc_same 1;
-#X obj 0 415 doc_f;
-#X text 226 58 remaps contents of a grid by swapping dimensions of
-indices. for example \, [#transpose 0 1] does the same as [#remap_image]x[#reverse].
-;
+#X obj 0 435 doc_f;
 #X text 232 383 remapped image;
-#X text 228 108 this is like matrix-transposition that you frequently
+#X text 233 98 this is like matrix-transposition that you frequently
 read about in linear algebra books.;
+#X obj 3 415 doc_also;
+#X obj 103 415 #reverse;
+#X obj 163 415 #remap_image;
+#X text 231 47 remaps contents of a grid by swapping dimensions of
+indices. for example \, [#transpose 0 1] does the same as [#remap_image]x[#reverse]
+in the case of a square grid.;
 #X connect 11 1 18 0;
 #X connect 12 1 19 0;
 #X connect 13 1 17 0;
 #X connect 14 1 20 0;
 #X connect 15 1 21 0;
-#X connect 16 1 24 0;
+#X connect 16 1 23 0;
+#X connect 25 1 26 0;
+#X connect 25 1 27 0;

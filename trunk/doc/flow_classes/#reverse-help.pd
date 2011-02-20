@@ -1,24 +1,24 @@
 #N canvas 668 0 632 642 10;
-#X obj 258 177 #color;
-#X obj 301 320 #color;
-#X obj 259 378 display;
-#X obj 258 319 t a a;
-#X text 15 57 Swaps the values of incoming grids while preserving the
+#X obj 198 177 #color;
+#X obj 241 320 #color;
+#X obj 198 378 display;
+#X obj 198 319 t a a;
+#X text 15 37 Swaps the values of incoming grids while preserving the
 number of Dimensions between incoming and outgoing grids.;
-#X obj 22 257 #in;
+#X obj 22 217 #in;
 #X obj 22 176 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 22 371 #out window;
-#X obj 87 259 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
+#X obj 22 294 #out window;
+#X obj 79 217 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
 -1 0;
-#X obj 87 277 - 3;
-#X floatatom 87 297 5 0 0 0 - - -;
-#X obj 22 314 #reverse 0;
-#X obj 258 300 #reverse 0;
-#X obj 323 245 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
--1 0;
-#X obj 323 263 - 3;
-#X floatatom 323 283 5 0 0 0 - - -;
+#X obj 79 235 - 3;
+#X floatatom 79 255 5 0 0 0 - - -;
+#X obj 22 274 #reverse 0;
+#X obj 198 300 #reverse 0;
+#X obj 255 243 hradio 15 1 0 6 empty empty empty 0 -6 0 8 -260818 -1
+-1 3;
+#X obj 255 261 - 3;
+#X floatatom 255 281 5 0 0 0 - - -;
 #X obj 0 0 doc_h;
 #X obj 3 416 doc_c 1;
 #X obj 3 517 doc_i 2;
@@ -36,15 +36,21 @@ number of Dimensions between incoming and outgoing grids.;
 will occur. For N-dimensional grids \, the dimensions are numbered
 from 0 to N-1. In addition \, negative numbers from -N to -1 may be
 used \, to which N will be added.;
-#X obj 0 663 doc_f;
+#X obj 0 683 doc_f;
 #X text 232 547 grid to be reversed;
 #X text 232 631 reversed grid;
-#X msg 22 226 load b001.jpg;
-#X text 16 92 for an image \, 0 or -3 does vertical flip \, 1 or -2
+#X msg 22 196 load b001.jpg;
+#X text 14 73 for an image \, 0 or -3 does vertical flip \, 1 or -2
 does horizontal flip \, and 2 or -1 does channel flip. if you do this
 on something else than an image \, you may see why the negative numbers
 are supported: if you make a grid of multiple images \, then -1 will
 always refer to the channels dimension no matter what.;
+#X obj 3 663 doc_also;
+#X text 289 281 here \, only 0 and -1 are accepted;
+#X text 289 294 because the output of [#color] has only 1 dimension
+;
+#X obj 103 663 #transpose;
+#X obj 175 663 listreverse;
 #X connect 0 0 12 0;
 #X connect 3 0 2 0;
 #X connect 3 1 1 0;
@@ -63,3 +69,5 @@ always refer to the channels dimension no matter what.;
 #X connect 26 1 29 0;
 #X connect 27 1 28 0;
 #X connect 33 0 5 0;
+#X connect 35 1 38 0;
+#X connect 35 1 39 0;
