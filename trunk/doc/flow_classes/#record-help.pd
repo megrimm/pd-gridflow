@@ -1,17 +1,17 @@
-#N canvas 525 0 632 584 10;
+#N canvas 525 0 632 609 10;
 #X obj 79 121 #camera;
-#X obj 79 70 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
-#X obj 105 153 #out window;
-#X obj 154 70 hsl 128 15 20 300 0 0 empty empty empty -2 -6 0 8 -260818
+#X obj 79 80 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 88 144 #out window;
+#X obj 133 80 hsl 128 15 20 300 0 0 empty empty empty -2 -6 0 8 -260818
 -1 -1 0 1;
-#X obj 105 172 fps detailed;
-#X obj 105 191 print;
+#X obj 88 163 fps detailed;
+#X obj 88 182 print;
 #X obj 79 98 metro 100;
-#X obj 93 220 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X obj 92 220 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 123 269 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X obj 118 269 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 108 244 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X obj 105 244 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X obj 79 299 #record;
 #X text 232 461 Starts recording to the file.;
@@ -19,9 +19,9 @@
 #X text 232 426 Opens a dialog window in which to type the filename
 to be recorded \, the defualt encoding is quicktime (raw).;
 #X text 22 33 Record a quicktime file with [#out];
-#X text 113 218 <-- 1 select filename;
-#X text 128 243 <-- 2 start recording;
-#X text 143 269 <-- 3 stop recording;
+#X text 112 218 <-- 1 select filename;
+#X text 125 243 <-- 2 start recording;
+#X text 138 269 <-- 3 stop recording;
 #X text 142 298 <-- open for more options;
 #X obj 0 0 doc_h;
 #X obj 3 374 doc_i 4;
@@ -35,8 +35,10 @@ to be recorded \, the defualt encoding is quicktime (raw).;
 #X obj 97 426 doc_m i1 bang;
 #X obj 97 461 doc_m i2 bang;
 #X obj 97 483 doc_m i3 bang;
-#X obj 0 555 doc_f;
+#X obj 0 575 doc_f;
 #X text 232 404 images to be recorded go here.;
+#X obj 3 555 doc_also;
+#X obj 103 555 #out;
 #X connect 0 0 2 0;
 #X connect 0 0 10 0;
 #X connect 1 0 6 0;
@@ -51,3 +53,4 @@ to be recorded \, the defualt encoding is quicktime (raw).;
 #X connect 28 1 13 0;
 #X connect 29 1 11 0;
 #X connect 30 1 12 0;
+#X connect 33 1 34 0;
