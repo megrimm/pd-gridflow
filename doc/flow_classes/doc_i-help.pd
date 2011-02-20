@@ -1,10 +1,23 @@
-#N canvas 454 262 632 251 10;
+#N canvas 402 484 632 311 10;
 #X obj 0 0 doc_h;
-#X obj 0 222 doc_f;
+#X obj 0 277 doc_f;
 #X obj 3 80 doc_c 1;
-#X obj 3 142 doc_i 0;
-#X obj 3 182 doc_o 0;
+#X obj 3 177 doc_i 0;
+#X obj 3 217 doc_o 0;
 #X obj 14 110 doc_cc 0;
 #X obj 97 110 doc_m c0 float;
 #X text 232 110 number of inlets in the class being documented;
+#X obj 3 257 doc_also;
+#X text 140 45 an auto-positioning documentation header;
+#X obj 103 257 doc_link doc_h;
+#X obj 163 257 doc_link doc_o;
+#X obj 223 257 doc_link doc_c;
+#X text 232 132 this will cause at least that many [doc_ii] objects
+to be attached to this object.;
+#X obj 283 257 doc_link doc_ii;
 #X connect 6 1 7 0;
+#X connect 6 1 13 0;
+#X connect 8 1 10 0;
+#X connect 8 1 11 0;
+#X connect 8 1 12 0;
+#X connect 8 1 14 0;

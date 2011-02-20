@@ -1,7 +1,12 @@
-#N canvas 335 118 632 227 10;
+#N canvas 335 118 632 280 10;
 #X obj 0 0 doc_h;
-#X obj 0 198 doc_f;
-#X obj 3 78 doc_c 0;
-#X obj 3 118 doc_i 0;
-#X obj 3 158 doc_o 0;
-#X text 173 46 an auto-positioning documentation footer.;
+#X obj 0 246 doc_f;
+#X obj 3 106 doc_c 0;
+#X obj 3 146 doc_i 0;
+#X obj 3 186 doc_o 0;
+#X text 133 46 an auto-positioning documentation footer.;
+#X obj 3 226 doc_also;
+#X text 133 66 this is the black bar at the bottom of every help file.
+;
+#X obj 103 226 doc_link doc_h;
+#X connect 6 1 8 0;
