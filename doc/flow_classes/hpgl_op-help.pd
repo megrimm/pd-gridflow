@@ -1,6 +1,6 @@
-#N canvas 679 174 632 352 10;
+#N canvas 679 174 632 377 10;
 #X obj 0 0 doc_h;
-#X obj 0 323 doc_f;
+#X obj 0 343 doc_f;
 #X obj 93 42 hpgl_op;
 #X text 208 40 applies the same numop on all PA \, PD \, PU commands
 of the incoming HPGL stream;
@@ -23,8 +23,13 @@ of PA \, PU \, PD will have been changed.;
 #X text 232 216 same as argument 1;
 #X text 232 132 same as argument 1 of [#];
 #X text 232 110 same as argument 0 of [#];
+#X obj 3 323 doc_also;
+#X obj 103 323 #;
+#X obj 133 323 doc_link numop2 1;
 #X connect 12 1 21 0;
 #X connect 13 1 20 0;
 #X connect 14 1 17 0;
 #X connect 15 1 18 0;
 #X connect 16 1 19 0;
+#X connect 22 1 23 1;
+#X connect 22 1 24 0;
