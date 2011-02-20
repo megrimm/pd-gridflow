@@ -1,13 +1,7 @@
-#N canvas 205 69 632 421 10;
-#X obj 324 188 #out window;
-#X obj 273 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 255 107 #in;
-#X msg 255 61 open sewing.jpg;
-#X obj 324 150 #rgb_to_yuv;
-#X text 5 152 This displays the image as RGB:;
-#X text 99 190 This displays the image as YUV:;
-#X text 23 26 Converts an RGB color model image to a YUV color model
+#N canvas 441 114 632 459 10;
+#X obj 298 152 #out window;
+#X obj 226 80 #in;
+#X text 126 29 Converts an RGB color model image to a YUV color model
 image.;
 #X obj 226 152 #out window;
 #X obj 0 0 doc_h;
@@ -16,15 +10,22 @@ image.;
 #X obj 3 330 doc_o 1;
 #X obj 14 360 doc_oo 0;
 #X obj 14 298 doc_ii 0;
-#X obj 0 392 doc_f;
+#X obj 0 425 doc_f;
 #X obj 97 298 doc_m i0 grid;
 #X obj 97 360 doc_m o0 grid;
 #X text 232 298 image in RGB format.;
-#X text 232 360 image in YUV format.;
-#X connect 1 0 2 0;
-#X connect 2 0 4 0;
-#X connect 2 0 8 0;
-#X connect 3 0 2 0;
-#X connect 4 0 0 0;
-#X connect 16 1 18 0;
-#X connect 17 1 19 0;
+#X obj 3 405 doc_also;
+#X obj 103 405 #rgba_to_rgb;
+#X obj 298 133 #rgb_to_rgba;
+#X msg 226 61 load sewing.jpg;
+#X text 126 173 normally \, twice the same image because [#out x11]
+ignores the alpha channel.;
+#X text 232 360 image in RGBA format. the A channel is all zero. you
+may use [# + (0 0 0 255)] to fill it \, for example.;
+#X connect 1 0 3 0;
+#X connect 1 0 16 0;
+#X connect 11 1 13 0;
+#X connect 12 1 19 0;
+#X connect 14 1 15 0;
+#X connect 16 0 0 0;
+#X connect 17 0 1 0;
