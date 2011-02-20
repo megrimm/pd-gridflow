@@ -1,4 +1,4 @@
-#N canvas 430 0 632 490 10;
+#N canvas 430 0 632 515 10;
 #X obj 0 0 doc_h gf/;
 #X obj 111 75 gf/canvas_xid 0;
 #X symbolatom 198 94 10 0 0 0 - - -;
@@ -12,7 +12,7 @@
 #X obj 14 346 doc_oo 0;
 #X obj 14 368 doc_oo 1;
 #X obj 14 390 doc_oo 2;
-#X obj 0 461 doc_f;
+#X obj 0 481 doc_f;
 #X text 232 346 x11 id of canvas;
 #X obj 97 368 doc_m o1 symbol;
 #X obj 97 346 doc_m o0 symbol;
@@ -30,6 +30,9 @@ be patient :);
 in advance and could be output immediately \, the whole outlet set
 is still behaving as a [unpack s s s] \, therefore it waits until the
 reply is received from the pd client.;
+#X obj 3 461 doc_also;
+#X obj 103 461 doc_link #io.x11;
+#X obj 175 461 gf/sys_gui;
 #X connect 1 0 3 0;
 #X connect 1 1 4 0;
 #X connect 1 2 2 0;
@@ -40,3 +43,5 @@ reply is received from the pd client.;
 #X connect 20 0 1 0;
 #X connect 21 1 22 0;
 #X connect 23 1 24 0;
+#X connect 26 1 27 0;
+#X connect 26 1 28 0;

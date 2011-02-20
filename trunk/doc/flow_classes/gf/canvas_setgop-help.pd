@@ -1,6 +1,6 @@
-#N canvas 273 70 632 491 10;
+#N canvas 273 70 632 516 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 462 doc_f;
+#X obj 0 482 doc_f;
 #N canvas 567 87 450 300 check_it_out 0;
 #X obj 8 9 inlet;
 #X obj 8 131 outlet;
@@ -32,6 +32,8 @@
 strange bugs in pd that you may or may not see otherwise.;
 #X obj 3 422 doc_o 0;
 #X obj 86 47 loadbang;
+#X obj 3 462 doc_also;
+#X obj 101 462 namecanvas;
 #X connect 2 0 4 0;
 #X connect 3 0 5 0;
 #X connect 5 0 2 0;
