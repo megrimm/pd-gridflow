@@ -59,8 +59,6 @@ foreach k [lsort [array names ::say *]] {
 	if {[regexp ^#io $k]}      {set k "doc_link $k"}
 	if {$k == "parallel_port"} {set k "doc_link $k"}
 	if {$k == "gf/nbxhsl"}     {set k "doc_link $k"}
-	if {$k == "#to~"}          {set k "doc_link $k"} ;# until crash gets fixed
-	if {$k == "#in~"}          {set k "doc_link $k"} ;# until crash in [#to~] gets fixed
 	if {$k == "gf/tk_button"}  {set k "doc_link $k"}
 
 	set w [string length $k]
