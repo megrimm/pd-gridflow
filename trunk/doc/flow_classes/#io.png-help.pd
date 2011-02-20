@@ -1,4 +1,4 @@
-#N canvas 594 0 632 422 10;
+#N canvas 594 0 632 447 10;
 #X obj 0 0 doc_h;
 #X obj 3 120 doc_i 1;
 #X obj 14 150 doc_ii 0;
@@ -8,7 +8,7 @@
 ;
 #X text 232 251 3-channel is taken as RGB 8:8:8;
 #X obj 3 34 doc_c;
-#X obj 0 393 doc_f;
+#X obj 0 413 doc_f;
 #X text 232 273 4-channel is taken as RGBA 8:8:8:8 (colour with transparency)
 ;
 #X obj 3 318 doc_o 1;
@@ -24,6 +24,8 @@ channels are listed below.;
 #X obj 103 88 #in;
 #X msg 185 69 open bar.png;
 #X obj 185 88 #out;
+#X obj 3 393 doc_also;
+#X obj 103 393 doc_link #io.jpeg;
 #X connect 3 1 4 0;
 #X connect 3 1 5 0;
 #X connect 3 1 6 0;
@@ -33,3 +35,4 @@ channels are listed below.;
 #X connect 14 1 16 0;
 #X connect 17 0 18 0;
 #X connect 19 0 20 0;
+#X connect 21 1 22 0;
