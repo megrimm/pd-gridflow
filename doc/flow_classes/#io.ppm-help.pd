@@ -1,15 +1,30 @@
-#N canvas 0 0 632 300 10;
+#N canvas 0 0 632 377 10;
 #X obj 0 0 doc_h;
-#X obj 0 219 doc_f;
-#X obj 3 74 doc_i 1;
-#X obj 3 34 doc_c ...;
-#X obj 97 104 doc_m i0 bang;
-#X obj 97 126 doc_m i0 grid;
-#X text 232 104 read image (when in [#in]);
-#X text 232 126 write image (when in [#out]);
-#X obj 14 104 doc_ii 0;
-#X obj 14 188 doc_oo 0;
-#X obj 3 158 doc_o 1;
-#X obj 97 188 doc_m o0 grid;
+#X obj 0 343 doc_f;
+#X obj 3 164 doc_i 1;
+#X obj 3 124 doc_c ...;
+#X obj 97 194 doc_m i0 bang;
+#X obj 97 216 doc_m i0 grid;
+#X text 232 194 read image (when in [#in]);
+#X obj 14 194 doc_ii 0;
+#X obj 14 278 doc_oo 0;
+#X obj 3 248 doc_o 1;
+#X obj 97 278 doc_m o0 grid;
+#X obj 3 323 doc_also;
+#X text 52 51 module for ppm (and related) formats.;
+#X text 53 69 when used in [#in] \, supports formats P2 \, P3 \, P5
+\, P6.;
+#X text 53 89 when used in [#out] \, supports formats P5 \, P6.;
+#X text 232 278 dim(rows \, columns \, channels): image that has been
+read. supports 1 or 3 channels.;
+#X text 232 216 write image (when in [#out]). supports 1 or 3 channels.
+;
+#X obj 103 323 doc_link #io.grid;
+#X obj 181 323 doc_link #io.png;
+#X obj 253 323 doc_link #io.jpeg;
 #X connect 4 1 6 0;
-#X connect 5 1 7 0;
+#X connect 5 1 16 0;
+#X connect 10 1 15 0;
+#X connect 11 1 17 0;
+#X connect 11 1 18 0;
+#X connect 11 1 19 0;
