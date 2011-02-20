@@ -8,15 +8,13 @@
 #
 # ex: gridflow/bin/build_osx_package 9.13
 #
-#
-#
 # sur macosx104-i386.idmi.poly.edu
 # libcv 1.1 est bâti avec :
-# ./configure --prefix=$HOME --without-python --without-carbon --without-imageio --without-gtk --without-gthread --without-quicktime
+# ./configure --prefix=$HOME/... --without-python --without-carbon --without-imageio --without-gtk --without-gthread --without-quicktime --disable-apps
 
 if [ -z "$1" ]; then
     echo Usage: $0  version_no  [arch]
-    exit 1
+    exit
 fi
 
 if [ "$2" = "ppc" ]; then
@@ -26,17 +24,17 @@ else
 fi
 
 VERSION="gridflow-$1"
-PACKAGE="gridflow-$1-macosx104-$ARCH.tar.gz"
-DIR="$HOME/code/gridflow-$1"
+PACKAGE="gridflow-$1-macosx104-$ARCH-test10.tar.gz"
+DIR="$HOME/.../gridflow-$1"
 GF_README="$DIR/README-$ARCH.txt"
 
-if [ "$(PWD)" != "$HOME/code" ]; then echo "t'es pas dans l'bon dossier"; exit 1; fi
-if [ ! -e "$GF_README"        ]; then echo "j'ai pas trouvé l'README";    exit 1; fi
+if [ "$(PWD)" != "$HOME/..." ]; then echo "t'es pas dans l'bon dossier"; exit 1; fi
+if [ ! -e "$GF_README"       ]; then echo "j'ai pas trouvé l'README";    exit 1; fi
 
 #-------------------------------------------------------------------------------
-echo "copie de $DIR/gridflow à $HOME/code/gridflow"
+echo "copie de $DIR/gridflow à $HOME/.../gridflow"
 rm -rf "$DIR/gridflow"
-cp -r "$HOME/code/gridflow" "$DIR"
+cp -r "$HOME/.../gridflow" "$DIR"
 
 echo "effaçage de fichiers source et fichiers temporaires qui sont dans cette copie"
 cd "$DIR/gridflow"
@@ -46,16 +44,16 @@ for i in $(find . -name ".svn*") $(find . -name ".DS_Store"); do rm -rf $i; done
 echo "configuration des bibliothèques"
 
 BUNDLED_PREFIX="/Library/Pd/gridflow/libs"
-#BUNDLED_PREFIX="/Users/pddev/code/gridflow-$1/gridflow/libs"
+#BUNDLED_PREFIX="/Users/pddev/.../gridflow-$1/gridflow/libs"
 
 # /sw/lib/libpng14.14.dylib
 
 BUNDLED_LIBS="\
 /sw/lib/libaa.1.dylib \
-/Users/pddev/lib/libpng12.dylib \
+/Users/pddev/.../lib/libpng12.dylib \
 /sw/lib/libjpeg.8.dylib \
 /sw/lib/libSDL-1.2.0.dylib \
-$HOME/lib/libcv.2.dylib \
+/Users/pddev/.../lib/libcv.2.dylib \
 /sw/lib/libfftw3f.3.dylib \
 /sw/lib/libfftw3.3.dylib \
 /sw/lib/libncurses.5.dylib \
@@ -66,12 +64,12 @@ $HOME/lib/libcv.2.dylib \
 /sw/lib/libintl.8.dylib"
 
 mkdir libs
-cp $BUNDLED_LIBS ./libs/
+cp $BUNDLED_LIBS libs/
 
 for LIB in $BUNDLED_LIBS; do
     FILENAME=`echo $LIB | sed 's/.*\///'`
     install_name_tool -id $BUNDLED_PREFIX/$FILENAME ./libs/$FILENAME
-    for ZZZ in gridflow*.pd_darwin libs/libquicktime.1.dylib; do
+    for ZZZ in gridflow*.pd_darwin libs/*.dylib; do
         install_name_tool -change $LIB $BUNDLED_PREFIX/$FILENAME $ZZZ
     done
 done
@@ -84,13 +82,14 @@ install_name_tool -change  /sw/lib/ncurses/libncurses.5.dylib  $BUNDLED_PREFIX/l
 fi
 
 #echo "on teste l'exécutable et on quitte sans produire l'archive"
-#exec /Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/code/gridflow-9.13 -lib gridflow
+#exec /Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/.../gridflow-9.13 -lib gridflow
 
 #-------------------------------------------------------------------------------
 echo "archivage des fichiers : production de $PACKAGE"
 cd ../..
 tar -czf "$PACKAGE" "$VERSION"
 echo "envoi de l'archive à gridflow.ca"
-scp "$PACKAGE" gridflow@gridflow.ca:public_html/download/packages
+echo scp "$PACKAGE" gridflow@gridflow.ca:public_html/download/packages
+     scp "$PACKAGE" gridflow@gridflow.ca:public_html/download/packages
 
 echo fini!
