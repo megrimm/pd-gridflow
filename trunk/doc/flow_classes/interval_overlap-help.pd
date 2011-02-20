@@ -1,8 +1,8 @@
-#N canvas 335 118 632 455 10;
+#N canvas 335 118 632 480 10;
 #X obj 0 0 doc_h;
-#X obj 0 426 doc_f;
+#X obj 0 446 doc_f;
 #X obj 77 49 interval_overlap;
-#X text 236 45 check whether two 1-D intervals overlap;
+#X text 216 47 check whether two 1-D intervals overlap;
 #X obj 3 86 doc_c 4;
 #X obj 3 214 doc_i 4;
 #X obj 3 342 doc_o 1;
@@ -34,6 +34,7 @@
 #X obj 232 266 doc_same 1;
 #X obj 232 310 doc_same 3;
 #X obj 232 288 doc_same 2;
+#X obj 3 426 doc_also;
 #X connect 16 1 27 0;
 #X connect 17 1 28 0;
 #X connect 18 1 29 0;
