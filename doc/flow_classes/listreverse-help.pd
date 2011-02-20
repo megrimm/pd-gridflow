@@ -1,13 +1,19 @@
-#N canvas 659 137 632 262 10;
-#X obj 40 40 listreverse;
+#N canvas 659 137 632 311 10;
+#X obj 20 47 listreverse;
 #X obj 0 0 doc_h;
-#X obj 3 73 doc_c 0;
-#X obj 3 113 doc_i 1;
-#X obj 3 173 doc_o 1;
-#X obj 14 143 doc_ii 0;
-#X obj 14 203 doc_oo 0;
-#X obj 97 143 doc_m i0 list;
-#X obj 97 203 doc_m o0 list;
+#X obj 3 93 doc_c 0;
+#X obj 3 133 doc_i 1;
+#X obj 3 195 doc_o 1;
+#X obj 14 163 doc_ii 0;
+#X obj 14 225 doc_oo 0;
+#X obj 97 163 doc_m i0 list;
+#X obj 97 225 doc_m o0 list;
+#X obj 0 277 doc_f;
+#X obj 3 257 doc_also;
+#X text 232 163 list of any size;
+#X text 232 225 list of same size;
 #X text 119 34 Outputs the incoming list \, from last element to first
-element.;
-#X obj 0 233 doc_f;
+element. It is its own inverse : applying it twice does nothing at
+all.;
+#X connect 7 1 11 0;
+#X connect 8 1 12 0;

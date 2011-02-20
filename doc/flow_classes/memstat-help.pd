@@ -1,11 +1,11 @@
-#N canvas 467 101 632 369 10;
+#N canvas 467 101 632 398 10;
 #X obj 0 0 doc_h;
-#X obj 0 340 doc_f;
+#X obj 0 364 doc_f;
 #X obj 3 180 doc_c 0;
 #X obj 3 220 doc_i 1;
-#X obj 3 280 doc_o 1;
+#X obj 3 282 doc_o 1;
 #X obj 14 250 doc_ii 0;
-#X obj 14 310 doc_oo 0;
+#X obj 14 312 doc_oo 0;
 #X obj 81 62 memstat;
 #X obj 80 39 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
@@ -13,9 +13,10 @@
 #X text 236 49 lookup process stats for the currently running pd and
 figure out how much RAM it uses. virtual size of RAM in kilobytes (includes
 swapped out and shared memory);
-#X obj 97 250 doc_m i0;
-#X obj 97 310 doc_m o0;
 #X text 235 97 This doesn't work \, because [textfile] absolutely wants
 to lseek() in that file \, which is not implemented by the Linux kernel
 for this particular pseudo-file in the /proc filesystem driver.;
+#X obj 3 344 doc_also;
+#X obj 97 250 doc_m i0 bang;
+#X obj 97 312 doc_m o0 list;
 #X connect 8 0 7 0;

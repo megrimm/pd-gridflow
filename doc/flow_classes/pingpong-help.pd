@@ -1,4 +1,4 @@
-#N canvas 648 0 632 430 10;
+#N canvas 648 0 632 450 10;
 #X obj 0 0 doc_h;
 #X obj 3 334 doc_o 1;
 #X obj 14 364 doc_oo 0;
@@ -16,9 +16,9 @@
 mapped to 9 thru 1 respectively \, and 20 thru 30 are mapped to 0 thru
 10 \, and so on.;
 #X obj 97 364 doc_m o0 float;
-#X obj 0 396 doc_f;
+#X obj 0 416 doc_f;
 #X obj 61 58 metro 500;
-#X obj 61 40 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 1 1;
+#X obj 61 40 tgl 15 0 empty empty empty 17 7 0 10 -4034 -1 -1 0 1;
 #X obj 61 78 f 0;
 #X obj 97 78 + 1;
 #X floatatom 61 118 5 0 0 0 - - -;
@@ -27,6 +27,8 @@ a back-and-forth counting (0 \, 1 \, 2 \, 1 \, 0 \, ...) from 0 to
 a specified upper bound.;
 #X text 232 179 upper bound;
 #X obj 61 98 pingpong 5;
+#X obj 3 396 doc_also;
+#X obj 103 396 #solarize;
 #X connect 8 1 21 0;
 #X connect 9 1 10 0;
 #X connect 11 1 12 0;
@@ -36,3 +38,4 @@ a specified upper bound.;
 #X connect 17 0 22 0;
 #X connect 18 0 17 1;
 #X connect 22 0 19 0;
+#X connect 23 1 24 0;
