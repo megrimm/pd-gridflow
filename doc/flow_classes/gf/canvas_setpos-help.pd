@@ -1,11 +1,11 @@
-#N canvas 0 0 632 407 10;
+#N canvas 0 0 632 432 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 378 doc_f;
+#X obj 0 398 doc_f;
 #N canvas 182 179 450 102 look_here 0;
 #X obj 9 11 inlet;
 #X obj 9 30 gf/canvas_setpos 0;
 #X connect 0 0 1 0;
-#X restore 114 170 pd look_here;
+#X restore 112 170 pd look_here;
 #X obj 116 90 f;
 #X obj 116 54 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
 1;
@@ -26,6 +26,8 @@ in its parent;
 #X obj 97 231 doc_m c0 list;
 #X obj 97 293 doc_m i0 list;
 #X text 232 231 canvas level;
+#X obj 3 378 doc_also;
+#X obj 103 378 gf/canvas_getpos;
 #X connect 3 0 13 0;
 #X connect 3 0 15 0;
 #X connect 4 0 14 0;
@@ -38,3 +40,4 @@ in its parent;
 #X connect 16 0 2 0;
 #X connect 18 1 20 0;
 #X connect 19 1 17 0;
+#X connect 21 1 22 0;

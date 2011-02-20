@@ -1,6 +1,6 @@
-#N canvas 0 0 632 370 10;
+#N canvas 0 0 632 395 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 341 doc_f;
+#X obj 0 361 doc_f;
 #X obj 104 87 gf/canvas_edit_mode 0;
 #X obj 104 106 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
 1;
@@ -21,6 +21,8 @@
 #X obj 97 287 doc_m o0 float;
 #X text 232 287 0 when in run mode;
 #X obj 97 225 doc_m i0 bang;
+#X obj 3 341 doc_also;
+#X obj 103 341 doc_link doc_editmode;
 #X connect 2 0 3 0;
 #X connect 10 0 11 0;
 #X connect 11 0 12 0;
@@ -29,3 +31,4 @@
 #X connect 17 1 18 0;
 #X connect 17 1 13 0;
 #X connect 19 1 16 0;
+#X connect 20 1 21 0;

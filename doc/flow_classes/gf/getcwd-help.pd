@@ -1,6 +1,6 @@
-#N canvas 0 0 632 543 10;
+#N canvas 0 0 632 568 10;
 #X obj 0 0 doc_h gf/;
-#X obj 0 514 doc_f;
+#X obj 0 534 doc_f;
 #X obj 52 59 gf/getcwd;
 #X obj 3 106 doc_c 0;
 #X obj 3 146 doc_i 1;
@@ -30,6 +30,8 @@ home folder is used instead (e.g. "symbol /home/matju");
 the "open" command in the Shell \, would make [gf/getcwd] report "symbol
 /". (just a slash: this is what is otherwise known as "Macintosh HD")
 ;
+#X obj 3 514 doc_also;
+#X obj 103 514 gf/find_file;
 #X connect 2 0 10 0;
 #X connect 6 1 13 0;
 #X connect 9 1 14 0;
@@ -38,3 +40,4 @@ the "open" command in the Shell \, would make [gf/getcwd] report "symbol
 #X connect 9 1 17 0;
 #X connect 9 1 18 0;
 #X connect 16 0 2 0;
+#X connect 20 1 21 0;
