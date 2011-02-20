@@ -1,9 +1,9 @@
-#N canvas 599 0 574 300 10;
+#N canvas 599 0 574 217 10;
 #X obj 25 165 outlet;
 #X obj 25 51 inlet start1;
-#X obj 142 51 inlet end1;
-#X obj 259 51 inlet start2;
-#X obj 377 51 inlet end2;
+#X obj 126 51 inlet end1;
+#X obj 227 51 inlet start2;
+#X obj 328 51 inlet end2;
 #X obj 25 90 expr ($f1>=$f3 && $f1<$f4) || ($f2>=$f3 && $f2<$f4);
 #X text 20 19 There's some bug with the endpoints (see dd's proc overlap)
 ;
