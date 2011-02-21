@@ -62,7 +62,10 @@ void suffixes_are (const char *name, const char *suffixes) {
 	char *suff2 = strdup(suffixes);
 	char *suff3 = suff2+strlen(suff2);
 	for (char *s=suff2; s<suff3; s++) if (*s==' ' || *s==',') *s=0;
-	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {string ss = s; suffix_table[ss]=name2;}
+	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {
+		string ss = s;
+		if (suffix_table.find(ss)==suffix_table.end()) suffix_table[ss]=name2;
+	}
 }
 
 \class SuffixLookup {
