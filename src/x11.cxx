@@ -704,9 +704,9 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
-\end class FormatX11 {post("FormatX11 \\startup"); install_format("#io.x11",6,"");}
+\end class FormatX11 {install_format("#io.x11",6,"");}
 extern "C" void gridflow_x11_setup () {
-	post("startup_x11");
+	post("GridFlow x11 module loaded");
 	\startall
 }
 
