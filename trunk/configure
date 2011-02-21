@@ -545,15 +545,9 @@ Feature.add {
 	tag :gem
 	name "GEM support (loadtime detect: don't disable)"
 	produces_pdlib ["gem_loader","gem9292","gem9293","gem9393"]
+	uses_feature [:opengl]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
-        uses_h ["GL/glew.h"]
-	options ["HAVE_OPENGL"]
-	test proc {c_test %`
-                #include#
-                int main () {return (GLint)0;}
-                `
-        }
 }
 Feature.add {
 	tag :pdp
