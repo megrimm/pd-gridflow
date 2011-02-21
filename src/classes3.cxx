@@ -1124,7 +1124,7 @@ GRID_INLET(0) {
 						int xe = min(ld[i+1].x,xl);
 						k += ld[i].dir;
 						if (xs<xe) {
-							int q = abs(k);
+							int q = rule==RULE_WINDING ? k!=0 : abs(k);
 							while (xe-xs>=16) {for (int w=0; w<q; w++) op->zip(16*cn,data2+cn*xs,cd); xs+=16;}
 							for (int w=0; w<q; w++) op->zip((xe-xs)*cn,data2+cn*xs,cd);
 						}
@@ -1361,7 +1361,7 @@ GRID_INLET(0) {
 		cast = nt;
 	}
 	\decl n set   (int inlet, float f) {
-		if (inlet>=n) RAISE("what???");
+		if (inlet<0 && inlet>=n) RAISE("bug (looking for inlet %d)",inlet);
 		((float *)*a)[inlet] = f;
 	}
 	\decl n float (int inlet, float f) {_n_set(inlet,f); _0_bang();}
