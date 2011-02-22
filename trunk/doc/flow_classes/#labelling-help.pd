@@ -1,69 +1,76 @@
 #N canvas 746 105 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 0 816 doc_f;
-#X obj 22 170 #labelling;
-#X obj 3 498 doc_o 4;
-#X obj 3 388 doc_i 1;
-#X obj 14 528 doc_oo 0;
-#X obj 14 589 doc_oo 1;
-#X obj 14 685 doc_oo 2;
-#X obj 14 742 doc_oo 3;
-#X obj 14 418 doc_ii 0;
-#X obj 97 528 doc_m o0 grid;
-#X obj 3 304 doc_c 0..1;
-#X text 232 334 0 : bidimensional form;
-#X text 232 356 1 : form for horizontal lines;
-#X text 232 418 single-channel picture to analyse. the content must
+#X obj 0 926 doc_f;
+#X obj 22 220 #labelling;
+#X obj 3 608 doc_o 4;
+#X obj 3 498 doc_i 1;
+#X obj 14 638 doc_oo 0;
+#X obj 14 699 doc_oo 1;
+#X obj 14 795 doc_oo 2;
+#X obj 14 852 doc_oo 3;
+#X obj 14 528 doc_ii 0;
+#X obj 97 638 doc_m o0 grid;
+#X obj 3 414 doc_c 0..1;
+#X text 232 444 0 : bidimensional form;
+#X text 232 466 1 : form for horizontal lines;
+#X text 232 528 single-channel picture to analyse. the content must
 be made of zeroes and ones (other values are reserved for making the
 output);
-#X text 232 528 single-channel picture in which every contiguous region
+#X text 232 638 single-channel picture in which every contiguous region
 (of ones) is labelled (flood-filled) using a number greater than or
 equal to 2 those numbers are sorted according to the smallest pixel
 index found in each region.;
-#X obj 232 466 doc_same 0;
-#X text 232 685 when form=0: a grid[2] giving the centre ([#moment
+#X obj 232 576 doc_same 0;
+#X text 232 795 when form=0: a grid[2] giving the centre ([#moment
 1]) of each region;
-#X text 232 742 when form=0: area of each region (in number of pixels)
+#X text 232 852 when form=0: area of each region (in number of pixels)
 ;
-#X text 232 764 when form=1: not present;
-#X text 232 720 when form=1: not present;
-#X text 232 624 when form=1: a grid[2 \, 2] that is a 2-polygon \,
+#X text 232 874 when form=1: not present;
+#X text 232 830 when form=1: not present;
+#X text 232 734 when form=1: a grid[2 \, 2] that is a 2-polygon \,
 that is \, just a straight line. this line is horizontal \, and its
 right-side bound is for the first pixel that is NOT in the region.
 ;
-#X obj 14 334 doc_cc 0;
-#X text 232 589 when form=0: a grid[2 \, 2] giving the variance (centred
+#X obj 14 444 doc_cc 0;
+#X text 232 699 when form=0: a grid[2 \, 2] giving the variance (centred
 [#moment 2]) of each region;
-#X obj 97 742 doc_m o3 float;
-#X obj 97 685 doc_m o2 grid;
-#X obj 97 589 doc_m o1 grid;
-#X obj 97 418 doc_m i0 grid;
-#X obj 97 466 doc_m i0 form;
-#X obj 97 764 doc_m o3 <gone>;
-#X obj 97 720 doc_m o2 <gone>;
-#X obj 97 334 doc_m c0 float/int;
-#X obj 3 796 doc_also;
+#X obj 97 852 doc_m o3 float;
+#X obj 97 795 doc_m o2 grid;
+#X obj 97 699 doc_m o1 grid;
+#X obj 97 528 doc_m i0 grid;
+#X obj 97 576 doc_m i0 form;
+#X obj 97 874 doc_m o3 <gone>;
+#X obj 97 830 doc_m o2 <gone>;
+#X obj 97 444 doc_m c0 float/int;
+#X obj 3 906 doc_also;
 #X obj 22 100 #in;
 #X msg 22 80 load babbage.jpg;
-#X obj 22 270 #out window;
+#X obj 22 360 #out window;
 #X obj 22 120 #inner (3 1 # 1 -1 -1);
 #X text 160 120 make one channel of red minus green minus blue;
 #X text 62 36 Flood-fill every "1" region of a picture using a different
 number \, and make stats about it.;
-#X obj 22 250 #inner (1 3 # 25 50 75);
 #X obj 22 140 # <;
 #X text 161 138 select negative regions (R < G+B);
-#X text 166 249 generate various colours from the region numbers;
-#X obj 79 190 print area;
-#X obj 60 210 print centre;
-#X obj 41 230 print variance;
-#X obj 103 796 #moment;
-#X obj 157 796 #moment_polar;
-#X obj 247 796 cv/#SVD;
-#X connect 2 0 39 0;
-#X connect 2 1 45 0;
-#X connect 2 2 44 0;
-#X connect 2 3 43 0;
+#X text 166 299 generate various colours from the region numbers;
+#X obj 79 240 print area;
+#X obj 60 260 print centre;
+#X obj 41 280 print variance;
+#X obj 103 906 #moment;
+#X obj 157 906 #moment_polar;
+#X obj 247 906 cv/#SVD;
+#X obj 22 159 shunt;
+#X obj 58 160 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X obj 49 179 #convolve (3 3 # 1 2 1 2 4 2 1 2 1);
+#X obj 49 199 # > 13;
+#X obj 22 300 #inner (1 3 # 25 40 65);
+#X obj 22 340 #gamma 512;
+#X obj 22 320 # & 255;
+#X connect 2 0 52 0;
+#X connect 2 1 44 0;
+#X connect 2 2 43 0;
+#X connect 2 3 42 0;
 #X connect 10 1 15 0;
 #X connect 24 1 18 0;
 #X connect 25 1 17 0;
@@ -75,11 +82,18 @@ number \, and make stats about it.;
 #X connect 30 1 20 0;
 #X connect 31 1 12 0;
 #X connect 31 1 13 0;
+#X connect 32 1 45 0;
 #X connect 32 1 46 0;
 #X connect 32 1 47 0;
-#X connect 32 1 48 0;
 #X connect 33 0 36 0;
 #X connect 34 0 33 0;
-#X connect 36 0 40 0;
-#X connect 39 0 35 0;
-#X connect 40 0 2 0;
+#X connect 36 0 39 0;
+#X connect 39 0 48 0;
+#X connect 48 0 2 0;
+#X connect 48 1 50 0;
+#X connect 49 0 48 1;
+#X connect 50 0 51 0;
+#X connect 51 0 2 0;
+#X connect 52 0 54 0;
+#X connect 53 0 35 0;
+#X connect 54 0 53 0;
