@@ -575,7 +575,7 @@
 #X obj 89 46 separator;
 #X obj 5 29 t a a;
 #N canvas 401 111 571 467 board 0;
-#X obj 210 337 #many nbx 7 7 14 32;
+#X obj 210 337 #many nbx 7 7;
 #X obj 210 299 loadbang;
 #X obj 30 14 inlet;
 #X obj 30 355 outlet;
