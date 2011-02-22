@@ -10,6 +10,10 @@ version 9.14 (2011.03.XX):
  * [#see]: experimental version goes about 5 times faster. (use [#see 1])
  * [#draw_polygon]: added "rule winding" and "rule multi"
  * removed example threshold.pd
+ * quite a lot of doc update (especially missing parts and errors)
+ * [#polygon_moment]: argument defaults to 1
+ * [#polygon_radial_map]: accept comma-message
+ * pdp support back in source package
 
 version 9.13 (2011.02.08):
 
@@ -45,6 +49,7 @@ version 9.13 (2011.02.08):
  * osx package gets MMX support (on Intel)
  * osx package gets libquicktime support (including encoding)
  * the win32 package is back !
+ * pdp support missing in source package (by accident)
 
 version 9.12 (2010.10.08):
 
