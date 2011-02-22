@@ -1,8 +1,11 @@
 Unsorted
 
+[ ] supercycloid crash on exit
+[ ] [#moment]'s help : see that [#swap] has a bug because of [#import]'s fuckups.
+[*] feedback_fractal.pd crashes for Patrice. (see small test file)
+[ ] higher-resolution [#rotate]
 [ ] add [#delay_image]
 [ ] -lpng12 OSX (commit it)
-[ ] (y x) as type in a [doc_m] somewhere
 [ ] Claude L. on OSX 10.5.8 with GF 9.13-test6, [#io.png]: inlet -1 method grid: !png
 [*] rgb_delay5.pd crashes ([#convolve] 5x5 or even 3x5)
 [ ] [args] loadbang order really, really sucks.
@@ -12,10 +15,6 @@ Unsorted
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
-[*] <pob> matju: [hidecursor( marche aussi dans windows contrairement à ce que dit le fichier d'aide.
-[*] <pob> matju: Dans l'index [#to~] apparaît comme hyperlien et non comme objet. Je ne sais pas si c'est volontaire.
-[ ] <pob> matju: dans le fichier d'aide de [#posterize] il y a deux [#out window] du coup l'image traitée n'est pas
-    affichée. Il n'y a qu'un fenêtre de crée (nommée 'modified') mais c'est l'image d'origine qui y est affichée.
 [ ] reform GFDP so that pd43 and l2ork become debuggable.
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] memalign still doesn't exist on OSX and Windows ?
@@ -48,6 +47,7 @@ Unsorted
 [ ] [#many]: spacing and margins don't get saved when properties-dialogue has not been used
 [ ] [#many]: doesn't show little star indicating that file hasn't been saved
 [ ] [#many]: add support for [hsl] and [vsl]
+[ ] [#many]: use [gf/canvas_loadbang]
 [ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
@@ -80,7 +80,6 @@ Unsorted
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
 [ ] [#draw_polygon] : winding-rule
-[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b)
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -189,6 +188,7 @@ Unsorted
 [ ] win32 [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] win32 x11 support
 [ ] malloc alignment = 4 mod 8 (en utilisant valgrind)
+[ ] find why libjpeg can't be directly used in postdigital.pd
 
 Not Urgent
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
@@ -214,6 +214,9 @@ Not Urgent
 [ ] intégrer -lib segfault ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
     so, I didn't continue the job on [#scan] [#inner] (note that [#inner] already a special case related to that)
+[ ] [#draw_polygon, alpha]
+[ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b)
+[ ] do something about [memstat]
 
 OpenCV
 [ ] cvOpticalFlow
@@ -361,6 +364,12 @@ OSX:
      présentement ? est-ce que ça dépend de la dernière app qui a ouvert la caméra avant gridflow ? faire des tests avec
      [pix_video] et [#camera] en alternance.)
 
+WIN:
+[*] <pob> matju: [hidecursor( marche aussi dans windows contrairement à ce que dit le fichier d'aide.
+[ ] <pob> matju: dans le fichier d'aide de [#posterize] il y a deux [#out window] du coup l'image traitée n'est pas
+    affichée. Il n'y a qu'un fenêtre de crée (nommée 'modified') mais c'est l'image d'origine qui y est affichée.
+[ ] For having gdb, mingw has a new neat installer: http://sourceforge.net/projects/mingw/
+
 Peines Perdues:
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
 [ ] [#many]: add support for 'floatatom' objects ?
@@ -400,9 +409,13 @@ pd-announce mlist : post release
 freshmeat if anyone cares (just restored my account but didn't use it)
 puredata.info release listings
 
------
+----------------------------------------------------------------------------------------------------------------
 
 /Applications/Pd-extended.app/Contents/Resources/bin/pd -nogui -path /Users/pddev/code/gridflow-9.13 -lib gridflow
+
+<ClaudiusMaximus> have you seen "scratch" (squeak based) or "scheme bricks" (for fluxus) ?
+http://en.wikipedia.org/wiki/Cognitive_dimensions
+http://ioforms.org/
 
 note: alx a 10.6.5...
 
