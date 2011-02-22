@@ -140,7 +140,7 @@ struct GemCache {
 			render((GemCache *)(void *)argv[0],
 			       (GemState *)(void *)argv[1]);
 		} else {
-			if (argc==1) post("#to_pix gem_state %f",(float)argv[0]); else post("#to_pix gem_state ???");
+			//if (argc==1) post("#to_pix gem_state %f",(float)argv[0]); else post("#to_pix gem_state ???");
 			startRendering();
 		}
 		out[0](gensym("gem_state"),argc,argv);
