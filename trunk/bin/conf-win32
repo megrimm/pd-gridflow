@@ -1,10 +1,18 @@
 # run this from the main dir by typing : bash bin/conf-win32
 
-./configure --lite --no-aalib --no-dc1394 --no-gcc64 --no-mpeg3 --no-objcpp --no-opencv --no-quartz \
---no-quicktimeapple --no-quicktimehw --no-videodev --no-x11 --no-x11_shm --no-mmx --no-pentium --no-pdp \
+./configure --lite \
+--no-aalib --no-dc1394 --no-gcc64 \
+--no-mpeg3 --no-opencv \
+--no-objcpp --no-quartz --no-quicktimeapple --no-quicktimehw \
+--no-videodev --no-libv4l1 --no-libv4l2 \
+--no-x11 --no-x11_shm --no-mmx --no-pentium \
+--no-pdp \
+--no-android \
+--force-gem \
 --force-gcc3 --force-stl --force-sdl \
 --force-opengl --force-jpeg --force-png \
---force-netpbm --force-fftw
+--force-fftw
+
 
 sed 's/png.h/libpng12\/png.h/' config.h > config.tmp
 mv config.tmp config.h
