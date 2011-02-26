@@ -1,7 +1,6 @@
 #!/usr/bin/make
 
 # pexports /c/Program\ Files/pd/extra/Gem/Gem.dll > Gem.def
-# dlltool -D /c/Program\ Files/pd/extra/Gem/Gem.dll -d Gem.def -l libGem.a
 
 include config.make
 COMMON_DEPS = config.make Makefile src/source_filter.rb
@@ -34,8 +33,9 @@ else
     PDSUF = .dll
     LDSOFLAGS += -shared
     LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd 
-    #GEMFLAGS += -L/c/Program\ Files/pd/extra/Gem -lGem
-    GEMFLAGS += -xnone libGem.a
+    #LDSO_gem_loader += -L/c/Program\ Files/pd/extra/Gem -lGem
+    GEMDEPS += libGem.a
+    LDSO_gem_loader += -xnone libGem.a
     
     #CFLAGS += -DDES_BUGS
     # -mms-bitfields is necessary because of t_object and the way Miller compiles pd.
@@ -105,7 +105,7 @@ PDLIB1 = gridflow$(PDSUF)
 $(PDLIB1): $(OBJS2) $(OBJS) $(COMMON_DEPS2)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) -xnone  -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS) $(LDSO_main)
 
-gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(COMMON_DEPS2)
+gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(COMMON_DEPS2) $(GEMDEPS)
 	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem_loader.cxx.fcs $(LDSOFLAGS) $(LDSO_gem_loader)
 gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(COMMON_DEPS2)
 	$(CXX) $(CFLAGS)                               -o $@ -xc++ src/gem.cxx.fcs        $(LDSOFLAGS) $(LDSO_gem_loader)
@@ -150,3 +150,7 @@ clean::
 distclean:: clean
 	rm -f config.make config.log config.h
 	rm -rf tmp
+
+libGem.a: src/Gem.def
+	dlltool -D /c/Program\ Files/pd/extra/Gem/Gem.dll -d src/Gem.def -l libGem.a
+
