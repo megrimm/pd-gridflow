@@ -31,6 +31,9 @@ int sys_hostfontsize(int fontsize);
 #include <sys/time.h>
 #include <string>
 #include <fcntl.h>
+#ifdef __WIN32__
+#include <process.h>
+#endif
 
 typedef int (*comparator_t)(const void *, const void *);
 
