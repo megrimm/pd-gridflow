@@ -1,0 +1,13 @@
+LIBRARY Gem.dll
+EXPORTS
+??0imageStruct@@QAE@XZ
+??1imageStruct@@QAE@XZ
+??4imageStruct@@QAEAAU0@ABU0@@Z
+??0GemState@@QAE@XZ
+??4GemState@@QAEAAV0@ABV0@@Z
+
+_ZN11imageStructC1Ev = ??0imageStruct@@QAE@XZ
+zut1 = ??1imageStruct@@QAE@XZ
+zut2 = ??4imageStruct@@QAEAAU0@ABU0@@Z
+_ZN8GemStateC1Ev = ??0GemState@@QAE@XZ
+zut3 = ??4GemState@@QAEAAV0@ABV0@@Z
