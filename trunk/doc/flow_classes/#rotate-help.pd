@@ -1,55 +1,57 @@
-#N canvas 689 0 632 505 10;
-#X obj 180 121 #rotate;
-#X text 4 26 The [#rotate] performs rotations on indexmaps and polygons
-and such objects.;
-#X obj 163 83 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 80 98 #in;
-#X obj 227 99 hsl 240 15 0 35999 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 0 1;
-#X obj 80 121 #remap_image;
-#X obj 80 142 #out window \, title #rotate;
-#X obj 9 57 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1;
-#X obj 9 76 metro 100;
-#X text 232 274 The Grid passed in inlet 0 will be the grid on which
+#N canvas 689 0 632 515 10;
+#X obj 180 131 #rotate;
+#X obj 123 110 #in;
+#X obj 247 116 hsl 241 15 0 36000 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 24000 1;
+#X obj 80 131 #remap_image;
+#X obj 80 152 #out window \, title #rotate;
+#X obj 62 65 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
+;
+#X obj 62 83 metro 100;
+#X text 232 284 The Grid passed in inlet 0 will be the grid on which
 the rotation will be performed.;
-#X floatatom 243 123 7 0 0 0 - - -;
-#X msg 80 57 open b001.jpg;
+#X floatatom 244 134 7 0 0 0 - - -;
 #X obj 0 0 doc_h;
-#X obj 3 244 doc_i 2;
-#X obj 3 169 doc_c 1;
-#X text 232 406 Outputs the result of the rotation and needs to be
+#X obj 3 254 doc_i 2;
+#X obj 3 179 doc_c 1;
+#X text 232 416 Outputs the result of the rotation and needs to be
 sent to a [#remap_image] to be visualised.;
-#X obj 3 376 doc_o 1;
-#X obj 14 406 doc_oo 0;
-#X obj 14 274 doc_ii 0;
-#X obj 14 344 doc_ii 1;
-#X obj 14 199 doc_cc 0;
-#X obj 97 199 doc_m c0 float;
-#X obj 97 274 doc_m i0 grid;
-#X obj 97 344 doc_m i1 float;
-#X obj 232 344 doc_same 0;
-#X obj 97 406 doc_m o0 grid;
-#X obj 0 471 doc_f;
-#X text 232 199 integer number (0 to 35999) as a creation argument
+#X obj 3 386 doc_o 1;
+#X obj 14 416 doc_oo 0;
+#X obj 14 284 doc_ii 0;
+#X obj 14 354 doc_ii 1;
+#X obj 14 209 doc_cc 0;
+#X obj 97 209 doc_m c0 float;
+#X obj 97 284 doc_m i0 grid;
+#X obj 97 354 doc_m i1 float;
+#X obj 232 354 doc_same 0;
+#X obj 97 416 doc_m o0 grid;
+#X obj 0 481 doc_f;
+#X text 232 209 integer number (0 to 35999) as a creation argument
 which initializes the first angle of rotation.;
-#X obj 3 451 doc_also;
-#X obj 103 451 #rotatificator;
-#X text 232 309 WARNING: this is a low-resolution rotator (8-bit).
+#X obj 3 461 doc_also;
+#X obj 103 461 #rotatificator;
+#X text 232 319 WARNING: this is a low-resolution rotator (8-bit).
 For higher resolution \, you may use [#rotatificator] directly.;
-#X connect 0 0 5 1;
-#X connect 2 0 3 0;
-#X connect 3 0 5 0;
-#X connect 4 0 0 1;
-#X connect 4 0 10 0;
+#X text 4 26 The [#rotate] performs rotations on indexmaps and polygons
+and such.;
+#X obj 123 72 loadbang;
+#X obj 80 110 #store;
+#X msg 123 91 load pure-data.jpg;
+#X connect 0 0 3 1;
+#X connect 1 0 30 1;
+#X connect 2 0 0 1;
+#X connect 2 0 8 0;
+#X connect 3 0 4 0;
+#X connect 3 1 0 0;
 #X connect 5 0 6 0;
-#X connect 5 1 0 0;
-#X connect 7 0 8 0;
-#X connect 8 0 3 0;
-#X connect 11 0 3 0;
-#X connect 21 1 27 0;
-#X connect 22 1 9 0;
-#X connect 22 1 30 0;
-#X connect 23 1 24 0;
-#X connect 25 1 15 0;
-#X connect 28 1 29 0;
+#X connect 6 0 30 0;
+#X connect 18 1 24 0;
+#X connect 19 1 7 0;
+#X connect 19 1 27 0;
+#X connect 20 1 21 0;
+#X connect 22 1 12 0;
+#X connect 25 1 26 0;
+#X connect 29 0 31 0;
+#X connect 30 0 3 0;
+#X connect 31 0 1 0;
