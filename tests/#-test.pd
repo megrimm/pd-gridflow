@@ -64,6 +64,9 @@
 #X msg 32 23 2 2 # 70 50 30 10;
 #X obj 72 516 #is (30 67 93 120 250 180 210);
 #X obj 32 536 #is (15 60 90 60 150 80 110);
+#X obj 304 229 # ** -1;
+#X msg 304 210 42;
+#X obj 304 248 #is 0;
 #X connect 0 0 4 0;
 #X connect 1 0 0 0;
 #X connect 2 0 7 0;
@@ -117,3 +120,5 @@
 #X connect 56 0 57 0;
 #X connect 56 0 60 0;
 #X connect 59 0 40 0;
+#X connect 62 0 64 0;
+#X connect 63 0 62 0;
