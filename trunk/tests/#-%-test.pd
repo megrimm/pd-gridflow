@@ -1,6 +1,0 @@
-#N canvas 0 0 450 300 10;
-#X obj 33 132 #print;
-#X msg 26 80 3 f # 3.14159 2.71828 1.61804;
-#X obj 32 108 # % (f # 12);
-#X connect 1 0 2 0;
-#X connect 2 0 0 0;
