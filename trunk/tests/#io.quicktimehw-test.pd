@@ -1,13 +1,13 @@
-#N canvas 766 273 574 532 10;
-#X obj 210 105 gf/find_file 0;
-#X obj 210 86 gf/canvas_filename;
-#X obj 210 143 t a a;
-#X obj 246 144 list length;
-#X obj 246 163 - 1;
-#X obj 210 185 list split;
-#X obj 210 204 gf/l2s /;
-#X obj 210 124 gf/s2l /;
-#X obj 216 224 display;
+#N canvas 766 273 965 532 10;
+#X obj 190 105 gf/find_file 0;
+#X obj 190 86 gf/canvas_filename;
+#X obj 190 143 t a a;
+#X obj 226 144 list length;
+#X obj 226 163 - 1;
+#X obj 190 185 list split;
+#X obj 190 204 gf/l2s /;
+#X obj 190 124 gf/s2l /;
+#X obj 196 224 display;
 #X obj 31 128 for 0 256;
 #X obj 31 147 t b a;
 #X obj 31 204 #fold ^;
@@ -18,10 +18,35 @@
 #X obj 31 166 #for (0 0) (512 512);
 #X obj 31 185 # *>>8;
 #X obj 12 29 t b b b;
-#X msg 210 244 open quicktimehw \$1/test.mov \, codec jpeg \, framerate
+#X msg 190 244 open quicktimehw \$1/test.mov \, codec jpeg \, framerate
 30 \, parameter jpeg_quality 50;
-#X obj 210 306 #out;
+#X obj 190 306 #out;
 #X msg 12 289 close;
+#X obj 584 12 #in teapot.png;
+#X obj 616 278 #checkers;
+#X obj 616 259 #for (0 0) (256 256);
+#X obj 570 278 #layer;
+#X obj 608 239 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 626 239 loadbang;
+#X obj 628 31 # sq- (250 200 0);
+#X obj 628 88 #clip;
+#X obj 584 31 #t;
+#X obj 628 50 #inner (3 1 # 1);
+#X obj 628 69 # >> 8;
+#X obj 584 161 #out;
+#X obj 548 239 #in;
+#X msg 548 190 load earlgrey.mov;
+#X obj 584 110 #join 2;
+#X obj 548 31 t b b;
+#X obj 548 14 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 584 129 open earlgrey.mov \, colorspace rgba \, codec png \,
+autoclose \, grid \$1;
+#X obj 570 297 #out window \, title b;
+#X obj 548 319 #out window \, title a;
+#X msg 557 213 open earlgrey.mov \, colorspace rgba \, bang \, close
+;
 #X connect 0 0 7 0;
 #X connect 1 0 0 0;
 #X connect 2 0 5 0;
@@ -46,3 +71,23 @@
 #X connect 17 2 1 0;
 #X connect 18 0 19 0;
 #X connect 20 0 19 0;
+#X connect 21 0 29 0;
+#X connect 22 0 24 1;
+#X connect 23 0 22 0;
+#X connect 24 0 39 0;
+#X connect 25 0 23 0;
+#X connect 26 0 23 0;
+#X connect 27 0 30 0;
+#X connect 28 0 35 1;
+#X connect 29 0 35 0;
+#X connect 29 1 27 0;
+#X connect 30 0 31 0;
+#X connect 31 0 28 0;
+#X connect 33 0 24 0;
+#X connect 33 0 40 0;
+#X connect 34 0 33 0;
+#X connect 35 0 38 0;
+#X connect 36 0 34 0;
+#X connect 36 1 21 0;
+#X connect 38 0 32 0;
+#X connect 41 0 33 0;
