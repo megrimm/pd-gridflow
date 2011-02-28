@@ -1,0 +1,55 @@
+#N canvas 349 70 720 300 10;
+#X obj 324 61 #for (0 0) (4 4) (1 1);
+#X obj 324 118 display;
+#X obj 307 62 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 337 87 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 354 86 #for (0 0) (6 3);
+#X obj 548 88 #in pure-data.jpg;
+#X obj 548 69 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 506 88 #store;
+#X obj 506 44 metro 100;
+#X obj 506 27 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X obj 506 107 t a b;
+#X obj 533 126 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+1;
+#X obj 506 143 shunt;
+#X obj 533 162 #remap_image;
+#X obj 506 187 #out window;
+#X obj 613 162 t a;
+#X obj 566 68 loadbang;
+#X obj 19 22 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 19 77 #for 10 0 -1;
+#X obj 19 96 #is (10 9 8 7 6 5 4 3 2 1);
+#X obj 19 39 #for 0 10 1;
+#X obj 19 58 #is (0 1 2 3 4 5 6 7 8 9);
+#X obj 19 115 #for (0 0) (2 3);
+#X obj 19 134 #is (2 3 2 # 0 0 0 1 0 2 1 0 1 1 1 2);
+#X connect 0 0 1 0;
+#X connect 2 0 0 0;
+#X connect 3 0 4 0;
+#X connect 4 0 1 0;
+#X connect 5 0 7 1;
+#X connect 6 0 5 0;
+#X connect 7 0 10 0;
+#X connect 8 0 7 0;
+#X connect 9 0 8 0;
+#X connect 10 0 12 0;
+#X connect 10 1 11 0;
+#X connect 11 0 12 1;
+#X connect 12 0 14 0;
+#X connect 12 1 13 0;
+#X connect 13 0 14 0;
+#X connect 13 1 15 0;
+#X connect 15 0 13 1;
+#X connect 16 0 5 0;
+#X connect 17 0 20 0;
+#X connect 18 0 19 0;
+#X connect 19 0 22 0;
+#X connect 20 0 21 0;
+#X connect 21 0 18 0;
+#X connect 22 0 23 0;
