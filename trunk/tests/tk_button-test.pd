@@ -1,0 +1,13 @@
+#N canvas 0 0 450 300 10;
+#X obj 73 109 gf/tk_button Cancel;
+#X obj 205 109 gf/tk_button Ok;
+#X obj 139 109 gf/tk_button Apply;
+#X obj 73 145 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 139 145 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 205 145 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X connect 0 0 3 0;
+#X connect 1 0 5 0;
+#X connect 2 0 4 0;
