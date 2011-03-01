@@ -69,22 +69,17 @@ end
 def launch(*command)
 	LOG.puts command.join(" "), ""
 	LOG.flush
-	r,w = IO.pipe
 	child = fork
 	if not child then
-		STDOUT.reopen w
-		STDERR.reopen w
+		STDOUT.reopen LOG
+		STDERR.reopen LOG
 		exec *command
 		#!@#$ what happens with exception upon exec ?
 	end
-	w.close
-	log = ""
-	log << r.readlines.join << "\n"
 	ret = join_pid(child)
 	ret = ret.to_i   if RUBY_VERSION >= "1.9"
 	ret = ret.to_int if RUBY_VERSION > "1.7"
-	log << "error \##{ret}\n" if ret>0
-	LOG.puts log
+	LOG.puts "process returned status \##{ret}\n" if ret>0
 	LOG.flush
 	return ret<=0
 end
