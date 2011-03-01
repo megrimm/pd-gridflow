@@ -562,7 +562,7 @@ while ARGV.length>0 do
 		ARGV.unshift arg[0..i-1], arg[i+1..-1]
 	when /^--no-/
 		name = arg[5..-1].untaint.intern
-		if $features_h[name] then $features_h[name].status :disabled_by_user
+		if $features_h[name] then $features_h[name].status :disabled
 		else puts "there is no feature called #{name}"
 		end
 	when "--explicit"
@@ -639,8 +639,7 @@ def try feature
 			return
 		end
 	}
-	if feature.status==:disabled then DUAL.puts Dark+arrow+"disabled (by author)"; return end
-	if feature.status==:disabled_by_user or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark+arrow+"disabled (by user)"; return end
+	if feature.status==:disabled or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark+arrow+"disabled"; return end
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
 		if FEATURES[f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
