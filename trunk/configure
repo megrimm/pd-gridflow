@@ -67,10 +67,20 @@ class Or
 	def to_s; @a.join " or "; end
 end
 
+def launch stdin,stdout,stderr,*command # -> returncode
+	child = fork
+	child
+end
 def launch2(log,*command)
 	log << command.join(" ") << "\n"
 	r,w = IO.pipe
-	child = launch(nil,w,w,*command)
+	child = fork
+	if not child then
+		STDOUT.reopen w
+		STDERR.reopen w
+		exec *command
+		#!@#$ what happens with exception upon exec ?
+	end
 	w.close
 	log << r.readlines.join << "\n"
 	ret = join_pid(child)
@@ -88,18 +98,6 @@ DEFINES = {:CPU => nil}
 OBJS = []
 PDLIB = ["unicorn"]
 LDSO = {}
-
-def launch stdin,stdout,stderr,*command # -> returncode
-	child = fork
-	if not child then
-		STDIN .reopen stdin  if stdin
-		STDOUT.reopen stdout if stdout
-		STDERR.reopen stderr if stderr
-		exec *command
-		#!@#$ what happens with exception upon exec ?
-	end
-	child
-end
 
 def join_pid pid; Process.waitpid2(pid)[1] end
 module Future; end
