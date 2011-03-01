@@ -66,8 +66,9 @@ class Or
 	def to_s; @a.join " or "; end
 end
 
-def launch(log,*command)
-	log << command.join(" ") << "\n"
+def launch(*command)
+	LOG.puts command.join(" "), ""
+	LOG.flush
 	r,w = IO.pipe
 	child = fork
 	if not child then
@@ -77,11 +78,14 @@ def launch(log,*command)
 		#!@#$ what happens with exception upon exec ?
 	end
 	w.close
+	log = ""
 	log << r.readlines.join << "\n"
 	ret = join_pid(child)
 	ret = ret.to_i   if RUBY_VERSION >= "1.9"
 	ret = ret.to_int if RUBY_VERSION > "1.7"
 	log << "error \##{ret}\n" if ret>0
+	LOG.puts log
+	LOG.flush
 	return ret<=0
 end
 
@@ -149,7 +153,7 @@ class Feature
 		File.open(sourcename,"w") {|f| f.puts code }
 		command = ["/usr/bin/env", CC] +
 			CFLAGS.split(/ /).reject{|x| x.length==0 }
-		if not launch log,*(command+options+[sourcename,
+		if not launch *(command+options+[sourcename,
 			 "-o", binname, *link.uniq])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
 			errs = log.split("\n").find_all {|l| pat =~ l }
@@ -158,22 +162,19 @@ class Feature
 			errs = errs[0].gsub(pat,"")
 			raise "gcc: #{errs}"
 		end
-		if not launch log,"tmp/#{$$}"
-			raise "runtime error"
-		end
+		raise "runtime error" if not launch "tmp/#{$$}"
 		return true
 	ensure
 		LOG.puts log
 		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
 	end
 	def asm_test code, *link
-		log = ""
 		LOG.puts "---",code,"---"
-		LOG.flush
+		log = ""
 		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		launch log, "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" or return false
-		launch log,"#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link                              or return false
-		launch log,"tmp/#{$$}"                                                                or return false
+		launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" or return false
+		launch "#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link                              or return false
+		launch "tmp/#{$$}"                                                                or return false
 		true
 	ensure
 		LOG.puts log
