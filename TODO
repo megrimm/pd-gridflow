@@ -1,21 +1,18 @@
 Unsorted
 
-[ ] supercycloid crash on exit
+[ ] ./configure bug with fork/flush combination (it's been there for 8 years and no-one noticed !)
+[ ] [gf/s2l] only produces symbols ?
+[ ] make [#redim] faster (see #io.x11-test)
 [ ] [#moment]'s help : see that [#swap] has a bug because of [#import]'s fuckups.
 [*] feedback_fractal.pd crashes for Patrice. (see small test file)
-[ ] higher-resolution [#rotate]
-[ ] add [#delay_image]
 [ ] -lpng12 OSX (commit it)
-[ ] Claude L. on OSX 10.5.8 with GF 9.13-test6, [#io.png]: inlet -1 method grid: !png
-[*] rgb_delay5.pd crashes ([#convolve] 5x5 or even 3x5)
 [ ] [args] loadbang order really, really sucks.
-[*] [gf/error] can't take a list of atoms because it has to go through a fixed-number sprintf. (see [#is])
 [ ] mmx not properly detected anymore (bug in ruby ?)
 [ ] [#rzero_space]
 [ ] fix grid attribute setters
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
-[ ] reform GFDP so that pd43 and l2ork become debuggable.
+[ ] reform GFDP so that interactions with pd43 and l2ork become debuggable.
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] memalign still doesn't exist on OSX and Windows ?
 [ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
@@ -25,7 +22,7 @@ Unsorted
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
 [ ] [#expr] local
 [ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
-[*] [fps] doesn't complain about invalid mode name
+[ ] [fps] apparently, when value is 0, doesn't report ? (try with mode user and 0 % cpu usage)
 [ ] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] document "f 1 2 3" as a shortcut grid literal
@@ -74,12 +71,11 @@ Unsorted
 [ ] [#import (...) f] converts floats to int to float (wtf)
 [ ] [#out x11]: picture too big will be rejected by x11-shm and perhaps crash or leak shm (easy to do in #scale_by-help.pd)
 [ ] bug: see #fft*-test.pd
-[ ] merge threshold.pd, simple_mask.pd, color_detect.pd
+[ ] merge simple_mask.pd, color_detect.pd
 [ ] on which classes do we add an attr-outlet ?
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
 [ ] go back in all help files and fill in whatever is still missing
-[ ] [#draw_polygon] : winding-rule
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] can't handle [args] that come out as grid literals and have to become setter messages.
@@ -159,7 +155,7 @@ Unsorted
     (ou autre)
 [ ] make this work in the future :
     error: [#for 0 0] inlet 0 method set: can't convert to grid: \\\\a(A_GRIDOUT 0x90ca8e0)
-[ ] [lb] ? [m] ?
+[ ] [lb] ? [m] ? (but Cyrille already uses the name [lb], ...)
 [ ] finish adding PD_BLOBS A_BLOB class_addblob support (have to check for vanilla at runtime, etc.)
 [ ] think about link between multidimensional [#for] and future [#decode] (or is it [#encode] ?)
 [ ] allow direct passing of a grid as an atom of type Grid instead of just GridOut.
@@ -172,13 +168,12 @@ Unsorted
 [ ] [#out x11]: add 'rootsize' ro attr
 [ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
     a value in million cycles or something.
-[ ] look at [pdgst] and [pix_pix2gst]
 [ ] [gf/class_info]: add class-list, attr types, arg types, superclasses
 [ ] make a generic graph tool that can do efficient graphs using grids (?) and can be configured to do things like PMPD
     but can also serve other purposes. And/or start from waves.pd's mask system to make a patch that recycles the wave data
     to make a CHDH-like animations using [gf/gl].
 [ ] see [comment] from cyclone
-[ ] Dim::T = intptr_t
+[ ] Dim::T = intptr_t ?
 [ ] DEF_OP(clipunder, a<0?0:a>=b?b-1, 0, false, false)
 [ ] DEF_OP(pingpong,  ...)
 [ ] custom m_pd.h
@@ -189,6 +184,7 @@ Unsorted
 [ ] win32 x11 support
 [ ] malloc alignment = 4 mod 8 (en utilisant valgrind)
 [ ] find why libjpeg can't be directly used in postdigital.pd
+[ ] numop2 "rol" et "ror"
 
 Not Urgent
 [ ] systematise like is_atom_sel(symbol) is true for float, symbol, pointer, and perhaps blob and grid
@@ -206,10 +202,7 @@ Not Urgent
 [ ] [#find]
 [ ] http://claudiusmaximus.goto10.org/cm/2010-12-15_histogram_equalization.html
 [ ] canvasdelete
-[ ] regular dc1394 options
-[ ] irregular dc1394 options: white_shading, white_balance; trigger_mode? trigger, trigger_delay
-[ ] make libdc1394 work again
-[ ] make libdc1394 work in colour
+[ ] revive dc1394 module ?
 [ ] [#see] shm : http://wiki.tcl.tk/2999
 [ ] intégrer -lib segfault ?
 [ ] "seedless" should be really skipping over the seed. but this didn't improve speed for [#fold].
@@ -217,6 +210,9 @@ Not Urgent
 [ ] [#draw_polygon, alpha]
 [ ] [#draw_polygon] : multi-rule optimisé (a besoin d'une règle de distributivité du type : a+b+b = a+2b)
 [ ] do something about [memstat]
+[?] rgb_delay5.pd crashes ([#convolve]) apparently only when --use-cpu=pentium3
+[ ] Claude L. on OSX 10.5.8 with GF 9.13-test6, [#io.png]: inlet -1 method grid: !png
+[*] [gf/error] can't take a list of atoms because it has to go through a fixed-number sprintf. (see [#is])
 
 OpenCV
 [ ] cvOpticalFlow
@@ -250,7 +246,6 @@ Other
 [ ] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] "unsupported codec" bogus errors.
-[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [ ] some seeds aren't typechecked (which ones ?)
 [ ] GRID_FINISH triggered while backstore ???
 [ ] what would be a way to make GF work well with Pd's idea of a list?
@@ -287,6 +282,7 @@ Architecture
 [ ] Copy-on-Write (COW)
 [ ] internal grid protocol redesigned
 [ ] use of lcm() in grid.cxx could be avoided. it's useless.
+[ ] look at GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
 
 Computation Objects
 [ ] ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids of floats as coordinates and
@@ -310,7 +306,6 @@ Computation Objects
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it #chroma_key though)
 	maybe #mask...
-[ ] effectv
 [ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] multilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
 [ ] #scale_by/#downscale_by fractional values
@@ -320,21 +315,23 @@ Computation Objects
 [ ] #moment could support more than 2 dimensions
 
 Input/Output
-[ ] a #store that is persistent (saved in .pd) ?
+[ ] [#store]: use #A for storage
 [ ] Grid: support storage in all six numtypes and perhaps also bpv 1,2,4.
-[ ] Grid: text version of the format (?)
-[ ] ffmpeg, xine, mplayer
-[ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: double buffering using a Pixmap remote-object, sync frames at constant rate, optionally with the actual vsync of the monitor
 [ ] support for audio in the mpeg streams
 [ ] full screen mode (without the menu bars or frames)
 [ ] support for audio in cameras / videodev ... see field vcaps.audios
 [ ] lqtgavl
+[ ] Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
+    use external programs for raw video input. rationale: mplayer is a very nice piece of software supporting virtually any
+    input format/codec. since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is
+    to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
+
 
 Format
 [ ] remaining number type support in formats
 [ ] threaded [#in]/[#out] handlers
-[ ] put_at/reassign in x11/sdl/quartz
+[ ] put_at/reassign in x11/sdl/quartz ?
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
 [ ] format grid: "headerless until 10" (text files)
@@ -355,8 +352,6 @@ OSX:
 [ ] [#io.quartz] fullscreen mode
 [ ] [#io.quicktimeapple out] grid, codec, quality.
 [ ] http://lists.puredata.info/pipermail/pd-list/2010-04/077455.html
-[ ] regarder dans externals/template/ pour voir si on peut y récupérer quoi que ce soit
-    par exemple, les binaires gras pour 3 cpus.
 [ ] [#io.quicktimecamera] crash when opening busy camera (?) or is it when opening two cameras at once ?
 [ ] [#io.quicktimecamera] framerate (parce que QuickTime donne des frames en double quand le métro est trop vite)
     (et parce que sur un ordi que je viens d'essayer, on détermine qu'on a juste 15 fps pcq quand le métro est plus
@@ -379,14 +374,7 @@ Peines Perdues:
 ----------------------------------------------------------------------------------------------------------------
 Autres notes
 
-look at GSlice (both the one in GLib and http://www.cplusplus.com/reference/std/valarray/gslice/ )
-
 -mfpmath=sse2
-
-Tom Schouten wrote: «added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*; this is an example on how to
-use external programs for raw video input. rationale: mplayer is a very nice piece of software supporting virtually any
-input format/codec. since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is
-to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
 
 very old bookmarks: http://pdl.perl.org/ http://www.opendragon.com/Pages/MaxObjects.shtml
 	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
