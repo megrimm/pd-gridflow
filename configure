@@ -544,12 +544,12 @@ Feature.add {
 	name "PDP support (loadtime detect: don't disable)"
 	produces_pdlib ["pdp"]
 }
-Feature.add {
-	tag :android
-	name "Android module"
-	produces_o ["src/android.o"]
-    test proc {raise "use --force-android if you want this"}
-}
+#Feature.add {
+#	tag :android
+#	name "Android module"
+#	produces_o ["src/android.o"]
+#    test proc {raise "use --force-android if you want this"}
+#}
 
 #--------------------------------#
 
