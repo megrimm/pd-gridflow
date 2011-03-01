@@ -363,19 +363,9 @@ Feature.add {
 		#undef main
 		int main () {return SDL_MapRGB==0;}"}}
 Feature.add {
-	tag :objcpp
-	name "GNU/Apple ObjectiveC++ Compiler"
-	uses_h ["objc/Object.h"]
-	uses_so ["-lobjc"]
-	test proc {c_test "
-		#include#
-		int main () { [[Object alloc] init]; }
-		", nil, ["-xobjective-c++"]}}
-Feature.add {
 	tag :quartz
 	name "Apple Quartz/Cocoa Display"
 	uses_so ["-lobjc",["-framework","Cocoa"]]
-	uses_feature [:objcpp]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
 	produces_o ["src/quartz.o"]
 	test proc {c_test "
@@ -471,7 +461,7 @@ Feature.add {
 	produces_o ["src/mpeg3.o"]
 	test proc {|f| f.c_test "
 		#include#
-		int main () { return mpeg3_open==0; }"}}
+		int main () {return mpeg3_open==0;}"}}
 Feature.add {
 	tag :quicktimeapple
 	name "Apple's QuickTime"
@@ -480,7 +470,7 @@ Feature.add {
 	produces_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
 	test proc {c_test "
 		#include#
-		int main () { return EnterMovies==0; }
+		int main () {return EnterMovies==0;}
 		"}}
 Feature.add {
 	tag :quicktimehw
