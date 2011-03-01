@@ -74,7 +74,6 @@ def launch(*command)
 		STDOUT.reopen LOG
 		STDERR.reopen LOG
 		exec *command
-		#!@#$ what happens with exception upon exec ?
 	end
 	ret = join_pid(child)
 	ret = ret.to_i   if RUBY_VERSION >= "1.9"
@@ -563,21 +562,15 @@ while ARGV.length>0 do
 		ARGV.unshift arg[0..i-1], arg[i+1..-1]
 	when /^--no-/
 		name = arg[5..-1].untaint.intern
-		if $features_h[name] then 
-			puts "--no: won't check for feature #{name}"
-			$features_h[name].status :disabled_by_user
-		else
-			puts "there is no feature called #{name}"
+		if $features_h[name] then $features_h[name].status :disabled_by_user
+		else puts "there is no feature called #{name}"
 		end
 	when "--explicit"
 		$explicit=true
 	when /^--force-/
 		name = arg[8..-1].untaint.intern
-		if $features_h[name] then 
-			puts "--force: assuming #{name} is there"
-			$features_h[name].test nil
-		else
-			puts "there is no feature called #{name}"
+		if $features_h[name] then $features_h[name].test nil
+		else puts "there is no feature called #{name}"
 		end
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
