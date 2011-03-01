@@ -1,26 +1,57 @@
-#N canvas 0 0 450 358 10;
-#X obj 15 89 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#N canvas 0 0 629 716 10;
+#X obj 15 129 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 15 274 #in;
-#X obj 15 257 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 15 314 #in;
+#X obj 15 297 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 30 293 display;
-#X obj 132 125 display;
-#X obj 15 135 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 30 333 display;
+#X obj 132 165 display;
+#X obj 15 175 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 36 171 display;
-#X obj 15 152 #out;
-#X obj 15 201 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 36 211 display;
+#X obj 15 192 #out;
+#X obj 15 241 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X obj 240 237 display;
-#X obj 15 218 #in bon.suffixe.mais.pas.d'fichier.jpg;
-#X obj 15 106 #out pas.grand.chose;
-#X obj 150 69 display;
-#X text 150 84 not_open;
-#X obj 15 50 #in grumble-grumble.666;
-#X obj 15 33 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+#X obj 240 277 display;
+#X obj 15 258 #in bon.suffixe.mais.pas.d'fichier.jpg;
+#X obj 15 146 #out pas.grand.chose;
+#X obj 150 109 display;
+#X text 150 124 not_open;
+#X obj 15 90 #in grumble-grumble.666;
+#X obj 15 73 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#X text 22 6 test pour not_open;
+#X text 22 46 test pour not_open;
+#X obj 22 499 #out window;
+#X obj 22 518 fps detailed;
+#X obj 22 537 print;
+#X obj -5 406 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj -5 564 memstat;
+#X obj -5 423 metro 5;
+#X obj -5 442 t b b;
+#X obj -5 583 t f b;
+#X obj 32 583 f;
+#X obj 57 583 + 1;
+#X obj -5 669 tabwrite stats;
+#N canvas 558 312 436 345 stats 0;
+#N canvas 0 0 450 300 (subpatch) 0;
+#X array stats 16384 float 2;
+#X coords 0 200000 16384 0 400 300 1;
+#X restore 16 26 graph;
+#X restore 136 396 pd stats;
+#X obj 68 611 sel 16384;
+#X obj 136 457 #pack;
+#X obj 136 476 #export_list;
+#X msg 136 495 \; stats bounds 0 \$2 16384 \$1;
+#X obj 136 425 nbx 8 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0 8
+-262144 -1 -1 0 256;
+#X obj 163 441 nbx 8 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0 8
+-262144 -1 -1 200000 256;
+#X msg 22 461 load r001.jpg;
+#X obj 22 480 #in;
+#X obj -5 386 r \$0-ta-gueule;
+#X obj 68 630 s \$0-ta-gueule;
+#X obj 0 0 doc_demo;
 #X connect 0 0 11 0;
 #X connect 1 1 3 0;
 #X connect 2 0 1 0;
@@ -31,3 +62,24 @@
 #X connect 11 1 4 0;
 #X connect 14 1 12 0;
 #X connect 15 0 14 0;
+#X connect 17 0 18 0;
+#X connect 18 0 19 0;
+#X connect 20 0 22 0;
+#X connect 21 0 24 0;
+#X connect 22 0 23 0;
+#X connect 23 0 21 0;
+#X connect 23 1 35 0;
+#X connect 24 0 27 0;
+#X connect 24 1 25 0;
+#X connect 25 0 26 0;
+#X connect 25 0 27 1;
+#X connect 25 0 29 0;
+#X connect 26 0 25 1;
+#X connect 29 0 38 0;
+#X connect 30 0 31 0;
+#X connect 31 0 32 0;
+#X connect 33 0 30 0;
+#X connect 34 0 30 1;
+#X connect 35 0 36 0;
+#X connect 36 0 17 0;
+#X connect 37 0 20 0;
