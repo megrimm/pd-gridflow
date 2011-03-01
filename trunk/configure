@@ -45,8 +45,7 @@ else # use ANSI / VT100 colours
 end
 
 $verbose=false
-LOG.puts "-"*64
-LOG.puts "Environment Variables: "
+LOG.puts "-"*64, "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
 LOG.puts "-"*64
 
@@ -67,11 +66,7 @@ class Or
 	def to_s; @a.join " or "; end
 end
 
-def launch stdin,stdout,stderr,*command # -> returncode
-	child = fork
-	child
-end
-def launch2(log,*command)
+def launch(log,*command)
 	log << command.join(" ") << "\n"
 	r,w = IO.pipe
 	child = fork
@@ -148,13 +143,13 @@ class Feature
 			uses_h.map {|inc| "#include <#{inc}>\n" }.join""
 		}	
 		log = ""
-		log << code << "\n"
+		LOG.puts code
 		binname = "tmp/#{$$}"
 		sourcename = binname+".cpp"
 		File.open(sourcename,"w") {|f| f.puts code }
 		command = ["/usr/bin/env", CC] +
 			CFLAGS.split(/ /).reject{|x| x.length==0 }
-		if not launch2 log,*(command+options+[sourcename,
+		if not launch log,*(command+options+[sourcename,
 			 "-o", binname, *link.uniq])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
 			errs = log.split("\n").find_all {|l| pat =~ l }
@@ -163,7 +158,7 @@ class Feature
 			errs = errs[0].gsub(pat,"")
 			raise "gcc: #{errs}"
 		end
-		if not launch2 log,"tmp/#{$$}"
+		if not launch log,"tmp/#{$$}"
 			raise "runtime error"
 		end
 		return true
@@ -173,15 +168,12 @@ class Feature
 	end
 	def asm_test code, *link
 		log = ""
-		log << code << "\n"
+		LOG.puts "---",code,"---"
+		LOG.flush
 		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		command = ["/usr/bin/env", "nasm",
-		"tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"]
-		launch2 log,*command or return false
-		command = ["#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link]
-		launch2 log,*command or return false
-		command = ["tmp/#{$$}"]
-		launch2 log,*command or return false
+		launch log, "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" or return false
+		launch log,"#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link                              or return false
+		launch log,"tmp/#{$$}"                                                                or return false
 		true
 	ensure
 		LOG.puts log
