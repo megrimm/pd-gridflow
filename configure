@@ -67,15 +67,11 @@ class Or
 end
 
 def launch(*command)
-	LOG.puts command.join(" "), ""
+	c=command.map{|x| x.gsub(/([!#$&*()\[\]{}`~\\\|;'"<>\?])/n, "\\\\\\1").gsub(/\n/,"\\n") }.join(" ")
+	LOG.puts c
 	LOG.flush
-	child = fork
-	if not child then
-		STDOUT.reopen LOG
-		STDERR.reopen LOG
-		exec *command
-	end
-	ret = join_pid(child)
+	system(c+" >> config.log 2>&1")
+	ret = $?
 	ret = ret.to_i   if RUBY_VERSION >= "1.9"
 	ret = ret.to_int if RUBY_VERSION > "1.7"
 	LOG.puts "process returned status \##{ret}\n" if ret>0
@@ -147,12 +143,10 @@ class Feature
 		File.open(sourcename,"w") {|f| f.puts code }
 		command = ["/usr/bin/env", CC] +
 			CFLAGS.split(/ /).reject{|x| x.length==0 }
-		if not launch *(command+options+[sourcename,
-			 "-o", binname, *link.uniq])
+		if not launch *(command+options+[sourcename, "-o", binname, *link.uniq])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
 			errs = log.split("\n").find_all {|l| pat =~ l }
-			raise "gcc compilation error" if not errs or
-				errs.length==0
+			raise "gcc compilation error" if not errs or errs.length==0
 			errs = errs[0].gsub(pat,"")
 			raise "gcc: #{errs}"
 		end
@@ -166,9 +160,9 @@ class Feature
 		LOG.puts "---",code,"---"
 		log = ""
 		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" or return false
-		launch "#{$CC}","-o","tmp/#{$$}","tmp/#{$$}.o",*link                              or return false
-		launch "tmp/#{$$}"                                                                or return false
+		return false if launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"
+		return false if launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link
+		return false if launch "tmp/#{$$}"
 		true
 	ensure
 		LOG.puts log
