@@ -125,7 +125,7 @@ class Feature
 		LOG.puts code
 		name = "tmp/#{$$}"
 		File.open(name+".cpp","w") {|f| f.puts code }
-		command = ["/usr/bin/env", CC] + CFLAGS.split(/ /).reject{|x| x.length==0 }
+		command = [CC] + CFLAGS.split(/ /).reject{|x| x.length==0 }
 		raise "gcc compilation error" if not launch *(command+options+[name+".cpp","-o",name,*link.uniq])
 		raise "runtime error" if not launch name
 		return true
@@ -136,7 +136,7 @@ class Feature
 		LOG.puts code
 		name = "tmp/#{$$}"
 		File.open(name+".asm","w") {|f| f.puts code }
-		launch "/usr/bin/env","nasm",name+".asm","-f","elf","-o",name+".o" and
+		launch "nasm",name+".asm","-f","elf","-o",name+".o" and
 		launch CC,"-o",name,name+".o",*link and
 		launch name
 	end
@@ -261,7 +261,6 @@ Feature.add(:mmx,"MMX-compatible CPU in 32-bit mode with NASM") {
 Feature.add(:x11,"X11 Display Protocol") {
 	uses_so LIBX11
 	uses_h ["X11/Xlib.h"]
-	#produces_o ["src/x11.o"]
 	produces_pdlib ["x11"]
 	test proc {c_test "
 		#include#
