@@ -82,9 +82,7 @@ OBJS = []
 PDLIB = ["unicorn"]
 LDSO = {}
 
-def join_pid pid; Process.waitpid2(pid)[1] end
 module Future; end
-
 class Feature
 	$features = []
 	def self.add(*a,&b) $features << Feature.new(*a,&b) end
@@ -113,7 +111,7 @@ class Feature
 		else C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
 		end
 	end
-	def c_test code, link=nil, options=[], feature=nil
+	def c_test code, link=nil, options=[]
 		link = (uses_so||[]).dup if not link
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
@@ -126,22 +124,22 @@ class Feature
 		link[0,0]=LDSOFLAGS.find_all {|x| String===x and /^-L/ =~ x }.flatten
 		code=code.gsub(/#include#/) { uses_h.map {|inc| "#include <#{inc}>\n" }.join"" }	
 		LOG.puts code
-		binname = "tmp/#{$$}"
-		sourcename = binname+".cpp"
-		File.open(sourcename,"w") {|f| f.puts code }
+		name = "tmp/#{$$}"
+		File.open(name+".cpp","w") {|f| f.puts code }
 		command = ["/usr/bin/env", CC] + CFLAGS.split(/ /).reject{|x| x.length==0 }
-		raise "gcc compilation error" if not launch *(command+options+[sourcename, "-o", binname, *link.uniq])
-		raise "runtime error" if not launch "tmp/#{$$}"
+		raise "gcc compilation error" if not launch *(command+options+[name+".cpp","-o",name,*link.uniq])
+		raise "runtime error" if not launch name
 		return true
 	ensure
 		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
 	end
 	def asm_test code, *link
-		LOG.puts "---",code,"---"
-		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" and
-		launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link and
-		launch "tmp/#{$$}"
+		LOG.puts code
+		name = "tmp/#{$$}"
+		File.open(name+".asm","w") {|f| f.puts code }
+		launch "/usr/bin/env","nasm",name+".asm","-f","elf","-o",name+".o" and
+		launch CC,"-o",name,name+".o",*link and
+		launch name
 	end
 end
 
