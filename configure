@@ -180,6 +180,7 @@ end
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
 prepend_path ENV["HOME"]
+prepend_path "/Users/pddev/..."
 CFLAGS << " -I."
 C_INCLUDE_PATH.unshift "."
 
@@ -196,7 +197,7 @@ Feature.add(:gcc3,"GNU C++ Compiler 3 (or 4)") {
 	status :always_check
 	defines :GCC_VERSION => proc {
 		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
-		rescue "3.666" # version number unknown, sorry.
+		rescue Exception; "3.666" # version number unknown, sorry.
 		end
 	}
 	test proc {c_test %{
@@ -229,7 +230,7 @@ Feature.add(:pentium,"Pentium-compatible CPU") {
 	action proc { (CONFIG["arch"] =~ /i\d86/) and DEFINES[:CPU] ||= "pentium" }
 	options ["HAVE_PENTIUM"]
 	test proc {
-		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
+		(CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{CONFIG["arch"]} instead"
 		c_test '#define cpuid(func,ax,bx,cx,dx) \
 			__asm__ __volatile__("cpuid":"=a"(ax),"=b"(bx),"=c"(cx),"=d"(dx):"a"(func))
 		#include <stdio.h>
