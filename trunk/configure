@@ -412,7 +412,6 @@ Feature.add(:opencv,"Intel OpenCV") {
 	uses_so ["-lcv"]
         uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
        #uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
-	options ["HAVE_OPENCV"]
 	defines {{:OPENCV_SHARE_PATH => File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
 	test proc {c_test %`
 			#include <opencv/cv.h>
@@ -420,7 +419,6 @@ Feature.add(:opencv,"Intel OpenCV") {
 Feature.add(:fftw,"FFTW (Fastest Fourier Transform in the West)") {
 	produces_o ["src/fftw.o"]
 	uses_so Or[["-lfftw3f","-lfftw3"],["-lfftw3f-3","-lfftw3-3"]]
-	options ["HAVE_FFTW"]
 	test proc {|f| f.c_test %`
 		#include <fftw3.h>
 		int main () {return 0;}`}}
@@ -429,7 +427,6 @@ Feature.add(:opengl,"OpenGL/GLEW (for GEM support and [gf/gl])") {
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
-	options ["HAVE_OPENGL"]
 	test proc {c_test %`
                 #include#
                 int main () {return (GLint)0;}
