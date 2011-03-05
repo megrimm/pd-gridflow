@@ -49,12 +49,7 @@ LOG.puts "-"*64, "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
 LOG.puts "-"*64
 
-puts
-if not File.exist?("./configure")
-	puts "Run me from the right directory please."
-	exit 1
-end
-
+if not File.exist?("./configure") then puts "Run me from the right directory please."; exit 1 end
 begin Dir.mkdir "tmp"; rescue Errno::EEXIST; end
 
 #----------------------------------------------------------------#
@@ -115,10 +110,8 @@ class Feature
 	attr2 :action
 	attr2 :defines
 	def find_h name
-		if name[0..0]=="/" then
-			File.exist?(name)
-		else
-			C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
+		if name[0..0]=="/" then File.exist?(name)
+		else C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
 		end
 	end
 	def c_test code, link=nil, options=[], feature=nil
@@ -126,46 +119,30 @@ class Feature
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
 		uses_h.each {|h|
-			h[0..0] == "$" or
-                find_h h or
+			h[0..0] == "$" or find_h h or
 				/framework/ =~ (uses_so||[]).join(" ") or
 				raise "where is #{h} ?"
 		} if uses_h
 		ENV["LD_LIBRARY_PATH"] = ldlpath ? "./tmp:#{ldlpath}" : "./tmp"
 		link[0,0]=LDSOFLAGS.find_all {|x| String===x and /^-L/ =~ x }.flatten
-		code=code.gsub(/#include#/) {
-			uses_h.map {|inc| "#include <#{inc}>\n" }.join""
-		}	
-		log = ""
+		code=code.gsub(/#include#/) { uses_h.map {|inc| "#include <#{inc}>\n" }.join"" }	
 		LOG.puts code
 		binname = "tmp/#{$$}"
 		sourcename = binname+".cpp"
 		File.open(sourcename,"w") {|f| f.puts code }
-		command = ["/usr/bin/env", CC] +
-			CFLAGS.split(/ /).reject{|x| x.length==0 }
-		if not launch *(command+options+[sourcename, "-o", binname, *link.uniq])
-			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
-			errs = log.split("\n").find_all {|l| pat =~ l }
-			raise "gcc compilation error" if not errs or errs.length==0
-			errs = errs[0].gsub(pat,"")
-			raise "gcc: #{errs}"
-		end
+		command = ["/usr/bin/env", CC] + CFLAGS.split(/ /).reject{|x| x.length==0 }
+		raise "gcc compilation error" if not launch *(command+options+[sourcename, "-o", binname, *link.uniq])
 		raise "runtime error" if not launch "tmp/#{$$}"
 		return true
 	ensure
-		LOG.puts log
 		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
 	end
 	def asm_test code, *link
 		LOG.puts "---",code,"---"
-		log = ""
 		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		return false unless launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"
-		return false unless launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link
-		return false unless launch "tmp/#{$$}"
-		true
-	ensure
-		LOG.puts log
+		launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o" and
+		launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link and
+		launch "tmp/#{$$}"
 	end
 end
 
@@ -193,10 +170,10 @@ def prepend_path base
 	bl = base+"/lib"
 	bi = base+"/include"
 	if not LD_LIBRARY_PATH.include? bl and
-	   not LIBRARY_PATH.include? bl then
+	   not    LIBRARY_PATH.include? bl then
 		LDSOFLAGS.unshift "-L"+bl
 		LD_LIBRARY_PATH.unshift bl
-		LIBRARY_PATH.unshift bl
+		   LIBRARY_PATH.unshift bl
 	end
 	#and not CPLUS_INCLUDE_PATH.include? bi
 	if not C_INCLUDE_PATH.include? bi then
@@ -224,10 +201,8 @@ Feature.add {
 	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
 	defines :GCC_VERSION => proc {
-		begin
-			/GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
-		rescue
-			"3.666" # version number unknown, sorry.
+		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
+		rescue "3.666" # version number unknown, sorry.
 		end
 	}
 	test proc {c_test %{
@@ -559,30 +534,19 @@ while ARGV.length>0 do
 		if $features_h[name] then $features_h[name].status :disabled
 		else puts "there is no feature called #{name}"
 		end
-	when "--explicit"
-		$explicit=true
 	when /^--force-/
 		name = arg[8..-1].untaint.intern
 		if $features_h[name] then $features_h[name].test nil
 		else puts "there is no feature called #{name}"
 		end
-	when "--debug"
-		puts "Debug Mode (more error checking; less speed)"
-		$debug=true
-		OPTIONS.push :HAVE_DEBUG
-	when "--lite"
-		puts "Lite Mode (no float64, no int64)"
-		OPTIONS.push :HAVE_LITE
-	when "--help"
-		usage; exit 0
-	when "--use-compiler"
-		CC = ARGV.shift
-	when "--use-compiler-option"
-		CFLAGS << " "+ARGV.shift
-	when "--use-cpu"
-		DEFINES[:CPU] = ARGV.shift
-	when "--verbose"
-		$verbose=true
+	when "--explicit": $explicit=true
+	when "--debug": $debug=true; OPTIONS.push :HAVE_DEBUG
+	when "--lite": OPTIONS.push :HAVE_LITE
+	when "--help": usage; exit 0
+	when "--use-compiler": CC = ARGV.shift
+	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
+	when "--use-cpu": DEFINES[:CPU] = ARGV.shift
+	when "--verbose": $verbose=true
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -766,10 +730,11 @@ f.puts "
 puts %{#{White}\
 See ./config.log if you want the details of the configuration tests.
 "If you are satisfied with that configuration, you may go on, and do "make".
-there is no "make install". just move your gridflow directory to
-"lib/pd/extra", and make sure that it's named "gridflow". Or else add a -path
-option towards the folder which contains the folder named "gridflow" (and not
-to the folder named "gridflow" itself). If you get stuck, ask gridflow-dev.
+there is no "make install" step. just move your gridflow directory to
+"lib/pd/extra" or "~/pd-externals", and make sure that it's named "gridflow".
+Or else add a -path option towards the folder which contains the folder named
+"gridflow" (and not to the folder named "gridflow" itself). If you get stuck,
+ask gridflow-dev.
 #{Light}}
 
 #--------------------------------#
