@@ -134,7 +134,7 @@ class Feature
 		LOG.puts code
 		name = "tmp/#{$$}"
 		File.open(name+".asm","w") {|f| f.puts code }
-		launch "nasm",name+".asm","-f","elf","-o",name+".o" and
+		launch "nasm",name+".asm","-f",(if OSX then "macho" else "elf" end),"-o",name+".o" and
 		launch CC,"-o",name,name+".o",*link and
 		launch name
 	end
