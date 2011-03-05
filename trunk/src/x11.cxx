@@ -17,8 +17,6 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-	Note: some of the code was adapted from PDP's (the XVideo stuff).
 */
 #include "gridflow.hxx.fcs"
 #include <ctype.h>
@@ -35,10 +33,6 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
-#endif
-#ifdef HAVE_X11_XVIDEO
-#include <X11/extensions/Xv.h>
-#include <X11/extensions/Xvlib.h>
 #endif
 
 /* X11 Error Handler type */
@@ -65,7 +59,7 @@ typedef struct {
 	Colormap colormap;/* for 256-color mode */
 	short depth;
 	bool use_stripes; /* use alternate conversion in 256-color mode */
-	bool shared_memory, xvideo;
+	bool shared_memory;
 	Atom XA_NET_WM_STATE;
 	Atom XA_NET_WM_STATE_FULLSCREEN;
 	Atom XA_MotifHints;
@@ -85,13 +79,6 @@ typedef struct {
 	string title;
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
-#endif
-#ifdef HAVE_X11_XVIDEO
-    int xv_format;
-    int xv_port;
-    XvImage *xvi; /* ils sont fous ces romains */
-    unsigned char *data;
-    int last_encoding;
 #endif
 	~FormatX11 () {
 		clock_unset(clock);
@@ -113,7 +100,7 @@ typedef struct {
 	void prepare_colormap();
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\constructor (...) {
-		shared_memory=false; xvideo=false; use_stripes=false; window=0; ximage=0; image=0; is_owner=true;
+		shared_memory=false; use_stripes=false; window=0; ximage=0; image=0; is_owner=true;
 		dim=0; lock_size=false; override_redirect=false; clock=0; imagegc=0;
 #ifdef HAVE_X11_SHARED_MEMORY
 		shm_info=0;
@@ -250,7 +237,6 @@ typedef struct {
 		XFlush(display);
 	}
 	\decl 0 shared_memory (bool toggle=1) {shared_memory = toggle;}
-	\decl 0 xvideo        (bool toggle=1) {xvideo        = toggle;}
 	\decl 0 title (string title="") {this->title = title; set_wm_hints();}
 	\decl 0 warp (int y, int x) {
 		XWarpPointer(display,None,None,0,0,0,0,x,y);
@@ -351,29 +337,10 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
-#ifndef HAVE_X11_XVIDEO
-	if (xvideo) RAISE("xvideo not available (recompile)");
-#endif
 #ifndef HAVE_X11_SHARED_MEMORY
 	if (shared_memory) RAISE("xshm not available (recompile)");
 #endif
-	if (xvideo) {
-#ifdef HAVE_X11_XVIDEO
-	    if (shared_memory) {
-#ifdef HAVE_X11_SHARED_MEMORY
-
-#endif // shm
-	    } else {
-		XvPutImage(display,port,window,imagegc,ximage,
-                   xvi, 0, 0, image_width, image_height,
-                   drwX - (vo_panscan_x >> 1), drwY - (vo_panscan_y >> 1),
-                   vo_dwidth + vo_panscan_x,
-                   vo_dheight + vo_panscan_y);
-
-	    }
-#endif // xvideo
-	} else {
-	    if (shared_memory) {
+	if (shared_memory) {
 #ifdef HAVE_X11_SHARED_MEMORY
 		XSync(display,False);
 		//fprintf(stderr,"show_section: display=%p window=0x%lx imagegc=%p ximage=%p (%d,%d,%d,%d)\n",display,window,imagegc,ximage,x,y,sx,sy);
@@ -382,10 +349,9 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 		//XPutImage( display,window,imagegc,ximage,x,y,x,y,sx,sy);
 		// should completion events be waited for? looks like a bug
 #endif // xshm
-	    } else {
+	} else {
 		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
 		XFlush(display);
-	    }
 	}
 }
 
@@ -488,45 +454,10 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
-		// yes, this can be done now. should cause auto-cleanup.
-		shmctl(shm_info->shmid,IPC_RMID,0);
+		shmctl(shm_info->shmid,IPC_RMID,0); // yes, this can be done now. should cause auto-cleanup.
 		if (!shared_memory) return alloc_image(sx,sy);
 #endif
 	}
-#ifdef HAVE_X11_XVIDEO
-	if (xvideo) {
-		unsigned int ver, rel, req, ev, err, i, j, adaptors, formats;
-		XvAdaptorInfo *ai;
-		if (Success != XvQueryExtension(display,&ver,&rel,&req,&ev,&err)) RAISE("XvQueryExtension problem");
-		/* find + lock port */
-		if (Success != XvQueryAdaptors(display,DefaultRootWindow(display),&adaptors,&ai)) RAISE("XvQueryAdaptors problem");
-		for (i = 0; i < adaptors; i++) {
-			if (ai[i].type&XvInputMask && ai[i].type&XvImageMask) {
-				for (j=0; j<ai[i].num_ports; j++) {
-					if (Success != XvGrabPort(display,ai[i].base_id+j,CurrentTime)) RAISE("XvGrabPort problem");
-					xv_port = ai[i].base_id + j;
-					goto breakout;
-				}
-			}
-		}
-		breakout:
-		XFree(ai);
-		if (!xv_port) RAISE("no xv_port");
-/*
-		unsigned int encn;
-		XvEncodingInfo *enc;
-		XvQueryEncodings(display,xv_port,&encn,&enc);
-		for (i=0; i<encn; i++) post("XvEncodingInfo: name='%s' encoding_id=0x%08x",enc[i].name,enc[i].encoding_id);
-		post("pdp_xvideo: grabbed port %d on adaptor %d",xv_port,i);
-		size_t size = sx*sy*4;
-		data = new uint8[size];
-		for (i=0; i<size; i++) data[i]=0;
-		xvi = XvCreateImage(display,xv_port,0x51525762,(char *)data,sx,sy);
-		last_encoding=-1;
-		if (!xvi) RAISE("XvCreateImage problem");
-*/
-	}
-#endif
 	int status = XInitImage(ximage);
 	if (status!=1) post("XInitImage returned: %d", status);
 	//_L_ fprintf(stderr,"alloc_image: %p %p\n",ximage,image);
@@ -548,14 +479,6 @@ void FormatX11::dealloc_image () {
 		XFree(ximage);
 		ximage = 0;
 		image = 0;
-#endif
-	}
-	if (xvideo) {
-#ifdef HAVE_X11_XVIDEO
-		//if (data) delete[] data;
-		if (xvi) XFree(xvi);
-		xvi=0;
-		//data=0;
 #endif
 	}
 }
@@ -671,9 +594,7 @@ void FormatX11::open_display(const char *disp_string) {
 	default: RAISE("ERROR: visual type not supported (got %d)", visual->c_class);
 	}
 
-#if defined(HAVE_X11_XVIDEO)
-	xvideo = true;
-#elif defined(HAVE_X11_SHARED_MEMORY)
+#if defined(HAVE_X11_SHARED_MEMORY)
 	shared_memory = !! XShmQueryExtension(display);
 #else
 	shared_memory = false;
