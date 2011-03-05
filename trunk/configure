@@ -62,13 +62,11 @@ end
 def launch(*command)
 	c=command.map{|x| x.gsub(/([!#$&*()\[\]{}`~\\\|;'"<>\?])/n, "\\\\\\1").gsub(/\n/,"\\n") }.join(" ")
 	LOG.puts c
-	LOG.flush
-	system(c+" >> config.log 2>&1")
+	IO.popen(c+" 2>&1","r") {|pipe| LOG.puts pipe.read }
 	ret = $?
 	ret = ret.to_i   if RUBY_VERSION >= "1.9"
 	ret = ret.to_int if RUBY_VERSION > "1.7"
 	LOG.puts "process returned status \##{ret}\n" if ret>0
-	LOG.flush
 	return ret<=0
 end
 
