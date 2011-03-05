@@ -160,9 +160,9 @@ class Feature
 		LOG.puts "---",code,"---"
 		log = ""
 		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
-		return false if launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"
-		return false if launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link
-		return false if launch "tmp/#{$$}"
+		return false unless launch "/usr/bin/env", "nasm", "tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"
+		return false unless launch CC,"-o","tmp/#{$$}","tmp/#{$$}.o",*link
+		return false unless launch "tmp/#{$$}"
 		true
 	ensure
 		LOG.puts log
