@@ -43,7 +43,6 @@ else # use ANSI / VT100 colours
   White = "\e[0;1m"
 end
 
-$verbose=false
 LOG.puts "-"*64, "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
 LOG.puts "-"*64
@@ -497,7 +496,6 @@ while ARGV.length>0 do
 	when "--use-compiler": CC = ARGV.shift
 	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
 	when "--use-cpu": DEFINES[:CPU] = ARGV.shift
-	when "--verbose": $verbose=true
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -557,12 +555,8 @@ def try feature
 		if tresult
 			DUAL.puts Green+arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
 		else
-			DUAL.puts Red+arrow+"missing "+(if e
-				then (if $verbose
-					then "(#{e} @ #{e.backtrace.join', '})"
-					else "(#{e})" end)
-				else "(return false)" end)
-			LOG.puts e.inspect, e.backtrace if e
+			DUAL.puts Red+arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
+			LOG.puts e.inspect if e
 			return false
 		end
 	else
