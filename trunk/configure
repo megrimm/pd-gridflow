@@ -236,10 +236,10 @@ Feature.add(:pentium,"Pentium-compatible CPU") {
 		main() {int a[4]; cpuid(0,a[0],a[1],a[2],a[3]);
 		  fprintf(stderr,"cpuid: name=\"%.4s%.4s%.4s\", flags=0x%08x\n",
 		  (char *)&a[1],(char *)&a[3],(char *)&a[2],a[0]); return 0;}'}}
-Feature.add(:mmx,"MMX-compatible CPU (using NASM)") {
+Feature.add(:mmx,"MMX-compatible CPU in 32-bit mode with NASM") {
 	uses_feature [:pentium]
 	produces_o ["src/mmx.o","src/mmx_loader.o"]
-	test proc { #!@#$ isn't 64-bit-compatible
+	test proc {
 		asm_test '
 		global main
 		extern exit
@@ -247,8 +247,7 @@ Feature.add(:mmx,"MMX-compatible CPU (using NASM)") {
 		SECTION .data
 		foo: dd 42,0
 		SECTION .text
-		main:
-		lea esi,[foo]
+	main:	lea esi,[foo]
 		movq mm0,qword[esi]
 		paddd mm0,qword[esi]
 		movq qword [esi],mm0
@@ -257,10 +256,8 @@ Feature.add(:mmx,"MMX-compatible CPU (using NASM)") {
 		je yes
 		push long 1
 		call exit
-		yes:
-		push long 0
-		call exit
-		', '-lc'}}
+	yes:	push long 0
+		call exit'}}
 Feature.add(:x11,"X11 Display Protocol") {
 	uses_so LIBX11
 	uses_h ["X11/Xlib.h"]
