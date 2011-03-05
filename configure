@@ -229,12 +229,14 @@ Feature.add(:pentium,"Pentium-compatible CPU") {
 	options ["HAVE_PENTIUM"]
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{CONFIG["arch"]} instead"
+		cflags = []
+		cflags << "-arch" << "i386" if OSX
 		c_test '#define cpuid(func,ax,bx,cx,dx) \
 			__asm__ __volatile__("cpuid":"=a"(ax),"=b"(bx),"=c"(cx),"=d"(dx):"a"(func))
 		#include <stdio.h>
 		main() {int a[4]; cpuid(0,a[0],a[1],a[2],a[3]);
 		  fprintf(stderr,"cpuid: name=\"%.4s%.4s%.4s\", flags=0x%08x\n",
-		  (char *)&a[1],(char *)&a[3],(char *)&a[2],a[0]); return 0;}'}}
+		  (char *)&a[1],(char *)&a[3],(char *)&a[2],a[0]); return 0;}',nil,cflags}}
 Feature.add(:mmx,"MMX-compatible CPU in 32-bit mode with NASM") {
 	uses_feature [:pentium]
 	produces_o ["src/mmx.o","src/mmx_loader.o"]
