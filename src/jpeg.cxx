@@ -28,9 +28,6 @@ extern "C" {
 #undef EXTERN /* redefined by gridflow header */
 };
 #include "gridflow.hxx.fcs"
-/* removing macros (removing warnings) */
-#undef HAVE_PROTOTYPES
-#undef HAVE_STDLIB_H
 
 \class FormatJPEG : Format {
 	P<BitPacking> bit_packing;
