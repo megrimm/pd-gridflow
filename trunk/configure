@@ -194,7 +194,6 @@ C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 #----------------------------------------------------------------#
 Feature.add(:gcc3,"GNU C++ Compiler 3 (or 4)") {
 	status :always_check
-	options ["HAVE_GCC3"]
 	defines :GCC_VERSION => proc {
 		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
 		rescue "3.666" # version number unknown, sorry.
@@ -240,7 +239,6 @@ Feature.add(:pentium,"Pentium-compatible CPU") {
 Feature.add(:mmx,"MMX-compatible CPU (using NASM)") {
 	uses_feature [:pentium]
 	produces_o ["src/mmx.o","src/mmx_loader.o"]
-	options ["HAVE_MMX"]
 	test proc { #!@#$ isn't 64-bit-compatible
 		asm_test '
 		global main
@@ -369,7 +367,6 @@ Feature.add(:dc1394,"DC1394 for Linux") {
 	uses_so ["-ldc1394_control"]
 	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
 	produces_o ["src/dc1394.o"]
-	options ["HAVE_DC1394"]
 	test proc {|f| f.c_test "
 		#include#
 		int main () {return dc1394_create_handle==0;}"}}
