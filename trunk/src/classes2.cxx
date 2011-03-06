@@ -448,7 +448,9 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	\attr int hi;
 	\constructor (int n=2, int i=0) {this->n=n; index=i; mode=0; lo=0; hi=n-1; noutlets_set(n);}
 	\decl 1 float(int i) {index = mod(i,n);}
+	\decl 1  list(int i) {index = mod(i,n);} // necessary because otherwise 'void anything' catches it
 	\decl void anything(...) {
+		if (int(argv[0])) RAISE("no such method");
 		out[index](argv[1],argc-2,argv+2);
 		if (mode) {
 			index += sgn(mode);
