@@ -35,6 +35,7 @@ PDLIB = ["unicorn"]
 LDSO = {}
 $explicit=false
 
+
 # use ANSI / VT100 colours
 Red   = "\e[0;1;31m"
 Green = "\e[0;1;32m"
@@ -74,7 +75,7 @@ module Future; end
 class Feature
 	$features = []
 	def self.add(*a,&b) $features << Feature.new(*a,&b) end
-	def initialize(tag,name,&b) self.tag(tag); self.name(name); instance_eval(&b) end
+	def initialize(tag,name,&b) tag(tag).name(name); instance_eval(&b) end
 	def self.attr2(sym,&b)
 		eval "def #{sym}(*args,&b)
 			raise args.inspect if args.length>1
@@ -207,7 +208,7 @@ CFLAGS << " -I/usr/X11R6/include"
 C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 
 #----------------------------------------------------------------#
-Feature.add(:gcc3,"GNU C++ Compiler 3 (or 4)") {
+Feature.add("gcc3","GNU C++ Compiler 3 (or 4)") {
 	status :always_check
 	action proc {DEFINES["GCC_VERSION"] =
 		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
@@ -220,12 +221,12 @@ Feature.add(:gcc3,"GNU C++ Compiler 3 (or 4)") {
 			printf("GCC_VERSION %d.%d.%d\\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 			return !(__GNUC__>=3);
 		}}}}
-Feature.add(:stl,"libstdc++ (C++ Standard Template Library)") {
+Feature.add("stl","libstdc++ (C++ Standard Template Library)") {
 	status :always_check
 	test proc {c_test %{
 		#include <vector>
 		int main () {std::vector<int> foo;}}}}
-Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
+Feature.add("gcc64","GNU C++ in 64-bit mode") {
 	action proc {DEFINES["HAVE_GCC64"]=1}
 	test proc {c_test %{
 		#include <stdio.h>
@@ -239,7 +240,7 @@ Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
 			T(float)T(double)puts("");
 			return sizeof(void*)!=8;
 		}}}}
-Feature.add(:pentium,"Pentium-compatible CPU") {
+Feature.add("pentium","Pentium-compatible CPU") {
 	action proc {
 		DEFINES["HAVE_PENTIUM"]=1
 		(CONFIG["arch"] =~ /i\d86/) and DEFINES["CPU"] ||= "pentium"
@@ -254,8 +255,8 @@ Feature.add(:pentium,"Pentium-compatible CPU") {
 		main() {int a[4]; cpuid(0,a[0],a[1],a[2],a[3]);
 		  fprintf(stderr,"cpuid: name=\"%.4s%.4s%.4s\", flags=0x%08x\n",
 		  (char *)&a[1],(char *)&a[3],(char *)&a[2],a[0]); return 0;}',nil,cflags}}
-Feature.add(:mmx,"MMX-compatible CPU in 32-bit mode with NASM") {
-	uses_feature [:pentium]
+Feature.add("mmx","MMX-compatible CPU in 32-bit mode with NASM") {
+	uses_feature ["pentium"]
 	produces_o ["src/mmx.o","src/mmx_loader.o"]
 	test proc {
 		_=""
@@ -278,15 +279,15 @@ Feature.add(:mmx,"MMX-compatible CPU in 32-bit mode with NASM") {
 		call #{_}exit
 	yes:	push long 0
 		call #{_}exit}}}
-Feature.add(:x11,"X11 Display Protocol") {
+Feature.add("x11","X11 Display Protocol") {
 	uses_so LIBX11
 	uses_h ["X11/Xlib.h"]
 	produces_pdlib ["x11"]
 	test proc {c_test "
 		#include#
 		int main () {return XSetErrorHandler==0;}"}}
-Feature.add(:x11_shm,"X11 acceleration by shared memory (XSHM plugin)") {
-	uses_feature [:x11]
+Feature.add("x11_shm","X11 acceleration by shared memory (XSHM plugin)") {
+	uses_feature ["x11"]
 	uses_so LIBX11+["-lXext"]
 	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
@@ -297,7 +298,7 @@ Feature.add(:x11_shm,"X11 acceleration by shared memory (XSHM plugin)") {
 		#include <X11/StringDefs.h>
 		#include <sys/ipc.h>
 		int main () {return XShmPutImage==0;}"}}
-Feature.add(:sdl,"Simple Directmedia Layer (experimental support)") {
+Feature.add("sdl","Simple Directmedia Layer (experimental support)") {
 	uses_so {`sdl-config --libs`.split" "} # doesn't work if special chars in --libs
 	uses_h ["SDL/SDL.h"] # should use $(sdl-config --cflags) with this
 	produces_o ["src/sdl.o"]
@@ -305,7 +306,7 @@ Feature.add(:sdl,"Simple Directmedia Layer (experimental support)") {
 		#include#
 		#undef main
 		int main () {return SDL_MapRGB==0;}"}}
-Feature.add(:quartz,"Apple Quartz/Cocoa Display") {
+Feature.add("quartz","Apple Quartz/Cocoa Display") {
 	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
 	produces_o ["src/quartz.o"]
@@ -313,7 +314,7 @@ Feature.add(:quartz,"Apple Quartz/Cocoa Display") {
 		#include#
 		int main () {return CGImageRelease==0;}
 		", nil, ["-xobjective-c++"]}}
-Feature.add(:aalib,"Ascii Art Library") {
+Feature.add("aalib","Ascii Art Library") {
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
 	produces_o ["src/aalib.o"]
@@ -323,7 +324,7 @@ Feature.add(:aalib,"Ascii Art Library") {
 		#include#
 		};
 		int main () {return aa_init==0;}"}}
-Feature.add(:jpeg,"JPEG Library") {
+Feature.add("jpeg","JPEG Library") {
 	uses_so ["-ljpeg"]
 	uses_h ["jpeglib.h"]
 	produces_o ["src/jpeg.o"]
@@ -333,7 +334,7 @@ Feature.add(:jpeg,"JPEG Library") {
 		#include#
 		};
 		int main () {return jpeg_write_scanlines==0;}"}}
-Feature.add(:png,"PNG Library") {
+Feature.add("png","PNG Library") {
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["png.h"],["libpng/png.h"],["libpng14/png.h"],["libpng12/png.h"]]
 	produces_o ["src/png.o"]
@@ -347,7 +348,7 @@ Feature.add(:png,"PNG Library") {
 		T(png_uint_32)T(long)puts("");
 		if (!png_sig_cmp) return 1;
 		return 0;}`}}
-Feature.add(:libv4l1,"Video4linux I Driver Interface Library") {
+Feature.add("libv4l1","Video4linux I Driver Interface Library") {
 	produces_o ["src/videodev.o"]
 	uses_h ["linux/videodev.h","libv4l1.h"]
 	uses_so ["-lv4l1"]
@@ -356,35 +357,35 @@ Feature.add(:libv4l1,"Video4linux I Driver Interface Library") {
 		#include <sys/types.h>
 		#include <libv4l1.h>
 		int main () {return v4l1_open==0;}"}}
-Feature.add(:libv4l2,"Video4linux II Driver Interface Library") {
+Feature.add("libv4l2","Video4linux II Driver Interface Library") {
 	uses_h ["libv4l2.h"]
 	uses_so ["-lv4l2"]
 	produces_o ["src/v4l2.o"]
 	test proc {c_test "
 		#include <libv4l2.h>
 		int main () {return v4l2_open==0;}"}}
-Feature.add(:dc1394,"DC1394 for Linux") {
+Feature.add("dc1394","DC1394 for Linux") {
 	uses_so ["-ldc1394_control"]
 	uses_h Or["libdc1394/dc1394_control.h","dc1394/control.h"]
 	produces_o ["src/dc1394.o"]
 	test proc {|f| f.c_test "
 		#include#
 		int main () {return dc1394_create_handle==0;}"}}
-Feature.add(:mpeg3,"HeroineWarrior LibMPEG3") {
+Feature.add("mpeg3","HeroineWarrior LibMPEG3") {
 	uses_so LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	produces_o ["src/mpeg3.o"]
 	test proc {|f| f.c_test "
 		#include#
 		int main () {return mpeg3_open==0;}"}}
-Feature.add(:quicktimeapple,"Apple's QuickTime") {
+Feature.add("quicktimeapple","Apple's QuickTime") {
 	uses_so [["-framework","Quicktime"]]
 	uses_h ["QuickTime/QuickTime.h","QuickTime/Movies.h"]
 	produces_o ["src/quicktimeapple.o","src/quicktimecamera.o"]
 	test proc {c_test "
 		#include#
 		int main () {return EnterMovies==0;}"}}
-Feature.add(:quicktimehw,"Plaum's LibQuickTime") {
+Feature.add("quicktimehw","Plaum's LibQuickTime") {
 	uses_so Or[
 		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"],
 		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"],
@@ -404,7 +405,7 @@ Feature.add(:quicktimehw,"Plaum's LibQuickTime") {
 			printf("LQT_VERSION = (undefined)");
 		#endif
 		return quicktime_open==0; }`}}
-Feature.add(:opencv,"Intel OpenCV") {
+Feature.add("opencv","Intel OpenCV") {
 	produces_o ["src/opencv.o"]
 	uses_so ["-lcv"]
         uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
@@ -414,13 +415,13 @@ Feature.add(:opencv,"Intel OpenCV") {
 	test proc {c_test %`
 			#include <opencv/cv.h>
 			int main () {return 0;}`}}
-Feature.add(:fftw,"FFTW (Fastest Fourier Transform in the West)") {
+Feature.add("fftw","FFTW (Fastest Fourier Transform in the West)") {
 	produces_o ["src/fftw.o"]
 	uses_so Or[["-lfftw3f","-lfftw3"],["-lfftw3f-3","-lfftw3-3"]]
 	test proc {|f| f.c_test %`
 		#include <fftw3.h>
 		int main () {return 0;}`}}
-Feature.add(:opengl,"OpenGL/GLEW (for GEM support and [gf/gl])") {
+Feature.add("opengl","OpenGL/GLEW (for GEM support and [gf/gl])") {
 	produces_o ["src/opengl.o"]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
@@ -428,21 +429,16 @@ Feature.add(:opengl,"OpenGL/GLEW (for GEM support and [gf/gl])") {
 	test proc {c_test %`
                 #include#
                 int main () {return (GLint)0;}`}}
-Feature.add(:gem,"GEM support (loadtime detect: don't disable)") {
+Feature.add("gem","GEM support (loadtime detect: don't disable)") {
 	produces_pdlib ["gem_loader","gem9292","gem9293","gem9393"]
-	uses_feature [:opengl]
+	uses_feature ["opengl"]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
 }
-Feature.add(:pdp,"PDP support (loadtime detect: don't disable)") {
+Feature.add("pdp","PDP support (loadtime detect: don't disable)") {
 	produces_pdlib ["pdp"]
 }
-#Feature.add {
-#	tag :android
-#	name "Android module"
-#	produces_o ["src/android.o"]
-#    test proc {raise "use --force-android if you want this"}
-#}
+#Feature.add("android","Android module") {produces_o ["src/android.o"]; test proc {raise "use --force-android if you want this"}}
 
 #--------------------------------#
 
@@ -500,8 +496,8 @@ $exit=false
 def need s
   if not FEATURES[s] then DUAL.puts Red,"You need to install #{$features_h[s].name}"; DUAL.puts Light; $exit=true end
 end
-need :gcc3
-need :stl
+need "gcc3"
+need "stl"
 (puts; exit 1) if $exit
 
 #--------------------------------#
