@@ -466,14 +466,13 @@ if DEFINES[:HAVE_DEBUG] then CFLAGS << " -O0 -fno-inline"
 
 #--------------------------------#
 
-DUAL = Object.new; DUAL.instance_eval {
-	def self.print color,x
-		STDERR.print color if not WIN
-		STDERR.print x; STDERR.flush
-		LOG   .print x; LOG   .flush
-	end
-	def self.puts(color,x) self.print color,x+"\n" end
-}
+DUAL = Object.new
+def DUAL.print color,x
+	STDERR.print color if not WIN
+	STDERR.print x; STDERR.flush
+	LOG   .print x; LOG   .flush
+end
+def DUAL.puts(color,x) self.print color,x+"\n" end
 
 def try feature
 	if Proc===feature.uses_so then feature.uses_so(feature.uses_so[]) end
@@ -492,10 +491,9 @@ def try feature
 		return false
 	end
 	LOG.puts "", "-"*64
-	line = "[#{feature.tag}] #{feature.name}: "
 	DUAL.print Yellow,"[#{feature.tag}]"
 	DUAL.print Light," "+feature.name+": "
-	arrow = "-"*([78-line.length,0].max)+ "> "
+	arrow = "-"*([78-"#{feature.tag}] #{feature.name}: ".length,0].max)+ "> "
 	(feature.uses_feature||[]).find {|f|
 		if not (
 		  if Or===f then f.a.find {|x| FEATURES[x] } else FEATURES[f] end
@@ -532,18 +530,10 @@ def try feature
 end
 
 DUAL.puts Light, "This is the GridFlow 9.14 configurator"
-
-begin
-  $features.each {|feature| try feature }
-ensure
-  #!@#$ note: see END{} (duplication)
-  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
-end
-
-puts Light
-
+begin $features.each {|feature| try feature }
+ensure system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
+end #!@#$ note: see END{} (duplication)
 LDSOFLAGS.uniq!
-
 $exit=false
 def need s
   if not FEATURES[s] then puts "#{Red}You need to install #{$features_h[s].name}#{Light}"; $exit=true end
@@ -566,7 +556,9 @@ end
 LOG.puts "-"*64
 RUBY = "$(RUBY_INSTALL_NAME)"
 
-puts "generating ./config.make"
+#--------------------------------#
+
+DUAL.puts Light,"generating ./config.make and ./config.h"
 File.open("./config.make","w") {|f|
   CFLAGS <<  " -mcpu=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] <  "4"
   CFLAGS << " -mtune=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] >= "4"
@@ -584,9 +576,6 @@ File.open("./config.make","w") {|f|
     f.puts "LDSO_#{k} = "+LDSO[k].join(" ") if LDSO[k]
   end
 } # end open config.make
-
-#--------------------------------#
-puts "generating config.h"
 File.open("config.h","w") {|f|
 f.puts "
 \#ifndef __CONFIG_H
@@ -599,7 +588,6 @@ f.puts OBJS.map {|o|
 	"PRE startup_#{oo}();"
 }.join("\\\n")
 for k,v in DEFINES do f.puts "\#define #{k} "+v.inspect end
-
 def include_here(f,a,b,c=false)
   return unless FEATURES[b]
   f.puts "\#ifdef #{a}_INCLUDE_HERE"
@@ -614,20 +602,17 @@ include_here f,"DC1394", :dc1394
 include_here f,"LIBMPEG", :mpeg3
 include_here f,"QUICKTIMEHW",:quicktimehw
 include_here f,"PNG",:png
-
-f.puts "
-\#endif /* __CONFIG_H */"
+f.puts "\#endif /* __CONFIG_H */"
 } # end open config.h
 
 #--------------------------------#
 puts %{#{White}\
 See ./config.log if you want the details of the configuration tests.
 "If you are satisfied with that configuration, you may go on, and do "make".
-there is no "make install" step. just move your gridflow directory to
-"lib/pd/extra" or "~/pd-externals", and make sure that it's named "gridflow".
-Or else add a -path option towards the folder which contains the folder named
-"gridflow" (and not to the folder named "gridflow" itself). If you get stuck,
-ask gridflow-dev.
+there is no "make install" step : rename this folder to "gridflow",
+then move it to "lib/pd/extra" or "~/pd-externals" or add a -path option
+towards the parent folder (and not to the folder named "gridflow" itself).
+If you get stuck, ask gridflow-dev.
 #{Light}}
 
 #--------------------------------#
