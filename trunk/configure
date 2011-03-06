@@ -258,15 +258,8 @@ Feature.add(:x11_shm,"X11 acceleration by shared memory (XSHM plugin)") {
 		#include <sys/ipc.h>
 		int main () {return XShmPutImage==0;}"}}
 Feature.add(:sdl,"Simple Directmedia Layer (experimental support)") {
-	uses_so {
-		a=["-lSDL","-lpthread"]
-		a=["-lSDL","-lpthreadGC2"] if WIN
-		a=["-lSDL","-lpthread","-lobjc"] if OSX
-		#a=["$$(sdl-config --libs)"] # can't really work because of exec and stuff.
-		a
-	}
-	uses_h ["SDL/SDL.h"]
-	#uses_h ["$$(sdl-config --cflags)"]
+	uses_so {`sdl-config --libs`.split" "} # doesn't work if special chars in --libs
+	uses_h ["SDL/SDL.h"] # should use $(sdl-config --cflags) with this
 	produces_o ["src/sdl.o"]
 	test proc {c_test "
 		#include#
