@@ -29,11 +29,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 //#include <X11/StringDefs.h>
-#ifdef HAVE_X11_SHARED_MEMORY
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
-#endif
 
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
@@ -77,9 +75,7 @@ typedef struct {
 	int minsy,minsx;
 	t_clock *clock;
 	string title;
-#ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
-#endif
 	~FormatX11 () {
 		clock_unset(clock);
 		if (is_owner) XDestroyWindow(display,window);
@@ -102,9 +98,7 @@ typedef struct {
 	\constructor (...) {
 		shared_memory=false; use_stripes=false; window=0; ximage=0; image=0; is_owner=true;
 		dim=0; lock_size=false; override_redirect=false; clock=0; imagegc=0;
-#ifdef HAVE_X11_SHARED_MEMORY
 		shm_info=0;
-#endif
 		minsy=16; minsx=16;
 		int sy=240, sx=320; // defaults
 		argv++, argc--;
@@ -337,18 +331,11 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
-#ifndef HAVE_X11_SHARED_MEMORY
-	if (shared_memory) RAISE("xshm not available (recompile)");
-#endif
 	if (shared_memory) {
-#ifdef HAVE_X11_SHARED_MEMORY
 		XSync(display,False);
-		//fprintf(stderr,"show_section: display=%p window=0x%lx imagegc=%p ximage=%p (%d,%d,%d,%d)\n",display,window,imagegc,ximage,x,y,sx,sy);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		XFlush(display);
-		//XPutImage( display,window,imagegc,ximage,x,y,x,y,sx,sy);
 		// should completion events be waited for? looks like a bug
-#endif // xshm
 	} else {
 		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
 		XFlush(display);
@@ -439,7 +426,6 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		image = new uint8[size];
 		ximage->data = (int8 *)image;
 	} else {
-#ifdef HAVE_X11_SHARED_MEMORY
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
                 if (!ximage) {post("x11: will retry without shared memory"); shared_memory=false;}
@@ -456,7 +442,6 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		XSync(display,0); // make sure the server picks it up
 		shmctl(shm_info->shmid,IPC_RMID,0); // yes, this can be done now. should cause auto-cleanup.
 		if (!shared_memory) return alloc_image(sx,sy);
-#endif
 	}
 	int status = XInitImage(ximage);
 	if (status!=1) post("XInitImage returned: %d", status);
@@ -472,14 +457,12 @@ void FormatX11::dealloc_image () {
 	if (!shared_memory) {
 		XFree(ximage); ximage=0; image=0;
 	} else {
-#ifdef HAVE_X11_SHARED_MEMORY
 		shmdt(ximage->data);
 		XShmDetach(display,shm_info);
 		if (shm_info) {delete shm_info; shm_info=0;}
 		XFree(ximage);
 		ximage = 0;
 		image = 0;
-#endif
 	}
 }
 
@@ -593,12 +576,7 @@ void FormatX11::open_display(const char *disp_string) {
 	case PseudoColor: if (depth!=8) RAISE("ERROR: with colormap, only supported depth is 8 (got %d)", depth); break;
 	default: RAISE("ERROR: visual type not supported (got %d)", visual->c_class);
 	}
-
-#if defined(HAVE_X11_SHARED_MEMORY)
 	shared_memory = !! XShmQueryExtension(display);
-#else
-	shared_memory = false;
-#endif
 }
 
 Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level) {
