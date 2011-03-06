@@ -459,9 +459,9 @@ while ARGV.length>0 do
 	case arg
 	when /([^=]+)=(.*)/
 		ARGV.unshift $1,$2
-	when /^--no-(.*)/   : name = $1.untaint.intern
+	when /^--no-(.*)/   : name = $1.untaint
 		if $features_h[name] then $features_h[name].status :disabled else puts "there is no feature called #{name}" end
-	when /^--force-(.*)/: name = $1.untaint.intern
+	when /^--force-(.*)/: name = $1.untaint
 		if $features_h[name] then $features_h[name].test nil         else puts "there is no feature called #{name}" end
 	when "--explicit": $explicit=true
 	when "--debug": DEFINES["HAVE_DEBUG"]=1
@@ -535,10 +535,10 @@ f.puts "#define STARTUP_LIST(PRE) \\"
 f.puts OBJS.map {|o| "PRE startup_#{File.basename(o,'.o')}();"}.join("\\\n")
 for k,v in DEFINES do f.puts "\#define #{k} "+v.inspect end
 for tag in %w[dc1394 mpeg3 quicktimehw png] do
-  next unless FEATURES[tag.intern]
+  next unless FEATURES[tag]
   f.puts "\#ifdef #{tag.upcase}_INCLUDE_HERE"
   f.puts "extern \"C\" {"
-  for inc in FEATURES[tag.intern].uses_h.to_a do f.puts "\#include <#{inc}>" end
+  for inc in FEATURES[tag].uses_h.to_a do f.puts "\#include <#{inc}>" end
   f.puts "};"
   f.puts "\#endif"
 end
