@@ -157,16 +157,21 @@ struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
 	~GFPrint () {pd_free((t_pd *)gp);}
 	\decl 0 grid(...) {pd_typedmess((t_pd *)gp,s_grid,argc,argv);}
 	\decl void anything (...) {
-		ostringstream text;
-		text << prefix << ":";
-		if      (argv[1]==&s_float && argc==3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[1]==&s_list  && argc>=3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_SYMBOL ) {text << " symbol" ;}
-		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << " pointer";}
-		else if (argv[1]==&s_list  && argc==2) {text << " bang";}
-		else {text << " " << argv[1];}
-		for (int i=2; i<argc; i++) {text << " " << argv[i];}
-		post("%s",text.str().data());
+		ostringstream text_;
+		ostream &text = dest ? *dest : text_;
+		bool hide_selector=false;
+		if      (argv[1]==&s_float && argc==3 && argv[2].a_type==A_FLOAT  ) {hide_selector=true;}
+		else if (argv[1]==&s_list  && argc>=3 && argv[2].a_type==A_FLOAT  ) {hide_selector=true;}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_SYMBOL ) {text << "symbol" ;}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << "pointer";}
+		else if (argv[1]==&s_list  && argc==2) {text << "bang";}
+		else {text << argv[1];}
+		if (argc>2) {
+			if (!hide_selector) text << " ";
+			text << argv[2];
+		}
+		for (int i=3; i<argc; i++) {text << " " << argv[i];}
+		if (!dest) post("%s: %s",prefix.data(),text_.str().data());
 	}
 };
 \end class {install("gf/print",1,0,CLASS_NOPARENS); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
@@ -214,22 +219,12 @@ struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
 		sys_vgui(".x%lx.c itemconfigure %sTEXT -fill %s\n",(long)(intptr_t)c,self->rsym->s_name,self->selected?"#0000ff":"#000000");
 	}
 	\decl void anything (...) {
-		t_symbol *sel = argv[1];
 		text.str("");
-		if (sel==&s_float) {}
-		else if (sel==&s_list && argc>=3 && argv[2].a_type==A_FLOAT) {}
-		else {text << sel; if (argc>2) text << " ";}
-		for (int i=2; i<argc; i++) {
-			text << argv[i];
-			if (i!=argc-1) {
-				text << " ";
-			}
-		}
+		t_symbol *sel = argv[1];
+		typedmess((t_pd *)printer,sel,argc-2,argv+2);
 		changed();
 	}
-	// long nl=0;
-	// long length = text.str().size();
-	//if (length-nl>64) {text << "\\\n"; nl=length;}
+	// long nl=0; long length = text.str().size(); if (length-nl>64) {text << "\\\n"; nl=length;}
 };
 \end class {
 	install("display",1,0);
