@@ -26,6 +26,14 @@ include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
 LOG = File.open "./config.log", "w"
+CXX = "g++"
+LDSOFLAGS = []
+FEATURES = {}
+DEFINES = {}
+OBJS = []
+PDLIB = ["unicorn"]
+LDSO = {}
+$explicit=false
 
 # use ANSI / VT100 colours
 Red   = "\e[0;1;31m"
@@ -61,14 +69,6 @@ def launch(*command)
 	LOG.puts "process returned status \##{ret}\n" if ret>0
 	return ret<=0
 end
-
-CXX = "g++"
-LDSOFLAGS = []
-FEATURES = {}
-DEFINES = {}
-OBJS = []
-PDLIB = ["unicorn"]
-LDSO = {}
 
 module Future; end
 class Feature
@@ -460,23 +460,15 @@ def usage
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
 end
 
-$explicit=false
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
-	when /=/
-		i=arg.index '='
-		ARGV.unshift arg[0..i-1], arg[i+1..-1]
-	when /^--no-/
-		name = arg[5..-1].untaint.intern
-		if $features_h[name] then $features_h[name].status :disabled
-		else puts "there is no feature called #{name}"
-		end
-	when /^--force-/
-		name = arg[8..-1].untaint.intern
-		if $features_h[name] then $features_h[name].test nil
-		else puts "there is no feature called #{name}"
-		end
+	when /([^=]+)=(.*)/
+		ARGV.unshift $1,$2
+	when /^--no-(.*)/   : name = $1.untaint.intern
+		if $features_h[name] then $features_h[name].status :disabled else puts "there is no feature called #{name}" end
+	when /^--force-(.*)/: name = $1.untaint.intern
+		if $features_h[name] then $features_h[name].test nil         else puts "there is no feature called #{name}" end
 	when "--explicit": $explicit=true
 	when "--debug": DEFINES["HAVE_DEBUG"]=1
 	when "--lite":  DEFINES["HAVE_LITE" ]=1
