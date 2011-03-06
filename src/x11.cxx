@@ -92,7 +92,6 @@ typedef struct {
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
 	void report_pointer(int y, int x, int state) {t_atom2 a[3] = {y,x,state}; out[0](gensym("position"),COUNT(a),a);}
-
 	void prepare_colormap();
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\constructor (...) {
@@ -169,13 +168,13 @@ typedef struct {
 		Visual *v = visual;
 		int disp_is_le = !ImageByteOrder(display);
 		int bpp = ximage->bits_per_pixel;
-		switch(visual->c_class) {
+		switch(v->c_class) {
 		case TrueColor: case DirectColor: {
-			uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
+			uint32 masks[3] = {v->red_mask, v->green_mask, v->blue_mask};
 			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 		} break;
 		case PseudoColor: {
-			uint32 masks[3] = { 0x07, 0x38, 0xC0 }; // BBGGGRRR
+			uint32 masks[3] = {0x07, 0x38, 0xC0}; // BBGGGRRR
 			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 		} break;
 		default: RAISE("huh?");
@@ -186,7 +185,6 @@ typedef struct {
 		if ((mode&4)!=0) {
 			Window root; int x,y; unsigned sx,sy,sb,depth;
 			XGetGeometry(display,window,&root,&x,&y,&sx,&sy,&sb,&depth);
-			//post("sx=%d sy=%d",sx,sy);
 			_0_out_size(sy,sx);
 		}
 		_0_border(1);
@@ -255,15 +253,10 @@ typedef struct {
 	\decl 0 loadbang () {out[0](gensym("nogrey"),0,0);}
 //	\decl 0 raise ();
 	\grin 0 int
-// 9.13 :
 	\decl 0 query_pointer () {
-		Window root_r, child_r;
-		int root_x, root_y, win_x, win_y;
-		unsigned mask;
-		if (XQueryPointer(display,window,&root_r,&child_r,&root_x,&root_y,&win_x,&win_y,&mask))
-			report_pointer(win_y,win_x,mask);
-		else
-			out[0](gensym("oops"),0,0);
+		Window rw,cw; int rx,ry,wx,wy; unsigned mask;
+		if (XQueryPointer(display,window,&rw,&cw,&rx,&ry,&wx,&wy,&mask)) report_pointer(wy,wx,mask);
+		else out[0](gensym("oops"),0,0);
 	}
 };
 
@@ -375,8 +368,7 @@ void FormatX11::call() {
 		case ButtonRelease:{XButtonEvent &eb = e.xbutton; report_pointer(eb.y,eb.x,eb.state &~(128<<eb.button));}break;
 		case KeyPress:
 		case KeyRelease:{
-			XKeyEvent &ek = e.xkey;
-			//XLookupString(ek, buf, 63, 0, 0);
+			XKeyEvent &ek = e.xkey; // what was XLookupString(ek,buf,63,0,0); supposed to be for ?
 			char *kss = XKeysymToString(XLookupKeysym(&ek,0));
 			char buf[64];
 			if (!kss) return; /* unknown keys ignored */
@@ -384,7 +376,6 @@ void FormatX11::call() {
 			t_symbol *sel = gensym(const_cast<char *>(e.type==KeyPress ? "keypress" : "keyrelease"));
 			t_atom2 at[4] = {ek.y,ek.x,ek.state,gensym(buf)};
 			out[0](sel,4,at);
-			//XFree(kss);
 		}break;
 		case MotionNotify:{
 			XMotionEvent &em = *(XMotionEvent *)&e;
@@ -479,18 +470,12 @@ void FormatX11::resize_window (int sx, int sy) {
 		XSetWindowAttributes xswa;
 		xswa.do_not_propagate_mask = 0; //?
 		xswa.override_redirect = override_redirect; //#!@#$
-		window = XCreateWindow(display,
-			parent, pos[1], pos[0], sx, sy, 0,
-			CopyFromParent, InputOutput, CopyFromParent,
-			CWOverrideRedirect|CWDontPropagate, &xswa);
+		window = XCreateWindow(display, parent, pos[1], pos[0], sx, sy, 0,
+			CopyFromParent, InputOutput, CopyFromParent, CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
 		set_wm_hints();
-
-		XSelectInput(display, window,
-			ExposureMask|StructureNotifyMask|PointerMotionMask|
-			ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-			KeyPressMask|KeyReleaseMask);
-
+		XSelectInput(display, window, ExposureMask|StructureNotifyMask|PointerMotionMask|
+			ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|KeyPressMask|KeyReleaseMask);
 		if (is_owner) XMapRaised(display, window);
 		if (visual->c_class == PseudoColor) prepare_colormap();
 	}
@@ -499,18 +484,15 @@ void FormatX11::resize_window (int sx, int sy) {
 }
 
 GRID_INLET(0) {
-	if (in.dim.n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in.dim[2]!=3 && in.dim[2]!=4)
-		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
+	if (in.dim.n!=3)                  RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in.dim[2]!=3 && in.dim[2]!=4) RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in.dim[2]);
 	int sx = in.dim[1], osx = dim[1];
 	int sy = in.dim[0], osy = dim[0];
 	in.set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in.dim[2]!=bit_packing->size) {
 		bit_packing->mask[3]=0;
-		bit_packing = new BitPacking(bit_packing->endian,
-		  bit_packing->bytes, in.dim[2], bit_packing->mask);
+		bit_packing = new BitPacking(bit_packing->endian, bit_packing->bytes, in.dim[2], bit_packing->mask);
 	}
 } GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
@@ -563,16 +545,12 @@ void FormatX11::open_display(const char *disp_string) {
 	// Xlib, you are so free of the ravages of intelligence...
 	XSetErrorHandler(FormatX11_error_handler);
 	Screen *screen = DefaultScreenOfDisplay(display);
-	int screen_num = DefaultScreen(display);
-	visual   = DefaultVisual(display, screen_num);
+	visual   = DefaultVisual(display,DefaultScreen(display));
 	root_window = DefaultRootWindow(display);
 	depth    = DefaultDepthOfScreen(screen);
 	colormap = 0;
-
 	switch(visual->c_class) {
-	// without colormap
-	case TrueColor: case DirectColor: break;
-	// with colormap
+	case TrueColor: case DirectColor: break; // no colormap
 	case PseudoColor: if (depth!=8) RAISE("ERROR: with colormap, only supported depth is 8 (got %d)", depth); break;
 	default: RAISE("ERROR: visual type not supported (got %d)", visual->c_class);
 	}
