@@ -197,7 +197,7 @@ struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
 		const char *s = ss.data();
 		int n = ss.length();
 		for (int i=0;i<n;i++) {
-			if     (s[i]=='\n') quoted << "\\n";
+			if     (s[i]=='\n') {if (i+1!=n) quoted << "\\n";}
 			else if (s[i]=='{') quoted << "\\x7b";
 			else if (s[i]=='}') quoted << "\\x7d";
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
