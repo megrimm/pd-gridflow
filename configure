@@ -27,21 +27,13 @@ OSX = !!( CONFIG["arch"] =~ /darwin/ )
 WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
 LOG = File.open "./config.log", "w"
 
-if WIN then # where is ANSI.SYS ?
-  Red = ""
-  Green = ""
-  Light = ""
-  Dark = ""
-  Yellow = ""
-  White = ""
-else # use ANSI / VT100 colours
-  Red   = "\e[0;1;31m"
-  Green = "\e[0;1;32m"
-  Light = "\e[0m"
-  Dark  = "\e[0;1;30m"
-  Yellow = "\e[0;1;33;44m"
-  White = "\e[0;1m"
-end
+# use ANSI / VT100 colours
+Red   = "\e[0;1;31m"
+Green = "\e[0;1;32m"
+Light = "\e[0m"
+Dark  = "\e[0;1;30m"
+Yellow = "\e[0;1;33;44m"
+White = "\e[0;1m"
 
 LOG.puts "-"*64, "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
@@ -485,13 +477,13 @@ if $debug then CFLAGS << " -O0 -fno-inline"
 
 #--------------------------------#
 
-DUAL = Object.new
-DUAL.instance_eval {
-	def self.print x
-		LOG   .puts  x; LOG   .flush
+DUAL = Object.new; DUAL.instance_eval {
+	def self.print color,x
+		STDERR.print color if not WIN
 		STDERR.print x; STDERR.flush
+		LOG   .print x; LOG   .flush
 	end
-	def self.puts(x) self.print x+"\n" end
+	def self.puts(color,x) self.print color,x+"\n" end
 }
 
 def try feature
@@ -512,27 +504,25 @@ def try feature
 	end
 	LOG.puts "", "-"*64
 	line = "[#{feature.tag}] #{feature.name}: "
-	DUAL.print Light + "[#{Yellow}#{feature.tag}#{Light}] #{feature.name}: "
+	DUAL.print Yellow,"[#{feature.tag}]"
+	DUAL.print Light," "+feature.name+": "
 	arrow = "-"*([78-line.length,0].max)+ "> "
 	(feature.uses_feature||[]).find {|f|
 		if not (
 		  if Or===f then f.a.find {|x| FEATURES[x] } else FEATURES[f] end
-		) then 
-			DUAL.puts Red+arrow+"disabled (would need #{f})"
-			return
-		end
+		) then DUAL.puts Red,arrow+"disabled (would need #{f})"; return end
 	}
-	if feature.status==:disabled or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark+arrow+"disabled"; return end
+	if feature.status==:disabled or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark,arrow+"disabled"; return end
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
-		if FEATURES[f] then DUAL.puts Dark+arrow+"disabled (using #{f} instead)"; return end
+		if FEATURES[f] then DUAL.puts Dark,arrow+"disabled (using #{f} instead)"; return end
 	end
 	if feature.test
 		begin tresult = feature.test.call(feature); rescue StandardError => e; end
 		if tresult
-			DUAL.puts Green+arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
+			DUAL.puts Green,arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
 		else
-			DUAL.puts Red+arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
+			DUAL.puts Red,arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
 			LOG.puts e.inspect if e
 			return false
 		end
@@ -553,7 +543,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 9.14 configurator"
+DUAL.puts Light, "This is the GridFlow 9.14 configurator"
 
 begin
   $features.each {|feature| try feature }
