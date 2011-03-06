@@ -65,7 +65,6 @@ end
 CC = "g++"
 LDSOFLAGS = []
 FEATURES = {}
-OPTIONS = []
 DEFINES = {:CPU => nil}
 OBJS = []
 PDLIB = ["unicorn"]
@@ -92,7 +91,6 @@ class Feature
 	attr2 :uses_h
 	attr2 :uses_feature
 	attr2 :test
-	attr2 :options
 	attr2 :action
 	attr2 :defines
 	def find_h name
@@ -189,7 +187,7 @@ Feature.add(:stl,"libstdc++ (C++ Standard Template Library)") {
 		#include <vector>
 		int main () {std::vector<int> foo;}}}}
 Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
-	options ["HAVE_GCC64"]
+	defines {{"HAVE_GCC64" => 1}}
 	test proc {
 		c_test %{
 		#include <stdio.h>
@@ -205,7 +203,7 @@ Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
 		}}}}
 Feature.add(:pentium,"Pentium-compatible CPU") {
 	action proc { (CONFIG["arch"] =~ /i\d86/) and DEFINES[:CPU] ||= "pentium" }
-	options ["HAVE_PENTIUM"]
+	defines {{"HAVE_PENTIUM" => 1}}
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{CONFIG["arch"]} instead"
 		cflags = []
@@ -252,7 +250,7 @@ Feature.add(:x11_shm,"X11 acceleration by shared memory (XSHM plugin)") {
 	uses_so LIBX11+["-lXext"]
 	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
-	options ["HAVE_X11_SHARED_MEMORY"]
+	defines {{"HAVE_X11_SHARED_MEMORY" => 1}}
 	test proc {c_test "
 		#include#
 		#include <X11/Xutil.h>
@@ -435,7 +433,6 @@ def usage
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
 end
 
-$debug=false
 $explicit=false
 while ARGV.length>0 do
 	arg=ARGV.shift
@@ -454,8 +451,8 @@ while ARGV.length>0 do
 		else puts "there is no feature called #{name}"
 		end
 	when "--explicit": $explicit=true
-	when "--debug": OPTIONS.push :HAVE_DEBUG; $debug=true
-	when "--lite":  OPTIONS.push :HAVE_LITE
+	when "--debug": DEFINES[:HAVE_DEBUG]=1
+	when "--lite":  DEFINES[:HAVE_LITE]=1
 	when "--help": usage; exit 0
 	when "--use-compiler":        CC =          ARGV.shift
 	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
@@ -464,8 +461,8 @@ while ARGV.length>0 do
 	end
 end
 
-if $debug then CFLAGS << " -O0 -fno-inline"
-	  else CFLAGS << " -O3" end
+if DEFINES[:HAVE_DEBUG] then CFLAGS << " -O0 -fno-inline"
+	                else CFLAGS << " -O3" end
 
 #--------------------------------#
 
@@ -528,7 +525,6 @@ def try feature
 	category = "main"
 	category = feature.produces_pdlib[0] if feature.produces_pdlib
 	(LDSO[category]||=[]).concat(feature.uses_so||[]).uniq!
-	OPTIONS.concat(feature.options||[])
 	OBJS.concat(feature.produces_o    ||[])
 	PDLIB.concat(feature.produces_pdlib||[]).uniq!
 	for k,v in feature.defines||{} do DEFINES[k]=(if Proc===v then v[] else v end) end
@@ -561,7 +557,6 @@ need :stl
 LOG.puts "-"*64
 LOG.puts        "$CC: #{CC.inspect}"
 LOG.puts "$LDSOFLAGS: #{LDSOFLAGS.inspect}"
-LOG.puts   "$OPTIONS: #{OPTIONS.inspect}"
 LOG.puts   "$DEFINES: #{DEFINES.inspect}"
 LOG.puts      "$OBJS: #{OBJS.inspect}"
 LOG.puts     "$PDLIB: #{PDLIB.inspect}"
@@ -579,7 +574,6 @@ File.open("./config.make","w") {|f|
   CFLAGS << " -DMACOSX" if OSX
   f.puts "CFLAGS += " + CFLAGS
   f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
-  for k   in OPTIONS do f.puts "#{k}=yes" end
   for k,v in DEFINES do f.puts "#{k}=#{v}" end
   f.puts "CXX = #{CC}"
   f.puts "OBJS = #{OBJS.join(" ")}"
@@ -604,7 +598,6 @@ f.puts OBJS.map {|o|
 	oo.gsub!(/\$\(PDSUF\)$/,"")
 	"PRE startup_#{oo}();"
 }.join("\\\n")
-for k   in OPTIONS do f.puts "\#define #{k}" end
 for k,v in DEFINES do f.puts "\#define #{k} "+v.inspect end
 
 def include_here(f,a,b,c=false)
