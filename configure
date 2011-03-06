@@ -156,10 +156,7 @@ class Feature
 					LOG.puts e.inspect if e
 					return false
 			end
-		else
-			DUAL.puts Green,arrow+"enabled"
-			FEATURES[tag] = self
-			action[] if action
+		else DUAL.puts Green,arrow+"enabled"
 		end
 		action[] if action
 		FEATURES[tag] = self
