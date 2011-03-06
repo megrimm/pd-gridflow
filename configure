@@ -185,7 +185,7 @@ LD_LIBRARY_PATH = (epath("LD_LIBRARY_PATH") + read_ld_so_conf + ["/usr/lib","/li
 LIBX11DIR = [
   "-L/usr/X11R6/lib",  "-L/opt/gnome/lib",
   "-L/usr/X11R6/lib64","-L/opt/gnome/lib64"]
-LIBX11 = LIBX11DIR + ["-lX11"]
+LIBX11 = LIBX11DIR + ["-lX11","-lXext"]
 
 def prepend_path base # so that people don't have to mess with env vars (why is CPLUS_INCLUDE_PATH not here ?)
 	bl = base+"/lib"
@@ -277,16 +277,8 @@ Feature.add("mmx","MMX-compatible CPU in 32-bit mode with NASM") {
 		call #{_}exit
 	yes:	push long 0
 		call #{_}exit}}}
-Feature.add("x11","X11 Display Protocol") {
+Feature.add("x11","X11 Display Protocol (including XSHM plugin)") {
 	uses_so LIBX11
-	uses_h ["X11/Xlib.h"]
-	produces_pdlib ["x11"]
-	test proc {c_test "
-		#include#
-		int main () {return XSetErrorHandler==0;}"}}
-Feature.add("x11_shm","X11 acceleration by shared memory (XSHM plugin)") {
-	uses_feature ["x11"]
-	uses_so LIBX11+["-lXext"]
 	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	action proc {DEFINES["HAVE_X11_SHARED_MEMORY"]=1}
@@ -295,7 +287,7 @@ Feature.add("x11_shm","X11 acceleration by shared memory (XSHM plugin)") {
 		#include <X11/Xutil.h>
 		#include <X11/StringDefs.h>
 		#include <sys/ipc.h>
-		int main () {return XShmPutImage==0;}"}}
+		int main () {return XShmPutImage==0 || XSetErrorHandler==0;}"}}
 Feature.add("sdl","Simple Directmedia Layer (experimental support)") {
 	uses_so {`sdl-config --libs`.split" "} # doesn't work if special chars in --libs
 	uses_h ["SDL/SDL.h"] # should use $(sdl-config --cflags) with this
