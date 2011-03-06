@@ -199,6 +199,11 @@ GRID_INLET(0) {
 
 /* **************************************************************** */
 \class GridPrint {
+	ostream *dest;
+	void redirect(ostream *dest);
+	int base;
+	uint32 trunc;
+	int columns;
 	\attr t_symbol *name;
 	\attr int maxrows;
 	\constructor (t_symbol *name=0) {
@@ -207,25 +212,9 @@ GRID_INLET(0) {
 		base=10; trunc=70; maxrows=50;
 	}
 	\grin 0
-	int base;
-	uint32 trunc;
-	int columns;
-	t_pd *dest;
-	\decl 0 dest (void *p) {dest = (t_pd *)p;}
-	\decl void end_hook () {}
 	\decl 0 base (int x) {if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x);}
 	\decl 0 trunc (int x) {if (x<0 || x>240) RAISE("out of range (not in 0..240 range)"); trunc = x;}
-	void puts (const char *s) {
-		if (!dest) post("%s",s);
-		else {
-			int n = strlen(s);
-			t_atom2 a[n];
-			for (int i=0; i<n; i++) a[i]=s[i];
-			//fprintf(stderr,"dest=%p\n",dest);
-			//fprintf(stderr,"*dest={%08x,%08x,%08x,%08x,...}\n",dest[0],dest[1],dest[2],dest[3]);
-			pd_typedmess(dest,gensym("very_long_name_that_nobody_uses"),n,a);
-		}
-	}
+	void puts (const char *s) {if (dest) *dest << s; else post("%s",s);}
 	void puts (string s) {puts(s.data());}
 	void puts (ostringstream &s) {puts(s.str());}
 	template <class T> void make_columns (int n, T *data) {
@@ -305,7 +294,6 @@ GRID_INLET(0) {
 		for (int row=0; row<sy; row++) {
 			if (row>=maxrows) {puts("..."); break;}
 			ostringstream body;
-			//body << "row " << row << ": ";
 			dump(body,sx,&data[sx*row],' ',trunc);
 			if (body.tellp()>trunc) body << "...";
 			puts(body);
@@ -328,13 +316,13 @@ GRID_INLET(0) {
 			if (row>maxrows) {puts("..."); break;}
 		}
 	}
-	end_hook();
 } GRID_FINISH {
 	ostringstream head;
 	dump_dims(head,in);
 	if (in.dim.prod()==0) puts(head);
 } GRID_END
 \end class {install("#print",1,1,CLASS_NOPARENS); add_creator("@print");}
+void GridPrint::redirect (ostream *dest) {this->dest=dest;}
 
 /* **************************************************************** */
 // [#store] is the class for storing a grid and restituting it on demand.

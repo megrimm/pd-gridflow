@@ -308,38 +308,6 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 //****************************************************************
 
-static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {return &r;}
-
-\class GFPrint : FObject {
-	string prefix;
-	t_pd *gp;
-	\constructor (const t_atom *s=0) {
-		ostringstream text;
-		if (s) text << *s; else text << "print";
-		prefix = text.str();
-		t_atom2 a[1]; a[0]=gensym(prefix.data());
-		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
-		gp = pd_newest();
-	}
-	~GFPrint () {pd_free(gp);}
-	\decl 0 grid(...) {pd_typedmess(gp,s_grid,argc,argv);}
-	\decl void anything (...) {
-		ostringstream text;
-		text << prefix << ":";
-		if      (argv[1]==&s_float && argc==3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[1]==&s_list  && argc>=3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
-		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_SYMBOL ) {text << " symbol" ;}
-		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << " pointer";}
-		else if (argv[1]==&s_list  && argc==2) {text << " bang";}
-		else {text << " " << argv[1];}
-		for (int i=2; i<argc; i++) {text << " " << argv[i];}
-		post("%s",text.str().data());
-	}
-};
-\end class {install("gf/print",1,0,CLASS_NOPARENS); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
-
-//****************************************************************
-
 \class UnixTime : FObject {
 	\constructor () {}
 	\decl 0 bang () {

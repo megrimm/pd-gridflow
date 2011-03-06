@@ -135,28 +135,58 @@ public:
 
 //****************************************************************
 
+static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {return &r;}
+
+struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
+\class GFPrint : FObject {public:
+	BFObject *gp;
+	void redirect(ostream *dest) {
+		this->dest=dest; ((GridPrint *)gp->self)->redirect(dest);
+	}
+	ostream *dest;
+	string prefix;
+	\constructor (const t_atom *s=0) {
+		ostringstream text;
+		if (s) text << *s; else text << "print";
+		prefix = text.str();
+		t_atom2 a[1]; a[0]=gensym(prefix.data());
+		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
+		gp = (BFObject *)pd_newest();
+		dest = 0;
+	}
+	~GFPrint () {pd_free((t_pd *)gp);}
+	\decl 0 grid(...) {pd_typedmess((t_pd *)gp,s_grid,argc,argv);}
+	\decl void anything (...) {
+		ostringstream text;
+		text << prefix << ":";
+		if      (argv[1]==&s_float && argc==3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[1]==&s_list  && argc>=3 && argv[2].a_type==A_FLOAT  ) {/* don't show the selector. */}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_SYMBOL ) {text << " symbol" ;}
+		else if (argv[1]==&s_list  && argc==3 && argv[2].a_type==A_POINTER) {text << " pointer";}
+		else if (argv[1]==&s_list  && argc==2) {text << " bang";}
+		else {text << " " << argv[1];}
+		for (int i=2; i<argc; i++) {text << " " << argv[i];}
+		post("%s",text.str().data());
+	}
+};
+\end class {install("gf/print",1,0,CLASS_NOPARENS); add_creator2(fclass,"gf.print"); add_creator3(fclass,"print");}
+
 \class Display : GUI_FObject {
 	int y,x;
 	ostringstream text;
-	t_pd *gp;
+	BFObject *printer;
 	\constructor () {
-		//fprintf(stderr,"bself=%lx this=%ld\n",bself,this);
 		selected=false; y=0; x=0; sy=16; sx=80; vis=false;
-		pd_anything(&pd_objectmaker,gensym("#print"),0,0);
-		gp = pd_newest();
-		{t_atom2 a[1] = {20}; pd_anything(gp,gensym("maxrows"),1,a);}
+		pd_anything(&pd_objectmaker,gensym("gf/print"),0,0);
+		printer = (BFObject *)pd_newest();
 		text << "...";
-		{t_atom2 a[1] = {(t_gpointer *)bself}; pd_anything(gp,gensym("dest"),1,a);}
+		((GFPrint *)printer->self)->redirect(&text);
  		changed();
 	}
-	~Display () {pd_free(gp);}
+	~Display () {pd_free((t_pd *)printer);}
 	\decl 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
-	\decl 0 grid(...) {text.str(""); pd_typedmess(gp,s_grid,argc,argv); changed();}
-	\decl 0 very_long_name_that_nobody_uses (...) { // for magic use by [#print]
-		if (text.str().length()) text << "\n";
-		for (int i=0; i<argc; i++) text << char(int32(argv[i]));
-	}
- 	void show() { /* or hide */
+	\decl 0 grid(...) {text.str(""); pd_typedmess((t_pd *)printer,s_grid,argc,argv); changed();}
+ 	void show() { // or hide
 		ostringstream quoted;
 		string ss = text.str();
 		const char *s = ss.data();
@@ -165,12 +195,10 @@ public:
 			if     (s[i]=='\n') quoted << "\\n";
 			else if (s[i]=='{') quoted << "\\x7b";
 			else if (s[i]=='}') quoted << "\\x7d";
-			//else if (strchr("\\[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else if (strchr("[]\"$",s[i])) quoted << "\\" << (char)s[i];
 			else quoted << (char)s[i];
 		}
-		// used to have {Courier -12} but this changed to use pdtk_canvas_new
-		if (vis) sys_vgui("display_update %s .x%lx.c %d %d #000000 #ffffc8 %s %d \"%s\"\n",
+		if (vis) sys_vgui("display_update %s .x%lx.c %d %d #000000 #ffffc8 %s %d \"%s\"\n", // Courier -12
 			rsym->s_name,(long)(intptr_t)glist_getcanvas(mom),text_xpix(bself,mom),text_ypix(bself,mom),
 			selected?"#0000ff":"#aaaaaa", sys_hostfontsize(glist_getfont(mom)),quoted.str().data());
 		else {
@@ -191,17 +219,17 @@ public:
 		if (sel==&s_float) {}
 		else if (sel==&s_list && argc>=3 && argv[2].a_type==A_FLOAT) {}
 		else {text << sel; if (argc>2) text << " ";}
-		long nl=0;
 		for (int i=2; i<argc; i++) {
 			text << argv[i];
 			if (i!=argc-1) {
 				text << " ";
-				long length = text.str().size();
-				if (length-nl>64) {text << "\\\n"; nl=length;}
 			}
 		}
 		changed();
 	}
+	// long nl=0;
+	// long length = text.str().size();
+	//if (length-nl>64) {text << "\\\n"; nl=length;}
 };
 \end class {
 	install("display",1,0);
@@ -333,6 +361,7 @@ static t_symbol *s_empty;
 	\decl 0 fast (bool fast=1) {this->fast=fast;}
 	t_clock *clock; // pitiééééééééééééééé
 	int my1,mx1,my2,mx2; // margins
+	t_symbol *receive;
 	\constructor (bool fast=false) {
 		clock = clock_new(bself,(void(*)())doh);
 		my1=5; my2=5; mx1=3; mx2=3;
@@ -347,6 +376,7 @@ static t_symbol *s_empty;
 		spy = (BFObject *)pd_newest(); if (!spy) RAISE("no spy?");
 		((MouseSpy *)spy->self)->snd = (t_pd *)bself;
 		if (fast) open_file();
+		receive = 0;
 	}
 	void open_file () {
 		char buf[64];
@@ -361,6 +391,7 @@ static t_symbol *s_empty;
 	~GridSee () {
 		if (spy) pd_free((t_pd *)spy);
 		clock_free(clock);
+		if (receive) pd_unbind((t_pd *)bself,receive);
 	}
 	// post("can=%p text_ypix=%d text_xpix=%d",can,text_ypix(bself,can),text_xpix(bself,can));
 	void event (int y, int x, int flags, t_symbol *k, const char *sel) {
@@ -377,7 +408,11 @@ static t_symbol *s_empty;
 	\decl 0 keyrelease (int y, int x, int flags, t_symbol *k) {event(y,x,flags,k,"keyrelease");}
 	\decl 0 margins (int y1,        int x1,        int y2,        int x2) {
 		   my1=max(0,y1); mx1=max(0,x1); my2=max(0,y2); mx2=max(0,x2); compute_size(); changed();}
-	#undef FOO
+	\decl 0 receive (t_symbol *r) {
+		if (receive) pd_unbind((t_pd *)bself,receive);
+		receive=r;
+		if (receive) pd_bind(  (t_pd *)bself,receive);
+	}
 	\grin 0
 	void sendbuf () {
 	    ostringstream os;
