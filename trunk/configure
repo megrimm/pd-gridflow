@@ -79,7 +79,7 @@ class Feature
 		eval "def #{sym}(*args,&b)
 			raise args.inspect if args.length>1
 			if b then @#{sym}=b.extend Future
-			elsif args.length>0 then @#{sym}=args[0]
+			elsif args.length>0 then (@#{sym}=args[0]; self)
 			else if Future===@#{sym} then @#{sym}.call else @#{sym} end end end"
 	end
 	attr2 :tag
@@ -126,6 +126,49 @@ class Feature
 		launch "nasm",name+".asm","-f",(if OSX then "macho" else "elf" end),"-o",name+".o" and
 		launch CXX,"-o",name,name+".o",*link and
 		launch name
+	end
+	def try
+		uses_so(uses_so[]) if Proc===uses_so
+		if Or===uses_so
+			k=1; uses_so.a.each {|i|                     r=dup.uses_so(i).name(name+" (try \##{k})").try; k+=1; return r if r }
+			return false
+		end
+		uses_h(uses_h[]) if Proc===uses_h
+		if Or===uses_h
+			k=1; uses_h.a.each {|i| i=[i] if String===i; r=dup.uses_h(i) .name(name+   " <#{i[0]}>").try; k+=1; return r if r }
+			return false
+		end
+		LOG.puts "", "-"*64
+		DUAL.print Yellow,"[#{tag}]"
+		DUAL.print Light," "+name+": "
+		arrow = "-"*([78-"#{tag}] #{name}: ".length,0].max)+ "> "
+		(uses_feature||[]).find {|f|
+			if not (if Or===f then f.a.find {|x| FEATURES[x] } else FEATURES[f] end) then
+				DUAL.puts Red,arrow+"disabled (would need #{f})"; return end
+		}
+		if status==:disabled or ($explicit and test and not status==:always_check) then DUAL.puts Dark,arrow+"disabled"; return end
+		fu = [fu] if not Array===fu
+		for f in fu||[] do if FEATURES[f] then DUAL.puts Dark,arrow+"disabled (using #{f} instead)"; return end end
+		if test
+			begin tresult = test[self]; rescue StandardError => e; end
+			if tresult then DUAL.puts Green,arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
+			else            DUAL.puts Red,arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
+					LOG.puts e.inspect if e
+					return false
+			end
+		else
+			DUAL.puts Green,arrow+"enabled"
+			FEATURES[tag] = self
+			action[] if action
+		end
+		action[] if action
+		FEATURES[tag] = self
+		category = "main"
+		category = produces_pdlib[0] if produces_pdlib
+		(LDSO[category]||=[]).concat(uses_so||[]).uniq!
+		OBJS .concat(produces_o    ||[])
+		PDLIB.concat(produces_pdlib||[]).uniq!
+		true
 	end
 end
 
@@ -461,60 +504,8 @@ def DUAL.print color,x
 end
 def DUAL.puts(color,x) self.print color,x+"\n" end
 
-def try feature
-	if Proc===feature.uses_so then feature.uses_so(feature.uses_so[]) end
-	if Or===feature.uses_so
-		k=1; feature.uses_so.a.each {|i|
-			e=feature.dup; e.uses_so i; e.name(e.name+" (try \##{k})")
-			r=try e; k+=1; return r if r }
-		return false
-	end
-	if Proc===feature.uses_h then feature.uses_h(feature.uses_h[]) end
-	if Or===feature.uses_h
-		k=1; feature.uses_h.a.each {|i|
-			i=[i] if String===i
-			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i[0]}>")
-			r=try e; k+=1; return r if r }
-		return false
-	end
-	LOG.puts "", "-"*64
-	DUAL.print Yellow,"[#{feature.tag}]"
-	DUAL.print Light," "+feature.name+": "
-	arrow = "-"*([78-"#{feature.tag}] #{feature.name}: ".length,0].max)+ "> "
-	(feature.uses_feature||[]).find {|f|
-		if not (
-		  if Or===f then f.a.find {|x| FEATURES[x] } else FEATURES[f] end
-		) then DUAL.puts Red,arrow+"disabled (would need #{f})"; return end
-	}
-	if feature.status==:disabled or ($explicit and feature.test and not feature.status==:always_check) then DUAL.puts Dark,arrow+"disabled"; return end
-	fu = [fu] if not Array===fu
-	for f in fu || [] do
-		if FEATURES[f] then DUAL.puts Dark,arrow+"disabled (using #{f} instead)"; return end
-	end
-	if feature.test
-		begin tresult = feature.test.call(feature); rescue StandardError => e; end
-		if tresult then DUAL.puts Green,arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
-		else            DUAL.puts Red,arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
-				LOG.puts e.inspect if e
-				return false
-		end
-	else
-		DUAL.puts Green,arrow+"enabled"
-		FEATURES[feature.tag] = feature
-		feature.action.call if feature.action
-	end
-	feature.action.call if feature.action
-	FEATURES[feature.tag] = feature
-	category = "main"
-	category = feature.produces_pdlib[0] if feature.produces_pdlib
-	(LDSO[category]||=[]).concat(feature.uses_so||[]).uniq!
-	OBJS .concat(feature.produces_o    ||[])
-	PDLIB.concat(feature.produces_pdlib||[]).uniq!
-	true
-end
-
 DUAL.puts White, "This is the GridFlow 9.14 configurator"
-$features.each {|feature| try feature }
+$features.each {|feature| feature.try }
 LDSOFLAGS.uniq!
 $exit=false
 def need s
