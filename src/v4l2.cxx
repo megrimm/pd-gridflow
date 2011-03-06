@@ -26,7 +26,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/videodev2.h>
-#include <libv4l2.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -35,19 +34,13 @@
 //#define error post
 static bool debug=1;
 
-#ifdef HAVE_LIBV4L2
-#include <libv4l1.h>
+#include <libv4l2.h>
 //#define open   v4l2_open
 #define close  v4l2_close
 #define ioctl  v4l2_ioctl
 #define mmap   v4l2_mmap
 #define munmap v4l2_munmap
 #define read   v4l2_read
-#warning Using libv4l2 !!!
-#else
-#warning NOT Using libv4l2 !!!
-#define v4l2_open(a,b) (RAISE("this [#io.v4l2] wasn't compiled with libv4l2 support"),-1)
-#endif
 
 /* **************************************************************** */
 
