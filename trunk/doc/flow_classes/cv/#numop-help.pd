@@ -1,4 +1,4 @@
-#N canvas 683 36 568 668 10;
+#N canvas 683 36 632 655 10;
 #X obj 22 114 #print;
 #X msg 22 69 2 2 # 0 1 2 3;
 #X obj 22 92 cv/#Add (2 2 # 0 1 2 3);
@@ -24,7 +24,7 @@
 #X obj 14 522 doc_ii 1;
 #X obj 3 552 doc_o 1;
 #X obj 14 582 doc_oo 0;
-#X obj 0 612 doc_f;
+#X obj 0 632 doc_f;
 #X obj 22 261 #print;
 #X msg 22 213 2 2 # 0 1 2 3;
 #X msg 151 213 2 2 # 0 1 42 666;
@@ -37,6 +37,10 @@
 #X msg 396 285 2 2 # 0 1 42 666;
 #X obj 267 237 cv/#Or (2 2 # 0 1 2 3);
 #X obj 267 309 cv/#Xor (2 2 # 0 1 2 3);
+#X obj 3 612 doc_also;
+#X text 202 363 this probably won't be kept.;
+#X text 205 377 let's deprecate it already.;
+#X obj 103 612 #;
 #X connect 1 0 2 0;
 #X connect 2 0 0 0;
 #X connect 4 0 8 0;
@@ -58,3 +62,4 @@
 #X connect 35 0 37 1;
 #X connect 36 0 30 0;
 #X connect 37 0 33 0;
+#X connect 38 1 41 0;
