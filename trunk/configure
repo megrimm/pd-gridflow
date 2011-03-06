@@ -281,7 +281,6 @@ Feature.add("x11","X11 Display Protocol (including XSHM plugin)") {
 	uses_so LIBX11
 	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
-	action proc {DEFINES["HAVE_X11_SHARED_MEMORY"]=1}
 	test proc {c_test "
 		#include#
 		#include <X11/Xutil.h>
