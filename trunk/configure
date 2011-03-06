@@ -159,21 +159,12 @@ LIBX11DIR = [
   "-L/usr/X11R6/lib64","-L/opt/gnome/lib64"]
 LIBX11 = LIBX11DIR + ["-lX11"]
 
-# making it easier for everybody I hope:
-def prepend_path base
+def prepend_path base # so that people don't have to mess with env vars (why is CPLUS_INCLUDE_PATH not here ?)
 	bl = base+"/lib"
 	bi = base+"/include"
-	if not LD_LIBRARY_PATH.include? bl and
-	   not    LIBRARY_PATH.include? bl then
-		LDSOFLAGS.unshift "-L"+bl
-		LD_LIBRARY_PATH.unshift bl
-		   LIBRARY_PATH.unshift bl
-	end
-	#and not CPLUS_INCLUDE_PATH.include? bi
-	if not C_INCLUDE_PATH.include? bi then
-		CFLAGS << " -I"+bi
-		C_INCLUDE_PATH.unshift bi
-	end
+	if not LD_LIBRARY_PATH.include? bl then LD_LIBRARY_PATH.unshift bl end
+	if not    LIBRARY_PATH.include? bl then    LIBRARY_PATH.unshift bl; LDSOFLAGS.unshift "-L"+bl end
+	if not  C_INCLUDE_PATH.include? bi then	 C_INCLUDE_PATH.unshift bi;    CFLAGS << " -I"+bi end # why does this append instead of prepend ?
 end
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
@@ -181,11 +172,7 @@ prepend_path ENV["HOME"]
 prepend_path "/Users/pddev/..."
 CFLAGS << " -I."
 C_INCLUDE_PATH.unshift "."
-
-for var in [:C_INCLUDE_PATH, :LIBRARY_PATH, :LD_LIBRARY_PATH] do
-	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
-end
-
+for var in [:C_INCLUDE_PATH, :LIBRARY_PATH, :LD_LIBRARY_PATH] do LOG.puts "#{var}: #{eval(var.to_s).inspect}" end
 LOG.puts "-"*64
 CFLAGS << " -I/usr/X11R6/include"
 C_INCLUDE_PATH.unshift "/usr/X11R6/include"
@@ -483,21 +470,18 @@ while ARGV.length>0 do
 		else puts "there is no feature called #{name}"
 		end
 	when "--explicit": $explicit=true
-	when "--debug": $debug=true; OPTIONS.push :HAVE_DEBUG
-	when "--lite": OPTIONS.push :HAVE_LITE
+	when "--debug": OPTIONS.push :HAVE_DEBUG; $debug=true
+	when "--lite":  OPTIONS.push :HAVE_LITE
 	when "--help": usage; exit 0
-	when "--use-compiler": CC = ARGV.shift
+	when "--use-compiler":        CC =          ARGV.shift
 	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
-	when "--use-cpu": DEFINES[:CPU] = ARGV.shift
+	when "--use-cpu":           DEFINES[:CPU] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
 
-if $debug
-	CFLAGS << " -O0 -fno-inline"
-else
-	CFLAGS << " -O3"
-end
+if $debug then CFLAGS << " -O0 -fno-inline"
+	  else CFLAGS << " -O3" end
 
 #--------------------------------#
 
