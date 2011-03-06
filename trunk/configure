@@ -525,26 +525,22 @@ need :stl
 (puts; exit 1) if $exit
 
 #--------------------------------#
-
 LOG.puts "-"*64
 LOG.puts       "$CXX: #{CXX.inspect}"
 LOG.puts "$LDSOFLAGS: #{LDSOFLAGS.inspect}"
 LOG.puts   "$DEFINES: #{DEFINES.inspect}"
 LOG.puts      "$OBJS: #{OBJS.inspect}"
 LOG.puts     "$PDLIB: #{PDLIB.inspect}"
-for k in LDSO.keys.sort do
-  LOG.puts "$LDSO[#{k.inspect}]: #{LDSO[k].inspect}"
-end
+for k in LDSO.keys.sort do LOG.puts "$LDSO[#{k.inspect}]: #{LDSO[k].inspect}" end
 LOG.puts "-"*64
-RUBY = "$(RUBY_INSTALL_NAME)"
-
-#--------------------------------#
 
 DUAL.puts Light,"generating ./config.make and ./config.h"
+
 File.open("./config.make","w") {|f|
-  CFLAGS <<  " -mcpu=$(CPU)" if DEFINES["CPU"] and DEFINES["GCC_VERSION"] <  "4"
-  CFLAGS << " -mtune=$(CPU)" if DEFINES["CPU"] and DEFINES["GCC_VERSION"] >= "4"
-  CFLAGS << " -march=$(CPU)" if DEFINES["CPU"]
+  if DEFINES["CPU"]
+    CFLAGS << (if DEFINES["GCC_VERSION"] >= "4" then " -mtune=$(CPU)" else " -mcpu=$(CPU)" end)
+    CFLAGS << " -march=$(CPU)"
+  end
   CFLAGS << " -DMACOSX" if OSX
   f.puts "CFLAGS += " + CFLAGS
   f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
@@ -554,7 +550,8 @@ File.open("./config.make","w") {|f|
   f.puts "DLEXT = "+CONFIG['DLEXT']
   f.puts "PDLIB = gridflow$(PDSUF) "+PDLIB.map{|x|"gridflow_#{x}$(PDSUF)"}.join(" ")
   for k in LDSO.keys.sort do f.puts "LDSO_#{k} = "+LDSO[k].join(" ") if LDSO[k] end
-} # end open config.make
+}
+
 File.open("config.h","w") {|f|
 f.puts "
 \#ifndef __CONFIG_H
@@ -563,18 +560,16 @@ f.puts "
 f.puts "#define STARTUP_LIST(PRE) \\"
 f.puts OBJS.map {|o| "PRE startup_#{File.basename(o,'.o')}();"}.join("\\\n")
 for k,v in DEFINES do f.puts "\#define #{k} "+v.inspect end
-def include_here(f,a)
-  return unless FEATURES[a.intern]
-  f.puts "\#ifdef #{a.upcase}_INCLUDE_HERE"
+for tag in %w[dc1394 mpeg3 quicktimehw png] do
+  next unless FEATURES[tag.intern]
+  f.puts "\#ifdef #{tag.upcase}_INCLUDE_HERE"
   f.puts "extern \"C\" {"
-  for inc in FEATURES[a.intern].uses_h.to_a do f.puts "\#include <#{inc}>" end
+  for inc in FEATURES[tag.intern].uses_h.to_a do f.puts "\#include <#{inc}>" end
   f.puts "};"
   f.puts "\#endif"
 end
-for tag in %w[dc1394 mpeg3 quicktimehw png] do include_here f,tag end
-# for tag in FEATURES.keys do include_here f, tag.to_s.upcase, tag if Or===FEATURES[tag].uses_h; p FEATURES[tag].uses_h end
 f.puts "\#endif /* __CONFIG_H */"
-} # end open config.h
+}
 
 #--------------------------------#
 puts %{#{White}\
