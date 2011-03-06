@@ -65,7 +65,7 @@ end
 CC = "g++"
 LDSOFLAGS = []
 FEATURES = {}
-DEFINES = {:CPU => nil}
+DEFINES = {}
 OBJS = []
 PDLIB = ["unicorn"]
 LDSO = {}
@@ -92,7 +92,6 @@ class Feature
 	attr2 :uses_feature
 	attr2 :test
 	attr2 :action
-	attr2 :defines
 	def find_h name
 		if name[0..0]=="/" then File.exist?(name)
 		else C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
@@ -170,7 +169,7 @@ C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 #----------------------------------------------------------------#
 Feature.add(:gcc3,"GNU C++ Compiler 3 (or 4)") {
 	status :always_check
-	defines :GCC_VERSION => proc {
+	action proc {DEFINES["GCC_VERSION"] =
 		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
 		rescue Exception; "3.666" # version number unknown, sorry.
 		end
@@ -187,7 +186,7 @@ Feature.add(:stl,"libstdc++ (C++ Standard Template Library)") {
 		#include <vector>
 		int main () {std::vector<int> foo;}}}}
 Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
-	defines {{"HAVE_GCC64" => 1}}
+	action proc {DEFINES["HAVE_GCC64"]=1}
 	test proc {
 		c_test %{
 		#include <stdio.h>
@@ -202,8 +201,10 @@ Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
 			return !( sizeof(void*)==8 );
 		}}}}
 Feature.add(:pentium,"Pentium-compatible CPU") {
-	action proc { (CONFIG["arch"] =~ /i\d86/) and DEFINES[:CPU] ||= "pentium" }
-	defines {{"HAVE_PENTIUM" => 1}}
+	action proc {
+		DEFINES["HAVE_PENTIUM"]=1
+		(CONFIG["arch"] =~ /i\d86/) and DEFINES["CPU"] ||= "pentium"
+	}
 	test proc {
 		(CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{CONFIG["arch"]} instead"
 		cflags = []
@@ -250,7 +251,7 @@ Feature.add(:x11_shm,"X11 acceleration by shared memory (XSHM plugin)") {
 	uses_so LIBX11+["-lXext"]
 	produces_pdlib ["x11"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
-	defines {{"HAVE_X11_SHARED_MEMORY" => 1}}
+	action proc {DEFINES["HAVE_X11_SHARED_MEMORY"]=1}
 	test proc {c_test "
 		#include#
 		#include <X11/Xutil.h>
@@ -380,7 +381,8 @@ Feature.add(:opencv,"Intel OpenCV") {
 	uses_so ["-lcv"]
         uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
        #uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
-	defines {{:OPENCV_SHARE_PATH => File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}}
+	action proc {DEFINES["OPENCV_SHARE_PATH"] =
+		File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}
 	test proc {c_test %`
 			#include <opencv/cv.h>
 			int main () {return 0;}`}}
@@ -451,18 +453,18 @@ while ARGV.length>0 do
 		else puts "there is no feature called #{name}"
 		end
 	when "--explicit": $explicit=true
-	when "--debug": DEFINES[:HAVE_DEBUG]=1
-	when "--lite":  DEFINES[:HAVE_LITE]=1
+	when "--debug": DEFINES["HAVE_DEBUG"]=1
+	when "--lite":  DEFINES["HAVE_LITE" ]=1
 	when "--help": usage; exit 0
 	when "--use-compiler":        CC =          ARGV.shift
 	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
-	when "--use-cpu":           DEFINES[:CPU] = ARGV.shift
+	when "--use-cpu":          DEFINES["CPU"] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
 
-if DEFINES[:HAVE_DEBUG] then CFLAGS << " -O0 -fno-inline"
-	                else CFLAGS << " -O3" end
+if DEFINES["HAVE_DEBUG"] then CFLAGS << " -O0 -fno-inline"
+	                 else CFLAGS << " -O3" end
 
 #--------------------------------#
 
@@ -525,7 +527,6 @@ def try feature
 	(LDSO[category]||=[]).concat(feature.uses_so||[]).uniq!
 	OBJS.concat(feature.produces_o    ||[])
 	PDLIB.concat(feature.produces_pdlib||[]).uniq!
-	for k,v in feature.defines||{} do DEFINES[k]=(if Proc===v then v[] else v end) end
 	true
 end
 
@@ -560,9 +561,9 @@ RUBY = "$(RUBY_INSTALL_NAME)"
 
 DUAL.puts Light,"generating ./config.make and ./config.h"
 File.open("./config.make","w") {|f|
-  CFLAGS <<  " -mcpu=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] <  "4"
-  CFLAGS << " -mtune=$(CPU)" if DEFINES[:CPU] and DEFINES[:GCC_VERSION] >= "4"
-  CFLAGS << " -march=$(CPU)" if DEFINES[:CPU]
+  CFLAGS <<  " -mcpu=$(CPU)" if DEFINES["CPU"] and DEFINES["GCC_VERSION"] <  "4"
+  CFLAGS << " -mtune=$(CPU)" if DEFINES["CPU"] and DEFINES["GCC_VERSION"] >= "4"
+  CFLAGS << " -march=$(CPU)" if DEFINES["CPU"]
   CFLAGS << " -DMACOSX" if OSX
   f.puts "CFLAGS += " + CFLAGS
   f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
