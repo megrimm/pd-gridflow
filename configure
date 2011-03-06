@@ -174,9 +174,7 @@ end
 
 def read_ld_so_conf
 	return [] unless File.exist?("/etc/ld.so.conf")
-	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
-	x.delete_if { x.length==0 }
-	x
+	File.open("/etc/ld.so.conf"){|f| f.read }.split("\s").find_all {|line| line!="" }
 end
 
 def epath x; (ENV[x]||"").split(":") end
