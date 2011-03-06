@@ -214,7 +214,7 @@ GRID_INLET(0) {
 	\grin 0
 	\decl 0 base (int x) {if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x);}
 	\decl 0 trunc (int x) {if (x<0 || x>240) RAISE("out of range (not in 0..240 range)"); trunc = x;}
-	void puts (const char *s) {if (dest) *dest << s; else post("%s",s);}
+	void puts (const char *s) {if (dest) *dest << s << "\n"; else post("%s",s);}
 	void puts (string s) {puts(s.data());}
 	void puts (ostringstream &s) {puts(s.str());}
 	template <class T> void make_columns (int n, T *data) {
