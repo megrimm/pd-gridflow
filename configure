@@ -100,7 +100,7 @@ class Feature
 		else C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
 		end
 	end
-	def c_test code, link=nil, options=[]
+	def c_test code, link=nil, flags=[]
 		link = (uses_so||[]).dup if not link
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
@@ -116,7 +116,7 @@ class Feature
 		name = "tmp/#{$$}"
 		File.open(name+".cpp","w") {|f| f.puts code }
 		command = [CC] + CFLAGS.split(/ /).reject{|x| x.length==0 }
-		raise "gcc compilation error" if not launch *(command+options+[name+".cpp","-o",name,*link.uniq])
+		raise "gcc compilation error" if not launch *(command+flags+[name+".cpp","-o",name,*link.uniq])
 		raise "runtime error" if not launch name
 		return true
 	ensure
@@ -317,18 +317,10 @@ Feature.add(:png,"PNG Library") {
 		T(png_uint_32)T(long)puts("");
 		if (!png_sig_cmp) return 1;
 		return 0;}`}}
-Feature.add(:videodev,"Video4linux Driver Interface Version 1 (kernel)") {
-	uses_h ["linux/videodev.h"]
-	produces_o ["src/videodev.o"]
-	test proc {c_test "
-		#include <stdlib.h>
-		#include#
-		int main () { struct video_window foo; return 0; }"}}
 Feature.add(:libv4l1,"Video4linux I Driver Interface Library") {
-	uses_feature [:videodev]
-	uses_h ["libv4l1.h"]
+	produces_o ["src/videodev.o"]
+	uses_h ["linux/videodev.h","libv4l1.h"]
 	uses_so ["-lv4l1"]
-	options ["HAVE_LIBV4L1"]
 	test proc {c_test "
 		#include <linux/videodev.h>
 		#include <sys/types.h>
