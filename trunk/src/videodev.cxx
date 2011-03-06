@@ -37,16 +37,12 @@
 #include "pwc-ioctl.h"
 #include <sstream>
 
-#ifdef HAVE_LIBV4L1
 #include <libv4l1.h>
 #define close  v4l1_close
 #define ioctl  v4l1_ioctl
 #define mmap   v4l1_mmap
 #define munmap v4l1_munmap
 #define read   v4l1_read
-#else
-#define v4l1_open(a,b) (RAISE("this [#io.videodev] wasn't compiled with libv4l1 support"),-1)
-#endif
 
 //#define error post
 static bool debug=0;
