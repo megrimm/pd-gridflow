@@ -149,7 +149,7 @@ struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
 		ostringstream text;
 		if (s) text << *s; else text << "print";
 		prefix = text.str();
-		t_atom2 a[1]; a[0]=gensym(prefix.data());
+		t_atom2 a[]={s ? gensym(prefix.data()) : &s_};
 		pd_typedmess(&pd_objectmaker,gensym("#print"),1,a);
 		gp = (BFObject *)pd_newest();
 		dest = 0;
