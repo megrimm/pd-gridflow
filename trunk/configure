@@ -187,8 +187,7 @@ Feature.add(:stl,"libstdc++ (C++ Standard Template Library)") {
 		int main () {std::vector<int> foo;}}}}
 Feature.add(:gcc64,"GNU C++ in 64-bit mode") {
 	action proc {DEFINES["HAVE_GCC64"]=1}
-	test proc {
-		c_test %{
+	test proc {c_test %{
 		#include <stdio.h>
 		#include <stdlib.h>
 		#include <cstddef>
@@ -508,15 +507,13 @@ def try feature
 	end
 	if feature.test
 		begin tresult = feature.test.call(feature); rescue StandardError => e; end
-		if tresult
-			DUAL.puts Green,arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
-		else
-			DUAL.puts Red,arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
-			LOG.puts e.inspect if e
-			return false
+		if tresult then DUAL.puts Green,arrow+"found "+(if tresult!=true then " (#{tresult})" else "" end)
+		else            DUAL.puts Red,arrow+"missing "+(if e then "(#{e})" else "(return false)" end)
+				LOG.puts e.inspect if e
+				return false
 		end
 	else
-		puts Green+arrow+"enabled"
+		DUAL.puts Green,arrow+"enabled"
 		FEATURES[feature.tag] = feature
 		feature.action.call if feature.action
 	end
@@ -525,19 +522,17 @@ def try feature
 	category = "main"
 	category = feature.produces_pdlib[0] if feature.produces_pdlib
 	(LDSO[category]||=[]).concat(feature.uses_so||[]).uniq!
-	OBJS.concat(feature.produces_o    ||[])
+	OBJS .concat(feature.produces_o    ||[])
 	PDLIB.concat(feature.produces_pdlib||[]).uniq!
 	true
 end
 
-DUAL.puts Light, "This is the GridFlow 9.14 configurator"
-begin $features.each {|feature| try feature }
-ensure system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
-end #!@#$ note: see END{} (duplication)
+DUAL.puts White, "This is the GridFlow 9.14 configurator"
+$features.each {|feature| try feature }
 LDSOFLAGS.uniq!
 $exit=false
 def need s
-  if not FEATURES[s] then puts "#{Red}You need to install #{$features_h[s].name}#{Light}"; $exit=true end
+  if not FEATURES[s] then DUAL.puts Red,"You need to install #{$features_h[s].name}"; DUAL.puts Light; $exit=true end
 end
 need :gcc3
 need :stl
@@ -616,7 +611,4 @@ towards the parent folder (and not to the folder named "gridflow" itself).
 If you get stuck, ask gridflow-dev.
 #{Light}}
 
-#--------------------------------#
-END {
-  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
-}
+END {system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"}
