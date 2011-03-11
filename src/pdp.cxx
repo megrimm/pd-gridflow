@@ -101,8 +101,7 @@ static void *pdpproxy_new () {
 	\attr t_symbol *colorspace;
 	\constructor () {
 		scale=0; shift=7; colorspace=gensym("rgb");
-		pd_typedmess(&pd_objectmaker,gensym("#to_pdp_proxy"),0,0);
-		bitch = (pdpproxy *)pd_newest();
+		bitch = (pdpproxy *)pdpproxy_new();
 		if (!bitch) RAISE("bitchless");
 		bitch->daddy = this;
 		//inlet_new((t_object *)bself,(t_pd *)bitch,0,0);
@@ -117,7 +116,6 @@ static void *pdpproxy_new () {
 
 extern "C" void gridflow_pdp_setup() {
 	\startall
-	pdpproxy_class =
-	  class_new(gensym("#to_pdp_proxy"), (t_newmethod)pdpproxy_new, (t_method)pdpproxy_free, sizeof(pdpproxy),0,A_NULL);
+	pdpproxy_class = class_new(0, (t_newmethod)pdpproxy_new, (t_method)pdpproxy_free, sizeof(pdpproxy),0,A_NULL);
 	pdp_imagebase_setup(pdpproxy_class);
 }
