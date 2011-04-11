@@ -311,6 +311,7 @@ say doc_iemfont   "figure out correct font size to use with IEMGUI widgets"
 # 9.12
 say #expr         "an \[expr\] clone that will eventually support grids too"
 say #compress     "pick a set of values in a grid"
+say note          "GUI for musical note (*experimental!*)"
 
 # 9.13
 say azerty_piano    "imitation of \[notein\] using \[key\] and \[keyup\] (for AZERTY keyboards)"
@@ -320,3 +321,6 @@ say hpgl_to_lines   "convert HPGL drawings to line segment grids (for #draw_poly
 say hpgl_from_patch "read .pd file and try making an HPGL drawing from it"
 say #draw_lattice   "draw horizontal and vertical lines to cover an image"
 
+# 9.14
+say #delay_image "delay line for images that are all of the same size"
+say #memstat     "get stats about RAM (*experimental*)"
