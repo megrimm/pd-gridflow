@@ -45,7 +45,7 @@ else
     PDSUF = .pd_linux
     LDSOFLAGS = -shared -rdynamic
     EXECTYPE = elf
-    ifeq ($(HAVE_GCC64),yes)
+    ifeq ($(HAVE_GCC64),1)
       CFLAGS += -fPIC
       LDSOFLAGS += -fPIC
       EXECTYPE = elf64
