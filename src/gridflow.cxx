@@ -184,7 +184,7 @@ void pd_oprintf (ostream &o, const char *s, int argc, t_atom *argv) {
 			case 1: oprintf(o,form,k[0],     EATSYMBOL->s_name); break;
 			case 2: oprintf(o,form,k[0],k[1],EATSYMBOL->s_name); break;
 		}} else if (strchr("%",*s)) o << "%";
-		else RAISE("sorry, the format character '%c' is not supported yet, in \"%.*s\"",*s,s+1-t,t);
+		else RAISE("sorry, the format character '%c' is not supported yet, in \"%.*s\"",*s,int(s+1-t),t);
 	}
 }
 
