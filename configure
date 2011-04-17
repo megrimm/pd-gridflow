@@ -483,11 +483,11 @@ $features.each {|feature| feature.try }
 LDSOFLAGS.uniq!
 $exit=false
 def need s
-  if not FEATURES[s] then DUAL.puts Red,"You need to install #{$features_h[s].name}"; DUAL.puts Light; $exit=true end
+  if not FEATURES[s] then DUAL.puts Red,"You need to install #{$features_h[s].name}"; $exit=true end
 end
 need "gcc3"
 need "stl"
-(puts; exit 1) if $exit
+(DUAL.puts Light,""; exit 1) if $exit
 
 #--------------------------------#
 LOG.puts "-"*64
