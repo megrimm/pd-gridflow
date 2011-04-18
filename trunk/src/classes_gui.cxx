@@ -137,8 +137,8 @@ public:
 
 static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {return &r;}
 
-struct GridPrint : FObject { // partial redecl, désolé
-	\constructor (t_symbol *bidon) {post("bidon"); /*ouille*/} // gcc 4.5 error ?
+struct GridPrint : FObject { // partial redecl, désolé (classe supposée être privée)
+	GridPrint(BFObject *bself, MESSAGE) : FObject(bself,MESSAGE2) {post("bidon"); /*ouille*/} // gcc 4.5 error ?
 	void redirect(ostream *);};
 \class GFPrint : FObject {public:
 	BFObject *gp;
