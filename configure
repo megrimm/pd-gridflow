@@ -291,7 +291,7 @@ Feature.add("x11","X11 Display Protocol (including XSHM plugin)") {
 		#include <sys/ipc.h>
 		int main () {return XShmPutImage==0 || XSetErrorHandler==0;}"}}
 Feature.add("sdl","Simple Directmedia Layer (experimental support)") {
-	uses_so {`sdl-config --libs`.split" "} # doesn't work if special chars in --libs
+	uses_so {`sh -c 'sdl-config --libs'`.split" "} # doesn't work if special chars in --libs; sh -c used because of WIN.
 	uses_h ["SDL/SDL.h"] # should use $(sdl-config --cflags) with this
 	produces_o ["src/sdl.o"]
 	test proc {c_test "
