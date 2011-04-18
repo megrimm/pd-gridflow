@@ -115,6 +115,7 @@ class Feature
 		File.open(name+".cpp","w") {|f| f.puts code }
 		command = [CXX] + CFLAGS.split(/ /).reject{|x| x.length==0 }
 		raise "gcc compilation error" if not launch *(command+flags+[name+".cpp","-o",name,*link.uniq])
+		name = "tmp\\#{$$}" if WIN
 		raise "runtime error" if not launch name
 		return true
 	ensure
@@ -208,8 +209,10 @@ C_INCLUDE_PATH.unshift "/usr/X11R6/include"
 #----------------------------------------------------------------#
 Feature.add("gcc3","GNU C++ Compiler 3 (or 4)") {
 	status :always_check
-	action proc {DEFINES["GCC_VERSION"] =
-		begin  /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })[1]
+	action proc {
+		name = WIN ? "tmp\\#{$$}" : "tmp/#{$$}"
+		DEFINES["GCC_VERSION"] =
+		begin  /GCC_VERSION\s+(.*)/.match(File.popen(name,"r"){|f| f.read })[1]
 		rescue Exception; "3.666" # version number unknown, sorry.
 		end
 	}
