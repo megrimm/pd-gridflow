@@ -137,7 +137,9 @@ public:
 
 static inline const t_atom *convert (const t_atom2 &r, const t_atom **bogus) {return &r;}
 
-struct GridPrint : FObject {void redirect(ostream *);}; // partial redecl
+struct GridPrint : FObject { // partial redecl, désolé
+	\constructor (t_symbol *bidon) {post("bidon"); /*ouille*/} // gcc 4.5 error ?
+	void redirect(ostream *);};
 \class GFPrint : FObject {public:
 	BFObject *gp;
 	void redirect(ostream *dest) {
