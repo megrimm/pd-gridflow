@@ -72,9 +72,6 @@ unsigned char *imageStruct::allocate(size_t size) {
   return data; 
 }
 #endif
-#ifdef __WIN32__
-pixBlock::pixBlock() : newimage(0), newfilm(0) {}
-#endif
 struct TexCoord {
   TexCoord() : s(0.f), t(0.f) {}
   TexCoord(float s_, float t_) : s(s_), t(t_) {}
