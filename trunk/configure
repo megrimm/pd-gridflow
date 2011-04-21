@@ -413,6 +413,14 @@ Feature.add("fftw","FFTW (Fastest Fourier Transform in the West)") {
 	test proc {|f| f.c_test %`
 		#include <fftw3.h>
 		int main () {return 0;}`}}
+Feature.add("kinect","libfreenect") {
+	produces_o ["src/kinect.o"]
+	uses_so ["-lfreenect"]
+	test proc {c_test %`
+		#include <libfreenect/libfreenect.h>
+		int main () {return !freenect_set_led;}
+	`}
+}
 Feature.add("opengl","OpenGL/GLEW (for GEM support and [gf/gl])") {
 	produces_o ["src/opengl.o"]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
