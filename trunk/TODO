@@ -1,4 +1,7 @@
-Attr
+[9.14] libmpeg3 pas détecté
+[9.14] GridFlow Index crashes @ CIM
+[9.14] make sure docs are up-to-date
+[9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.Attr
 
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
@@ -7,13 +10,12 @@ Attr
 [ ] on which classes do we add an attr-outlet ?
 [ ] doc attributes: [doc_a] [doc_aa] ?
 [ ] support "get" in abstractions... automatically, through [args] ? or [attr] ?
-[ ] movie api : merge "height" & "width" attributes
+[ ] movie api : merge "height" & "width" attributes as "size" to be like the cam api
 [ ] int64, float64 should be rejected from NumberTypeE \attr and arguments when in --lite mode
 [ ] add ro attr support
 [ ] [#in] [#out]: autoclose is currently not considered as an attribute.
 [ ] [#out x11]: add 'rootsize' ro attr
 [ ] [gf/class_info]: add class-list, attr types, arg types, superclasses
-[ ] videodev,quicktime,etc: height,width vs size : standardise
 
 Args
 
@@ -32,50 +34,71 @@ Args
 [ ] --use-cpu not even used while detecting ?
 [ ] gridflow_gem*.pd_linux : missing error message on load (sometimes) because of sys_load_lib
 [ ] -lpng12 OSX (commit it)
+[ ] example from claude :
+    cd . && CFLAGS="-g -O2 -g -Wall -O2" CXXFLAGS="-g -O2 -g -Wall -O2" CPPFLAGS="" LDFLAGS="-Wl,-Bsymbolic-functions" \
+    /build/buildd/pd-lua-0.6/./configure --build=i486-linux-gnu --prefix=/usr --includedir="\${prefix}/include" \
+    --mandir="\${prefix}/share/man" --infodir="\${prefix}/share/info" --sysconfdir=/etc --localstatedir=/var \
+    --libexecdir="\${prefix}/lib/pd-lua" --disable-maintainer-mode --disable-dependency-tracking --disable-s...............
 
 GEM/PDP
 
-[ ] [#from_pix]: yuv in support, yuv out support
+[9.14] [#from_pix]: yuv in support, yuv out support
 [ ] [#from_pix, colorspace y] may have different contrast/brightness because of differences between the two definitions of Y
 [ ] when [#from_pix] uses [pix_rgba] or [pix_grey], there is one empty frame of size (0 0 4) instead of the 1st frame. why ?
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
-[ ] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
+[9.14] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that (?)
 
 #expr
 
 [ ] [#expr] local
-[ ] more [#expr] : int rint imodf modf drem fmod size sum Sum
+[9.14] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [#expr] grid support
 
 #fft
 
-[ ] [#fft] sign crash
-[ ] bug: see #fft*-test.pd
+[9.14] [#fft] sign crash
+[9.14] bug: see #fft*-test.pd
 
-GUI Objects
+GUI Objects (incl abstrs & print)
 
 [ ] better [#color]
 [ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
-[ ] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
-[ ] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
+[9.14] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
+[9.14] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] [#see] shm : http://wiki.tcl.tk/2999
+[ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST ?
+[ ] [#see] invalid command name when sending image in hidden subpatch or abs.
+[ ] matju->oli :
+    mais il y a quand même le problème qu'à l'affichage, on est censés voir   
+    «...» quand la suite des valeurs est pas montrée. c'est pas documenté
+    comme tel, mais on s'y attend parce que ça arrive la plupart du temps,    
+    mais je sais pas pourquoi des fois ça marche pas.
 
 Docs
 
 [ ] reform GFDP so that interactions with pd43 and l2ork become debuggable.
 [ ] document "f 1 2 3" as a shortcut grid literal
+[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
+[ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
+    donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
+[ ] put more stuff in doc/flow_classes/validation
+[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
 
 Unsorted
 
+[ ] [#camera] libv4l1 devrait devenir l'api par défaut
+[9.14] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
+[ ] qbert wav files are gzipped, not ready for use
 [ ] [gf/s2l] only produces symbols ?
 [ ] make [#redim] faster (see #io.x11-test)
 [ ] [#moment]'s help : see that [#swap] has a bug because of [#import]'s fuckups.
-[*] feedback_fractal.pd crashes for Patrice. (see small test file)
+[9.14] feedback_fractal.pd crashes for Patrice. (see small test file)
 [ ] [#rzero_space]
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
+[ ] [note]: use midi scale (chromatic)
 [ ] memalign still doesn't exist on OSX and Windows ?
 [ ] #background_model plante
 [ ] rajouter les nouvelles patchs de Roman
@@ -85,13 +108,9 @@ Unsorted
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because /abstractions/ gets saved in the path
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
-[ ] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
-[ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
-    donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
-[ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
+[9.14] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] accelerate [#outer ignore (0)]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
-[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
 [ ] alias numops so that they are more pd-like
 [ ] make a rounding [# *>>8] ?
@@ -108,7 +127,6 @@ Unsorted
 [ ] merge simple_mask.pd, color_detect.pd
 [ ] [#in]/[#out]: what happened to frame number in right outlet?
 [ ] [doc_cc] [doc_ii] [doc_oo] where $1 is a symbol don't reposition themselves properly.
-[ ] put more stuff in doc/flow_classes/validation
 [ ] put_at is lacking some checks for number-of-dims, causing segfault.
 [ ] strange problem with [#import] when input size doesn't match output size and object is recreated
 [ ] conversion from float to int is inconsistent: when to round and when to trunc?
@@ -121,7 +139,6 @@ Unsorted
 [ ] regularise Grid[a,b] vs Grid Dim[a,b] vs Dim[a,b] vs a grid of size (a,b) or (a b)... big mess
 [ ] distinguish messages vs atoms in this manual
     e.g. [doc_aa] would contain something like [doc_m] but wouldn't have [doc_m] as a subnode.
-[ ] [print], [gf/print] bugs : "(", ")", what else...?
 [ ] [gf/canvas_loadbang]: is it buggy? (see [doc_h] double-bang problem)
 [ ] [fps]: translate into pd: "publish if fps>0.001" (to remove outliers)
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
@@ -139,7 +156,6 @@ Unsorted
 [ ] visfn: if (self->vis & !flag) sys_vgui(".x%lx.c delete %s\n",long(c),self->rsym->s_name);
 [ ] add default values in docs (at the framework level)
 [ ] introduce automatic type conversion (en utilisant sand.pd comme exemple)
-[ ] [route] - 1[shunt] sends a message (bug)
 [ ] [#saturation] is a linear colorspace transform: therefore it could be accelerated just like [#hueshift] could.
 [ ] reduce [doc_h] clock again before release !
 [ ] uniformise name of 'color' [doc_accolade] vs 'bgcolor' [#many].
@@ -148,7 +164,6 @@ Unsorted
 [ ] big bug in rendering of [#type-gui, vertical] (leaves trace of horiz [#type-gui] behind) when not loaded directly from file.
 [ ] fix [#fastblur] wrong size bug
 [ ] change description of GridFlow on gridflow.ca and puredata.info
-[ ] gem: support greyscale conversions
 [ ] commandline version of shoot.pd craps out sometimes, eating all RAM...
 [ ] [#out grid]: cast et type...?
 [ ] go through all examples again, to see whether everything works.
@@ -156,7 +171,6 @@ Unsorted
 [ ] harmonise help files of [#in] [#out] [#io.*] and introduce help files for abstract 'standardised' interfaces such as
     'window', 'movie', 'image', 'camera', talking about common options... (re)move superfluous parts of [#in].
 [ ] PtrOutlet() : replace error() by RAISE() if you can
-[ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST
 [ ] error: [#store] inlet 0 method float: must have at least 1 dimension. ~GridOut(): dex=0 prod=1
 [ ] reintroduce numop1. split number.cxx into numop1.cxx and numop2.cxx. numop1 will be used in both [#] and [#expr].
 [*] merge << and pd_oprint please
@@ -179,7 +193,6 @@ Unsorted
 [ ] in case of some camera problems, [#camera] says OFF even when it's not closed.
 [ ] test accuracy of RGB2Y etc
 [ ] [#camera] [#cast] setting ? or not ?
-[ ] fix SDL modifiers
 [ ] automated loadtime patch rewriting in order to get rid of deprecated forms (?)
 [ ] DimConstraint could become a lot better than just the current CONSTRAINT() thing.
 [ ] try to fix value of [tsctime]. divide initial tsc test by a [realtime] result ? or just redefine [tsctime] as giving
@@ -268,7 +281,7 @@ Other
 [ ] re-test int64,float64 and make sure it works
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
-[ ] #import with zero size crashes?
+[9.14] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] "unsupported codec" bogus errors.
 [ ] some seeds aren't typechecked (which ones ?)
@@ -349,6 +362,8 @@ Input/Output
     input format/codec. since i'm not planning to waste time on integrating more input codecs in pf, the best alternative is
     to have mplayer (actually mencoder) or ffmpeg as a subprocess. the same will be done for recording later.»
 [ ] [#in v4l2] lacks framerate, tuner, norm, frequency.
+[ ] fix SDL modifiers
+[ ] colorspace rgba has no effect on [#in violoncelle.mov] (still 3 channels)
 
 Format
 [ ] remaining number type support in formats
@@ -383,6 +398,12 @@ WIN:
 [ ] color_correction.pd crash
 [ ] [#from_pix] et/ou [#out sdl] : crash en essayant d'aller chercher des vidéos avec [pix_video] ou [pix_film]
 [ ] x11 support
+[ ] <pob> matju: Je teste gridflow 9.13 avec pd vanilla 0.43 et j'ai un bug.
+    * oli444 est parti (Ping timeout: 276 seconds)
+    <pob> "entry point not found" The procedure entre point canvas_iemguis could not be located in the dynamic link libray pd.dll
+    <pob> matju: numéro d'erreur 1768
+[ ] <pob> matju: pour doc_link, il n'y a pas de message d'erreur. Si je vire le / pour avoir [symbol $1( seulement tout rentre dans l'ordre. J'ai vérifié ce qu'il se passe avec des [print]
+    <pob> matju: doc_link tel qu'il est dans l'archive ne fait rien.
 
 Peines Perdues:
 [ ] pd n'a pas d'inlets hybrides comme [tabwrite~]. ça empêche d'envelopper [tabwrite~] avec une abstraction, par exemple.
