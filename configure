@@ -420,7 +420,7 @@ Feature.add("kinect","libfreenect") {
 		#include <libfreenect/libfreenect.h>
 		int main () {return !freenect_set_led;}
 	`}
-}
+} if false
 Feature.add("opengl","OpenGL/GLEW (for GEM support and [gf/gl])") {
 	produces_o ["src/opengl.o"]
         uses_so LIBX11DIR+["-lGLEW"] if not WIN
