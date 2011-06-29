@@ -72,11 +72,12 @@ svn update
         ruby libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs
         libmpeg libmpeg-shlibs
 
-    In Debian (we tried lenny) or Ubuntu (we tried 8.04), do
-	apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev \
-		libaa1-dev libsdl1.2-dev libnetpbm10-dev libx11-dev libxt-dev g++ \
-		ruby nasm libglib1.2-dev libglew1.5-dev \
-		libx11-dev libxext-dev libxt-dev
+    In Debian (we tried lenny) or Ubuntu (we tried 8.04 ... 10.04), do
+	apt-get install libjpeg62-dev libpng12-dev libmpeg3-dev libquicktime-dev fftw3-dev
+	apt-get install libaa1-dev libsdl1.2-dev libx11-dev libxt-dev g++ ruby nasm
+	apt-get install libglew1.5-dev libx11-dev libxext-dev libxt-dev libv4l-dev libcv-dev
+	apt-get install libglib1.2-dev
+     or apt-get install libglib2.0-dev
 
     At least with Ubuntu you can add those, but haven't tried with Debian yet:
 	apt-get install libcv-dev libdc1394-13-dev
