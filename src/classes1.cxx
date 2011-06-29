@@ -467,7 +467,7 @@ GRID_INLET(1) {
 		else           r       = new Grid(in.dim,nt);
 		return;
 	}
-	// put_at ( ... )
+	// put_at
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	long nn=r->dim.n, na=put_at->dim[0], nb=in.dim.n;
@@ -498,7 +498,7 @@ GRID_INLET(1) {
 		COPY(((T *)*(r->next ? r->next.p : &*r.p))+in.dex, data, n);
 		return;
 	}
-	// put_at (...)
+	// put_at
 	int32 v[lsd];
 	int32 *x = wdex;
 	while (n) {
