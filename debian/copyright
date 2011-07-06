@@ -9,7 +9,7 @@ Upstream Author:
 
 Copyright: 
 
-    Copyright (C) 2001-2010 Mathieu Bouchard
+    Copyright (C) 2001-2011 Mathieu Bouchard
 
 License:
 
@@ -30,6 +30,7 @@ License:
 On Debian systems, the complete text of the GNU General
 Public License can be found in `/usr/share/common-licenses/GPL'.
 
-The Debian packaging is (C) 2008, Claude Heiland-Allen <claudiusmaximus@goto10.org> and
-is licensed under the GPL, see above.
+The Debian packaging is (C) 2008, Claude Heiland-Allen <claudiusmaximus@goto10.org>
+and (C) 2011, Mathieu Bouchard <matju@artengine.ca>
+and Patrick Boivin <pboivin@gmail.com> and is licensed under the GPL, see above.
 
