@@ -1,8 +1,8 @@
 Source: gridflow
 Section: graphics
 Priority: extra
-Maintainer: Claude Heiland-Allen <claudiusmaximus@goto10.org>
-Build-Depends: cdbs, debhelper (>= 7), patchutils, puredata, libjpeg62-dev, libpng12-dev, libmpeg3-dev, libquicktime-dev, fftw3-dev, libaa1-dev, libsdl1.2-dev, libnetpbm10-dev, libx11-dev, libxext-dev, libxt-dev, ruby, nasm, libdc1394-dev | libdc1394-22-dev, libcv-dev, libgl1-mesa-dev | libgl-dev, libglu1-mesa-dev | libglu-dev, libglew-dev | libglew1.5-dev, libv4l-dev
+Maintainer: Mathieu BOUCHARD <matju@artengine.ca>
+Build-Depends: cdbs, debhelper (>= 7), patchutils, puredata, libjpeg62-dev, libpng12-dev, libmpeg3-dev, libquicktime-dev, fftw3-dev, libaa1-dev, libsdl1.2-dev, libx11-dev, libxext-dev, libxt-dev, ruby, nasm, libdc1394-dev | libdc1394-22-dev, libcv-dev, libgl1-mesa-dev | libgl-dev, libglu1-mesa-dev | libglu-dev, libglew-dev | libglew1.5-dev, libv4l-dev
 Standards-Version: 3.8.4
 Homepage: http://gridflow.ca
 
@@ -18,5 +18,5 @@ Description: multi-dimensional dataflow processing for Pd
  A multi-dimensional dataflow processing library for PureData,
  specialized in image and video. Several kinds of data -- raster
  graphics in any number of channels, coordinate transforms, matrices,
- vectors -- may all be represented by Grids  (also known as
+ vectors -- may all be represented by Grids (also known as
  multi-dimensional arrays).
