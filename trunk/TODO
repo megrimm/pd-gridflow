@@ -1,7 +1,12 @@
+Nouveau
+
+[9.14] launchpad.net
 [9.14] libmpeg3 pas détecté
 [9.14] GridFlow Index crashes @ CIM
 [9.14] make sure docs are up-to-date
-[9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.Attr
+[9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
+
+Attr
 
 [ ] list-attrs
 [ ] multi-valued attributes in source_filter
@@ -445,6 +450,3 @@ puredata.info release listings
 <ClaudiusMaximus> have you seen "scratch" (squeak based) or "scheme bricks" (for fluxus) ?
 http://en.wikipedia.org/wiki/Cognitive_dimensions
 http://ioforms.org/
-
-note: alx a 10.6.5...
-
