@@ -154,3 +154,5 @@ distclean:: clean
 libGem.a: src/Gem.def
 	dlltool -D /c/Program\ Files/pd/extra/Gem/Gem.dll -d src/Gem.def -l libGem.a
 
+config.make: configure
+       ./configure
