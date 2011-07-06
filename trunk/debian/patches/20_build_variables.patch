@@ -1,0 +1,189 @@
+diff -Nur -x '*.orig' -x '*~' gridflow-9.12/build-tree/gridflow-9.12/configure gridflow-9.12.new/build-tree/gridflow-9.12/configure
+--- gridflow-9.12/configure	2010-10-08 18:25:58.000000000 +0100
++++ gridflow-9.12/configure	2010-10-08 20:35:07.000000000 +0100
+@@ -21,7 +21,7 @@
+ =end
+ 
+ require "rbconfig"
+-$CFLAGS  = ""
++$GFCFLAGS  = ""
+ include Config
+ OSX = !!( CONFIG["arch"] =~ /darwin/ )
+ WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
+@@ -156,7 +156,7 @@
+ 		sourcename = binname+".cpp"
+ 		File.open(sourcename,"w") {|f| f.puts code }
+ 		command = ["/usr/bin/env", $conf[:CC]] +
+-			$CFLAGS.split(/ /).reject{|x| x.length==0 }
++			$GFCFLAGS.split(/ /).reject{|x| x.length==0 }
+ 		if not launch2 log,*(command+options+[sourcename,
+ 			 "-o", binname, *link.uniq])
+ 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
+@@ -222,14 +222,14 @@
+ 	end
+ 	#and not $CPLUS_INCLUDE_PATH.include? bi
+ 	if not $C_INCLUDE_PATH.include? bi then
+-		$CFLAGS += " -I"+bi
++		$GFCFLAGS += " -I"+bi
+ 		$C_INCLUDE_PATH.unshift bi
+ 	end
+ end
+ prepend_path "/sw" if OSX
+ prepend_path "/usr/local"
+ prepend_path ENV["HOME"]
+-$CFLAGS += " -I."
++$GFCFLAGS += " -I."
+ $C_INCLUDE_PATH.unshift "."
+ 
+ for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+@@ -237,7 +237,7 @@
+ end
+ 
+ LOG.puts "-"*64
+-$CFLAGS += " -I/usr/X11R6/include"
++$GFCFLAGS += " -I/usr/X11R6/include"
+ $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
+ 
+ #----------------------------------------------------------------#
+@@ -600,7 +600,7 @@
+ 	when "--use-compiler"
+ 		$conf[:CC] = ARGV.shift
+ 	when "--use-compiler-option"
+-		$CFLAGS += " "+ARGV.shift
++		$GFCFLAGS += " "+ARGV.shift
+ 	when "--use-cpu"
+ 		$conf[:DEFINES][:CPU] = ARGV.shift
+ 	when "--verbose"
+@@ -610,9 +610,9 @@
+ end
+ 
+ if $debug
+-	$CFLAGS += " -O0 -fno-inline"
++	$GFCFLAGS += " -O0 -fno-inline"
+ else
+-	$CFLAGS += " -O3"
++	$GFCFLAGS += " -O3"
+ end
+ 
+ #--------------------------------#
+@@ -716,11 +716,11 @@
+ 
+ puts "generating ./config.make"
+ File.open("./config.make","w") {|f|
+-  $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
+-  $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
+-  $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
+-  $CFLAGS += " -DMACOSX" if OSX
+-  f.puts "CFLAGS += " + $CFLAGS
++  $GFCFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
++  $GFCFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
++  $GFCFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
++  $GFCFLAGS += " -DMACOSX" if OSX
++  f.puts "GFCFLAGS += " + $GFCFLAGS
+   f.puts "LDSOFLAGS += " + $conf[:LDSOFLAGS].flatten.join(" ")
+   for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
+   for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
+diff -Nur -x '*.orig' -x '*~' gridflow-9.12/build-tree/gridflow-9.12/Makefile gridflow-9.12.new/build-tree/gridflow-9.12/Makefile
+--- gridflow-9.12/Makefile	2010-10-08 20:35:07.000000000 +0100
++++ gridflow-9.12/Makefile	2010-10-08 20:36:45.000000000 +0100
+@@ -8,7 +8,7 @@
+ SHELL = /bin/sh
+ LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
+ RM = rm -f
+-CFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
++GFCFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
+ 
+ LDSOFLAGS += -lm $(LIBS)
+ OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/expr.o src/classes_gui.o \
+@@ -17,7 +17,7 @@
+ OS = $(shell uname -s | sed -e 's/^MINGW.*/nt/')
+ FILT = $(RUBY) -w src/source_filter.rb
+ ifeq ($(OS),Darwin)
+-  CFLAGS += -mmacosx-version-min=10.4 -fPIC
++  GFCFLAGS += -mmacosx-version-min=10.4 -fPIC
+   LDSOFLAGS += -headerpad_max_install_names
+   PDSUF = .pd_darwin
+   PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
+@@ -27,13 +27,13 @@
+     PDSUF = .dll
+     PDBUNDLEFLAGS = -shared
+     LDSOFLAGS += -L/c/Program\ Files/pd/bin -lpd
+-    #CFLAGS += -DDES_BUGS
+-    CFLAGS += -mms-bitfields
++    #GFCFLAGS += -DDES_BUGS
++    GFCFLAGS += -mms-bitfields
+   else
+     PDSUF = .pd_linux
+     PDBUNDLEFLAGS = -shared -rdynamic
+     ifeq ($(HAVE_GCC64),yes)
+-      CFLAGS += -fPIC
++      GFCFLAGS += -fPIC
+       PDBUNDLEFLAGS += -fPIC
+     endif
+   endif
+@@ -50,7 +50,7 @@
+ 
+ .SUFFIXES:
+ 
+-CFLAGS += -DPDSUF=\"$(PDSUF)\"
++GFCFLAGS += -DPDSUF=\"$(PDSUF)\"
+ 
+ #ifeq ($(PLAIN),1)
+ #endif
+@@ -62,21 +62,21 @@
+ %.m.fcs: %.m $(COMMON_DEPS2)
+ 	$(FILT) $< $@
+ %.o: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) -c $< -o $@
+ %.1.o: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) -DPASS1 -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) -DPASS1 -c $< -o $@
+ %.2.o: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) -DPASS2 -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) -DPASS2 -c $< -o $@
+ %.3.o: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) -DPASS3 -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) -DPASS3 -c $< -o $@
+ %.4.o: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) -DPASS4 -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) -DPASS4 -c $< -o $@
+ %.o: %.m.fcs $(COMMON_DEPS2)
+-	$(CXX) -xc++ $(CFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
++	$(CXX) -xc++ $(GFCFLAGS) $(SNAFU) -xobjective-c++ -c $< -o $@
+ %.s: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) $(CFLAGS) -S $< -o $@
++	$(CXX) $(GFCFLAGS) -S $< -o $@
+ %.e: %.cxx.fcs $(COMMON_DEPS2)
+-	$(CXX) $(CFLAGS) -E $< -o $@
++	$(CXX) $(GFCFLAGS) -E $< -o $@
+ 
+ .PRECIOUS: %.hxx.fcs %.cxx.fcs %.h.fcs %.c.fcs %.m.fcs
+ 
+@@ -90,19 +90,19 @@
+ 	$(CXX) -DPDSUF=\"$(PDSUF)\" $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -xnone $(OBJS2) $(OBJS) $(LDSOFLAGS) -o $@
+ 
+ gridflow_gem_loader$(PDSUF): src/gem_loader.cxx.fcs $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem_loader.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem_loader.cxx.fcs
+ gridflow_gem9292$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/gem.cxx.fcs
+ gridflow_gem9293$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93                 -o $@ -xc++ src/gem.cxx.fcs
+ gridflow_gem9393$(PDSUF):    src/gem.cxx.fcs        $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) -DGEMSTATE93 -DIMAGESTRUCT93 -o $@ -xc++ src/gem.cxx.fcs
+ gridflow_pdp$(PDSUF):        src/pdp.cxx.fcs        $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/pdp.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/pdp.cxx.fcs
+ gridflow_unicorn$(PDSUF):    src/unicorn.cxx.fcs    $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/unicorn.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/unicorn.cxx.fcs
+ gridflow_x11$(PDSUF):        src/x11.cxx.fcs        $(H) $(COMMON_DEPS)
+-	$(CXX) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/x11.cxx.fcs
++	$(CXX) $(GFCFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH)                              -o $@ -xc++ src/x11.cxx.fcs
+ 
+ beep::
+ 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
