@@ -1,0 +1,129 @@
+gridflow (9.12-1~ppa1~lucid1) lucid; urgency=low
+
+  * New upstream release.
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 08 Oct 2010 20:32:53 +0100
+
+gridflow (9.10-1~ppa1~lucid3) lucid; urgency=low
+
+  * Fix build system use of overridden variables.
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Mon, 09 Aug 2010 18:22:11 +0100
+
+gridflow (9.10-1~ppa1~lucid2) lucid; urgency=low
+
+  * Fix build system patch.
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Mon, 09 Aug 2010 17:44:31 +0100
+
+gridflow (9.10-1~ppa1~lucid1) lucid; urgency=low
+
+  * New upstream release
+  * Package using tarball.mk
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Mon, 09 Aug 2010 16:35:24 +0100
+
+gridflow (9.10~svn5698-1~ppa1~lucid3) lucid; urgency=low
+
+  * This package is a replacement for pd-gridflow
+  * Fix lintian libc warning
+  * Fix lintian debhelper version warning
+  * Fix lintian standards version warning
+  * Fix lintian watch file warning
+  * Fix lintian source format warning
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Tue, 22 Jun 2010 21:19:30 +0100
+
+gridflow (9.10~svn5698-1~ppa1~lucid2) lucid; urgency=low
+
+  * Depend on pd (provided by both puredata and pd-extended)
+  * Build with libv4l support
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Wed, 09 Jun 2010 18:25:42 +0100
+
+gridflow (9.10~svn5698-1~ppa1~lucid1) lucid; urgency=low
+
+  * New upstream svn export to fix multi-arch build problems
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Tue, 08 Jun 2010 17:53:00 +0100
+
+gridflow (9.9-1~ppa1~lucid2) lucid; urgency=low
+
+  * Fix 64bit build by not forcing Pentium
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Sun, 30 May 2010 00:07:13 +0100
+
+gridflow (9.9-1~ppa1~lucid1) lucid; urgency=low
+
+  * New upstream release
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Sat, 29 May 2010 23:27:36 +0100
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic8) karmic; urgency=low
+
+  * Workaround cdbs bug with tarball install
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Sat, 07 Nov 2009 00:09:41 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic7) karmic; urgency=low
+
+  * Workaround cdbs bug with tarball docs
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 23:25:23 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic6) karmic; urgency=low
+
+  * Fix build system variable passing
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 22:58:12 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic5) karmic; urgency=low
+
+  * Fix build system invokation (try 3)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 19:45:28 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic4) karmic; urgency=low
+
+  * Fix build system invokation (try 2)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 17:55:20 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic3) karmic; urgency=low
+
+  * Fix build system invokation (gridflow's configure is not autotools compatible)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 17:18:06 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic2) karmic; urgency=low
+
+  * Fix mis-dependency on libglib1.2-dev
+  * Fix control file to Ubuntu specs
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 16:56:38 +0000
+
+pd-gridflow (0.9.6-1ubuntu1~ppa~karmic1) karmic; urgency=low
+
+  * New upstream release
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 06 Nov 2009 16:21:25 +0000
+
+pd-gridflow (0.9.4-2) testing; urgency=low
+
+  * Build with OpenCV support
+  * Build with Gem support (Closes: #530)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Fri, 10 Oct 2008 00:02:54 +0100
+
+pd-gridflow (0.9.4-1) testing; urgency=low
+
+  * New upstream release (Closes: #602)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Mon, 11 Aug 2008 19:11:55 +0100
+
+pd-gridflow (0.9.3.svn20080617-1) testing; urgency=low
+
+  * Initial release (Closes: #353)
+
+ -- Claude Heiland-Allen <claudiusmaximus@goto10.org>  Mon, 16 Jun 2008 14:06:48 +0100
+
