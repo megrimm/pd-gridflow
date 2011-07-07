@@ -1,10 +1,10 @@
 #N canvas 596 0 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 0 789 doc_f;
+#X obj 0 889 doc_f;
 #X obj 278 87 s pd;
 #X msg 278 68 dsp 1;
 #X obj 278 49 loadbang;
-#X obj 3 769 doc_also;
+#X obj 3 869 doc_also;
 #X obj 160 215 #cast f;
 #X obj 160 30 bng 15 250 50 0 empty empty empty 17 7 0 10 -204786 -1
 -1;
@@ -12,22 +12,22 @@
 #X obj 160 104 #t;
 #X obj 160 85 # ^;
 #X floatatom 185 86 5 0 0 0 - - -;
-#X obj 3 593 doc_i 1;
-#X obj 14 623 doc_ii 0;
-#X obj 3 681 doc_o any;
-#X obj 14 711 doc_oo any;
-#X obj 97 711 doc_m oany <signal>;
+#X obj 3 606 doc_i 1;
+#X obj 14 636 doc_ii 0;
+#X obj 3 781 doc_o any;
+#X obj 14 811 doc_oo any;
+#X obj 97 811 doc_m oany <signal>;
 #X obj 14 404 doc_cc 0;
 #X obj 97 404 doc_m c0 float;
 #X text 232 404 number of output channels;
-#X obj 97 623 doc_m i0 grid;
-#X text 232 623 a grid of size (samples \, channels). any number of
+#X obj 97 636 doc_m i0 grid;
+#X text 232 636 a grid of size (samples \, channels). any number of
 samples may be given \, but the number of channels must be the same
 as the number of channels specified in the constructor.;
-#X text 232 711 the signal of outlet number n is made from the column
+#X text 232 811 the signal of outlet number n is made from the column
 number n of all the grids received \, end to end. when there are no
 more rows to play \, the output will be zero.;
-#X obj 103 769 #in~;
+#X obj 103 869 #in~;
 #X obj 198 343 dac~;
 #X obj 26 141 metro;
 #X msg 53 59 16384;
@@ -36,7 +36,7 @@ more rows to play \, the output will be zero.;
 #X obj 53 40 loadbang;
 #X floatatom 3 105 8 0 0 0 - - -;
 #X obj 26 160 s \$0-a;
-#X obj 26 124 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 1
+#X obj 26 124 tgl 15 0 empty empty empty 17 7 0 10 -204786 -1 -1 0
 1;
 #X obj 160 47 t b b;
 #X obj 204 47 random 128;
@@ -53,23 +53,30 @@ of size (16384 2) that is turned into two signals.;
 #X obj 3 374 doc_c 2;
 #X obj 14 426 doc_cc 1;
 #X obj 97 426 doc_m c1 float;
-#X text 232 461 this has to be big enough so that it doesn't get empty
+#X text 232 474 this has to be big enough so that it doesn't get empty
 when you are sending grids that are supposed to be connected \, else
 it will cause a kind of dropout \, which is not a dropout of the whole
 pd \, just a dropout of [#to~] \, because [#to~] plays zeroes when
 it doesn't have anything to play.;
-#X text 232 426 number of samples (per channel) to keep in advance.
-this has to be a power of two.;
-#X obj 139 769 #from~;
-#X text 232 535 default is 16384 (thus it takes 64k per channel. note
+#X obj 139 869 #from~;
+#X text 232 548 default is 16384 (thus it takes 64k per channel. note
 that GridFlow's own buffers don't take double the RAM when in 64-bit
 mode \, unlike [table]);
 #X obj 160 147 # >> (3 6);
 #X obj 160 258 #to~ 2;
+#X text 232 426 number of samples (per channel) to keep in advance.
+this has to be a power of two (for example 1024 \, 2048 \, 4096 \,
+etc \, just like possible blocksizes of pd audio).;
+#X text 232 684 a warning will be issued whenever there is a buffer
+overflow. In that case \, all exceeding samples will be dropped. You
+will need to retune your [metro] and/or grid size in order to match
+audio rate \, or you will have to increase the size of [#to~]'s buffer
+to account for grid size and for any irregularities in the timing of
+the grids.;
 #X connect 3 0 2 0;
 #X connect 4 0 3 0;
 #X connect 5 1 23 0;
-#X connect 5 1 49 0;
+#X connect 5 1 48 0;
 #X connect 6 0 39 0;
 #X connect 7 0 33 0;
 #X connect 8 0 10 0;
@@ -80,6 +87,7 @@ mode \, unlike [table]);
 #X connect 16 1 22 0;
 #X connect 18 1 19 0;
 #X connect 20 1 21 0;
+#X connect 20 1 53 0;
 #X connect 25 0 31 0;
 #X connect 25 0 33 0;
 #X connect 26 0 27 0;
@@ -93,14 +101,14 @@ mode \, unlike [table]);
 #X connect 35 0 24 0;
 #X connect 36 0 24 1;
 #X connect 37 0 6 0;
-#X connect 38 0 51 0;
-#X connect 39 0 52 0;
+#X connect 38 0 50 0;
+#X connect 39 0 51 0;
 #X connect 40 0 37 0;
 #X connect 42 0 36 0;
 #X connect 43 0 35 0;
-#X connect 46 1 48 0;
+#X connect 46 1 52 0;
 #X connect 46 1 47 0;
-#X connect 46 1 50 0;
-#X connect 51 0 40 0;
-#X connect 52 0 43 0;
-#X connect 52 1 42 0;
+#X connect 46 1 49 0;
+#X connect 50 0 40 0;
+#X connect 51 0 43 0;
+#X connect 51 1 42 0;

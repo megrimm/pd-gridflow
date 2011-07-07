@@ -1,70 +1,84 @@
-#N canvas 625 74 632 642 10;
+#N canvas 749 158 632 642 10;
 #X obj 0 0 doc_h;
-#X obj 3 818 doc_also;
-#X obj 0 838 doc_f;
-#X obj 14 505 doc_cc 0;
-#X obj 97 505 doc_m c0 float;
-#X text 232 505 number of channels (default: 1);
-#X obj 3 655 doc_i 1..;
-#X obj 14 685 doc_ii any;
-#X obj 97 685 doc_m iany <signal>;
-#X text 232 685 signal in inlet number N will be column number N in
+#X obj 3 891 doc_also;
+#X obj 0 911 doc_f;
+#X obj 14 578 doc_cc 0;
+#X obj 97 578 doc_m c0 float;
+#X text 232 578 number of channels (default: 1);
+#X obj 3 728 doc_i 1..;
+#X obj 14 758 doc_ii any;
+#X obj 97 758 doc_m iany <signal>;
+#X text 232 758 signal in inlet number N will be column number N in
 the output grid.;
-#X obj 3 730 doc_o 1;
-#X obj 14 760 doc_oo 0;
-#X obj 97 760 doc_m o0 grid;
-#X text 232 760 a grid of size (blocksize \, channels) where blocksize
+#X obj 3 803 doc_o 1;
+#X obj 14 833 doc_oo 0;
+#X obj 97 833 doc_m o0 grid;
+#X text 232 833 a grid of size (blocksize \, channels) where blocksize
 is the current blocksize as defined by the [block~] currently active
 in this context. (default blocksize is 64);
-#X obj 103 818 #to~;
-#X obj 139 818 #tabread;
-#X obj 433 177 #from~ 6;
-#X obj 433 197 # * (f 1 0.9 0.8 0.7 0.6 0.5);
-#X obj 433 217 #to~ 6 \, \, \, \, \, \,;
-#X obj 432 50 osc~ 100;
-#X obj 459 255 *~ 0.05;
-#X obj 459 285 dac~;
-#X text 15 38 Turn several signals into a sequence of multichannel
-grids.;
-#X obj 18 61 osc~ 43;
-#X obj 442 70 osc~ 250;
-#X obj 452 90 osc~ 350;
-#X obj 461 111 osc~ 450;
-#X obj 470 131 osc~ 550;
-#X obj 479 151 osc~ 650;
-#X obj 3 475 doc_c 2;
-#X obj 14 527 doc_cc 1;
-#X obj 97 527 doc_m c1 float;
-#X text 232 527 capacity of the buffer. this either 0 or a power of
+#X obj 103 891 #to~;
+#X obj 139 891 #tabread;
+#X obj 423 167 #from~ 6;
+#X obj 423 187 # * (f 1 0.9 0.8 0.7 0.6 0.5);
+#X obj 423 207 #to~ 6 \, \, \, \, \, \,;
+#X obj 422 40 osc~ 100;
+#X obj 449 245 *~ 0.05;
+#X obj 449 305 dac~;
+#X text 5 28 Turn several signals into a sequence of multichannel grids.
+;
+#X obj 8 51 osc~ 43;
+#X obj 432 60 osc~ 250;
+#X obj 442 80 osc~ 350;
+#X obj 451 101 osc~ 450;
+#X obj 460 121 osc~ 550;
+#X obj 469 141 osc~ 650;
+#X obj 3 548 doc_c 2;
+#X obj 14 600 doc_cc 1;
+#X obj 97 600 doc_m c1 float;
+#X text 232 600 capacity of the buffer. this either 0 or a power of
 two. (default: 0);
-#X text 232 562 when it's zero \, the number of samples per grid (for
+#X text 232 635 when it's zero \, the number of samples per grid (for
 each channel) is the current blocksize of the canvas.;
-#X obj 18 388 #see;
-#X obj 155 121 #cast f;
-#X obj 155 83 loadbang;
-#X obj 18 233 #transpose 1 2;
-#X obj 18 157 #outer <;
-#X obj 18 252 #transpose;
-#X obj 18 331 #inner (4 3 # 170 0 0 0 170 0 0 0 170 85 85 85);
-#X obj 42 80 osc~ 85;
-#X obj 68 99 osc~ 170;
-#X obj 93 118 osc~ 128;
-#X obj 18 195 #cast;
-#X obj 18 369 # >> 8;
-#X obj 18 176 # * (f 256);
-#X obj 155 102 #for -32 32;
-#X obj 18 214 #downscale_by (8 1) smoothly;
-#X obj 18 138 #from~ 4 2048;
-#X obj 18 271 shunt;
-#X obj 54 272 tgl 15 0 empty empty empty 17 7 0 10 -261682 -1 -1 0
+#X obj 8 468 #see;
+#X obj 128 256 #cast f;
+#X obj 128 218 loadbang;
+#X obj 8 313 #transpose 1 2;
+#X obj 8 237 #outer <;
+#X obj 8 332 #transpose;
+#X obj 8 411 #inner (4 3 # 170 0 0 0 170 0 0 0 170 85 85 85);
+#X obj 32 70 osc~ 85;
+#X obj 58 89 osc~ 170;
+#X obj 83 108 osc~ 128;
+#X obj 8 275 #cast;
+#X obj 8 449 # >> 8;
+#X obj 8 256 # * (f 256);
+#X obj 128 237 #for -32 32;
+#X obj 8 294 #downscale_by (8 1) smoothly;
+#X obj 8 128 #from~ 4 2048;
+#X obj 8 351 shunt;
+#X obj 44 352 tgl 15 0 empty empty empty 17 7 0 10 -261682 -1 -1 0
 1;
-#X obj 45 309 # max;
-#X obj 45 290 #convolve (8 1 # -1 0 0 0 0 0 0 1);
-#X obj 155 140 # / (f 24);
-#X obj 18 350 #fade 3;
-#X text 232 597 when it's nonzero \, the number of samples can be higher
+#X obj 35 389 # max;
+#X obj 35 370 #convolve (8 1 # -1 0 0 0 0 0 0 1);
+#X obj 128 275 # / (f 24);
+#X obj 8 430 #fade 3;
+#X text 232 670 when it's nonzero \, the number of samples can be higher
 (a power of two multiple). but don't make this number less than the
 canvas' blocksize !);
+#X obj 35 168 #inner (4 4 f # 1 1 0 0 0 1 1 0 0 0 1 1 1 0 0 1);
+#X obj 8 148 shunt;
+#X obj 45 149 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X text 63 147 fun mix;
+#X obj 481 280 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+1;
+#X obj 35 188 # * (f 0.5);
+#X obj 8 188 t a;
+#X obj 450 279 *~ 0;
+#X text 271 476 to get correct sound when running both of those examples
+at once \, you will need a sufficiently long audio delay (-audiobuf)
+because the image generator and the sound are running in the same thread.
+;
 #X connect 1 1 14 0;
 #X connect 1 1 15 0;
 #X connect 4 1 5 0;
@@ -79,8 +93,7 @@ canvas' blocksize !);
 #X connect 18 4 20 0;
 #X connect 18 5 20 0;
 #X connect 19 0 16 0;
-#X connect 20 0 21 1;
-#X connect 20 0 21 0;
+#X connect 20 0 64 0;
 #X connect 23 0 49 0;
 #X connect 24 0 16 1;
 #X connect 25 0 16 2;
@@ -104,7 +117,7 @@ canvas' blocksize !);
 #X connect 46 0 44 0;
 #X connect 47 0 35 0;
 #X connect 48 0 37 0;
-#X connect 49 0 38 0;
+#X connect 49 0 58 0;
 #X connect 50 0 40 0;
 #X connect 50 1 53 0;
 #X connect 51 0 50 1;
@@ -112,3 +125,12 @@ canvas' blocksize !);
 #X connect 53 0 52 0;
 #X connect 54 0 38 1;
 #X connect 55 0 45 0;
+#X connect 57 0 62 0;
+#X connect 58 0 63 0;
+#X connect 58 1 57 0;
+#X connect 59 0 58 1;
+#X connect 61 0 64 1;
+#X connect 62 0 63 0;
+#X connect 63 0 38 0;
+#X connect 64 0 21 0;
+#X connect 64 0 21 1;
