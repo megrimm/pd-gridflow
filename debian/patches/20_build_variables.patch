@@ -1,85 +1,12 @@
 diff -Nur -x '*.orig' -x '*~' gridflow-9.12/build-tree/gridflow-9.12/configure gridflow-9.12.new/build-tree/gridflow-9.12/configure
 --- gridflow-9.12/configure	2010-10-08 18:25:58.000000000 +0100
 +++ gridflow-9.12/configure	2010-10-08 20:35:07.000000000 +0100
-@@ -21,7 +21,7 @@
- =end
- 
- require "rbconfig"
--$CFLAGS  = ""
-+$GFCFLAGS  = ""
- include Config
- OSX = !!( CONFIG["arch"] =~ /darwin/ )
- WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
-@@ -156,7 +156,7 @@
- 		sourcename = binname+".cpp"
- 		File.open(sourcename,"w") {|f| f.puts code }
- 		command = ["/usr/bin/env", $conf[:CC]] +
--			$CFLAGS.split(/ /).reject{|x| x.length==0 }
-+			$GFCFLAGS.split(/ /).reject{|x| x.length==0 }
- 		if not launch2 log,*(command+options+[sourcename,
- 			 "-o", binname, *link.uniq])
- 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
-@@ -222,14 +222,14 @@
- 	end
- 	#and not $CPLUS_INCLUDE_PATH.include? bi
- 	if not $C_INCLUDE_PATH.include? bi then
--		$CFLAGS += " -I"+bi
-+		$GFCFLAGS += " -I"+bi
- 		$C_INCLUDE_PATH.unshift bi
- 	end
- end
- prepend_path "/sw" if OSX
- prepend_path "/usr/local"
- prepend_path ENV["HOME"]
--$CFLAGS += " -I."
-+$GFCFLAGS += " -I."
- $C_INCLUDE_PATH.unshift "."
- 
- for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
-@@ -237,7 +237,7 @@
- end
- 
- LOG.puts "-"*64
--$CFLAGS += " -I/usr/X11R6/include"
-+$GFCFLAGS += " -I/usr/X11R6/include"
- $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
- 
- #----------------------------------------------------------------#
-@@ -600,7 +600,7 @@
- 	when "--use-compiler"
- 		$conf[:CC] = ARGV.shift
- 	when "--use-compiler-option"
--		$CFLAGS += " "+ARGV.shift
-+		$GFCFLAGS += " "+ARGV.shift
- 	when "--use-cpu"
- 		$conf[:DEFINES][:CPU] = ARGV.shift
- 	when "--verbose"
-@@ -610,9 +610,9 @@
- end
- 
- if $debug
--	$CFLAGS += " -O0 -fno-inline"
-+	$GFCFLAGS += " -O0 -fno-inline"
- else
--	$CFLAGS += " -O3"
-+	$GFCFLAGS += " -O3"
- end
- 
- #--------------------------------#
 @@ -716,11 +716,11 @@
  
  puts "generating ./config.make"
  File.open("./config.make","w") {|f|
--  $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
--  $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
--  $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
--  $CFLAGS += " -DMACOSX" if OSX
 -  f.puts "CFLAGS += " + $CFLAGS
-+  $GFCFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
-+  $GFCFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
-+  $GFCFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
-+  $GFCFLAGS += " -DMACOSX" if OSX
-+  f.puts "GFCFLAGS += " + $GFCFLAGS
++  f.puts "GFCFLAGS += " + $CFLAGS
    f.puts "LDSOFLAGS += " + $conf[:LDSOFLAGS].flatten.join(" ")
    for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
    for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
