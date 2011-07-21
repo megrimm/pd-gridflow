@@ -75,7 +75,10 @@ module Future; end
 class Feature
 	$features = []
 	def self.add(*a,&b) $features << Feature.new(*a,&b) end
-	def initialize(tag,name,&b) tag(tag).name(name); instance_eval(&b) end
+	def initialize(tag,name,&b)
+		uses_so []; tag tag; name name
+		instance_eval(&b)
+	end
 	def self.attr2(sym,&b)
 		eval "def #{sym}(*args,&b)
 			raise args.inspect if args.length>1
@@ -99,12 +102,12 @@ class Feature
 		end
 	end
 	def c_test code, link=nil, flags=[]
-		link = (uses_so||[]).dup if not link
+		link = uses_so.dup if not link
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
 		uses_h.each {|h|
 			h[0..0] == "$" or find_h h or
-				/framework/ =~ (uses_so||[]).join(" ") or
+				/framework/ =~ uses_so.join(" ") or
 				raise "where is #{h} ?"
 		} if uses_h
 		ENV["LD_LIBRARY_PATH"] = ldlpath ? "./tmp:#{ldlpath}" : "./tmp"
@@ -164,7 +167,7 @@ class Feature
 		FEATURES[tag] = self
 		category = "main"
 		category = produces_pdlib[0] if produces_pdlib
-		(LDSO[category]||=[]).concat(uses_so||[]).uniq!
+		(LDSO[category]||=[]).concat(uses_so).uniq!
 		OBJS .concat(produces_o    ||[])
 		PDLIB.concat(produces_pdlib||[]).uniq!
 		true
@@ -518,7 +521,7 @@ File.open("./config.make","w") {|f|
     CFLAGS << " -march=$(CPU)"
   end
   CFLAGS << " -DMACOSX" if OSX
-  f.puts "CFLAGS += " + CFLAGS
+  f.puts "GFCFLAGS += " + CFLAGS
   f.puts "LDSOFLAGS += " + LDSOFLAGS.flatten.join(" ")
   for k,v in DEFINES do f.puts "#{k}=#{v}" end
   f.puts "CXX = "+CXX
