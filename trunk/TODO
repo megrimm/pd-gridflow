@@ -1,7 +1,6 @@
 Nouveau
 
 [9.14] launchpad.net
-[9.14] libmpeg3 pas détecté
 [9.14] GridFlow Index crashes @ CIM
 [9.14] make sure docs are up-to-date
 [9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
@@ -442,6 +441,24 @@ make binaries (remember to use : otool -L gridflow.pd_darwin)
 pd-announce mlist : post release
 freshmeat if anyone cares (just restored my account but didn't use it)
 puredata.info release listings
+
+How to make a test (preview) release of GridFlow :
+
+mount -t tmpfs -o size=1024M tmpfs /var/cache/pbuilder/build
+dir=gridflow-9.14; tag=gridflow_9_14; deb=gridflow_9.14-1; test=1; export APTCACHEHARDLINK=no
+svn export svn+ssh://gridflow.ca/home/svn/gridflow/trunk $dir
+chmod -R go=u-w $dir && (cd $dir && dch -i && debuild -S -sa)
+sudo /usr/bin/time pbuilder build $deb~ppa1~lucid1.dsc
+sudo /usr/bin/time cowbuilder --build $deb~ppa1~lucid1.dsc
+
+note:
+  https://wiki.ubuntu.com/PackagingGuide
+  https://wiki.ubuntu.com/PackagingGuide/PackagingOverview
+  https://wiki.ubuntu.com/PbuilderHowto
+  http://wiki.debian.org/cowbuilder
+  http://www.netfort.gr.jp/~dancer/software/pbuilder-doc/pbuilder-doc.html
+  https://help.launchpad.net/Packaging/PPA
+  https://wiki.ubuntu.com/PackagingGuide/HandsOn
 
 ----------------------------------------------------------------------------------------------------------------
 

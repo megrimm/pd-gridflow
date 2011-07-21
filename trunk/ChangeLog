@@ -21,6 +21,8 @@ version 9.14 (2011.06.XX):
  * [shunt]: reject non-float messages in right inlet
  * major update of ./configure script
  * major update of the tests folder
+ * created LaunchPad team https://launchpad.net/~gridflow
+ * added debian folder in source release, for making deb packages
 
 version 9.13 (2011.02.08):
 
