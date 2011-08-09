@@ -296,7 +296,7 @@ struct t_atom2 : t_atom {
 
 	template <class T> t_atom2 &operator = (T value) {set_atom(this,value); return *this;};
 	template <class T> t_atom2             (T value) {set_atom(this,value);              };
-	t_atom2 () {}
+	t_atom2 ()                            {a_type = A_NULL; a_gpointer = 0;}
 	t_atom2 (t_atomtype t, int i)         {a_type = t; a_index    = i;}
 	t_atom2 (t_atomtype t, float f)       {a_type = t; a_float    = f;}
 	t_atom2 (t_atomtype t, t_symbol *s)   {a_type = t; a_symbol   = s;}
