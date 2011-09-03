@@ -6,7 +6,7 @@
 #X obj 164 41 loadbang;
 #X obj 146 42 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 167 475 dac~;
+#X obj 167 508 dac~;
 #X obj 329 58 +;
 #X msg 329 39 1;
 #X obj 361 39 % 365;
@@ -87,6 +87,7 @@
 #X obj 429 422 #downscale_by (1 4) smoothly;
 #X obj 429 297 / 60;
 #X obj 429 335 * 10;
+#X obj 167 470 clip~ -1 1;
 #X connect 0 0 23 0;
 #X connect 1 0 30 0;
 #X connect 2 0 63 0;
@@ -137,8 +138,7 @@
 #X connect 38 0 44 0;
 #X connect 39 0 35 0;
 #X connect 41 0 69 0;
-#X connect 42 0 6 0;
-#X connect 42 0 6 1;
+#X connect 42 0 77 0;
 #X connect 43 0 44 1;
 #X connect 44 0 37 1;
 #X connect 45 0 18 1;
@@ -166,3 +166,5 @@
 #X connect 74 0 66 0;
 #X connect 75 0 29 0;
 #X connect 76 0 41 0;
+#X connect 77 0 6 0;
+#X connect 77 0 6 1;
