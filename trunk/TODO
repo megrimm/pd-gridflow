@@ -1,9 +1,32 @@
 Nouveau
 
+[ ] option de multiplicateur d'alpha dans [#draw_image]
+
+[ ] plantage gol_fractal_6.pd Erreur de Segmentation quand je change [# atan] en [# atan2]
+
+[ ] Check that -funroll-loops is not implied by -O3 and that it makes a difference for us (?)
+
+[ ] Once I thought that with some commutativity you could speed things up like
+this :
+
+(f0+f1+f2+f3)+(f4+f5+f6+f7)+...
+
+can be rearranged as :
+  
+(f0+f4+...)+(f1+f5+...)+(f2+f6+...)+(f3+f7+...)
+  
+But I don't remember whether I tried it or not.
+
+
+[ ] typo [#out window here override_redirectrrrrrrrrrrr] does not print any error
 [9.14] launchpad.net
 [9.14] GridFlow Index crashes @ CIM
 [9.14] make sure docs are up-to-date
 [9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
+[ ] make libv4l1 the default API
+[ ] write warning about v4l2 in [#camera]
+[ ] deal with the lack of videodev.h in recent kernels
+[ ] use 'restrict' keyword ? will it help ?
 
 Attr
 
@@ -58,6 +81,7 @@ GEM/PDP
 [ ] [#expr] local
 [9.14] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [#expr] grid support
+[ ] add floor, ceiling, bessel, ...
 
 #fft
 
@@ -110,7 +134,7 @@ Unsorted
 [ ] error: [???] inlet 0 method grid: grid inlet aborting from [(some bogus location)] at 0/48 because of [#border (1 2) (3 4)]
 [ ] [#import] does the same rounding bullshit again, when we want a float grid
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
-[ ] should clean the -path thing because /abstractions/ gets saved in the path
+[ ] should clean the -path thing because there are gridflow version conflicts involving auto -path entries that have been saved in ~/.pdsettings
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
 [9.14] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] accelerate [#outer ignore (0)]
@@ -444,7 +468,7 @@ puredata.info release listings
 
 How to make a test (preview) release of GridFlow :
 
-mount -t tmpfs -o size=1024M tmpfs /var/cache/pbuilder/build
+# mount -t tmpfs -o size=1024M tmpfs /var/cache/pbuilder/build
 dir=gridflow-9.14; tag=gridflow_9_14; deb=gridflow_9.14-1; test=1; export APTCACHEHARDLINK=no
 svn export svn+ssh://gridflow.ca/home/svn/gridflow/trunk $dir
 chmod -R go=u-w $dir && (cd $dir && dch -i && debuild -S -sa)
