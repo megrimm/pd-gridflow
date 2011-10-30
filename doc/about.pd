@@ -1,15 +1,13 @@
-#N canvas 426 42 634 496 10;
-#X obj 0 476 doc_f;
-#X text 96 244 Development of GridFlow 0.3.0 - 0.5.0 was made possible
+#N canvas 426 42 647 626 10;
+#X obj 0 606 doc_f;
+#X text 96 344 Development of GridFlow 0.3.0 - 0.5.0 was made possible
 in part by a grant from the HRDC (DRHC) to Artengine.;
-#X text 96 275 Development of... much of GridFlow 0.8.x and 0.9.0 was
+#X text 96 375 Development of... much of GridFlow 0.8.x and 0.9.0 was
 made possible in part by a grant from the CSHRC.;
-#X text 96 335 Development of GridFlow 0.9.0 was made possible in part
+#X text 96 435 Development of GridFlow 0.9.0 was made possible in part
 by Alexandre Castonguay's cooking.;
 #X text 96 48 C++ Programming : Mathieu Bouchard;
 #X text 96 65 Pd Programming (abstractions) : Mathieu Bouchard;
-#X text 96 305 Development of [#from_pix] and [#to_pix] was sponsored
-by Videographe PARC;
 #X text 96 136 OSX porting : Mathieu Bouchard \, Patrick Boivin.;
 #X text 119 150 (and formerly \, James Tittle \, Adam Lindsay \, etc.)
 ;
@@ -17,15 +15,23 @@ by Videographe PARC;
 Stephanie Brodeur \, Alexandre Castonguay;
 #X text 97 169 Win32 porting : Mathieu Bouchard;
 #X obj 3 27 doc_section Credits;
-#X obj 3 191 doc_section Sponsors;
-#X text 96 82 Current Pd Help Files : Mathieu Bouchard \, Patrick Boivin
-;
-#X text 96 364 Development of GridFlow 0.9.3 and later has used Videographe
-as a meeting place. Since 0.9.6 \, the room is called Département
-de Diagrammologie Algorithmique.;
-#X text 96 211 http://gridflow.ca is hosted by Artengine. this also
+#X obj 3 291 doc_section Sponsors;
+#X text 96 311 http://gridflow.ca is hosted by Artengine. this also
 includes the mailing lists and the SVN.;
 #X obj 0 0 doc_demo;
-#X obj 3 415 doc_section Links;
-#X text 96 436 http://gridflow.ca/;
-#X text 96 454 irc.freenode.net /join #dataflow;
+#X obj 3 545 doc_section Links;
+#X text 96 566 http://gridflow.ca/;
+#X text 96 584 irc.freenode.net /join #dataflow;
+#X text 96 405 Development of [#from_pix] and [#to_pix] was sponsored
+by Videographe PARC in 2006;
+#X text 96 82 Current Pd Help Files : Mathieu Bouchard;
+#X text 97 186 Ubuntu packaging : Patrick Boivin \, Claude Heiland-Allen
+\, Mathieu Bouchard;
+#X text 97 225 This list is an approximation : in practice \, there
+were many minor contributions by various people in ways not easily
+listable \, most often by Patrick Boivin \, Claude Heiland-Allen \,
+Alexandre Castonguay and Patrice Colet.;
+#X text 96 464 Development of GridFlow 0.9.3 thru 9.11 has used Vidéographe
+as a meeting place. (oct.2009 - sep.2010);
+#X text 96 494 Almost all of the rest of the development was done as
+plain volunteering.;
