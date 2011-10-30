@@ -372,7 +372,7 @@ GRID_INLET(0) {
 \def 0 setcursor (int c) { [NSCursor unhide]; }
 
 \end class FormatQuartz {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; // this is ostensibly not being used... where's the release ?
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
