@@ -1,4 +1,4 @@
-#N canvas 675 0 632 550 10;
+#N canvas 675 0 632 557 10;
 #X text 153 55 transforms a dim[a... \, b] grid into a dim[a... \,
 b-1] grid. there is a projection plane perpendicular to the last axis
 and whose position is given by the creation argument. each vector's
@@ -12,10 +12,10 @@ of each vector is dropped;
 #X obj 30 190 #print;
 #X obj 79 182 #print;
 #X obj 79 163 #perspective;
-#X obj 103 501 #redim;
-#X obj 151 501 #ravel;
+#X obj 103 503 #redim;
+#X obj 151 503 #ravel;
 #X obj 0 0 doc_h;
-#X obj 3 501 doc_also;
+#X obj 3 503 doc_also;
 #X obj 3 217 doc_c 1;
 #X obj 3 279 doc_i 1;
 #X obj 3 441 doc_o 1;
@@ -33,8 +33,11 @@ of each vector is dropped.;
 Also useful for converting homogeneous 3-D into regular 3-D \, as homogeneous
 3-D is really just regular 4-D...(!);
 #X obj 97 247 doc_m c0 float;
-#X text 232 247 depth;
-#X obj 0 521 doc_f;
+#X obj 0 523 doc_f;
+#X text 153 128 this means that (x \, y \, z) becomes (depth*x/z \,
+depth*y/z) \, and (x \, y \, z \, h) becomes (depth*x/h \, depth*y/h
+\, depth*z/h).;
+#X text 232 247 depth (default: 256);
 #X connect 1 0 6 0;
 #X connect 1 0 8 0;
 #X connect 2 0 3 0;
@@ -46,4 +49,4 @@ Also useful for converting homogeneous 3-D into regular 3-D \, as homogeneous
 #X connect 12 1 10 0;
 #X connect 19 1 21 0;
 #X connect 19 1 22 0;
-#X connect 23 1 24 0;
+#X connect 23 1 26 0;
