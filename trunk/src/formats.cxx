@@ -27,6 +27,14 @@
 #include <fcntl.h>
 #define L _L_
 
+void swapend (size_t n, uint8 *) {}
+void swapend (size_t n, int16 *v) {swap16(n,(uint16 *)v);}
+void swapend (size_t n, int32 *v) {swap32(n,(uint32 *)v);}
+void swapend (size_t n, float32 *v) {swap32(n,(uint32 *)v);}
+void swapend (size_t n, float64 *v) {post("swap64 not supported");}
+void swapend (size_t n,   int64 *v) {post("swap64 not supported");}
+
+
 /* API (version 0.9.3)
 	mode is :in or :out
 	def initialize(mode,*args) :
@@ -186,6 +194,12 @@ struct GridHeader {
 	//\decl void raw_open_gzip_out(string filename) {
 		//r,w = IO.pipe; if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
 		//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
+	\decl 0 endian (t_symbol *s) {
+		if (s==gensym("little")) endian=1;
+		else if (s==gensym("big")) endian=0;
+		else if (s==gensym("same")) endian=is_le();
+		else RAISE("unknown endian");
+	}
 };
 \def 0 bang () {
 	//post("#io.grid 0 bang: ftell=%ld",ftell(f));
@@ -228,6 +242,7 @@ struct GridHeader {
 	} \
 	GridOut o(this,0,dim,cast); \
 	CLEAR(data+nnn/sizeof(T),nn-nnn/sizeof(T)); \
+        swapend(nnn/sizeof(T),data); \
 	o.send(nn,(T *)data);}
 TYPESWITCH(type,FOO,)
 #undef FOO
