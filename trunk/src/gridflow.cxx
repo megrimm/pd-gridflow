@@ -620,27 +620,25 @@ static void BFObject_anything (BFObject *bself, int winlet, t_symbol *s, int ac,
 	post("BFObject_anything bself=%08lx magic=%08lx self=%08lx",long(bself),bself->magic,long(bself->self));
     #endif
     try {
-	t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
-	//int argc = handle_parens(ac,argv+2); // ought to be removed
-	int argc = ac;
+	#define ARGH t_atom2 argv[ac+2]; for (int i=0; i<ac; i++) argv[i+2] = at[i];
 	FMethod m;
 	FObject *self = bself->self;
-	m=method_lookup(bself,winlet,      s); if (m) {                           m(self,argc+0,argv+2); return;}
-	m=method_lookup(bself,-1,          s); if (m) {argv[1]=winlet;            m(self,argc+1,argv+1); return;}
-	m=method_lookup(bself,-2,&s_anything); if (m) {argv[0]=winlet; argv[1]=s; m(self,argc+2,argv+0); return;}
+	m=method_lookup(bself,winlet,      s); if (m) {                                 m(self,ac+0,at    ); return;}
+	m=method_lookup(bself,-1,          s); if (m) {ARGH; argv[1]=winlet;            m(self,ac+1,argv+1); return;}
+	m=method_lookup(bself,-2,&s_anything); if (m) {ARGH; argv[0]=winlet; argv[1]=s; m(self,ac+2,argv+0); return;}
 
 	if (s==&s_list) {
-	    if (argc==0) {
-						m=method_lookup(bself,winlet,&s_bang   ); if(m){m(self,argc,argv+2); return;}
-	    } else if (argc==1) {
-		if (argv[2].a_type==A_FLOAT)   {BFObject_anything(bself,winlet,&s_float  ,argc,argv+2); return;}
-		if (argv[2].a_type==A_SYMBOL)  {BFObject_anything(bself,winlet,&s_symbol ,argc,argv+2); return;}
-		if (argv[2].a_type==A_POINTER) {BFObject_anything(bself,winlet,&s_pointer,argc,argv+2); return;}
+	    if (ac==0) {
+		m=method_lookup(bself,winlet,&s_bang   ); if(m) {m(self,ac,at); return;}
+	    } else if (ac==1) {
+		if (at[0].a_type==A_FLOAT)   {BFObject_anything(bself,winlet,&s_float  ,ac,at); return;}
+		if (at[0].a_type==A_SYMBOL)  {BFObject_anything(bself,winlet,&s_symbol ,ac,at); return;}
+		if (at[0].a_type==A_POINTER) {BFObject_anything(bself,winlet,&s_pointer,ac,at); return;}
 	    } else if (winlet==0) {
-		for (int i=min(argc,self->ninlets)-1; i>=0; i--) { // not exactly same order as pd's obj_list...
-		    if (argv[2+i].a_type==A_FLOAT)   BFObject_anything(bself,i,&s_float  ,1,argv+2+i);
-		    if (argv[2+i].a_type==A_SYMBOL)  BFObject_anything(bself,i,&s_symbol ,1,argv+2+i);
-		    if (argv[2+i].a_type==A_POINTER) BFObject_anything(bself,i,&s_pointer,1,argv+2+i);
+		for (int i=min(ac,self->ninlets)-1; i>=0; i--) { // not exactly same order as pd's obj_list...
+		    if (at[i].a_type==A_FLOAT)   BFObject_anything(bself,i,&s_float  ,1,at+i);
+		    if (at[i].a_type==A_SYMBOL)  BFObject_anything(bself,i,&s_symbol ,1,at+i);
+		    if (at[i].a_type==A_POINTER) BFObject_anything(bself,i,&s_pointer,1,at+i);
 		}
 		return;
 	    }
