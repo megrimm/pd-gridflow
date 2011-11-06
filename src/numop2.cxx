@@ -378,7 +378,8 @@ const long op_table4_n = COUNT(op_table4);
 
 #ifdef PASS1
 map<t_symbol *,NumberType *> number_type_dict;
-map<t_symbol *,Numop *> op_dict;
+//map<t_symbol *,Numop *> op_dict;
+hash_map<t_symbol *,Numop *> op_dict;
 void startup_numop2 () {
 	INIT_TABLE(op_dict,op_table1)
 	INIT_TABLE(op_dict,op_table2)

@@ -609,11 +609,11 @@ struct Numop2 : Numop {
 	}
 };
 
-struct t_symbol_eq {bool operator()(t_symbol *a,t_symbol *b) {return a==b;}};
+namespace __gnu_cxx {template <> struct hash<t_symbol*> {size_t operator()(const t_symbol *a) const {return size_t(a);}};};
 extern NumberType number_type_table[];
 extern map<t_symbol *,NumberType *> number_type_dict;
-extern map<t_symbol *,Numop *> op_dict;
-//extern hash_map<t_symbol *,Numop *,__gnu_cxx::hash<t_symbol*>,t_symbol_eq> op_dict;
+//extern map<t_symbol *,Numop *> op_dict;
+extern hash_map<t_symbol *,Numop *> op_dict;
 
 static inline NumberTypeE convert(const t_atom2 &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type, got %s",x.to_s().data()); return NumberTypeE_find(string(x.a_symbol->s_name));}
