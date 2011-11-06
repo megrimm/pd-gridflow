@@ -201,56 +201,56 @@ map<Atom, int> priorities;
 		//post("----------------------------------------------------------------");
 		//string t = join(toks.size(),toks.data()); post("#expr toks: %s",t.data());
 		//string c = join(code.size(),code.data()); post("#expr code: %s",c.data());
-		vector<Atom> stack;
+		Atom stack[32]; int m=0; // I'm not checking for overflow. Beware !
 		int n = code.size();
 		for (int i=0; i<n; i++) {
 			//{string z = code[i].to_s(); post("interpreting %s",z.data());}
 			switch (int(code[i].a_type)) {
-			  case A_FLOAT: case A_SYMBOL: stack.push_back(code[i]); break;
+			  case A_FLOAT: case A_SYMBOL: stack[m++]=code[i]; break;
 			  case A_VAR_A: {
-				int i = lookup(stack.back()); stack.pop_back();
-				t_symbol *t = stack.back();
+				int i = lookup(stack[--m]);
+				t_symbol *t = stack[m-1];
 				t_garray *a = (t_garray *)pd_findbyclass(t, garray_class); if (!a) RAISE("%s: no such array", t->s_name);
 				int npoints; t_word *vec;
 				if (!garray_getfloatwords(a, &npoints, &vec)) RAISE("%s: bad template for tabread", t->s_name);
-				stack.back() = npoints ? vec[clip(i,0,npoints-1)].w_float : 0;
+				stack[m-1] = npoints ? vec[clip(i,0,npoints-1)].w_float : 0;
 			  } break;
 			  case A_VAR: {
-				stack.push_back(inputs[code[i].a_index & 255]);
+				stack[m++] = inputs[code[i].a_index & 255];
 			  } break;
 #if 0
 			  case A_OP: {
 				Numop2 *op = (Numop2 *)op_dict[code[i].a_symbol]; //TO(Numop2 *,Atom(code[i].a_symbol->s_name));
-				float b = lookup(stack.back()); stack.pop_back();
-				float a = lookup(stack.back());
+				float b = lookup(stack[--m]);
+				float a = lookup(stack[m-1]);
 				op->map(1,&a,b);
-				stack.back() = a;
+				stack[m-1] = a;
 			  } break;
 			  case A_OP1: {
 				Numop1 *op = (Numop1 *)op_dict[code[i].a_symbol]; //TO(Numop1 *,Atom(code[i].a_symbol->s_name));
-				float a = lookup(stack.back());
+				float a = lookup(stack[m-1]);
 				op->map(1,&a);
-				stack.back() = a;
+				stack[m-1] = a;
 			  } break;
 #endif
 			  case A_OPFAST: {
 				Numop2 *op = (Numop2 *)code[i].a_pointer;
-				float b = lookup(stack.back()); stack.pop_back();
-				float a = lookup(stack.back());
+				float b = lookup(stack[--m]);
+				float a = lookup(stack[m-1]);
 				op->map(1,&a,b);
-				stack.back() = a;
+				stack[m-1] = a;
 			  } break;
 			  case A_OP1FAST: {
 				Numop1 *op = (Numop1 *)code[i].a_pointer;
-				float a = lookup(stack.back());
+				float a = lookup(stack[m-1]);
 				op->map(1,&a);
-				stack.back() = a;
+				stack[m-1] = a;
 			  } break;
 			  case A_IF: {
-				float c = lookup(stack.back()); stack.pop_back();
-				float b = lookup(stack.back()); stack.pop_back();
-				float a = lookup(stack.back());
-				stack.back() = a ? b : c;
+				float c = lookup(stack[--m]);
+				float b = lookup(stack[--m]);
+				float a = lookup(stack[m-1]);
+				stack[m-1] = a ? b : c;
 			  } break;
 			  default: {
 				string z = code[i].to_s();
@@ -259,7 +259,7 @@ map<Atom, int> priorities;
 			}
 		}
 		for (int i=noutlets-1; i>=0; i--) {
-			if (stack.size()) {out[i](stack.back()); stack.pop_back();} else RAISE("no result");
+			if (m) out[i](stack[--m]); else RAISE("no result");
 		}
 	}
 	\decl n float (int winlet, float f) {
