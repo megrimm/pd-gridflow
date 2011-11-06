@@ -206,14 +206,14 @@ map<Atom, int> priorities;
 				stack.push_back(inputs[code[i].a_index & 255]);
 			  } break;
 			  case A_OP: {
-				Numop2 *op = TO(Numop2 *,Atom(code[i].a_symbol->s_name));
+				Numop2 *op = (Numop2 *)op_dict[code[i].a_symbol]; //TO(Numop2 *,Atom(code[i].a_symbol->s_name));
 				float b = lookup(stack.back()); stack.pop_back();
 				float a = lookup(stack.back());
 				op->map(1,&a,b);
 				stack.back() = a;
 			  } break;
 			  case A_OP1: {
-				Numop1 *op = TO(Numop1 *,Atom(code[i].a_symbol->s_name));
+				Numop1 *op = (Numop1 *)op_dict[code[i].a_symbol]; //TO(Numop1 *,Atom(code[i].a_symbol->s_name));
 				float a = lookup(stack.back());
 				op->map(1,&a);
 				stack.back() = a;
