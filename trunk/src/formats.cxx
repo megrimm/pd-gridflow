@@ -27,14 +27,6 @@
 #include <fcntl.h>
 #define L _L_
 
-void swapend (size_t n, uint8 *) {}
-void swapend (size_t n, int16 *v) {swap16(n,(uint16 *)v);}
-void swapend (size_t n, int32 *v) {swap32(n,(uint32 *)v);}
-void swapend (size_t n, float32 *v) {swap32(n,(uint32 *)v);}
-void swapend (size_t n, float64 *v) {post("swap64 not supported");}
-void swapend (size_t n,   int64 *v) {post("swap64 not supported");}
-
-
 /* API (version 0.9.3)
 	mode is :in or :out
 	def initialize(mode,*args) :
@@ -242,7 +234,7 @@ struct GridHeader {
 	} \
 	GridOut o(this,0,dim,cast); \
 	CLEAR(data+nnn/sizeof(T),nn-nnn/sizeof(T)); \
-        swapend(nnn/sizeof(T),data); \
+        swap_endian(nnn/sizeof(T),data); \
 	o.send(nn,(T *)data);}
 TYPESWITCH(type,FOO,)
 #undef FOO
