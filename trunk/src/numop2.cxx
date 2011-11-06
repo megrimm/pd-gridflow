@@ -374,11 +374,11 @@ const long op_table4_n = COUNT(op_table4);
 #endif
 
 // D=dictionary, A=table, A##_n=table count.
-#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[string(A[i].name)]=&A[i];
+#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[gensym(A[i].name)]=&A[i];
 
 #ifdef PASS1
-map<string,NumberType *> number_type_dict;
-map<string,Numop *> op_dict;
+map<t_symbol *,NumberType *> number_type_dict;
+map<t_symbol *,Numop *> op_dict;
 void startup_numop2 () {
 	INIT_TABLE(op_dict,op_table1)
 	INIT_TABLE(op_dict,op_table2)
@@ -393,13 +393,13 @@ void startup_numop2 () {
 		char *b = strchr(a,',');
 		if (b) {
 			*b=0;
-			number_type_dict[string(b+1)]=&number_type_table[i];
+			number_type_dict[gensym(b+1)]=&number_type_table[i];
 		}
-		number_type_dict[string(a)]=&number_type_table[i];
+		number_type_dict[gensym(a)]=&number_type_table[i];
 	}
 // S:name; M:mode; F:replacement function;
 #define OVERRIDE_INT(S,M,F) { \
-	Numop2 *foo = dynamic_cast<Numop2 *>(op_dict[string(#S)]); \
+	Numop2 *foo = dynamic_cast<Numop2 *>(op_dict[gensym(#S)]); \
 	foo->on_uint8.M=F; \
 	foo->on_int16.M=F; \
 	foo->on_int32.M=F; }

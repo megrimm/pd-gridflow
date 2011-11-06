@@ -174,7 +174,7 @@ Numop1 op_table_unary[] = {
 const long op_table_unary_n = COUNT(op_table_unary);
 
 // D=dictionary, A=table, A##_n=table count.
-#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[string(A[i].name)]=&A[i];
+#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[gensym(A[i].name)]=&A[i];
 
 void startup_numop1 () {
 	INIT_TABLE(op_dict,op_table_unary)
