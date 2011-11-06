@@ -609,7 +609,14 @@ struct Numop2 : Numop {
 	}
 };
 
-namespace __gnu_cxx {template <> struct hash<t_symbol*> {size_t operator()(const t_symbol *a) const {size_t b = size_t(a); return b^(b>>2);}};}
+namespace __gnu_cxx {
+	template <> struct hash<t_symbol*> {
+		size_t operator()(const t_symbol *a) const {size_t b = size_t(a); return b^(b>>2);}
+	};
+	template <> struct hash<pair<int,t_symbol *> > {
+		size_t operator()(const pair<int, t_symbol *>a) const {size_t b = size_t(a.second); return a.first^b^(b>>2);}
+	};
+}
 extern NumberType number_type_table[];
 extern map<t_symbol *,NumberType *> number_type_dict;
 //extern map<t_symbol *,Numop *> op_dict;
@@ -782,7 +789,8 @@ struct FClass {
 	int noutlets;
 	t_class *bfclass;
 	t_symbol *name;
-	map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method
+	// Note that hash_map for methods saved 20 ns or 60 ns per call when I compared.
+	hash_map<pair<int,t_symbol *>,FMethod> methods; // (inlet,selector) -> method.
 	map<t_symbol *,AttrDecl *> attrs;
 	int flags; // flags: any combination of: CLASS_NOINLET, CLASS_NOPARENS, CLASS_NOCOMMA
 };
