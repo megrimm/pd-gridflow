@@ -33,6 +33,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <ext/hash_map>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -48,6 +49,7 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 
 using std::string;
 using std::map;
+using __gnu_cxx::hash_map; // no match for call to (const __gnu_cxx::hash<string>) (const std::string &)
 using std::vector;
 using std::ostream;
 using std::ostringstream;
@@ -607,9 +609,11 @@ struct Numop2 : Numop {
 	}
 };
 
+struct t_symbol_eq {bool operator()(t_symbol *a,t_symbol *b) {return a==b;}};
 extern NumberType number_type_table[];
-extern map<string,NumberType *> number_type_dict;
-extern map<string,Numop *> op_dict;
+extern map<t_symbol *,NumberType *> number_type_dict;
+extern map<t_symbol *,Numop *> op_dict;
+//extern hash_map<t_symbol *,Numop *,__gnu_cxx::hash<t_symbol*>,t_symbol_eq> op_dict;
 
 static inline NumberTypeE convert(const t_atom2 &x, NumberTypeE *bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type, got %s",x.to_s().data()); return NumberTypeE_find(string(x.a_symbol->s_name));}
