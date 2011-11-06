@@ -242,9 +242,8 @@ bool t_atom2::operator == (const t_atom2 &b) {
 
 Numop *convert(const t_atom2 &x, Numop **bogus) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
-	string k = string(x.a_symbol->s_name);
-	typeof(op_dict.begin()) found = op_dict.find(k);
-	if (found==op_dict.end()) RAISE("expected numop name, not '%s'", k.data());
+	typeof(op_dict.begin()) found = op_dict.find(x.a_symbol);
+	if (found==op_dict.end()) RAISE("expected numop name, not '%s'", x.a_symbol->s_name);
 	return found->second;
 }
 
@@ -270,14 +269,16 @@ char *Dim::to_s() const {
 	return strdup(buf);
 }
 
-NumberTypeE NumberTypeE_find (string s) {
-	if (number_type_dict.find(s)==number_type_dict.end()) RAISE("unknown number type \"%s\"", s.data());
+NumberTypeE NumberTypeE_find (t_symbol *s) {
+	if (number_type_dict.find(s)==number_type_dict.end()) RAISE("unknown number type \"%s\"", s->s_name);
 	return number_type_dict[s]->index;
 }
 
+NumberTypeE NumberTypeE_find (string s) {return NumberTypeE_find(gensym(s.data()));}
+
 NumberTypeE NumberTypeE_find (const t_atom &x) {
 	if (x.a_type!=A_SYMBOL) RAISE("expected number-type (as symbol)");
-	return NumberTypeE_find(string(x.a_symbol->s_name));
+	return NumberTypeE_find(x.a_symbol);
 }
 
 // don't touch.

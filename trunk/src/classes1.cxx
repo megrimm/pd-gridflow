@@ -988,7 +988,7 @@ GRID_INPUT(1,dim_grid) {
 
 \end class {install("#redim",2,1); add_creator("@redim");}
 
-#define OP(x) dynamic_cast<Numop2 *>(op_dict[string(#x)])
+#define OP(x) dynamic_cast<Numop2 *>(op_dict[gensym(#x)])
 void startup_classes1 () {
 	op_add = OP(+);
 	op_sub = OP(-);

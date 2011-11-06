@@ -1345,6 +1345,7 @@ GRID_INLET(0) {
 	int n;
 	P<Grid> a;
 	\attr NumberTypeE cast;
+	\attr t_atom2 when; // FUTURE USE
 	\constructor (t_atom2 d=2, NumberTypeE nt=int32_e) {
 		Dim dim;
 		if (d.a_type==A_LIST) {
@@ -1419,7 +1420,7 @@ GRID_INLET(0) {
 static CONSTRAINT(expect_min_one_dim) {
 	if (d.n<1) RAISE("expecting at least one dimension, got %s",d.to_s());}
 
-#define OP(x) dynamic_cast<Numop2 *>(op_dict[string(#x)])
+#define OP(x) dynamic_cast<Numop2 *>(op_dict[gensym(#x)])
 \class GridClusterAvg {
 	\attr int numClusters;
 	\attr P<Grid> r;
