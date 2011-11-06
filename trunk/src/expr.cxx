@@ -29,6 +29,8 @@ bool operator < (const Atom &a, const Atom &b) {
 	
 map<Atom, int> priorities;
 
+#define a_pointer a_w.w_gpointer
+
 \class GFExpr {
 	/* only between next() and parse() */
 	#define A_OPEN    t_atomtype(0x1000) // '('
@@ -41,6 +43,10 @@ map<Atom, int> priorities;
 	#define A_OP       t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
 	#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
 	#define A_IF	   t_atomtype(0x1007) /* if(,,) */
+
+	#define A_OP1FAST  t_atomtype(0x1013) /* direct Numop1 * */
+	#define A_OPFAST   t_atomtype(0x1014) /* direct Numop2 * */
+
 	/* used for both */
         //      A_SYMBOL for [v] names and [table] names; also used between next() and parse() for function names.
         //      A_FLOAT  for float literals (unlike [expr], there are no integer literals)
@@ -167,12 +173,19 @@ map<Atom, int> priorities;
 		};
 		return commas;
 	}
+	void prelookup () {
+		for (size_t i=0; i<code.size(); i++) {
+			if (code[i].a_type==A_OP)  code[i]=Atom(A_OPFAST ,(t_gpointer *)op_dict[code[i].a_symbol]);
+			if (code[i].a_type==A_OP1) code[i]=Atom(A_OP1FAST,(t_gpointer *)op_dict[code[i].a_symbol]);
+		}
+	}
 	\constructor (...) {
 		//post("----------------------------------------------------------------");
 		//toks.clear(); code.clear();
 		if (argc) args = join(argc,argv); else args = "0";
 		s = args.data();
 		parse(0);
+		prelookup();
 		for (size_t i=0; i<inputs.size(); i++) inputs[i]=0;
 		//try {parse(s);} // should use fclasses_pd[pd_class(x)]->name->s_name
 		//catch (Barf &oozy) {oozy.error(gensym("#expr"),argc,argv);}
@@ -205,6 +218,7 @@ map<Atom, int> priorities;
 			  case A_VAR: {
 				stack.push_back(inputs[code[i].a_index & 255]);
 			  } break;
+#if 0
 			  case A_OP: {
 				Numop2 *op = (Numop2 *)op_dict[code[i].a_symbol]; //TO(Numop2 *,Atom(code[i].a_symbol->s_name));
 				float b = lookup(stack.back()); stack.pop_back();
@@ -214,6 +228,20 @@ map<Atom, int> priorities;
 			  } break;
 			  case A_OP1: {
 				Numop1 *op = (Numop1 *)op_dict[code[i].a_symbol]; //TO(Numop1 *,Atom(code[i].a_symbol->s_name));
+				float a = lookup(stack.back());
+				op->map(1,&a);
+				stack.back() = a;
+			  } break;
+#endif
+			  case A_OPFAST: {
+				Numop2 *op = (Numop2 *)code[i].a_pointer;
+				float b = lookup(stack.back()); stack.pop_back();
+				float a = lookup(stack.back());
+				op->map(1,&a,b);
+				stack.back() = a;
+			  } break;
+			  case A_OP1FAST: {
+				Numop1 *op = (Numop1 *)code[i].a_pointer;
 				float a = lookup(stack.back());
 				op->map(1,&a);
 				stack.back() = a;
@@ -239,6 +267,9 @@ map<Atom, int> priorities;
 		inputs[winlet] = f;
 		if (!winlet) _0_bang();
 	}
+	\decl 0 float (float f) {inputs[0]=f; _0_bang();} // faster than the n float wildcard ?
+	//\decl 1 float (float f) {inputs[1]=f;} // I'd put more like this, but it slows down the lookup. should investigate this in BFObject_anything.
+	//etc
 };
 \end class {install("#expr",1,1,CLASS_NOPARENS|CLASS_NOCOMMA);}
 
