@@ -609,7 +609,7 @@ struct Numop2 : Numop {
 	}
 };
 
-namespace __gnu_cxx {template <> struct hash<t_symbol*> {size_t operator()(const t_symbol *a) const {return size_t(a);}};};
+namespace __gnu_cxx {template <> struct hash<t_symbol*> {size_t operator()(const t_symbol *a) const {size_t b = size_t(a); return b^(b>>2);}};}
 extern NumberType number_type_table[];
 extern map<t_symbol *,NumberType *> number_type_dict;
 //extern map<t_symbol *,Numop *> op_dict;
