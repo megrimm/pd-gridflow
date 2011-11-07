@@ -9,7 +9,7 @@ RUBY = ruby
 
 SHELL = /bin/sh
 RM = rm -f
-GFCFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -g -I.
+GFCFLAGS += -Wall -Wno-unused -Wunused-variable -Wno-trigraphs -Wno-deprecated -g -I.
 
 LDSOFLAGS += -lm $(LIBS)
 OBJS2 = src/gridflow.o src/grid.o src/classes1.o src/classes2.o src/classes3.o src/expr.o src/classes_gui.o \
