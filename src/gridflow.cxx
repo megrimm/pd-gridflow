@@ -103,6 +103,8 @@ void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 #define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
 #define A_SQOPEN  t_atomtype(0x1008) // '['
 #define A_SQCLOSE t_atomtype(0x1009) // ']'
+#define A_OP1FAST t_atomtype(0x1013)
+#define A_OPFAST  t_atomtype(0x1014)
 
 #define Z(T) case T: return #T; break;
 string atomtype_to_s (t_atomtype t) {
@@ -110,7 +112,7 @@ string atomtype_to_s (t_atomtype t) {
     Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
     Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)
     Z(A_CANT)Z(A_NULL)
-    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)Z(A_SQOPEN)Z(A_SQCLOSE)Z(A_VAR_A)
+    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)Z(A_SQOPEN)Z(A_SQCLOSE)Z(A_VAR_A)A(OP1FAST)A(OPFAST)
     default: ostringstream os; oprintf(os,"unknown:%d",int(t)); return os.str();
   }
 }
