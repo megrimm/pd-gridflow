@@ -43,7 +43,7 @@ else
     EXECTYPE = notdefined # not a real name
   else
     PDSUF = .pd_linux
-    LDSOFLAGS = -shared -rdynamic
+    LDSOFLAGS += -shared -rdynamic
     EXECTYPE = elf
     ifeq ($(HAVE_GCC64),1)
       GFCFLAGS += -fPIC
