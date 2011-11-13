@@ -1,32 +1,26 @@
 Nouveau
 
+[ ] make [#join] repeat data like [#redim] ?
 [ ] inclure le protecteur de __cxa_allocate_exception dans GF par défaut (parce qu'il y a encore des problèmes
 [ ] inclure segfault.pd_linux dans GF par défaut
 [ ] essayer -fstack-protector
-
 [ ] option de multiplicateur d'alpha dans [#draw_image]
 [ ] plantage gol_fractal_6.pd Erreur de Segmentation quand je change [# atan] en [# atan2]
 [ ] Check that -funroll-loops is not implied by -O3 and that it makes a difference for us (?)
 [ ] Once I thought that with some commutativity you could speed things up like this :
-
-(f0+f1+f2+f3)+(f4+f5+f6+f7)+...
-
-can be rearranged as :
-  
-(f0+f4+...)+(f1+f5+...)+(f2+f6+...)+(f3+f7+...)
-  
-But I don't remember whether I tried it or not.
-
-
+      (f0+f1+f2+f3)+(f4+f5+f6+f7)+...
+    can be rearranged as :
+      (f0+f4+...)+(f1+f5+...)+(f2+f6+...)+(f3+f7+...)
+    But I don't remember whether I tried it or not.
 [ ] typo [#out window here override_redirectrrrrrrrrrrr] does not print any error
 [9.14] launchpad.net
-[9.14] GridFlow Index crashes @ CIM
 [9.14] make sure docs are up-to-date
-[9.14] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
-[ ] make libv4l1 the default API
+[9.16] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
+[9.14] make libv4l1 the default API
 [ ] write warning about v4l2 in [#camera]
 [ ] deal with the lack of videodev.h in recent kernels
 [ ] use 'restrict' keyword ? will it help ?
+[ ] finish [memstat]
 
 Attr
 
@@ -69,7 +63,7 @@ Args
 
 GEM/PDP
 
-[9.14] [#from_pix]: yuv in support, yuv out support
+[9.17] [#from_pix]: yuv in support, yuv out support
 [ ] [#from_pix, colorspace y] may have different contrast/brightness because of differences between the two definitions of Y
 [ ] when [#from_pix] uses [pix_rgba] or [pix_grey], there is one empty frame of size (0 0 4) instead of the 1st frame. why ?
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
@@ -82,6 +76,8 @@ GEM/PDP
 [9.14] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [#expr] grid support
 [ ] add floor, ceiling, bessel, ...
+[ ] [#expr~]
+[ ] note that for a BSD license rewrite, Jonathan offers 200,00 USD, Andy offers 50,00 €, Marvin offers 200,00 USD
 
 #fft
 
@@ -107,9 +103,9 @@ GUI Objects (incl abstrs & print)
 
 Docs
 
-[ ] reform GFDP so that interactions with pd43 and l2ork become debuggable.
+[9.15] reform GFDP so that interactions with pd43 and l2ork become debuggable.
 [ ] document "f 1 2 3" as a shortcut grid literal
-[ ] reduce the amount of sys_gui() to be done by GFDP while idle.
+[9.15] reduce the amount of sys_gui() to be done by GFDP while idle.
 [ ] révision de patchs d'aide compliquées ou mal dites (?), comme [#grade] [#inner] [#outer] ... et autres.
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] put more stuff in doc/flow_classes/validation
