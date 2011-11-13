@@ -14,7 +14,7 @@
 #X text 403 259 last;
 #X text 403 273 odd;
 #X obj 385 291 listread none last odd;
-#X obj 20 31 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
+#X obj 20 31 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 1 1
 ;
 #X obj 53 135 #checkers;
 #X obj 53 116 #for (0 0) (240 320);
@@ -33,57 +33,54 @@
 #X obj 50 416 #fade (16 4 1);
 #X obj 0 0 doc_h;
 #X obj 3 474 doc_c 0..3;
-#X obj 3 619 doc_i 3;
-#X obj 3 988 doc_o 1;
-#X obj 14 1018 doc_oo 0;
-#X obj 14 649 doc_ii 0;
-#X obj 14 934 doc_ii 1;
-#X obj 14 956 doc_ii 2;
+#X obj 3 658 doc_i 3;
+#X obj 3 1293 doc_o 1;
+#X obj 14 1323 doc_oo 0;
+#X obj 14 688 doc_ii 0;
+#X obj 14 1239 doc_ii 1;
+#X obj 14 1261 doc_ii 2;
 #X obj 14 504 doc_cc 0;
 #X obj 14 552 doc_cc 1;
 #X obj 14 574 doc_cc 2;
-#X text 232 1018 Resulting picture.;
+#X text 232 1323 Resulting picture.;
 #X obj 97 504 doc_m c0 symbol/numop;
 #X obj 97 552 doc_m c1 grid;
 #X obj 97 574 doc_m c2 grid;
-#X obj 97 649 doc_m i0 grid;
-#X obj 97 934 doc_m i1 grid;
-#X obj 97 956 doc_m i2 grid;
-#X obj 97 1018 doc_m o0 grid;
-#X obj 0 1070 doc_f;
-#X msg 51 273 op *;
+#X obj 97 688 doc_m i0 grid;
+#X obj 97 1239 doc_m i1 grid;
+#X obj 97 1261 doc_m i2 grid;
+#X obj 97 1323 doc_m o0 grid;
+#X obj 0 1375 doc_f;
 #X msg 56 313 op ^;
 #X msg 53 293 op +;
-#X obj 232 934 doc_same 1;
-#X obj 232 956 doc_same 2;
-#X obj 97 912 doc_m i0 op;
-#X obj 97 785 doc_m i0 omit;
-#X obj 97 719 doc_m i0 draw;
-#X obj 232 912 doc_same 0;
-#X text 232 785 only makes sense in line mode.;
-#X text 232 807 none: draw complete perimetre of polygon;
-#X text 232 829 last: omit last edge \, so that it makes a "polygonal
+#X obj 232 1239 doc_same 1;
+#X obj 232 1261 doc_same 2;
+#X obj 97 951 doc_m i0 op;
+#X obj 97 824 doc_m i0 omit;
+#X obj 97 758 doc_m i0 draw;
+#X obj 232 951 doc_same 0;
+#X text 232 824 only makes sense in line mode.;
+#X text 232 846 none: draw complete perimetre of polygon;
+#X text 232 868 last: omit last edge \, so that it makes a "polygonal
 line" instead of a polygon;
-#X text 232 864 odd: drawing only even-numbered edges means drawing
+#X text 232 903 odd: drawing only even-numbered edges means drawing
 a set of separate lines instead of a polygon. you should provide an
 even number of vertices in this case.;
-#X text 232 719 fill: draw a filled polygon;
-#X text 232 763 point: draw vertices only (as single pixels);
-#X text 232 741 line: draw lines (see option 'omit') of minimal width
+#X text 232 758 fill: draw a filled polygon;
+#X text 232 802 point: draw vertices only (as single pixels);
+#X text 232 780 line: draw lines (see option 'omit') of minimal width
 ;
-#X obj 3 1050 doc_also;
-#X obj 103 1050 #draw_image;
-#X obj 181 1050 #draw_rect;
+#X obj 3 1355 doc_also;
+#X obj 103 1355 #draw_image;
+#X obj 181 1355 #draw_rect;
 #X msg 89 382 4 2 # 0 0 0 100 100 0 100 100;
 #X obj 59 333 r \$0-a;
 #X obj 362 400 s \$0-a;
 #X obj 20 359 #draw_polygon + (1);
-#X text 232 574 Vertices of the polygon. default is (0 2 #) \, the
-"zerogon" \, such that nothing will be drawn.;
 #X text 232 504 Normally \, you would use the "put" operator \; but
 the + and ^ can be interesting for color effects. (default: put);
 #X obj 415 334 vradio 15 1 0 3 empty empty empty 0 -8 0 10 -241291
--1 -1 0;
+-1 -1 2;
 #X msg 415 400 rule \$1;
 #X obj 415 381 listread oddeven winding multi;
 #X text 433 334 oddeven;
@@ -128,82 +125,116 @@ the + and ^ can be interesting for color effects. (default: put);
 #X obj 37 153 #outer + (0 9000);
 #X obj 37 77 t b f;
 #X obj 37 134 # +;
-#X obj 37 96 #for 0 5;
-#X obj 37 115 # * 14400;
 #X obj 37 172 # cos* 115;
+#X obj 37 96 #for 0 11;
+#X obj 37 115 # * 13091;
 #X connect 0 0 2 0;
 #X connect 2 0 5 0;
 #X connect 2 0 7 0;
 #X connect 3 0 1 0;
 #X connect 4 0 2 1;
 #X connect 5 0 4 0;
-#X connect 6 0 11 0;
-#X connect 7 0 9 0;
+#X connect 6 0 9 0;
+#X connect 7 0 10 0;
 #X connect 7 1 8 1;
 #X connect 8 0 6 0;
-#X connect 9 0 10 0;
-#X connect 10 0 8 0;
-#X connect 11 0 3 0;
+#X connect 9 0 3 0;
+#X connect 10 0 11 0;
+#X connect 11 0 8 0;
 #X restore 194 143 pd star-anim;
-#X text 232 649 dim(rows \, columns \, channels): Picture on which
+#X text 232 688 dim(rows \, columns \, channels): Picture on which
 the polygon will be superimposed.;
 #X text 232 552 dim(channels): Color of the polygon. default is (1
 #).;
-#X text 232 684 the number of channels must match that of the color
+#X text 232 723 the number of channels must match that of the color
 of the polygon.;
-#X connect 1 0 70 1;
+#X msg 51 273 op *>>8;
+#X obj 97 973 doc_m i0 rule;
+#X text 232 973 only makes sense in fill mode. based on the concept
+that polygons that self-intersect can have parts that are "doubly-inside"
+and "triply-inside" \, etc \, depending on what patterns the edges
+make.;
+#X text 232 1034 oddeven: default rule. Each time you cross an edge
+\, toggle drawing.;
+#X text 232 1069 winding: fill anything that is not outside the polygon.
+;
+#X text 232 1091 multi: draw certain regions multiple times whenever
+the polygon loops several times in the same direction. Looping in contrary
+directions counts as a hole instead.;
+#X text 232 1139 all three modes are actually very similar to each
+other : think of each edge as an arrow pointing in the direction of
+the next vertex in the list of vertices. Going left to right on each
+row of the picture \, edges that are encountered are either going upwards
+or downwards \, and this changes a counter. The modes just decide what
+to do according to the value of the counter.;
+#X msg 83 157 240 320 3 # 255;
+#X text 232 574 Vertices of the polygon. default is (0 2 #) \, the
+"zerogon" \, such that nothing will be drawn. (also \, if you use fill
+mode \, you need at least 3 vertices to make something appear \, and
+there are other circumstances in which #draw_polygon has to draw nothing)
+;
+#X obj 34 97 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X connect 1 0 69 1;
 #X connect 2 0 16 0;
 #X connect 3 0 25 0;
 #X connect 4 0 19 0;
-#X connect 6 0 69 0;
+#X connect 6 0 68 0;
 #X connect 7 0 12 0;
-#X connect 9 0 69 0;
+#X connect 9 0 68 0;
 #X connect 12 0 9 0;
 #X connect 13 0 18 0;
 #X connect 14 0 24 1;
 #X connect 15 0 14 0;
 #X connect 16 0 1 0;
 #X connect 17 0 15 0;
-#X connect 18 0 82 0;
+#X connect 18 0 80 0;
 #X connect 19 0 6 0;
 #X connect 22 0 1 0;
 #X connect 23 0 24 1;
-#X connect 24 0 70 0;
+#X connect 24 0 69 0;
 #X connect 25 0 0 0;
 #X connect 25 1 27 0;
 #X connect 26 0 25 1;
 #X connect 27 0 0 0;
-#X connect 40 1 72 0;
-#X connect 41 1 85 0;
-#X connect 42 1 71 0;
+#X connect 40 1 70 0;
+#X connect 41 1 83 0;
+#X connect 42 1 93 0;
+#X connect 43 1 82 0;
 #X connect 43 1 84 0;
-#X connect 43 1 86 0;
-#X connect 44 1 51 0;
-#X connect 45 1 52 0;
+#X connect 44 1 50 0;
+#X connect 45 1 51 0;
 #X connect 46 1 39 0;
-#X connect 48 0 70 0;
-#X connect 49 0 70 0;
-#X connect 50 0 70 0;
+#X connect 48 0 69 0;
+#X connect 49 0 69 0;
+#X connect 52 1 55 0;
+#X connect 53 1 57 0;
+#X connect 53 1 58 0;
+#X connect 53 1 59 0;
 #X connect 53 1 56 0;
-#X connect 54 1 58 0;
-#X connect 54 1 59 0;
 #X connect 54 1 60 0;
-#X connect 54 1 57 0;
-#X connect 55 1 61 0;
-#X connect 55 1 63 0;
-#X connect 55 1 62 0;
-#X connect 64 1 65 0;
-#X connect 64 1 66 0;
-#X connect 67 0 70 2;
-#X connect 68 0 70 0;
-#X connect 70 0 3 0;
-#X connect 73 0 75 0;
-#X connect 74 0 69 0;
-#X connect 75 0 74 0;
-#X connect 79 0 83 0;
-#X connect 79 1 81 0;
-#X connect 80 0 79 1;
-#X connect 81 0 70 2;
-#X connect 82 0 24 0;
-#X connect 82 1 79 0;
-#X connect 83 0 70 2;
+#X connect 54 1 62 0;
+#X connect 54 1 61 0;
+#X connect 63 1 64 0;
+#X connect 63 1 65 0;
+#X connect 66 0 69 2;
+#X connect 67 0 69 0;
+#X connect 69 0 3 0;
+#X connect 71 0 73 0;
+#X connect 72 0 68 0;
+#X connect 73 0 72 0;
+#X connect 77 0 81 0;
+#X connect 77 1 79 0;
+#X connect 78 0 77 1;
+#X connect 79 0 69 2;
+#X connect 80 0 24 0;
+#X connect 80 1 77 0;
+#X connect 81 0 69 2;
+#X connect 85 0 69 0;
+#X connect 86 1 87 0;
+#X connect 86 1 88 0;
+#X connect 86 1 89 0;
+#X connect 86 1 90 0;
+#X connect 86 1 91 0;
+#X connect 92 0 24 1;
+#X connect 94 0 15 0;
