@@ -5,14 +5,19 @@
 .-o--------------------------------------------------------------
 | Hardware and Software you Probably Need
 
-Computer/Processor: GridFlow is mainly made on PC. This includes AMD 
-K6/K7/K8 (Athlon/Opteron/etc), Intel P2/P3/P4 and other Pentiums, Intel 
-CoreDuo, etc.; the absolute minimum is 386. However, it has also been 
-built for Macintosh PowerPC (G3/G4/G5) recently.
+Computer/Processor: GridFlow is mainly made on PC. This includes
+AMD K6/K7/K8 (Athlon/Opteron/etc), Intel P2/P3/P4 and other Pentiums,
+Intel-Core, etc. ; the absolute minimum is 386. However, it has also
+been built for Macintosh PowerPC (G3/G4/G5) recently. GridFlow have
+also been tried on SPARC and ARM processors long ago.
 
 Operating System: GridFlow is mainly made on Ubuntu. We have also used 
 Debian, SuSE, Mandrake, OSX. Microsoft Windows is not supported, but if 
 you do want to try to add support for that, try CygWin and/or MinGW.
+
+Now if you want to make your own executables, you will need the following things.
+(This README is mainly aimed at people who use the source code. If you use
+a package, there's probably another README file for you)
 
 Required Software:
 	Ruby 1.8 or 1.9
@@ -21,7 +26,7 @@ Required Software:
 	GNU Make
 	SVN
 	Developer CD (XCODE) (if using OSX)
-	FINK (if using OSX)
+	FINK or equivalent (if using OSX)
 
 Multimedia Components (optional):
 	libSDL (Simple Directmedia Layer)
