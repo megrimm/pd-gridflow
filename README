@@ -35,7 +35,6 @@ Multimedia Components (optional):
 	libmpeg3 (.mpg reader, HeroineWarrior's)
 	libquicktime (.mov reader/writer, Burkhard Plaum's or 
 		HeroineWarrior's)
-	libmpeg (.mpg reader, Greg Ward's, old)
 	Apple QuickTime (.mov reader/writer and camera interface)
 	Ascii Art Library (aalib)
 	PCI video digitizer card  (and Video4linux 1 driver)
