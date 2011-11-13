@@ -1,5 +1,5 @@
 
-version 9.14 (2011.06.XX):
+version 9.14 (2011.11.XX):
 
  * [#convolve] runs somewhat faster (when using default op/fold/seed)
  * [#to~]: add second argument for buffer size (in samples)
@@ -13,7 +13,7 @@ version 9.14 (2011.06.XX):
  * [#polygon_moment]: argument defaults to 1
  * [#polygon_radial_map]: accept comma-message
  * pdp support back in source package
- * added classes [#delay_image] [memstat]
+ * added classes [#delay_image]
  * [fps]: report wrong mode name
  * [#rotate]: matrix precision increased from 9 bit to 17 bit
  * libv4l now required to get v4l camera support on linux
@@ -23,6 +23,10 @@ version 9.14 (2011.06.XX):
  * major update of the tests folder
  * created LaunchPad team https://launchpad.net/~gridflow
  * added debian folder in source release, for making deb packages
+ * reintroduced missing method 'endian' of [#io.grid]
+ * fixed endianness problem in [#in grid] (does not occur in [#out grid])
+ * [#expr] is now 12 times faster than it was (still a bit slower than [expr])
+ * handling each message in every class of GridFlow is now a bit faster
 
 version 9.13 (2011.02.08):
 
