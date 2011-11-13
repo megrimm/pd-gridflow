@@ -37,8 +37,7 @@ Multimedia Components (optional):
 		HeroineWarrior's)
 	Apple QuickTime (.mov reader/writer and camera interface)
 	Ascii Art Library (aalib)
-	PCI video digitizer card  (and Video4linux 1 driver)
-	USB camera (and Video4linux 1 driver)
+	Video digitizer card or USB camera (whatever supports Video4Linux version 1 or 2)
 	FFTW3
 	OpenCV
 	NetPBM
