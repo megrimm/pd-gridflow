@@ -345,10 +345,9 @@ Feature.add("png","PNG Library") {
 		return 0;}`}}
 Feature.add("libv4l1","Video4linux I Driver Interface Library") {
 	produces_o ["src/videodev.o"]
-	uses_h ["linux/videodev.h","libv4l1.h"]
+	uses_h "libv4l1.h"
 	uses_so ["-lv4l1"]
 	test proc {c_test "
-		#include <linux/videodev.h>
 		#include <sys/types.h>
 		#include <libv4l1.h>
 		int main () {return v4l1_open==0;}"}}
