@@ -1,0 +1,43 @@
+#N canvas 617 0 632 475 10;
+#X obj 0 0 doc_h;
+#X obj 3 421 doc_also;
+#X obj 0 441 doc_f;
+#X obj 133 132 #out window;
+#X obj 133 75 #in pure-data.jpg;
+#X obj 133 58 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 133 113 #clip;
+#X obj 133 94 #draw_lattice *>>8 (192 224 256) 10;
+#X obj 3 165 doc_c 3;
+#X obj 14 195 doc_cc 0;
+#X obj 14 217 doc_cc 1;
+#X obj 14 239 doc_cc 2;
+#X obj 3 284 doc_i 1;
+#X obj 14 314 doc_ii 0;
+#X obj 3 359 doc_o 1;
+#X obj 14 389 doc_oo 0;
+#X obj 103 421 #draw_polygon;
+#X obj 193 421 #draw_rect;
+#X obj 97 195 doc_m c0 symbol;
+#X text 232 195 a numop just like in [#draw_polygon] and such.;
+#X obj 97 217 doc_m c1 grid;
+#X text 232 217 the colour \, as in [#draw_polygon];
+#X obj 97 239 doc_m c2 float;
+#X text 232 239 the amount of spacing between lines (a whole number).
+The same spacing will be used for horizontal and vertical.;
+#X obj 97 314 doc_m i0 grid;
+#X text 232 314 [#draw_lattice] passes this to [#draw_polygon] together
+with a series of auto-generated lines to draw.;
+#X obj 97 389 doc_m o0 grid;
+#X text 232 389 the output from [#draw_polygon].;
+#X connect 1 1 16 0;
+#X connect 1 1 17 0;
+#X connect 4 0 7 0;
+#X connect 5 0 4 0;
+#X connect 6 0 3 0;
+#X connect 7 0 6 0;
+#X connect 18 1 19 0;
+#X connect 20 1 21 0;
+#X connect 22 1 23 0;
+#X connect 24 1 25 0;
+#X connect 26 1 27 0;
