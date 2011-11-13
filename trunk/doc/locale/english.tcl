@@ -323,4 +323,4 @@ say #draw_lattice   "draw horizontal and vertical lines to cover an image"
 
 # 9.14
 say #delay_image "delay line for images that are all of the same size"
-say #memstat     "get stats about RAM (*experimental*)"
+say memstat      "get stats about RAM (*experimental*)"
