@@ -1,0 +1,18 @@
+#N canvas 325 234 648 300 10;
+#X msg 70 47 5 12 13;
+#X obj 70 221 #inner (3 4 5);
+#X text 63 14 (3 4 5) cross (5 12 13) = (-8 -14 16);
+#X obj 71 241 display;
+#X obj 70 117 #inner (3 3 3 # 0 0 0 0 0 1 0 -1 0 0 0 -1 0 0 0 1 0 0
+0 1 0 -1 0 0 0 0 0);
+#X text 353 22 Made in déc.2006 by Mathieu Bouchard;
+#X text 353 36 but published only in nov.2011;
+#X text 282 170 This considers the cross-product as a "trilinear" operator
+\, in which you do a bilinear product (two consecutive #inner) but
+the output is still vectorial.;
+#X text 282 217 This can be thought of as multiplying a vector by a
+matrix then by a vector \, except that instead of the matrix you have
+a 3-D grid so that the end result is a vector too.;
+#X connect 0 0 4 0;
+#X connect 1 0 3 0;
+#X connect 4 0 1 0;
