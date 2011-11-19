@@ -1,18 +1,39 @@
-#N canvas 325 234 648 300 10;
-#X msg 70 47 5 12 13;
-#X obj 70 221 #inner (3 4 5);
-#X text 63 14 (3 4 5) cross (5 12 13) = (-8 -14 16);
-#X obj 71 241 display;
-#X obj 70 117 #inner (3 3 3 # 0 0 0 0 0 1 0 -1 0 0 0 -1 0 0 0 1 0 0
+#N canvas 706 96 624 704 10;
+#X msg 20 143 5 12 13;
+#X obj 20 196 #inner (3 4 5);
+#X text 13 44 (3 4 5) cross (5 12 13) = (-8 -14 16);
+#X obj 20 216 display;
+#X obj 20 163 #inner (3 3 3 # 0 0 0 0 0 1 0 -1 0 0 0 -1 0 0 0 1 0 0
 0 1 0 -1 0 0 0 0 0);
-#X text 353 22 Made in déc.2006 by Mathieu Bouchard;
-#X text 353 36 but published only in nov.2011;
-#X text 282 170 This considers the cross-product as a "trilinear" operator
+#X text 393 22 Made in déc.2006 by Mathieu Bouchard;
+#X text 393 36 but published only in nov.2011;
+#X text 252 70 This considers the cross-product as a "trilinear" operator
 \, in which you do a bilinear product (two consecutive #inner) but
 the output is still vectorial.;
-#X text 282 217 This can be thought of as multiplying a vector by a
+#X text 252 117 This can be thought of as multiplying a vector by a
 matrix then by a vector \, except that instead of the matrix you have
 a 3-D grid so that the end result is a vector too.;
+#X obj 0 0 doc_demo;
+#X obj 20 293 t a a;
+#X obj 20 313 #finished;
+#X obj 20 353 #store;
+#X msg 20 273 2 3 # 3 4 5 5 12 13;
+#X msg 20 333 3 2 2 2 # 0 1 1 2 0 2 1 1 0 2 1 0 0 0 1 2 0 0 1 1 0 1
+1 0;
+#X obj 20 413 display;
+#X obj 20 373 #fold *;
+#X obj 20 393 #fold -;
+#X text 245 277 This version is much faster \, done in a quite completely
+different way \, but does require that you join the inputs as a single
+grid.;
 #X connect 0 0 4 0;
 #X connect 1 0 3 0;
 #X connect 4 0 1 0;
+#X connect 10 0 11 0;
+#X connect 10 1 12 1;
+#X connect 11 0 14 0;
+#X connect 12 0 16 0;
+#X connect 13 0 10 0;
+#X connect 14 0 12 0;
+#X connect 16 0 17 0;
+#X connect 17 0 15 0;
