@@ -285,8 +285,8 @@ to be the scaling factor?);
 #X obj 0 1287 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
 0;
 #X msg 10 1287 op p2c;
-#X obj 10 1306 outlet;
-#X text 10 1326 note: a centidegree is 0.01 degree. There are 36000
+#X obj 10 1366 outlet;
+#X text 10 1386 note: a centidegree is 0.01 degree. There are 36000
 centidegrees in a circle. Some angle operators use centidegrees \,
 while some others use radians. To convert degrees into centidegrees
 \, multiply by 100 . To convert degrees into radians \, divide by 57.2957
@@ -318,13 +318,21 @@ a math tutorial and then those VecOps will begin to look familiar.
 #X text 10 52 numops;
 #X obj 0 1122 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
 0;
-#X text 10 1120 vecops for complex numbers;
 #X obj 0 1252 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
 0;
-#X text 10 1250 vecops for other things;
 #X msg 10 735 op atan2cd;
 #X text 96 735 arctan(A/B) in centidegrees (formerly named "atan")
 ;
+#X obj 0 1569 doc_f;
+#X text 10 1250 vecops for other things in 2-D space;
+#X obj 0 1323 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X text 96 1323 subtraction followed by hypot \, atan two-in-one;
+#X msg 10 1323 op cross;
+#X obj 0 1306 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+0;
+#X text 10 1304 vecops for 3-D space;
+#X text 10 1120 vecops for complex numbers (a kind of 2-D space);
 #X connect 7 0 220 0;
 #X connect 12 0 220 0;
 #X connect 17 0 220 0;
@@ -383,4 +391,5 @@ a math tutorial and then those VecOps will begin to look familiar.
 #X connect 217 0 220 0;
 #X connect 219 0 220 0;
 #X connect 226 0 220 0;
-#X connect 238 0 220 0;
+#X connect 236 0 220 0;
+#X connect 242 0 220 0;
