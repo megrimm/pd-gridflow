@@ -1,4 +1,4 @@
-#N canvas 706 96 611 647 10;
+#N canvas 706 96 611 655 10;
 #X msg 20 198 5 12 13;
 #X obj 20 251 #inner (3 4 5);
 #X text 26 82 (3 4 5) cross (5 12 13) = (-8 -14 16);
@@ -27,8 +27,8 @@ grid.;
 #X text 6 55 Several more or less twisted ways to do the common computation
 :;
 #X obj 4 154 doc_section bilinear_vectors;
-#X text 430 71 This example is about math.;
-#X text 430 85 No video or music in here.;
+#X text 430 41 This example is about math.;
+#X text 430 55 No video or music in here.;
 #X text 16 106 This is the operator for finding perpendicular directions
 in 3-D space \, as taught in 13th grade where I live (Algèbre Linéaire
 105 du DEC scientifique).;
@@ -75,6 +75,9 @@ depends for whom and it depends what kind of problem.;
 it as a class \, you can also write it as a vecop \, which is a kind
 of plugin for the [#] class \, and also works in several other classes
 (#draw_polygon \, etc).;
+#X text 419 100 It's also more like a tutorial.;
+#X text 429 114 Other examples are demos.;
+#X obj 0 929 doc_f;
 #X connect 0 0 4 0;
 #X connect 1 0 3 0;
 #X connect 4 0 1 0;
@@ -98,4 +101,6 @@ of plugin for the [#] class \, and also works in several other classes
 #X connect 35 0 38 0;
 #X connect 36 0 38 1;
 #X connect 38 0 37 0;
+#X connect 41 0 46 0;
 #X connect 42 0 8 0;
+#X connect 46 0 43 0;
