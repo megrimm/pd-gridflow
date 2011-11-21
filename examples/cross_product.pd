@@ -1,39 +1,101 @@
-#N canvas 706 96 624 704 10;
-#X msg 20 143 5 12 13;
-#X obj 20 196 #inner (3 4 5);
-#X text 13 44 (3 4 5) cross (5 12 13) = (-8 -14 16);
-#X obj 20 216 display;
-#X obj 20 163 #inner (3 3 3 # 0 0 0 0 0 1 0 -1 0 0 0 -1 0 0 0 1 0 0
+#N canvas 706 96 611 647 10;
+#X msg 20 198 5 12 13;
+#X obj 20 251 #inner (3 4 5);
+#X text 26 82 (3 4 5) cross (5 12 13) = (-8 -14 16);
+#X obj 20 271 display;
+#X obj 20 218 #inner (3 3 3 # 0 0 0 0 0 1 0 -1 0 0 0 -1 0 0 0 1 0 0
 0 1 0 -1 0 0 0 0 0);
-#X text 393 22 Made in déc.2006 by Mathieu Bouchard;
-#X text 393 36 but published only in nov.2011;
-#X text 252 70 This considers the cross-product as a "trilinear" operator
+#X text 252 173 This considers the cross-product as a "trilinear" operator
 \, in which you do a bilinear product (two consecutive #inner) but
 the output is still vectorial.;
-#X text 252 117 This can be thought of as multiplying a vector by a
+#X text 251 248 This can be thought of as multiplying a vector by a
 matrix then by a vector \, except that instead of the matrix you have
 a 3-D grid so that the end result is a vector too.;
 #X obj 0 0 doc_demo;
-#X obj 20 293 t a a;
-#X obj 20 313 #finished;
-#X obj 20 353 #store;
-#X msg 20 273 2 3 # 3 4 5 5 12 13;
-#X msg 20 333 3 2 2 2 # 0 1 1 2 0 2 1 1 0 2 1 0 0 0 1 2 0 0 1 1 0 1
+#X obj 20 448 t a a;
+#X obj 20 468 #finished;
+#X obj 20 508 #store;
+#X msg 20 488 3 2 2 2 # 0 1 1 2 0 2 1 1 0 2 1 0 0 0 1 2 0 0 1 1 0 1
 1 0;
-#X obj 20 413 display;
-#X obj 20 373 #fold *;
-#X obj 20 393 #fold -;
-#X text 245 277 This version is much faster \, done in a quite completely
+#X obj 20 568 display;
+#X obj 20 528 #fold *;
+#X obj 20 548 #fold -;
+#X text 245 432 This version is much faster \, done in a quite completely
 different way \, but does require that you join the inputs as a single
 grid.;
+#X text 3 25 First part made in déc.2006 by Mathieu Bouchard;
+#X text 6 55 Several more or less twisted ways to do the common computation
+:;
+#X obj 4 154 doc_section bilinear_vectors;
+#X text 430 71 This example is about math.;
+#X text 430 85 No video or music in here.;
+#X text 16 106 This is the operator for finding perpendicular directions
+in 3-D space \, as taught in 13th grade where I live (Algèbre Linéaire
+105 du DEC scientifique).;
+#X obj 4 402 doc_section pick_values;
+#X text 246 509 It picks up the values by telling their row numbers
+and column numbers in the correct order so that they be multiplied
+and subtracted. The sequence for computing x is 0 1 \, 1 2 \, 0 2 \,
+1 1 is the basic pattern \, which is a 2-D determinant. It is then
+shifted to the right \, with wraparound \, to compute y and z.;
+#X text 251 293 Each of the 27 numbers in the grid determines how each
+combination of x \, y \, z left input \, x \, y \, z right input and
+x \, y \, z output (3*3*3=27) contributes to the final result : 1 for
+add \, -1 for subtract \, 0 for discard.;
+#X text 252 347 Those correspond to the rules for cross products of
+the standard base : i*i=0 \, j*j=0 \, k*k=0 \, and all six remaining
+combinations are things like i*j=k and j*i=-k ...;
+#X obj 4 602 doc_section value_cycling;
+#X msg 179 632 1 3 # 5 12 13;
+#X msg 9 632 1 3 # 3 4 5;
+#X obj 9 672 #convolve (1 3 # 0 0 1);
+#X obj 9 652 #t;
+#X obj 34 652 #convolve (1 3 # 1 0 0);
+#X obj 179 652 #t;
+#X obj 204 652 #convolve (1 3 # 0 0 1);
+#X obj 179 672 #convolve (1 3 # 1 0 0);
+#X obj 9 704 # *;
+#X obj 189 705 # *;
+#X obj 92 757 display;
+#X obj 92 737 # -;
+#X text 246 695 this one exchanges some columns in matrices that have
+3 columns : the last column goes to the beginning or vice-versa. this
+version has the advantage of being able to do many cross-products in
+one shot.;
+#X obj 4 796 doc_section C++;
+#X msg 5 823 3 4 5;
+#X msg 20 428 2 3 # 3 4 5 5 12 13;
+#X obj 5 863 display;
+#X text 242 818 This one solves the problem by writing a GridFlow external
+in the C++ language. This is sometimes the easiest solution but it
+depends for whom and it depends what kind of problem.;
+#X text 3 39 but published and expanded in nov.2011;
+#X obj 5 843 # cross (5 12 13);
+#X text 242 861 In the case of GridFlow \, you don't have to write
+it as a class \, you can also write it as a vecop \, which is a kind
+of plugin for the [#] class \, and also works in several other classes
+(#draw_polygon \, etc).;
 #X connect 0 0 4 0;
 #X connect 1 0 3 0;
 #X connect 4 0 1 0;
-#X connect 10 0 11 0;
-#X connect 10 1 12 1;
-#X connect 11 0 14 0;
-#X connect 12 0 16 0;
-#X connect 13 0 10 0;
+#X connect 8 0 9 0;
+#X connect 8 1 10 1;
+#X connect 9 0 11 0;
+#X connect 10 0 13 0;
+#X connect 11 0 10 0;
+#X connect 13 0 14 0;
 #X connect 14 0 12 0;
-#X connect 16 0 17 0;
-#X connect 17 0 15 0;
+#X connect 27 0 32 0;
+#X connect 28 0 30 0;
+#X connect 29 0 35 0;
+#X connect 30 0 29 0;
+#X connect 30 1 31 0;
+#X connect 31 0 36 0;
+#X connect 32 0 34 0;
+#X connect 32 1 33 0;
+#X connect 33 0 36 1;
+#X connect 34 0 35 1;
+#X connect 35 0 38 0;
+#X connect 36 0 38 1;
+#X connect 38 0 37 0;
+#X connect 42 0 8 0;
