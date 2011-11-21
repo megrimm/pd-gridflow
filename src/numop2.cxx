@@ -136,6 +136,7 @@ using std::complex;
 
 #define  OL(O,T) OpLoops<Y##O<T>,T>
 #define VOL(O,T) OpLoops<Y##O<complex<T> >,complex<T> >
+#define VOL3(O,T) OpLoops<Y##O<vec3<T> >,vec3<T> >
 #define DECL_OPON(L,O,T) Numop2::On<T>( \
 	(Numop2::On<T>::Map) L(O,T)::_map,  (Numop2::On<T>::Zip) L(O,T)::_zip, \
 	(Numop2::On<T>::Fold)L(O,T)::_fold, (Numop2::On<T>::Scan)L(O,T)::_scan, \
@@ -162,6 +163,13 @@ using std::complex;
 #define DECL_VOP_NOFOLD(        O,sym,flags,dim) DECLOP(        VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD_FLOAT(  O,sym,flags,dim) DECLOP_FLOAT(  VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
+
+// sorry
+#define DECL_3OP(               O,sym,flags,dim) DECLOP(        VOL3,DECL_OPON       ,O,sym,flags,dim)
+#define DECL_3OP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(VOL3,DECL_OPON       ,O,sym,flags,dim)
+#define DECL_3OP_NOFOLD(        O,sym,flags,dim) DECLOP(        VOL3,DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECL_3OP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(VOL3,DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECL_3OP_NOFOLD_FLOAT(  O,sym,flags,dim) DECLOP_FLOAT(  VOL3,DECL_OPON_NOFOLD,O,sym,flags,dim)
 
 template <class T> static inline T gf_floor (T a) {return (T) floor(    (double)a              );}
 template <class T> static inline T gf_trunc (T a) {return (T) floor(abs((double)a)) * (a<0?-1:1);}
@@ -231,6 +239,8 @@ DEF_OP(ldexp,ldexp(a,b), 0, false, false)
 #endif
 #ifdef PASS4
 
+// would those be faster by not using const&, or is it faster like it is ?
+
 template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
 inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
 inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
@@ -243,8 +253,16 @@ template <class T> inline complex<T> gf_c2p(const complex<T>& a) {
 }
 template <class T> inline complex<T> gf_p2c(const complex<T>& a) {
   return complex<T>((float64)a.real() * sin((float64)a.imag() * (M_PI / 18000)),
-                 (float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)));
+                    (float64)a.real() * cos((float64)a.imag() * (M_PI / 18000)));
 }
+template <class T> struct vec3 {T x,y,z; vec3(T x,T y,T z):x(x),y(y),z(z){}};
+#define DET2(U,V,I,J) ((U).I*(V).J - (U).J*(V).I)
+template <class T> inline vec3<T> gf_cross(const vec3<T>& a, const vec3<T>& b) {
+	return vec3<T>(T(DET2(a,b,y,z)),
+		       T(DET2(a,b,z,x)),
+		       T(DET2(a,b,x,y)));
+}
+
 /*
 template <class T> inline complex<T> cx_atan2 (complex<T>& a, complex<T>& b) {
   if (b==0) return 0;
@@ -256,17 +274,18 @@ template <class T> inline complex<T> cx_atan2 (complex<T>& a, complex<T>& b) {
 */
 
 //!@#$ neutral,is_neutral,is_absorbent are impossible to use here
-DEF_OP(cx_mul,     a*b,       1, false, false)
-DEF_OP(cx_mulconj, a*conj(b), 1, false, false)
-DEF_OP(cx_div,     b==complex<T>(0,0) ? T(0) : a/b,       1, false, false)
-DEF_OP(cx_divconj, b==complex<T>(0,0) ? T(0) : a/conj(b), 1, false, false)
-DEF_OP(cx_vid,     a==complex<T>(0,0) ? T(0) : b/a,       1, false, false)
-DEF_OP(cx_vidconj, a==complex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false)
-DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
-DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
+DEF_OP(cx_mul,     a*b,       1, false, false) // neutral=(1 0) absorbent=(0 0)
+DEF_OP(cx_mulconj, a*conj(b), 1, false, false) // bis
+DEF_OP(cx_div,     b==complex<T>(0,0) ? T(0) : a/b,       1, false, false) // right-neutral is (1 0), no left-neutral, no absorbent
+DEF_OP(cx_divconj, b==complex<T>(0,0) ? T(0) : a/conj(b), 1, false, false) // bis
+DEF_OP(cx_vid,     a==complex<T>(0,0) ? T(0) : b/a,       1, false, false) // left-neutral is (1 0), no right-neutral, no absorbent
+DEF_OP(cx_vidconj, a==complex<T>(0,0) ? T(0) : conj(b)/a, 1, false, false) // bis
+DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false) // no neutral, no absorbent
+DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false) // no neutral, no absorbent
 //DEF_OP(cx_atan2,atan2(a,b), 0, false, false)
 DEF_OP(c2p,     gf_c2p(a-b), 0, false, false)
 DEF_OP(p2c,     gf_p2c(a)+b, 0, false, false)
+DEF_OP(cross, gf_cross(a,b), 0, false, false)
 #endif
 
 extern Numop2     op_table1[], op_table2[], op_table3[], op_table4[];
@@ -357,6 +376,7 @@ const long op_table3_n = COUNT(op_table3);
 #endif
 #ifdef PASS4
 Numop2 op_table4[] = {
+// 2-d vecops
 	DECL_VOP(cx_mul,     "C.*",     OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_div,     "C./",     0,2),
@@ -369,6 +389,8 @@ Numop2 op_table4[] = {
 //	DECL_VOP_NOFOLD_FLOAT(cx_atan2,"C.atan2",0,2),
 	DECL_VOP_NOFOLD(      c2p,     "c2p", 0,2),
 	DECL_VOP_NOFOLD(      p2c,     "p2c", 0,2),
+// 3-d vecops
+	DECL_3OP_NOFOLD(    cross,   "cross",OP_ASSOC,3), // not commutative, but anti-commutative : a×b+b×a=0
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
