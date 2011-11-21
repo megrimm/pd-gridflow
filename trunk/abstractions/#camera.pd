@@ -3,7 +3,7 @@
 -66577 0;
 #X obj 215 34 hradio 12 1 0 4 \$0-s_channel \$0-channel _0_1_2_3 -2
 7 1 8 -233017 -195568 -195568 0;
-#N canvas 387 0 812 717 camera 1;
+#N canvas 387 0 812 717 camera 0;
 #X obj 253 393 outlet;
 #X obj 38 21 inlet;
 #X obj 161 278 t a;
@@ -98,7 +98,7 @@ norm;
 #X obj 556 315 r \$0-s_api_e;
 #X obj 489 224 s \$0-api_e;
 #X msg 38 96 set 8;
-#N canvas 0 22 450 300 detect_default_api 1;
+#N canvas 0 22 450 300 detect_default_api 0;
 #X obj 142 261 outlet;
 #X obj 10 10 loadbang;
 #X obj 10 48 class_exists;
@@ -237,33 +237,33 @@ sorry;
 #X text 170 47 tuner:;
 #X obj 153 105 cnv 15 184 177 empty \$0-rect empty 20 12 0 14 -233017
 -66577 0;
-#X obj 342 214 cnv 15 144 128 empty \$0-palette2 YUV420P 86 8 0 10
--233017 -1 0;
+#X obj 342 214 cnv 15 144 128 empty \$0-palette2 RGB24 86 8 0 10 -233017
+-1 0;
 #X obj 342 31 cnv 15 144 178 empty \$0-rect empty 20 12 0 14 -233017
 -66577 0;
 #X obj 384 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_height \$0-height empty
-0 -6 1 10 -233017 -195568 -195568 8.59054e+08 256;
+0 -6 1 10 -62784 -44926 -1 480 256;
 #X obj 432 66 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_width \$0-width empty
-0 -6 1 10 -233017 -195568 -195568 1.93653e+09 256;
+0 -6 1 10 -62784 -44926 -1 640 256;
 #X text 347 65 size:;
 #X text 387 35 height;
 #X text 437 35 width;
 #X obj 401 124 bng 12 250 50 0 \$0-size0 \$0-sizec 120x160 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 416 124 bng 12 250 50 0 \$0-size1 \$0-sizec 120x180 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 401 136 bng 12 250 50 0 \$0-size2 \$0-sizec 240x320 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 416 136 bng 12 250 50 0 \$0-size3 \$0-sizec 240x360 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 401 148 bng 12 250 50 0 \$0-size4 \$0-sizec 480x640 -46 6 1
-8 -233017 -195568 -195568;
+8 -62784 -44926 -1;
 #X obj 416 148 bng 12 250 50 0 \$0-size5 \$0-sizec 480x720 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 416 160 bng 12 250 50 0 \$0-size6 \$0-sizec 576x720 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 416 172 bng 12 250 50 0 \$0-size7 \$0-sizec 288x352 16 6 1 8
--233017 -195568 -195568;
+-62784 -44926 -1;
 #X obj 432 191 nbx 5 14 -1e+37 1e+37 0 0 \$0-s_framerate \$0-framerate
 empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 #X obj 155 178 tgl 12 0 \$0-s_white_mode \$0-white_mode manual_white_balance
@@ -274,11 +274,11 @@ empty 0 -6 1 10 -233017 -195568 -195568 0 256;
 _0_1_2_3_noise_reduction -2 7 1 8 -233017 -195568 -195568 0;
 #X obj 155 268 hradio 12 1 0 4 \$0-s_compression \$0-compression _0_1_2_3_compression
 -2 7 1 8 -233017 -195568 -195568 0;
-#X obj 9 185 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
--195568 0 1;
+#X obj 9 185 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
+-1 0 1;
 #X text 25 170 use PWC;
 #X obj 417 232 vradio 12 1 0 6 \$0-s_colorspace_e \$0-colorspace_e
-empty 0 -8 0 10 -233017 -195568 -195568 2;
+empty 0 -8 0 10 -62784 -44926 -1 2;
 #X text 431 228 y (grey);
 #X text 431 240 yuv;
 #X text 430 253 rgb;
@@ -290,16 +290,16 @@ empty 0 -8 0 10 -233017 -195568 -195568 2;
 #X text 286 45 NTSC;
 #X text 285 57 SECAM;
 #X text 285 68 auto;
-#X obj 6 6 cnv 15 480 20 empty \$0-title Unknown_camera 4 10 1 12 -1
+#X obj 6 6 cnv 15 480 20 empty \$0-title HP_Webcam-101 4 10 1 12 -1
 -262144 0;
 #X obj 384 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minheight empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 120 256;
 #X obj 432 52 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-minwidth empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 160 256;
 #X obj 384 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxheight empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 480 256;
 #X obj 432 80 nbx 5 14 -1e+37 1e+37 0 0 empty \$0-maxwidth empty 0
--6 1 10 -233017 -1 -195568 0 256;
+-6 1 10 -233017 -1 -195568 640 256;
 #X text 347 79 max:;
 #X text 347 51 min:;
 #X text 369 214 Palette:;
@@ -379,7 +379,7 @@ empty 0 -8 0 10 -233017 -195568 -195568 2;
 #X obj 6 31 cnv 15 142 311 empty \$0-rect empty 20 12 0 14 -233017
 -66577 0;
 #X obj 24 224 vradio 15 1 0 7 \$0-s_api_e \$0-api_e empty 0 -8 0 10
--241291 -1 -1 0;
+-241291 -1 -1 1;
 #X text 42 237 libv4l1;
 #X text 42 252 ...v4l2;
 #X text 42 267 libv4l2;
@@ -391,7 +391,7 @@ empty 0 -8 0 10 -233017 -195568 -195568 2;
 #X text 43 312 sorry;
 #X text 9 30 pick a camera:;
 #X obj 24 49 vradio 15 1 0 9 \$0-s_device \$0-device empty 0 -8 0 10
--241291 -1 -1 8;
+-241291 -1 -1 0;
 #X text 42 46 0;
 #X text 42 61 1;
 #X text 42 77 2;
@@ -428,11 +428,16 @@ empty 0 -8 0 10 -233017 -195568 -195568 2;
 #X obj 53 429 s \$0-api;
 #X obj 7 391 route device api;
 #X obj 53 410 gf/selector;
-#X obj 25 187 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -233017 -195568
--195568 0 1;
+#X obj 25 187 tgl 12 0 \$0-s_pwc \$0-pwc empty 20 7 1 10 -62784 -44926
+-1 0 1;
 #X obj 7 410 mod 9;
 #X text 40 185 use PWC (in v4l1);
 #X obj 203 446 outlet attr;
+#X obj 18 276 cnv 4 4 4 empty empty / 10 0 0 8 -228856 -258113 0;
+#X obj 18 261 cnv 4 4 4 empty empty / 10 0 0 8 -228856 -258113 0;
+#X text 152 303 note: v4l2 not available yet;
+#X text 151 316 except through the "libv4l1";
+#X text 151 328 adaptor.;
 #X connect 2 0 53 0;
 #X connect 4 0 94 0;
 #X connect 6 0 53 0;
