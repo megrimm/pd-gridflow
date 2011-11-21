@@ -1174,6 +1174,15 @@ void canvas_properties2(t_gobj *z, t_glist *owner) {
 };
 \end class {install("gf/class_info",1,1);}
 
+\class Strtof { // test for jwilkes
+  \constructor () {}
+  \decl 0 symbol (const char *s) {
+    char *e; float f=strtof(s,&e);
+    if (e==s+strlen(s)) out[0](f); else out[1](); 
+  }
+};
+\end class {install("gf/strtof",1,2);}
+
 void startup_classes2 () {
 	\startall
 }
