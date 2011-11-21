@@ -1,29 +1,25 @@
-#N canvas 539 57 632 540 10;
+#N canvas 539 57 632 610 10;
 #X text 232 375 must be a 2x2 symmetric matrix.;
-#X text 232 437 outlet 0: angle (only makes sense with a 2x2 matrix)
-as int;
-#X text 232 459 outlet 1: radiuses (from biggest to smallest) as float
-grid;
 #X obj 0 0 doc_h;
 #X obj 3 270 doc_c 0;
 #X obj 3 310 doc_i 1;
 #X obj 3 407 doc_o 2;
 #X obj 14 437 doc_oo 0;
-#X obj 14 459 doc_oo 1;
+#X obj 14 472 doc_oo 1;
 #X obj 14 340 doc_ii 0;
-#X obj 0 511 doc_f;
+#X obj 0 576 doc_f;
 #X obj 97 340 doc_m i0 grid;
 #X obj 97 437 doc_m o0 grid;
-#X obj 97 459 doc_m o1 grid;
+#X obj 97 472 doc_m o1 grid;
 #X text 232 340 inlet 0: variance matrix (aka covariance matrix) \,
 from [#moment 2] or compatible.;
-#X obj 3 491 doc_also;
-#X obj 103 491 #moment;
+#X obj 3 556 doc_also;
+#X obj 103 556 #moment;
 #X obj 68 205 #moment_polar;
 #X text 515 52 needs OpenCV;
 #X obj 68 116 #redim (2 2);
-#X obj 144 225 display;
-#X obj 69 246 display;
+#X obj 143 225 display;
+#X obj 68 246 display;
 #X obj 69 94 #pack 4;
 #X obj 82 62 nbx 5 14 -1e+37 1e+37 0 1 empty empty yx 48 8 0 8 -262144
 -1 -1 78 256;
@@ -31,21 +27,33 @@ from [#moment 2] or compatible.;
 -1 -1 -25 256;
 #X obj 108 78 nbx 5 14 -1e+37 1e+37 0 1 empty empty xx 48 8 0 8 -262144
 -1 -1 36 256;
-#X obj 80 143 display;
+#X obj 74 136 display;
 #X text 236 107 finds the angle and radiuses associated with a variance
 matrix (aka covariance matrix). those matrices are output by [#moment
 2] and by [#labelling 0].;
-#X connect 11 1 14 0;
-#X connect 11 1 0 0;
-#X connect 12 1 1 0;
-#X connect 13 1 2 0;
-#X connect 15 1 16 0;
-#X connect 17 0 21 0;
-#X connect 17 1 20 0;
-#X connect 19 0 17 0;
-#X connect 19 0 26 0;
-#X connect 22 0 19 0;
-#X connect 23 0 22 1;
-#X connect 23 0 22 2;
-#X connect 24 0 22 0;
-#X connect 25 0 22 3;
+#X text 156 205 comment;
+#X text 122 245 angle in centidegrees. divide by 100 to get degrees.
+;
+#X text 232 437 outlet 0: angle (only makes sense with a 2x2 matrix)
+as float \, in centidegrees.;
+#X msg 168 170 3 3 # 1 2 2 3 4 6 9 11 11;
+#X text 232 472 outlet 1: radiuses (from biggest to smallest) as float
+grid of size (2). Actually \, if you input a N by N matrix instead
+\, it does give correct results here \, as a float grid of size (N)
+\, but then gives an error message trying to compute the angle (for
+outlet 0) on too many values.;
+#X connect 9 1 12 0;
+#X connect 9 1 0 0;
+#X connect 10 1 28 0;
+#X connect 11 1 30 0;
+#X connect 13 1 14 0;
+#X connect 15 0 19 0;
+#X connect 15 1 18 0;
+#X connect 17 0 15 0;
+#X connect 17 0 24 0;
+#X connect 20 0 17 0;
+#X connect 21 0 20 1;
+#X connect 21 0 20 2;
+#X connect 22 0 20 0;
+#X connect 23 0 20 3;
+#X connect 29 0 15 0;
