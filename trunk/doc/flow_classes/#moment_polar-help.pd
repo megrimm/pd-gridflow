@@ -1,4 +1,4 @@
-#N canvas 539 57 632 610 10;
+#N canvas 539 57 632 632 10;
 #X text 232 375 must be a 2x2 symmetric matrix.;
 #X obj 0 0 doc_h;
 #X obj 3 270 doc_c 0;
@@ -7,14 +7,14 @@
 #X obj 14 437 doc_oo 0;
 #X obj 14 472 doc_oo 1;
 #X obj 14 340 doc_ii 0;
-#X obj 0 576 doc_f;
+#X obj 0 598 doc_f;
 #X obj 97 340 doc_m i0 grid;
 #X obj 97 437 doc_m o0 grid;
 #X obj 97 472 doc_m o1 grid;
 #X text 232 340 inlet 0: variance matrix (aka covariance matrix) \,
 from [#moment 2] or compatible.;
-#X obj 3 556 doc_also;
-#X obj 103 556 #moment;
+#X obj 3 578 doc_also;
+#X obj 103 578 #moment;
 #X obj 68 205 #moment_polar;
 #X text 515 52 needs OpenCV;
 #X obj 68 116 #redim (2 2);
@@ -31,21 +31,24 @@ from [#moment 2] or compatible.;
 #X text 236 107 finds the angle and radiuses associated with a variance
 matrix (aka covariance matrix). those matrices are output by [#moment
 2] and by [#labelling 0].;
-#X text 156 205 comment;
 #X text 122 245 angle in centidegrees. divide by 100 to get degrees.
 ;
 #X text 232 437 outlet 0: angle (only makes sense with a 2x2 matrix)
 as float \, in centidegrees.;
 #X msg 168 170 3 3 # 1 2 2 3 4 6 9 11 11;
+#X text 153 195 distances in the same units as the inputs (pixels or
+whatever);
 #X text 232 472 outlet 1: radiuses (from biggest to smallest) as float
-grid of size (2). Actually \, if you input a N by N matrix instead
-\, it does give correct results here \, as a float grid of size (N)
-\, but then gives an error message trying to compute the angle (for
-outlet 0) on too many values.;
+grid of size (2).;
+#X text 232 507 Actually \, if you input a N by N matrix instead \,
+it does give correct results here \, as a float grid of size (N) \,
+but then gives an error message trying to compute the angle (for outlet
+0) on too many values.;
 #X connect 9 1 12 0;
 #X connect 9 1 0 0;
-#X connect 10 1 28 0;
+#X connect 10 1 27 0;
 #X connect 11 1 30 0;
+#X connect 11 1 31 0;
 #X connect 13 1 14 0;
 #X connect 15 0 19 0;
 #X connect 15 1 18 0;
@@ -56,4 +59,4 @@ outlet 0) on too many values.;
 #X connect 21 0 20 2;
 #X connect 22 0 20 0;
 #X connect 23 0 20 3;
-#X connect 29 0 15 0;
+#X connect 28 0 15 0;
