@@ -95,12 +95,13 @@ void Barf::error(t_symbol *s, int argc, t_atom *argv) {
 }
 
 // [#expr]
-#define A_OPEN  t_atomtype(0x1000) /* only between next() and parse() */
-#define A_CLOSE t_atomtype(0x1001) /* only between next() and parse() */
-#define A_VAR   t_atomtype(0x1002) /* for $f1-style variables, not other variables */
-#define A_OP1   t_atomtype(0x1003) /* operator: unary prefix */
-#define A_OP    t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
-#define A_VAR_A    t_atomtype(0x1006) /* [tabread] */
+#define A_OPEN    t_atomtype(0x1000) /* only between next() and parse() */
+#define A_CLOSE   t_atomtype(0x1001) /* only between next() and parse() */
+#define A_VAR     t_atomtype(0x1002) /* for $f1-style variables, not other variables */
+#define A_OP1     t_atomtype(0x1003) /* operator: unary prefix */
+#define A_OP      t_atomtype(0x1004) /* operator: binary infix, or not parsed yet */
+#define A_VAR_V   t_atomtype(0x1005) /* [value] (experimental... not sure that I'll keep this) */
+#define A_VAR_A   t_atomtype(0x1006) /* [tabread] */
 #define A_SQOPEN  t_atomtype(0x1008) // '['
 #define A_SQCLOSE t_atomtype(0x1009) // ']'
 #define A_OP1FAST t_atomtype(0x1013)
@@ -112,7 +113,7 @@ string atomtype_to_s (t_atomtype t) {
     Z(A_FLOAT)Z(A_SYMBOL)Z(A_POINTER)Z(A_LIST)Z(A_GRID)Z(A_GRIDOUT)
     Z(A_DOLLAR)Z(A_DOLLSYM)Z(A_COMMA)Z(A_SEMI)
     Z(A_CANT)Z(A_NULL)
-    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)Z(A_SQOPEN)Z(A_SQCLOSE)Z(A_VAR_A)Z(A_OP1FAST)Z(A_OPFAST)
+    Z(A_OP)Z(A_OP1)Z(A_VAR)Z(A_OPEN)Z(A_CLOSE)Z(A_SQOPEN)Z(A_SQCLOSE)Z(A_VAR_V)Z(A_VAR_A)Z(A_OP1FAST)Z(A_OPFAST)
     default: ostringstream os; oprintf(os,"unknown:%d",int(t)); return os.str();
   }
 }
