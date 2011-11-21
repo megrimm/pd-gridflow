@@ -1,5 +1,8 @@
 Nouveau
 
+[ ] #perspective has major bug ! modifies «data»
+[ ] this shows how to get fullscreen SDL on non-X11 : http://sdl.beuc.net/sdl.wiki/SDL_WM_ToggleFullScreen
+[9.14] document [#draw_lattice]
 [ ] make [#join] repeat data like [#redim] ?
 [ ] inclure le protecteur de __cxa_allocate_exception dans GF par défaut (parce qu'il y a encore des problèmes
 [ ] inclure segfault.pd_linux dans GF par défaut
@@ -14,7 +17,6 @@ Nouveau
     But I don't remember whether I tried it or not.
 [ ] typo [#out window here override_redirectrrrrrrrrrrr] does not print any error
 [9.14] launchpad.net
-[9.14] make sure docs are up-to-date
 [9.16] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
 [9.14] make libv4l1 the default API
 [ ] write warning about v4l2 in [#camera]
@@ -114,12 +116,12 @@ Docs
 Unsorted
 
 [ ] [#camera] libv4l1 devrait devenir l'api par défaut
-[9.14] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
+[9.15] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
 [ ] qbert wav files are gzipped, not ready for use
 [ ] [gf/s2l] only produces symbols ?
 [ ] make [#redim] faster (see #io.x11-test)
 [ ] [#moment]'s help : see that [#swap] has a bug because of [#import]'s fuckups.
-[9.14] feedback_fractal.pd crashes for Patrice. (see small test file)
+[9.15] feedback_fractal.pd crashes for Patrice. (see small test file)
 [ ] [#rzero_space]
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] [note]: use midi scale (chromatic)
@@ -132,7 +134,7 @@ Unsorted
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because there are gridflow version conflicts involving auto -path entries that have been saved in ~/.pdsettings
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
-[9.14] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
+[9.15] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] accelerate [#outer ignore (0)]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
@@ -305,7 +307,7 @@ Other
 [ ] re-test int64,float64 and make sure it works
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
-[9.14] #import with zero size crashes?
+[9.15] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] "unsupported codec" bogus errors.
 [ ] some seeds aren't typechecked (which ones ?)

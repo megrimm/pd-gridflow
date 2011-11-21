@@ -13,7 +13,7 @@ version 9.14 (2011.11.XX):
  * [#polygon_moment]: argument defaults to 1
  * [#polygon_radial_map]: accept comma-message
  * pdp support back in source package
- * added classes [#delay_image]
+ * added classes [#delay_image], [#draw_lattice]
  * [fps]: report wrong mode name
  * [#rotate]: matrix precision increased from 9 bit to 17 bit
  * libv4l now required to get v4l camera support on linux
@@ -27,6 +27,9 @@ version 9.14 (2011.11.XX):
  * fixed endianness problem in [#in grid] (does not occur in [#out grid])
  * [#expr] is now 12 times faster than it was (still a bit slower than [expr])
  * handling each message in every class of GridFlow is now a bit faster
+ * detect libv4l1 even on new versions of linux (where videodev.h is renamed)
+ * [#camera]: on linux, use 'libv4l1' as default
+ * added example cross_product.pd
 
 version 9.13 (2011.02.08):
 
