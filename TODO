@@ -1,3 +1,10 @@
+Très Nouveau
+
+[9.15] cache de lookup pour les appels de méthodes
+       répéter toutes les entrées de méthodes des superclasses dans les sousclasses.
+       prédéterminer l'usage des méthodes par défaut.
+       utiliser class_addfloat ou class_addmethod si ça vaut la peine.
+
 Nouveau
 
 [ ] #perspective has major bug ! modifies «data»
