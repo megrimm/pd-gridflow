@@ -401,7 +401,7 @@ Feature.add("quicktimehw","Plaum's LibQuickTime") {
 		return quicktime_open==0; }`}}
 Feature.add("opencv","Intel OpenCV") {
 	produces_o ["src/opencv.o"]
-	uses_so `pkg-config --libs opencv`.split(/\s+/) if not OSX
+	uses_so `pkg-config --libs opencv`.split(/\s+/).reject{|x| x=="-lhighgui" or x=="-lcvaux" } if not OSX # for some reason, pkg-config output is wrong on mathieu's system
 	#uses_so ["-lcv"]
         #uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
         uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
