@@ -142,7 +142,7 @@ Numop1 op_table_unary[] = {
 	DECL_OP_FLOAT(log,  "ln"),    DECL_VOP_FLOAT(cx_log,  "C.ln",   2),
 // moved from numop2 at 9.12
 	DECL_OP_NOFLOAT(weight,"weight"),
-// introduced at 9.12
+// introduced at 9.12 (mostly because of #expr)
 	DECL_OP(unary_minus, "unary-"),
 	DECL_OP(unary_plus,  "unary+"),
 	DECL_OP(logic_not, "!"),
