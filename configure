@@ -345,7 +345,7 @@ Feature.add("png","PNG Library") {
 		return 0;}`}}
 Feature.add("libv4l1","Video4linux I Driver Interface Library") {
 	produces_o ["src/videodev.o"]
-	uses_h "libv4l1.h"
+	uses_h ["libv4l1.h"]
 	uses_so ["-lv4l1"]
 	test proc {c_test "
 		#include <sys/types.h>
@@ -464,17 +464,17 @@ while ARGV.length>0 do
 	case arg
 	when /([^=]+)=(.*)/
 		ARGV.unshift $1,$2
-	when /^--no-(.*)/   : name = $1.untaint
+	when /^--no-(.*)/   ; name = $1.untaint
 		if $features_h[name] then $features_h[name].status :disabled else puts "there is no feature called #{name}" end
-	when /^--force-(.*)/: name = $1.untaint
+	when /^--force-(.*)/; name = $1.untaint
 		if $features_h[name] then $features_h[name].test nil         else puts "there is no feature called #{name}" end
-	when "--explicit": $explicit=true
-	when "--debug": DEFINES["HAVE_DEBUG"]=1
-	when "--lite":  DEFINES["HAVE_LITE" ]=1
-	when "--help": usage; exit 0
-	when "--use-compiler":        CXX =         ARGV.shift
-	when "--use-compiler-option": CFLAGS << " "+ARGV.shift
-	when "--use-cpu":          DEFINES["CPU"] = ARGV.shift
+	when "--explicit"; $explicit=true
+	when "--debug"; DEFINES["HAVE_DEBUG"]=1
+	when "--lite";  DEFINES["HAVE_LITE" ]=1
+	when "--help"; usage; exit 0
+	when "--use-compiler";        CXX =         ARGV.shift
+	when "--use-compiler-option"; CFLAGS << " "+ARGV.shift
+	when "--use-cpu";          DEFINES["CPU"] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
