@@ -2,10 +2,10 @@
 
 # pexports /c/Program\ Files/pd/extra/Gem/Gem.dll > Gem.def
 
+RUBY = ruby_not_defined
 include config.make
 COMMON_DEPS = config.make Makefile src/source_filter.rb
 COMMON_DEPS2 = $(COMMON_DEPS) src/gridflow.hxx.fcs
-RUBY = ruby
 
 SHELL = /bin/sh
 RM = rm -f

@@ -516,6 +516,7 @@ LOG.puts "-"*64
 DUAL.puts Light,"generating ./config.make and ./config.h"
 
 File.open("./config.make","w") {|f|
+  f.puts "RUBY = "+CONFIG["bindir"]+"/"+CONFIG["RUBY_INSTALL_NAME"]
   if DEFINES["CPU"]
     CFLAGS << (if DEFINES["GCC_VERSION"] >= "4" then " -mtune=$(CPU)" else " -mcpu=$(CPU)" end)
     CFLAGS << " -march=$(CPU)"
