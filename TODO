@@ -1,5 +1,7 @@
 Très Nouveau
 
+[9.15] examples/flocons (à la demande de Patrick)
+
 [9.15] cache de lookup pour les appels de méthodes
        répéter toutes les entrées de méthodes des superclasses dans les sousclasses.
        prédéterminer l'usage des méthodes par défaut.
