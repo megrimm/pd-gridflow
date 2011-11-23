@@ -7,9 +7,9 @@ Très Nouveau
 
 Nouveau
 
-[ ] #perspective has major bug ! modifies «data»
+[9.14] fix [cv/#ellipse] re parens don't exist in messages since 9.13
+[9.14] [#perspective] has major bug ! modifies «data»
 [ ] this shows how to get fullscreen SDL on non-X11 : http://sdl.beuc.net/sdl.wiki/SDL_WM_ToggleFullScreen
-[9.14] document [#draw_lattice]
 [ ] make [#join] repeat data like [#redim] ?
 [ ] inclure le protecteur de __cxa_allocate_exception dans GF par défaut (parce qu'il y a encore des problèmes
 [ ] inclure segfault.pd_linux dans GF par défaut
@@ -23,9 +23,8 @@ Nouveau
       (f0+f4+...)+(f1+f5+...)+(f2+f6+...)+(f3+f7+...)
     But I don't remember whether I tried it or not.
 [ ] typo [#out window here override_redirectrrrrrrrrrrr] does not print any error
-[9.14] launchpad.net
+[9.14] use launchpad.net for release
 [9.16] Stack size problem : GridFlow shouldn't allocate any big stuff on stack.
-[9.14] make libv4l1 the default API
 [ ] write warning about v4l2 in [#camera]
 [ ] deal with the lack of videodev.h in recent kernels
 [ ] use 'restrict' keyword ? will it help ?
@@ -76,13 +75,14 @@ GEM/PDP
 [ ] [#from_pix, colorspace y] may have different contrast/brightness because of differences between the two definitions of Y
 [ ] when [#from_pix] uses [pix_rgba] or [pix_grey], there is one empty frame of size (0 0 4) instead of the 1st frame. why ?
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
-[9.14] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
+[9.16] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
+[9.15] Support GEM 93 release ABI
 [ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that (?)
 
 #expr
 
 [ ] [#expr] local
-[9.14] more [#expr] : int rint imodf modf drem fmod size sum Sum
+[9.16] more [#expr] : int rint imodf modf drem fmod size sum Sum
 [ ] [#expr] grid support
 [ ] add floor, ceiling, bessel, ...
 [ ] [#expr~]
@@ -90,8 +90,8 @@ GEM/PDP
 
 #fft
 
-[9.14] [#fft] sign crash
-[9.14] bug: see #fft*-test.pd
+[9.16] [#fft] sign crash
+[9.16] bug: see #fft*-test.pd
 
 GUI Objects (incl abstrs & print)
 
@@ -99,8 +99,8 @@ GUI Objects (incl abstrs & print)
 [ ] 2d cartesian slider (see [grid]); radial slider (angle chooser); polar slider (angle chooser + amplitude chooser)
 [ ] object construction menu specialized for each class (generated from class reflection/metadata)
 [ ] option to disable input when in edit-mode, for [#see] and [gf/mouse_spy]
-[9.14] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
-[9.14] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
+[9.16] [gf/mouse_spy] bug with ... was it gop ? (didn't finish writing this line)
+[9.16] see people/jack/main.pd : [#see] sometimes appears when it's not supposed to.
 [ ] [#see] shm : http://wiki.tcl.tk/2999
 [ ] [display] [print]: distinguer les () de symboles vs les () de A_LIST ?
 [ ] [#see] invalid command name when sending image in hidden subpatch or abs.
@@ -119,16 +119,18 @@ Docs
     donner de bons exemples. expliquer par une séquence de cas (ou d'exemple) de plus en plus complexes.
 [ ] put more stuff in doc/flow_classes/validation
 [ ] il y a qqchose qui marche pas dans les patchs d'aide neuves (pas encore rechargées)
+[9.16] patch screenshot abstraction extracted from [doc_h] and which can work from anywhere to anywhere else
+       (use it in shoot.pd and send the xid from [doc_h] to shoot.pd, and then do the same from [doc_demo] for doc/about*.pd etc)
 
 Unsorted
 
-[ ] [#camera] libv4l1 devrait devenir l'api par défaut
-[9.15] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
+[9.16] add C.sqrt
+[9.16] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
 [ ] qbert wav files are gzipped, not ready for use
 [ ] [gf/s2l] only produces symbols ?
 [ ] make [#redim] faster (see #io.x11-test)
 [ ] [#moment]'s help : see that [#swap] has a bug because of [#import]'s fuckups.
-[9.15] feedback_fractal.pd crashes for Patrice. (see small test file)
+[9.16] feedback_fractal.pd crashes for Patrice. (see small test file)
 [ ] [#rzero_space]
 [ ] note-help : something wrong with speedlim ? ask patrice (see courriel 7 nov 2010)
 [ ] [note]: use midi scale (chromatic)
@@ -141,7 +143,7 @@ Unsorted
 [ ] figure out way to share resources like [#text_to_image] and [#in qbert.png] and such, in qbert.pd and others
 [ ] should clean the -path thing because there are gridflow version conflicts involving auto -path entries that have been saved in ~/.pdsettings
 [ ] think about A_LIST, the 'binbuf' selector, the 'list' selector, and the auto-unfolding of list atoms into list messages.
-[9.15] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
+[9.16] terrible bug in [#store] put_at with feedback and/or grid too big. can crash.
 [ ] accelerate [#outer ignore (0)]
 [ ] other invalid command name ".x8f03820.c" not related to hidden [display]
 [ ] test negative dimension sizes in grid-literals, [#import], [#pack], [#redim], etc
@@ -314,7 +316,7 @@ Other
 [ ] re-test int64,float64 and make sure it works
 [ ] small leak remaining in x11? may have to do with non-use of XDestroyImage?
 [ ] is [#convolve] actually cross-correlation ? that is, convolves with a mirror image of the convolution matrix.
-[9.15] #import with zero size crashes?
+[9.16] #import with zero size crashes?
 [ ] MMX computations may be done misaligned, which may be bad.
 [ ] "unsupported codec" bogus errors.
 [ ] some seeds aren't typechecked (which ones ?)
@@ -381,6 +383,12 @@ Computation Objects
 [ ] multilinear interpolation (n-dimensional?)
 [ ] #perlin
 [ ] #moment could support more than 2 dimensions
+[ ] vecops :
+      2-D and/or 3-D projection operators ? a proj b = b*(a dot b)/(b dot b)
+      cylindrical coord conversions ?
+      spherical coord conversions ?
+      2-D, 4-D : z-buffer (put conditionnel)
+      2-D, 4-D : put avec alpha
 
 Input/Output
 [ ] [#store]: use #A for storage
