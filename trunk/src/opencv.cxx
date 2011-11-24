@@ -423,7 +423,7 @@ int  cvCamShift( const CvArr* prob_image, CvRect window, CvTermCriteria criteria
 		min_neighbors=3;
 		flags=0;
 		//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
-		const char *filename = OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml";
+		const char *filename = /*OPENCV_SHARE_PATH*/ "/haarcascades/haarcascade_frontalface_alt2.xml";
 		FILE *f = fopen(filename,"r");
 		if (!f) RAISE("error opening %s: %s",filename,strerror(errno));
 		fclose(f);
