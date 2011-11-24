@@ -45,7 +45,7 @@ proc op {op desc {extra1 ""} {extra2 ""} {size 19}} {
 	obj 0 $y cnv 15 $::col4 [expr $size-2] empty empty empty 20 12 0 14 $bg -66577 0
 	lappend ::msgboxes $::oid
 	set x 10
-	foreach op1 $op {msg $x $y op $op; incr 50}
+	foreach op1 $op {msg $x $y op $op; incr y 50}
 	text                     $::col1 $y $desc
 	if {$extra1 != ""} {text $::col2 $y $extra1}
 	if {$extra2 != ""} {text $::col3 $y $extra2}
