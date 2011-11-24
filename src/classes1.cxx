@@ -32,7 +32,9 @@
 //#define GRID_INPUT(I,V) GRID_INLET(I) {in.buf=V=new Grid(in.dim,NumberTypeE_type_of(data));} GRID_FINISH
 
 #ifdef __MINGW32__
-void *alloca(size_t);
+//void *alloca(size_t);
+// there should be a HAVE_MALLOC_H macro...
+#include <malloc.h>
 #endif
 
 /* ---------------------------------------------------------------- */
