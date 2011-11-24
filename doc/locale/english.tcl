@@ -319,8 +319,12 @@ say hpgl_objectbox  "make HPGL drawing of objectbox"
 say hpgl_messagebox "make HPGL drawing of messagebox"
 say hpgl_to_lines   "convert HPGL drawings to line segment grids (for #draw_polygon)"
 say hpgl_from_patch "read .pd file and try making an HPGL drawing from it"
-say #draw_lattice   "draw horizontal and vertical lines to cover an image"
 
 # 9.14
-say #delay_image "delay line for images that are all of the same size"
-say memstat      "get stats about RAM (*experimental*)"
+say #delay_image  "delay line for images that are all of the same size"
+say memstat       "get stats about RAM (*experimental*)"
+say #draw_lattice "draw horizontal and vertical lines to cover an image"
+say gf/strtof     "produce float from symbol"
+say is            "check equality of a float"
+say #is           "check equality of a list"
+
