@@ -381,9 +381,9 @@ Feature.add("quicktimeapple","Apple's QuickTime") {
 		int main () {return EnterMovies==0;}"}}
 Feature.add("quicktimehw","Plaum's LibQuickTime") {
 	uses_so Or[
-		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"],
+		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-2.0","-lz"],
 		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"],
-		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-2.0","-lz"]]
+		LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib"    ,"-lz"]]
 	f = ["quicktime.h","colormodels.h","lqt.h","lqt_version.h","lqt_codecinfo.h"]
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
@@ -405,8 +405,8 @@ Feature.add("opencv","Intel OpenCV") {
 	#uses_so ["-lcv"]
         #uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
         uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
-	action proc {DEFINES["OPENCV_SHARE_PATH"] =
-		File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}
+        #in `dirname': can't convert nil into String (TypeError) # I should figure how to make this interact with pkg-config properly
+	#action proc {DEFINES["OPENCV_SHARE_PATH"] = File.dirname(C_INCLUDE_PATH.find {|x| File.exist?(x+"/opencv/cv.h")}) + "/share/opencv"}
 	test proc {c_test %`
 			#include <opencv/cv.h>
 			int main () {return 0;}`}}
