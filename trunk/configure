@@ -201,7 +201,7 @@ end
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
 prepend_path ENV["HOME"]
-prepend_path "/Users/pddev/..."
+prepend_path "/Users/pddev/..." if OSX # mathieu's build on hans' farm
 CFLAGS << " -I."
 C_INCLUDE_PATH.unshift "."
 for var in [:C_INCLUDE_PATH, :LIBRARY_PATH, :LD_LIBRARY_PATH] do LOG.puts "#{var}: #{eval(var.to_s).inspect}" end
