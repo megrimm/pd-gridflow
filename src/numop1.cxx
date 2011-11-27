@@ -83,7 +83,7 @@ DEF_OP(unary_plus, a);   // for use by #expr
 DEF_OP(unary_minus, -a); // for use by #expr
 DEF_OP(abs, a<0 ? -a : a);
 
-DEF_OPF(sqrt,floor(sqrt(a)),sqrt(a))
+DEF_OPF(sqrt,floor(sqrt(a)),sqrt(a)) DEF_OP(cx_sqrt, sqrt(a))
 DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a))
 
 DEF_OP(sin,  sin(a))		DEF_OP(cx_sin,  sin(a))
@@ -129,7 +129,7 @@ DEF_OP(fact, fact(a))
 
 Numop1 op_table_unary[] = {
 // moved from numop2 at 9.12
-	DECL_OP(sqrt, "sqrt"),
+	DECL_OP(sqrt, "sqrt"),        DECL_VOP_FLOAT(cx_sqrt, "C.sqrt", 2),
 	DECL_OP(rand, "rand"),
 	DECL_OP_FLOAT(sin,  "sin"),   DECL_VOP_FLOAT(cx_sin,  "C.sin",  2),
 	DECL_OP_FLOAT(cos,  "cos"),   DECL_VOP_FLOAT(cx_cos,  "C.cos",  2),
