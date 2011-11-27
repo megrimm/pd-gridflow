@@ -88,34 +88,34 @@
 0;
 #X obj 0 830 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
 0;
-#X obj 0 849 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
-0;
-#X obj 0 868 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
-0;
-#X obj 0 887 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
-0;
-#X obj 0 906 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
-0;
-#X obj 0 943 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
-0;
-#X obj 0 962 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
-0;
-#X obj 0 981 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
-0;
-#X msg 10 981 op C.sin;
-#X obj 0 1000 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
-0;
-#X msg 10 1000 op C.cos;
-#X obj 0 1019 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
-0;
-#X msg 10 1019 op C.tanh;
-#X obj 0 1038 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
-0;
-#X msg 10 1038 op C.exp;
 #X obj 0 1057 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
 0;
-#X msg 10 1057 op C.log;
-#X obj 10 1076 outlet;
+#X obj 0 1000 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 1019 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 1038 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 867 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X obj 0 886 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X obj 0 905 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 905 op C.sin;
+#X obj 0 924 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 924 op C.cos;
+#X obj 0 943 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 943 op C.tanh;
+#X obj 0 962 cnv 15 906 17 empty empty empty 20 12 0 14 -249792 -66577
+0;
+#X msg 10 962 op C.exp;
+#X obj 0 981 cnv 15 906 17 empty empty empty 20 12 0 14 -233280 -66577
+0;
+#X msg 10 981 op C.log;
+#X obj 10 1080 outlet;
 #X obj 95 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
 0;
 #X obj 525 30 cnv 1 1 1507 empty empty empty -1 12 0 14 -262144 -66577
@@ -125,9 +125,9 @@
 #X obj 0 54 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
 0;
 #X text 10 52 numops;
-#X obj 0 926 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
+#X obj 0 850 cnv 15 906 14 empty empty empty 20 12 0 14 -248881 -66577
 0;
-#X text 10 924 vecops for complex numbers;
+#X text 10 848 vecops for complex numbers;
 #X msg 10 70 op sqrt;
 #X msg 10 89 op rand;
 #X msg 10 108 op sin;
@@ -178,15 +178,14 @@ to A;
 #X text 96 469 future use (float only);
 #X text 96 450 future use (float only);
 #X text 96 431 future use (float only);
-#X msg 10 962 op C.abs;
-#X msg 10 943 op C.sq;
-#X text 96 943 future use;
-#X text 96 962 future use;
-#X text 96 1019 hyperbolic tangent of A as radians;
-#X text 96 981 sine of A as radians;
-#X text 96 1000 cosine of A as radians;
-#X text 96 1038 natural exponential of A as radians;
-#X text 96 1057 natural logarithm of A as radians;
+#X msg 10 886 op C.abs;
+#X msg 10 867 op C.sq;
+#X text 96 867 future use;
+#X text 96 886 future use;
+#X text 96 943 hyperbolic tangent of A as radians;
+#X text 96 905 sine of A as radians;
+#X text 96 924 cosine of A as radians;
+#X text 96 962 natural exponential of A as radians;
 #X text 10 1096 All the complex number operators are only for floats.
 VecOps are called VecOps because each operation happens between more
 than just two numbers. Complex VecOps are those that arise when a pair
@@ -197,6 +196,11 @@ familiar.;
 #X msg 10 488 op fact;
 #X text 97 481 factorial. this is the integral of pow(t \, $f1)*exp(-t)
 from 0 to +inf. don't confuse with op gamma.;
+#X msg 10 1000 op C.sqrt;
+#X text 98 1000 square root of A (square root of abs and half the angle)
+;
+#X text 96 974 natural logarithm of A as radians (a modified polar
+transform);
 #X connect 54 0 63 0;
 #X connect 56 0 63 0;
 #X connect 58 0 63 0;
@@ -226,4 +230,5 @@ from 0 to +inf. don't confuse with op gamma.;
 #X connect 113 0 63 0;
 #X connect 117 0 63 0;
 #X connect 118 0 63 0;
-#X connect 127 0 63 0;
+#X connect 126 0 63 0;
+#X connect 128 0 63 0;
