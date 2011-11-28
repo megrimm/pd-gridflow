@@ -1,4 +1,13 @@
-Très Nouveau
+Nouveau
+
+[ ] « error: missing argument $1 named ... » n'indique pas l'origine de l'erreur, et plein de ces erreurs apparaissent
+    dans doc/index.pd. [args] devrait utiliser du code en commun avec [gf/error], par exemple en créant une fonction
+    commune pd_error2() qui permet d'envoyer un message par rapport à n'importe quel objet, en l'occurrence, le canevas
+    contenant l'objet.
+ 
+[ ] [gf/error] devrait permettre de faire provenir l'erreur d'un autre niveau. Ça pose problème dans [#in], [#out].
+
+[9.15] pd_oprintf "%f" formatte 4 en 4.000000 ... est-ce normal ?
 
 [9.15] examples/flocons (à la demande de Patrick)
 
@@ -7,7 +16,7 @@ Très Nouveau
        prédéterminer l'usage des méthodes par défaut.
        utiliser class_addfloat ou class_addmethod si ça vaut la peine.
 
-Nouveau
+[9.15] désactiver unicorn dans le cas de 43 et p-ê de l2ork.
 
 [9.14] fix [cv/#ellipse] re parens don't exist in messages since 9.13
 [9.14] [#perspective] has major bug ! modifies «data»
@@ -111,6 +120,7 @@ GUI Objects (incl abstrs & print)
     «...» quand la suite des valeurs est pas montrée. c'est pas documenté
     comme tel, mais on s'y attend parce que ça arrive la plupart du temps,    
     mais je sais pas pourquoi des fois ça marche pas.
+[ ] [#see] (or any other GUI) shouldn't display on top of other things by climbing out of their prescribed order.
 
 Docs
 
@@ -126,7 +136,9 @@ Docs
 
 Unsorted
 
-[9.16] add C.sqrt
+[9.16] mouse_spy-bug*.pd
+[9.16] #see-demo2.pd plante
+[ ] utiliser pboivin-load-video.pd d'une certaine manière (en faire une abstraction ?)
 [9.16] [#draw_image put, alpha] bug when 4 chans over 4 chans (claude L)
 [ ] qbert wav files are gzipped, not ready for use
 [ ] [gf/s2l] only produces symbols ?
@@ -324,7 +336,7 @@ Other
 [ ] some seeds aren't typechecked (which ones ?)
 [ ] GRID_FINISH triggered while backstore ???
 [ ] what would be a way to make GF work well with Pd's idea of a list?
-[ ] write unit tests about required functionality
+[9.15] write unit tests about required functionality
 [ ] write unit tests about error checking
 [ ] make system to ensure everything is working before a release.
 [ ] it's possible to crash by sending data in two inlets of a same object at once
