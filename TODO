@@ -1,11 +1,15 @@
 Nouveau
 
+[ ] vérifications manquantes pour les dimensions dans [#draw_polygon] et p-ê d'autres.
+
 [ ] « error: missing argument $1 named ... » n'indique pas l'origine de l'erreur, et plein de ces erreurs apparaissent
     dans doc/index.pd. [args] devrait utiliser du code en commun avec [gf/error], par exemple en créant une fonction
     commune pd_error2() qui permet d'envoyer un message par rapport à n'importe quel objet, en l'occurrence, le canevas
     contenant l'objet.
  
 [ ] [gf/error] devrait permettre de faire provenir l'erreur d'un autre niveau. Ça pose problème dans [#in], [#out].
+
+[9.15] [print] accept several arguments just like pd-ext's.
 
 [9.15] pd_oprintf "%f" formatte 4 en 4.000000 ... est-ce normal ?
 
@@ -18,7 +22,7 @@ Nouveau
 
 [9.15] désactiver unicorn dans le cas de 43 et p-ê de l2ork.
 
-[9.14] fix [cv/#ellipse] re parens don't exist in messages since 9.13
+[9.15] fix [cv/#ellipse] re parens don't exist in messages since 9.13
 [9.14] [#perspective] has major bug ! modifies «data»
 [ ] this shows how to get fullscreen SDL on non-X11 : http://sdl.beuc.net/sdl.wiki/SDL_WM_ToggleFullScreen
 [ ] make [#join] repeat data like [#redim] ?
@@ -121,6 +125,7 @@ GUI Objects (incl abstrs & print)
     comme tel, mais on s'y attend parce que ça arrive la plupart du temps,    
     mais je sais pas pourquoi des fois ça marche pas.
 [ ] [#see] (or any other GUI) shouldn't display on top of other things by climbing out of their prescribed order.
+[ ] [#many-exclude] (already working) or similar
 
 Docs
 
