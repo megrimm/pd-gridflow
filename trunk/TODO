@@ -1,5 +1,9 @@
 Nouveau
 
+[9.14] typo route3-help
+[9.14] cast non documenté dans plusieurs [#io.$1]
+[9.14] pages générales (non-flow_objects) manquantes sur gridflow.ca/help
+
 [ ] vérifications manquantes pour les dimensions dans [#draw_polygon] et p-ê d'autres.
 
 [ ] « error: missing argument $1 named ... » n'indique pas l'origine de l'erreur, et plein de ces erreurs apparaissent
