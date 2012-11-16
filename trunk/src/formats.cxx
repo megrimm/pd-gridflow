@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #define L _L_
 
 /* API (version 0.9.3)
