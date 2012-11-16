@@ -31,6 +31,7 @@ int sys_hostfontsize(int fontsize);
 #include <sys/time.h>
 #include <string>
 #include <fcntl.h>
+#include <unistd.h>
 #ifdef __WIN32__
 #include <process.h>
 #endif
