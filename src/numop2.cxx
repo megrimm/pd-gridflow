@@ -222,6 +222,17 @@ DEF_OPF(pow, ipow(a,b), pow(a,b), 0, false, false) // "RN=1"
 DEF_OP(logmul, a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a))), 0, false, false) // "RA=0"
 DEF_OP(divexp, (T)exp((float64)a/(float64)b),0,false,false)
 // 0.8
+uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
+int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1), p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
+	return c<p/2?p:c>q/2?q:a+b; }
+uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
+int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
+	int64 p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
+	return c<p/2?p:c>q/2?q:a-b; }
 DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
 DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
 DEF_OP(abssub,  gf_abs(a-b), 0, false, false)
@@ -336,18 +347,6 @@ Numop2 op_table2[] = {
 const long op_table2_n = COUNT(op_table2);
 #endif
 #ifdef PASS3
-uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
-int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
-int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
-int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1), p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
-	return c<p/2?p:c>q/2?q:a+b; }
-uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
-int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
-int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
-int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
-	int64 p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
-	return c<p/2?p:c>q/2?q:a-b; }
-
 Numop2 op_table3[] = {
 	DECL_OP_NOFOLD(sinmul, "sin*", 0),
 	DECL_OP_NOFOLD(cosmul, "cos*", 0),
