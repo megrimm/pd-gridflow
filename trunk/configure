@@ -183,7 +183,8 @@ end
 
 def epath x; (ENV[x]||"").split(":") end
 
-C_INCLUDE_PATH  = (epath("CPLUS_INCLUDE_PATH") + epath("C_INCLUDE_PATH") + ["/usr/include"]).uniq
+C_INCLUDE_PATH  = (epath("CPLUS_INCLUDE_PATH") + epath("C_INCLUDE_PATH") +
+			["/usr/include", "/usr/include/i386-linux-gnu"]).uniq
 LIBRARY_PATH    = (epath("LIBRARY_PATH")                      + ["/usr/lib","/lib"]).uniq
 LD_LIBRARY_PATH = (epath("LD_LIBRARY_PATH") + read_ld_so_conf + ["/usr/lib","/lib"]).uniq
 LIBX11DIR = [
@@ -402,7 +403,10 @@ Feature.add("quicktimehw","Plaum's LibQuickTime") {
 		return quicktime_open==0; }`}}
 Feature.add("opencv","Intel OpenCV") {
 	produces_o ["src/opencv.o"]
-	uses_so `pkg-config --libs opencv`.split(/\s+/).reject{|x| x=="-lhighgui" or x=="-lcvaux" } if not OSX # for some reason, pkg-config output is wrong on mathieu's system
+	uses_so `pkg-config --libs opencv`.split(/\s+/).reject {|x|
+		# for some reason, pkg-config output is wrong on mathieu's system
+		x=="-lhighgui" or x=="-lcvaux" or x=="-lopencv_contrib"
+	} if not OSX
 	#uses_so ["-lcv"]
         #uses_so ["-L/Users/pddev/lib","-lcv"] if OSX # for the build system used in 9.13
         uses_so ["-F/Users/pddev/Frameworks -framework OpenCV"] if OSX
