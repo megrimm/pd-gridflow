@@ -519,19 +519,18 @@ GRID_INLET(0) {
 \end class {install("#labelling",1,0); add_creator("#labeling");}
 
 //****************************************************************
-\class GridPerspective {
+\class GridPerspective { // major bug here ! modifies «data»
 	\attr int32 z;
 	\grin 0
 	\constructor (int32 z=256) {this->z=z;}
 };
 GRID_INLET(0) {
 	int n = in.dim.n;
-	int32 v[n];
-	COPY(v,in.dim.v,n);
-	v[n-1]--;
-	in.set_chunk(in.dim.n-1);
+	int32 v[n]; COPY(v,in.dim.v,n); v[n-1]--;
+	in.set_chunk(n-1);
 	go=new GridOut(this,0,Dim(n,v),in.nt);
 } GRID_FLOW {
+	//T tada[n];
 	int m = in.dim.prod(in.dim.n-1);
 	for (; n; n-=m,data+=m) {
 		op_mul->map(m-1,data,(T)z);
