@@ -1,5 +1,12 @@
 Nouveau
 
+[ ] renommer slitscanning.pd à zoolookologie.pd
+
+> I just downloaded gridflow-9.13-macosx104-i386.tar.gz and it was looking 
+> for libpng12 at @executable_path/../../lib/libpng.12.0.dylib. —hcs
+
+[9.15] rajouter numop C.pow
+
 [9.14] typo route3-help
 [9.14] cast non documenté dans plusieurs [#io.$1]
 [9.14] pages générales (non-flow_objects) manquantes sur gridflow.ca/help
@@ -94,9 +101,10 @@ GEM/PDP
 [ ] [#from_pix, colorspace y] may have different contrast/brightness because of differences between the two definitions of Y
 [ ] when [#from_pix] uses [pix_rgba] or [pix_grey], there is one empty frame of size (0 0 4) instead of the 1st frame. why ?
 [ ] [#to_pix] newimage=0 to save CPU time and/or bus time?
-[9.16] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
+[9.15] reverify gem.cxx on OSX Intel-vs-PPC. Did I see a problem with 3 channels again ?
 [9.15] Support GEM 93 release ABI
-[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that (?)
+[9.15] [#to_pdp] doesn't work all of the time.
+[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of having objects for that ? At least [#from_pix] and [#from_pdp].
 
 #expr
 
