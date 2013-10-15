@@ -1,5 +1,7 @@
 Nouveau
 
+[ ] crash in std::map (in formats.c) when compiling with g++4.8 and running pdextended, but no other combination.
+
 [ ] renommer slitscanning.pd à zoolookologie.pd
 
 > I just downloaded gridflow-9.13-macosx104-i386.tar.gz and it was looking 
