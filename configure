@@ -369,7 +369,7 @@ Feature.add("dc1394","DC1394 for Linux") {
 		int main () {return dc1394_create_handle==0;}"}}
 Feature.add("mpeg3","HeroineWarrior LibMPEG3") {
 	uses_so LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
-	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
+	uses_h Or["mpeg3/libmpeg3.h","libmpeg3/libmpeg3.h","libmpeg3.h"]
 	produces_o ["src/mpeg3.o"]
 	test proc {|f| f.c_test "
 		#include#
@@ -431,7 +431,7 @@ Feature.add("kinect","libfreenect") {
 } if false
 Feature.add("opengl","OpenGL/GLEW (for GEM support and [gf/gl])") {
 	produces_o ["src/opengl.o"]
-        uses_so LIBX11DIR+["-lGLEW"] if not WIN
+        uses_so LIBX11DIR+["-lGLEW","-lGLU"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
         uses_h ["GL/glew.h"]
 	test proc {c_test %`
@@ -440,7 +440,7 @@ Feature.add("opengl","OpenGL/GLEW (for GEM support and [gf/gl])") {
 Feature.add("gem","GEM support (loadtime detect: don't disable)") {
 	produces_pdlib ["gem_loader","gem9292","gem9293","gem9393"]
 	uses_feature ["opengl"]
-        uses_so LIBX11DIR+["-lGLEW"] if not WIN
+        uses_so LIBX11DIR+["-lGLEW","-lGLU"] if not WIN
 	uses_so ["-lglu32","-lopengl32","-lglew32"] if WIN
 }
 Feature.add("pdp","PDP support (loadtime detect: don't disable)") {
