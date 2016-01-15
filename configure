@@ -23,8 +23,8 @@
 require "rbconfig"
 CFLAGS  = ""
 include Config
-OSX = !!( CONFIG["arch"] =~ /darwin/ )
-WIN = !!( CONFIG["arch"] =~ /(mingw|mswin)/ )
+OSX = !!( ::RbConfig::CONFIG["arch"] =~ /darwin/ )
+WIN = !!( ::RbConfig::CONFIG["arch"] =~ /(mingw|mswin)/ )
 LOG = File.open "./config.log", "w"
 $cxx = "g++"
 LDSOFLAGS = []
@@ -249,10 +249,10 @@ Feature.add("gcc64","GNU C++ in 64-bit mode") {
 Feature.add("pentium","Pentium-compatible CPU") {
 	action proc {
 		DEFINES["HAVE_PENTIUM"]=1
-		(CONFIG["arch"] =~ /i\d86/) and DEFINES["CPU"] ||= "pentium"
+		(::RbConfig::CONFIG["arch"] =~ /i\d86/) and DEFINES["CPU"] ||= "pentium"
 	}
 	test proc {
-		(CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{CONFIG["arch"]} instead"
+		(::RbConfig::CONFIG["arch"] =~ /(i\d86|x86_64|universal)/) or raise "#{::RbConfig::CONFIG["arch"]} instead"
 		cflags = []
 		cflags << "-arch" << "i386" if OSX
 		c_test '#define cpuid(func,ax,bx,cx,dx) \
@@ -521,7 +521,7 @@ LOG.puts "-"*64
 DUAL.puts Light,"generating ./config.make and ./config.h"
 
 File.open("./config.make","w") {|f|
-  f.puts "RUBY = "+CONFIG["bindir"]+"/"+CONFIG["RUBY_INSTALL_NAME"]
+  f.puts "RUBY = "+::RbConfig::CONFIG["bindir"]+"/"+::RbConfig::CONFIG["RUBY_INSTALL_NAME"]
   if DEFINES["CPU"]
     CFLAGS << (if DEFINES["GCC_VERSION"] >= "4" then " -mtune=$(CPU)" else " -mcpu=$(CPU)" end)
     CFLAGS << " -march=$(CPU)"
@@ -532,7 +532,7 @@ File.open("./config.make","w") {|f|
   for k,v in DEFINES do f.puts "#{k}=#{v}" end
   f.puts "CXX = "+$cxx
   f.puts "OBJS = "+OBJS.join(" ")
-  f.puts "DLEXT = "+CONFIG['DLEXT']
+  f.puts "DLEXT = "+::RbConfig::CONFIG['DLEXT']
   f.puts "PDLIB = gridflow$(PDSUF) "+PDLIB.map{|x|"gridflow_#{x}$(PDSUF)"}.join(" ")
   for k in LDSO.keys.sort do f.puts "LDSO_#{k} = "+LDSO[k].join(" ") if LDSO[k] end
 }
