@@ -217,7 +217,7 @@ def handle_classinfo(line)
 		virtual = if attr.virtual then "()" else "" end
 		get << "if (s==gensym(\"#{name}\")) set_atom(a,#{name}#{virtual}); else "
 		next if frame.methods["_0_"+name].done
-		type,name,default = attr.to_a
+		type,name = attr.to_a
 		handle_def "0 #{name} (#{type} #{name}) {this->#{name}=#{name}; changed(gensym(\"#{name}\"));}"
 	}
 	line.gsub!(/^\s*(\w+\s*)?\{/,"")
@@ -246,7 +246,7 @@ def handle_end(line)
 	n = fields.length
 	if not ClassDecl===frame then raise "\\end: frame is not a \\class" end
 	cl = frame.name
-	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
+	if fields[0]!="class" or (n>1 and not (/^\{/ =~ fields[1]) and fields[1]!=cl) then raise "end not matching #{where}"end
 	frame.grins.each {|i,v|
 		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN_#{v[1]||'all'}(#{cl}::grinw_#{i});"
 		check = "CHECK_GRIN(#{cl},#{i});"
